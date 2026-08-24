@@ -1,0 +1,93 @@
+#### Project-local xschem configuration for sg13g2-ldo (issue #6).
+####
+#### Resolves the SG13G2 PDK the same way klt pdk find / design/netlist.py
+#### does (PDK_ROOT + PDK env vars, falling back to the usual open_pdks
+#### install prefixes), so an interactive xschem session and the batch
+#### netlist export always agree on which PDK install is in use. This is
+#### tooling/infrastructure, adapted from the identical pattern already
+#### landed in this fleet's own 2AMLogic/sg13g2-bandgap and
+#### 2AMLogic/sg13g2-pll canaries' design/xschemrc (same PDK, same org,
+#### same problem -- not sibling *circuit* content, so this repo's
+#### clean-room mandate on the schematic itself does not apply here) --
+#### which in turn credits gf180-bandgap's design/xschemrc as the pattern's
+#### origin for the "reset XSCHEM_LIBRARY_PATH first" guard below (a
+#### leftover per-machine ~/.xschem/xschemrc can otherwise silently
+#### override it with stale content).
+####
+#### Load this explicitly and unambiguously with:
+####   xschem --rcfile design/xschemrc ...
+#### (cwd-relative "./xschemrc" auto-discovery only fires if xschem's cwd
+#### happens to be this directory.)
+
+set XSCHEM_LIBRARY_PATH {}
+append XSCHEM_LIBRARY_PATH :${XSCHEM_SHAREDIR}/xschem_library/devices
+
+#### PDK_ROOT / PDK: pass through from the shell environment. This repo's
+#### PDK variant directory is always named "ihp-sg13g2" (IHP-Open-PDK's own
+#### layout, the same "klt pdk find" convention this fleet's other SG13G2
+#### canaries already use).
+
+if {[info exists env(PDK_ROOT)]} {
+  set PDK_ROOT $env(PDK_ROOT)
+}
+if {[info exists env(PDK)]} {
+  set PDK $env(PDK)
+} else {
+  set PDK ihp-sg13g2
+}
+
+#### ---------------------------------------------------------------------
+#### SG13G2 PDK resolution + this repo's own design/ library.
+####
+#### Resolves the PDK the same way `klt pdk find` does (PDK_ROOT+PDK env,
+#### falling back to the usual open_pdks install prefixes) so xschem and
+#### design/netlist.py never disagree about which install is in use.
+#### Nothing here hardcodes a machine-specific path.
+
+if { ![info exists PDK_ROOT] || $PDK_ROOT eq {} } {
+    foreach candidate [list /usr/share/pdk /usr/local/share/pdk \
+                            [file join $env(HOME) share pdk] \
+                            [file join $env(HOME) .ciel] \
+                            [file join $env(HOME) .volare]] {
+        if { [file isdir [file join $candidate $PDK libs.tech xschem]] } {
+            set PDK_ROOT $candidate
+            break
+        }
+    }
+}
+
+if { ![info exists PDK_ROOT] || $PDK_ROOT eq {} } {
+    puts stderr "xschemrc: no $PDK install found under PDK_ROOT or the usual prefixes."
+    puts stderr "xschemrc: set PDK_ROOT (and optionally PDK) and restart xschem -- see"
+    puts stderr "xschemrc: klayout-tools' scripts/fetch-ihp-sg13g2.sh, or klt pdk find."
+} else {
+    set env(PDK_ROOT) $PDK_ROOT
+    set env(PDK) $PDK
+    #### Only the PDK's own xschem symbol/library directory is sourced from
+    #### its tree -- not its full xschemrc, which hardcodes interactive
+    #### defaults (start page, toolbar, tabbed interface) that make batch
+    #### netlisting less predictable. Everything netlisting actually needs
+    #### is set explicitly in this file, so the export is reproducible on
+    #### any machine with the same PDK install.
+    append XSCHEM_LIBRARY_PATH :[file join $PDK_ROOT $PDK libs.tech xschem]
+}
+
+#### ------------------------------------------------------- repo library ---
+set REPO_ROOT [file dirname [file dirname [file normalize [info script]]]]
+
+append XSCHEM_LIBRARY_PATH :[file join $REPO_ROOT design]
+
+#### Netlisting behaviour (the load-bearing part of this file). Every cell
+#### in design/ -- including the top level -- is a reusable block a future
+#### testbench instantiates, never a standalone simulation deck, so it
+#### netlists as a .subckt rather than a flat deck.
+set netlist_type spice
+set top_is_subckt 1
+set flat_netlist 0
+set spiceprefix 1
+
+#### Start on an empty sheet rather than the PDK's own demo top-level.
+set XSCHEM_START_WINDOW {}
+
+#### Do not open the interactive info window during batch runs.
+set show_infowindow 0
