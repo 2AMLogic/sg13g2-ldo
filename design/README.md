@@ -157,14 +157,32 @@ python3 design/netlist.py --check    # verify committed netlists are current
 python3 design/netlist.py --cell ldo_erramp_placeholder -v
 ```
 
-Requirements: `xschem` on `PATH` and the `ihp-sg13g2` PDK installed.
-`design/netlist.py` resolves the PDK itself (`PDK_ROOT`/`PDK` env vars,
-falling back to the usual open_pdks-shaped search roots: `/usr/share/pdk`,
-`/usr/local/share/pdk`, `~/share/pdk`, `~/.ciel`, `~/.volare`) — this repo
-has no `sim/` harness yet, so there is no second PDK-discovery
-implementation to keep in sync; see `design/netlist.py`'s own module
-docstring for the full resolution order and its relationship to this
+Requirements: **`xschem` >= 3.4.7** on `PATH`, plus the `ihp-sg13g2` PDK
+installed. `design/netlist.py` resolves the PDK itself (`PDK_ROOT`/`PDK` env
+vars, falling back to the usual open_pdks-shaped search roots:
+`/usr/share/pdk`, `/usr/local/share/pdk`, `~/share/pdk`, `~/.ciel`,
+`~/.volare`) — this repo has no `sim/` harness yet, so there is no second
+PDK-discovery implementation to keep in sync; see `design/netlist.py`'s own
+module docstring for the full resolution order and its relationship to this
 fleet's `sg13g2-bandgap`/`sg13g2-pll` `sim/env.sh` convention.
+
+> **Why the version floor:** Ubuntu 24.04's apt package (xschem 3.4.4-1) has
+> a `top_is_subckt` regression — it fails to wrap the top-of-invocation cell
+> as an active `.subckt`, instead emitting a double-comment-prefixed
+> `**.subckt`/`**.ends` pair, even though this file's `xschemrc` sets
+> `top_is_subckt 1`. `netlist.py` netlists every cell individually (each
+> cell is the "top of invocation" for its own xschem run), so every cell
+> hits this — not just `ldo_core` — which is why `--check` fails on an
+> otherwise-unmodified worktree with `.subckt <cell> not found in its own
+> netlist`. This is the identical regression `2AMLogic/gf180-temp-por` hit
+> and fixed (its own issue #89 / PR #95). xschem 3.4.7 does not have this
+> defect and reproduces `design/netlist/*.spice` byte-for-byte; there is no
+> known-good newer apt/PPA package as of this writing, so CI
+> (`.github/workflows/ci.yml`) builds 3.4.7 from source rather than relying
+> on the distro package. If your local `xschem --version` is older than
+> 3.4.7, do the same: download a
+> [3.4.7+ release tarball](https://github.com/StefanSchippers/xschem/releases),
+> then `./configure && make && sudo make install`.
 
 Under the hood, per cell, with xschem's electrical rule check enabled:
 

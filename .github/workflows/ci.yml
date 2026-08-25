@@ -31,6 +31,19 @@ name: CI
 #   - No linter/formatter is configured for this repo yet (package.json's
 #     `lint`/`check:ci` scripts are honest "not configured" placeholders);
 #     add a CI job for either if/when one is adopted.
+#
+# xschem is built from source (pinned to 3.4.7), not apt-installed: Ubuntu
+# 24.04's apt package (xschem 3.4.4-1) has a `top_is_subckt` regression --
+# it emits a double-comment-prefixed `**.subckt`/`**.ends` wrapper for the
+# top-of-invocation cell instead of an active one, even though
+# design/xschemrc sets `top_is_subckt 1`. netlist.py netlists every cell
+# individually (each cell is the "top of invocation" for its own xschem
+# run), so every cell hits this, and `--check` fails on an unmodified
+# worktree with `.subckt <cell> not found in its own netlist`. This is the
+# same regression and fix 2AMLogic/gf180-temp-por hit and fixed (its own
+# issue #89 / PR #95) -- see design/README.md's Requirements note for the
+# full root cause and the xschem >= 3.4.7 version floor this repo now
+# states explicitly.
 
 on:
   push:
@@ -68,10 +81,24 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install xschem
+      - name: Build and install xschem 3.4.7 from source (top_is_subckt regression)
+        # Ubuntu 24.04's apt package (3.4.4-1) mis-handles top_is_subckt --
+        # see this workflow's own header comment and design/README.md for
+        # the full root cause. No known-good newer apt/PPA package exists
+        # as of this writing, so pin by building from source instead.
         run: |
           sudo apt-get update
-          sudo apt-get install -y xschem
+          sudo apt-get install -y build-essential libcairo2-dev libx11-dev \
+            libxpm-dev tcl8.6-dev tk8.6-dev
+          curl -sL https://github.com/StefanSchippers/xschem/archive/refs/tags/3.4.7.tar.gz \
+            -o /tmp/xschem-3.4.7.tar.gz
+          tar xzf /tmp/xschem-3.4.7.tar.gz -C /tmp
+          (cd /tmp/xschem-3.4.7 && ./configure && make -j"$(nproc)" && sudo make install)
+          xschem --version | grep -q 'XSCHEM V3.4.7' || {
+            echo "expected xschem 3.4.7, got:" >&2
+            xschem --version >&2
+            exit 1
+          }
 
       - name: Cache IHP-Open-PDK fetch
         id: pdk-cache

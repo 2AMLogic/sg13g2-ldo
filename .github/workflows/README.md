@@ -22,9 +22,9 @@ today — nothing more.
      schematic-port order, has drifted from the interface `design/README.md`
      documents.
 
-To do any of that, the job needs `xschem` on `PATH` and a real `ihp-sg13g2`
-PDK install — `design/netlist.py --check` isn't a syntax check, it's a
-reproducibility + ERC check against the actual PDK. The workflow:
+To do any of that, the job needs `xschem >= 3.4.7` on `PATH` and a real
+`ihp-sg13g2` PDK install — `design/netlist.py --check` isn't a syntax check,
+it's a reproducibility + ERC check against the actual PDK. The workflow:
 
 1. Checks out this repo, plus a **pinned** ref (`v0.3.0`) of
    `2AMLogic/klayout-tools`, solely to reuse that repo's
@@ -32,7 +32,18 @@ reproducibility + ERC check against the actual PDK. The workflow:
    IHP-Open-PDK release (`v0.3.0`; Apache-2.0). This repo does not carry its
    own copy of that fetch/pin logic, so it can never drift out of sync with
    `klayout-tools`' own.
-2. Installs `xschem` via `apt-get` (Ubuntu 24.04's `universe` component).
+2. **Builds xschem 3.4.7 from source** rather than `apt-get install xschem`.
+   Ubuntu 24.04's apt package (3.4.4-1) has a `top_is_subckt` regression —
+   it emits a double-comment-prefixed `**.subckt`/`**.ends` wrapper for the
+   top-of-invocation cell instead of an active one, even though
+   `design/xschemrc` sets `top_is_subckt 1`. `netlist.py` netlists every
+   cell individually (each is the "top of invocation" for its own xschem
+   run), so this breaks `--check` on every cell, not just `ldo_core` — see
+   `design/README.md`'s Requirements note for the full root cause (the
+   identical regression `2AMLogic/gf180-temp-por` hit and fixed, its own
+   issue #89 / PR #95). The workflow asserts the built `xschem --version`
+   string so a future xschem release accidentally changing this fails
+   loudly instead of silently drifting.
 3. Caches the fetched PDK (`actions/cache`, keyed on the pinned version) so
    the ~350 MB download only happens once per cache generation, not on
    every run.
