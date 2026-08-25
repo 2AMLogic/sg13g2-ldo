@@ -1,0 +1,90 @@
+name: CI
+
+# Runs the one self-check that exists in this repo today:
+#
+#   python3 design/netlist.py --check
+#
+# (design/netlist.py's own module docstring documents exactly what this
+# verifies: the committed design/netlist/*.spice reproduce byte-for-byte
+# from design/*.sch, xschem's own ERC is clean, and the ldo_core pinout /
+# symbol-vs-schematic invariants hold.)
+#
+# Unlike 2AMLogic/gf180-ldo's ci.yml -- which splits a PDK-free
+# `harness-selftest` job (runs on every push/PR) from a PDK-backed
+# `pvt-smoke` job (gated to schedule/workflow_dispatch/an opt-in PR label,
+# see 2AMLogic/gf180-ldo's own ci.yml) -- this repo has no PDK-free tier to
+# split off: `design/netlist.py --check` inherently needs xschem plus a real
+# ihp-sg13g2 install to do anything at all (it re-runs the xschem export and
+# diffs the result), and no sim/ harness exists yet (sim/ is still an empty
+# placeholder -- see sim/README.md). So the check below runs on every push
+# to main and every pull request, not gated: gating it would mean CI checks
+# nothing on an ordinary PR, which defeats this issue's whole point (a
+# schematic edit that forgets to re-run the export, or that breaks ERC,
+# should fail loudly on the PR that introduces it, not wait for a nightly
+# job). The IHP-Open-PDK fetch (~350 MB, pinned to v0.3.0, checksum-verified
+# by 2AMLogic/klayout-tools' own fetch script) is cached across runs via
+# actions/cache to keep the steady-state cost low.
+#
+# Explicitly excluded from CI (not "checks" yet, so nothing to wire up):
+#   - No sim/ harness self-test -- sim/ has no testbench yet (issue #8's own
+#     Non-goals). Add an equivalent CI step once one lands.
+#   - No linter/formatter is configured for this repo yet (package.json's
+#     `lint`/`check:ci` scripts are honest "not configured" placeholders);
+#     add a CI job for either if/when one is adopted.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch: {}
+
+# The IHP-Open-PDK version this workflow fetches and pins its cache key to.
+# Keep in sync with 2AMLogic/klayout-tools' scripts/fetch-ihp-sg13g2.sh
+# (IHP_OPEN_PDK_VERSION) and spec/porting-plan.md's own v0.3.0 references.
+env:
+  IHP_OPEN_PDK_VERSION: "0.3.0"
+  # Pin the klayout-tools ref this workflow checks out its PDK-fetch script
+  # from, so a future klayout-tools change can't silently alter this repo's
+  # CI. Bump deliberately, alongside IHP_OPEN_PDK_VERSION above if the two
+  # move together.
+  KLAYOUT_TOOLS_REF: "v0.3.0"
+
+jobs:
+  netlist-check:
+    name: design/netlist.py --check (xschem + ihp-sg13g2 PDK)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out sg13g2-ldo
+        uses: actions/checkout@v4
+
+      - name: Check out klayout-tools (pinned, for its PDK fetch script only)
+        uses: actions/checkout@v4
+        with:
+          repository: 2AMLogic/klayout-tools
+          ref: ${{ env.KLAYOUT_TOOLS_REF }}
+          path: klayout-tools
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install xschem
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xschem
+
+      - name: Cache IHP-Open-PDK fetch
+        id: pdk-cache
+        uses: actions/cache@v4
+        with:
+          path: klayout-tools/pdks/ihp-open-pdk
+          key: ihp-open-pdk-v${{ env.IHP_OPEN_PDK_VERSION }}
+
+      - name: Fetch ihp-sg13g2 PDK (IHP-Open-PDK, pinned + checksum-verified)
+        run: klayout-tools/scripts/fetch-ihp-sg13g2.sh
+
+      - name: design/netlist.py --check
+        env:
+          PDK_ROOT: ${{ github.workspace }}/klayout-tools/pdks/ihp-open-pdk
+          PDK: ihp-sg13g2
+        run: python3 design/netlist.py --check -v
