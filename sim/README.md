@@ -80,6 +80,22 @@ approach-and-alternatives-rejected rationale this repo does not repeat);
 `--check` verifies the models are present and loadable without rebuilding.
 Every experiment's `run_*.sh` preflights this before simulating.
 
+**ngspice version floor: >= 46 (OSDI ABI v0.4).** The pinned
+OpenVAF-Reloaded (`v24.0.1mob`) emits OSDI **ABI v0.4**, and an ngspice
+whose OSDI loader predates that ABI refuses every model outright:
+
+```
+NGSPICE only supports OSDI v0.3 but ".../psp103.osdi" targets v0.4!
+```
+
+This rules out the distro package on every current Ubuntu LTS — 24.04
+(noble) ships ngspice 42 — so `.github/workflows/ci.yml` builds ngspice 46
+from a checksum-verified upstream tarball rather than `apt install ngspice`.
+46 is the same version `pdk.json`'s `ngspice_actually_used` records for this
+tree's committed evidence, so CI and the records share one simulator build.
+If you bump the compiler pin in `build-osdi.sh`, re-check the ABI it emits
+against the ngspice both CI and your local install run.
+
 ```bash
 export PDK_ROOT=/path/to/ihp-open-pdk   # parent dir containing ihp-sg13g2/
 export PDK=ihp-sg13g2

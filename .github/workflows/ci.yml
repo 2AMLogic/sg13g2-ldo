@@ -51,6 +51,19 @@ name: CI
 # issue #89 / PR #95) -- see design/README.md's Requirements note for the
 # full root cause and the xschem >= 3.4.7 version floor this repo now
 # states explicitly.
+#
+# ngspice is likewise built from source (pinned to 46), for the same
+# shape of reason: Ubuntu 24.04's apt package is ngspice 42
+# (42+ds-3build1), whose OSDI loader only accepts ABI **v0.3**, while
+# sim/tools/build-osdi.sh's checksum-pinned OpenVAF-Reloaded v24.0.1mob
+# emits ABI **v0.4**. Every PDK model therefore fails to load under the
+# apt package ("NGSPICE only supports OSDI v0.3 but ... targets v0.4!"),
+# deterministically -- there is no ngspice on any current Ubuntu LTS that
+# can run this deck. 46 is not an arbitrary newer pick: it is the exact
+# version this tree's committed evidence was generated with
+# (sim/pdk.json "ngspice_actually_used": "ngspice-46"), so CI's simulator
+# and the recorded evidence's simulator are the same build. See
+# sim/README.md "OSDI device models" for the version floor.
 
 on:
   push:
@@ -137,10 +150,42 @@ jobs:
           ref: ${{ env.KLAYOUT_TOOLS_REF }}
           path: klayout-tools
 
-      - name: Install ngspice
+      - name: Build and install ngspice 46 from source (OSDI ABI v0.4)
+        # Ubuntu 24.04's apt ngspice (42) only supports OSDI ABI v0.3 and so
+        # cannot load the v0.4 models sim/tools/build-osdi.sh produces -- see
+        # this workflow's own header comment for the full root cause. Pin the
+        # same ngspice sim/pdk.json records as generating this tree's
+        # evidence ("ngspice_actually_used": "ngspice-46"), from a
+        # checksum-verified upstream tarball; same
+        # build-from-source-because-the-distro-package-is-wrong pattern as
+        # the xschem 3.4.7 build in netlist-check above.
+        #
+        # Checksum re-derived from the upstream tarball and independently
+        # cross-checked against Homebrew's own ngspice 46 formula pin
+        # (Homebrew/homebrew-core 316c49b7, Formula/n/ngspice.rb).
+        env:
+          NGSPICE_VERSION: "46"
+          NGSPICE_SHA256: "a0d1699af1940b06649276dcd6ff5a566c8c0cad01b2f7b5e99dedbb4d64c19b"
         run: |
           sudo apt-get update
-          sudo apt-get install -y ngspice
+          sudo apt-get install -y build-essential bison flex
+          curl -fsSL --retry 3 --retry-delay 5 -o /tmp/ngspice.tar.gz \
+            "https://downloads.sourceforge.net/project/ngspice/ng-spice-rework/old-releases/${NGSPICE_VERSION}/ngspice-${NGSPICE_VERSION}.tar.gz"
+          echo "${NGSPICE_SHA256}  /tmp/ngspice.tar.gz" | sha256sum -c -
+          tar xzf /tmp/ngspice.tar.gz -C /tmp
+          # OSDI is on by default (configure exposes --disable-osdi, not
+          # --enable-osdi); X11 and readline are dead weight for a batch
+          # -b run in CI.
+          (cd "/tmp/ngspice-${NGSPICE_VERSION}" \
+            && ./configure --without-x --with-readline=no --disable-debug \
+            && make -j"$(nproc)" \
+            && sudo make install)
+          sudo ldconfig
+          ngspice --version | grep -q "ngspice-${NGSPICE_VERSION} " || {
+            echo "expected ngspice-${NGSPICE_VERSION}, got:" >&2
+            ngspice --version >&2
+            exit 1
+          }
 
       - name: Cache IHP-Open-PDK fetch
         id: pdk-cache

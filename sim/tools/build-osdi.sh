@@ -49,8 +49,16 @@ OPENVAF_BASE_URL="https://github.com/${OPENVAF_REPO}/releases/download/${OPENVAF
 
 # asset name -> sha256, as published by GitHub's release API for ${OPENVAF_TAG}
 # (`gh api repos/OpenVAF/OpenVAF-Reloaded/releases --jq '.[0].assets[]|{name,digest}'`,
-# re-checked 2026-08-21). Only the macos-aarch64 entry has been executed and
-# used to produce evidence in this repo so far -- see sim/README.md.
+# re-checked 2026-08-21). Exercised so far: macos-aarch64 (produced this
+# tree's committed evidence) and linux-x86_64 (runs end-to-end in
+# .github/workflows/ci.yml's pass-device-screening-check job, and was
+# reproduced in a bare ubuntu:24.04 container before that job was wired up).
+# macos-x86_64 remains an unexercised pin. See sim/README.md.
+#
+# NOTE: openvaf-r ${OPENVAF_TAG} emits OSDI **ABI v0.4**, which needs
+# ngspice >= 46; an older ngspice (e.g. Ubuntu 24.04's apt ngspice 42)
+# rejects every model with "NGSPICE only supports OSDI v0.3 but ... targets
+# v0.4!". See sim/README.md "OSDI device models" for the version floor.
 OPENVAF_ASSET_macos_aarch64="openvaf-r-${OPENVAF_TAG}-macos-aarch64.tar.gz"
 OPENVAF_SHA_macos_aarch64="b59a6d7ffba0cdc2e3d3d27edb62d686cde72e7fbe9931f7bed6a4538c15e85e"
 OPENVAF_ASSET_macos_x86_64="openvaf-r-${OPENVAF_TAG}-macos-x86_64.tar.gz"
