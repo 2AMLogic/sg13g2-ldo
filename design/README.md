@@ -74,17 +74,30 @@ no departure record is needed here.
 **Sizing is a DC-sanity stand-in, not a final answer**: `L=0.5 µm`,
 `W=300 µm`, `ng=1`, `m=1` (300 µm total width) — a modest first-cut size
 chosen to close the loop for connectivity/ERC purposes, not sized against
-any dropout, current-limit, or area target. The confirming screening deck
-`spec/porting-plan.md` §4 item 1 calls for (`Ron·W` and `Vth` measured
-directly against SG13G2's own `sg13_hv_pmos` model, at the `Vin = Vout +
-dropout ≈ 2.10 V` test point and at the continuous-short condition) has not
-been run — that is out of scope for this issue and is the single most
-consequential follow-on decision record this port owes
-(`spec/porting-plan.md` §4 item 1). Do not read this width as a dropout- or
-area-sized value; it mirrors how `gf180-ldo`'s own first design-source
-issue (#8) flagged its pass-device width as "2 mm, #8's DC-sanity
-simplification of the ratified ~4 mm sizing" rather than presenting it as
-final.
+any dropout, current-limit, or area target. Do not read this width as a
+dropout- or area-sized value; it mirrors how `gf180-ldo`'s own first
+design-source issue (#8) flagged its pass-device width as "2 mm, #8's
+DC-sanity simplification of the ratified ~4 mm sizing" rather than
+presenting it as final.
+
+The confirming screening deck `spec/porting-plan.md` §4 item 1 calls for
+has now been run: [`sim/pass-device-screening/`](../sim/pass-device-screening/README.md)
+(issue #13) measures `Ron·W`, `Vth` and `Cgate` at the `Vin = 2.10 V` /
+`Vout = 1.80 V` dropout point, and terminal voltage/current stress at the
+`Vout = 0 V` / `Vin = 3.63 V` continuous-short condition, across the full
+`{tt,ss,ff,sf,fs} × {-40,27,125}°C` grid. **Verdict: the `sg13_hv_pmos`
+hypothesis is not rejected** — `Ron·W` and the dropout/drain-rating checks
+clear with margin — **with one quantified caveat**: at the bare-device,
+gate-fully-on worst case (no current-limit loop exists yet to relieve it),
+`|Vsg|` reaches `3.63 V` during the continuous-short condition, 10% past the
+PDK's stated `3.3 V` maximum `VGS` rating (`libs.doc/doc/SG13G2_os_process_spec.pdf`
+p.9) — see that experiment's README for the full finding, the conservative-
+bound argument for why this is a bound on the eventual current-limit design
+rather than a verdict on a finished circuit, and the implied pass-device
+width data (`records/*.csv`) the eventual `Mpass` resizing decision record
+will need. Ratifying a decision record (DR-0001) from this finding, and
+resizing `Mpass` itself, are both out of scope for issue #13 and are left to
+a follow-up.
 
 ## Error amplifier
 

@@ -1,0 +1,50 @@
+* sg13g2-ldo -- pass-device screening, sg13_hv_pmos continuous-short stress
+* bench (issue #13). Generated from
+* sim/pass-device-screening/testbench/tb_stress_pmos.spice.tmpl by
+* sim/pass-device-screening/run_sweep.sh -- do not edit a generated
+* netlist-snapshots/*.spice file directly, edit this template and re-run
+* the sweep. Full methodology and rationale are in
+* sim/pass-device-screening/README.md; this header is a short pointer.
+*
+* Generated for: device=sg13_hv_pmos w=1u l=1.0u corner=mos_fs
+* temp=125C
+* PDK: ihp-sg13g2 /Users/rwalters/share/pdk (see sim/pdk.json for the pinned release)
+* OSDI models: /Users/rwalters/share/pdk/ihp-sg13g2/libs.tech/ngspice/osdi (built by sim/tools/build-osdi.sh)
+*
+* Continuous-short current-limit condition, per spec/porting-plan.md sec
+* 2.1/2.3: Vout = 0V (dead short) at Vin_max = 3.63V (Input row's +10%
+* corner), gate at 0V (fully on -- the current-limit loop has not yet
+* engaged in this bare-device bench, so the pass device is driven as hard
+* on as it can be, the worst case for terminal stress). A single .op is
+* sufficient: with all three terminal voltages imposed by ideal DC sources,
+* |Vds|, |Vsg| and |Vdg| are algebraic consequences of the bias, not swept
+* quantities -- only the drain current (the self-heating/dissipation-
+* relevant number) is a genuine simulation result. Both are reported here
+* for a single source of truth per corner/temp point.
+
+.lib "/Users/rwalters/share/pdk/ihp-sg13g2/libs.tech/ngspice/models/cornerMOShv.lib" mos_fs
+
+.options temp=125 tnom=27
+
+Vin vin 0 dc 3.63
+Vout vout 0 dc 0
+Vg g 0 dc 0
+
+Xdut vout g vin vin sg13_hv_pmos w=1u l=1.0u ng=1 m=1
+
+.control
+pre_osdi /Users/rwalters/share/pdk/ihp-sg13g2/libs.tech/ngspice/osdi/psp103.osdi
+pre_osdi /Users/rwalters/share/pdk/ihp-sg13g2/libs.tech/ngspice/osdi/psp103_nqs.osdi
+pre_osdi /Users/rwalters/share/pdk/ihp-sg13g2/libs.tech/ngspice/osdi/mosvar.osdi
+pre_osdi /Users/rwalters/share/pdk/ihp-sg13g2/libs.tech/ngspice/osdi/r3_cmc.osdi
+op
+let id_stress = abs(i(vout))
+let vsg_stress = v(vin) - v(g)
+let vds_stress = v(vout) - v(vin)
+let vdg_stress = v(vout) - v(g)
+echo "STRESS_ID $&id_stress"
+echo "STRESS_VSG $&vsg_stress"
+echo "STRESS_VDS $&vds_stress"
+echo "STRESS_VDG $&vdg_stress"
+.endc
+.end

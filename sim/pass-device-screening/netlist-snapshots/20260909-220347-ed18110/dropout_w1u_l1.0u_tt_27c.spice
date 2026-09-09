@@ -1,0 +1,66 @@
+* sg13g2-ldo -- pass-device screening, sg13_hv_pmos dropout-point bench (issue #13)
+* Generated from
+* sim/pass-device-screening/testbench/tb_dropout_pmos.spice.tmpl by
+* sim/pass-device-screening/run_sweep.sh -- do not edit a generated
+* netlist-snapshots/*.spice file directly, edit this template and re-run
+* the sweep. Full methodology and rationale are in
+* sim/pass-device-screening/README.md; this header is a short pointer.
+*
+* Generated for: device=sg13_hv_pmos w=1u l=1.0u corner=mos_tt
+* temp=27C
+* PDK: ihp-sg13g2 /Users/rwalters/share/pdk (see sim/pdk.json for the pinned release)
+* OSDI models: /Users/rwalters/share/pdk/ihp-sg13g2/libs.tech/ngspice/osdi (built by sim/tools/build-osdi.sh)
+*
+* Mpass topology per design/ldo_core.sch (design/README.md "Pass device"):
+* common-source PMOS, source tied to VIN, drain tied to VOUT, body tied to
+* VIN (source) -- the standard PMOS body-to-highest-potential practice.
+* Modeled directly here (not instantiated from design/netlist/ldo_core.spice)
+* since this is a bare-device screening deck, not a circuit-level bench.
+*
+* Dropout test point, per spec/porting-plan.md sec 1.4/2.1:
+*   Vin = 2.10V (source), Vout = 1.80V (drain), gate at 0V (fully on) --
+*   Vin = Vout + dropout, dropout ~= 300mV, NOT Vin_min.
+*
+* Pass 1 (DC sweep): Vin/Vout held fixed at the dropout differential
+* (Vds = -0.30V as seen by the PMOS, i.e. |Vds|=0.30V) while the gate node
+* is swept from 0V (fully on -- the dropout bias point itself, first row of
+* the sweep) up to 2.4V (Vsg falls from 2.10V through 0V to -0.30V, i.e.
+* device turns off and is left slightly reverse-biased at the sweep's tail).
+* This single sweep gives Id_dropout (Ron*W's numerator) AND the raw Id-vs-Vgs
+* curve run_sweep.sh's own post-processing uses to extract Vth by the
+* constant-current method, AT THIS SAME Vds -- a deliberate choice to keep
+* Vth and Ron*W self-consistent at the actual dropout differential rather
+* than a textbook near-zero-Vds Vth definition. See README.md "Threshold
+* voltage definition".
+*
+* Pass 2 (AC): Cgate at the dropout bias (gate returned to 0V) via
+* small-signal gate current at 10MHz, same method
+* sim/gm-id-characterization/testbench/tb_gmid_pmos.spice.tmpl uses in the
+* sibling sg13g2-opamp repo (Cgg = |Im(Ig)| / (2*pi*f)).
+
+.lib "/Users/rwalters/share/pdk/ihp-sg13g2/libs.tech/ngspice/models/cornerMOShv.lib" mos_tt
+
+.options temp=27 tnom=27
+
+Vin vin 0 dc 2.10
+Vout vout 0 dc 1.80
+Vg g 0 dc 0 ac 1
+
+Xdut vout g vin vin sg13_hv_pmos w=1u l=1.0u ng=1 m=1
+
+.control
+pre_osdi /Users/rwalters/share/pdk/ihp-sg13g2/libs.tech/ngspice/osdi/psp103.osdi
+pre_osdi /Users/rwalters/share/pdk/ihp-sg13g2/libs.tech/ngspice/osdi/psp103_nqs.osdi
+pre_osdi /Users/rwalters/share/pdk/ihp-sg13g2/libs.tech/ngspice/osdi/mosvar.osdi
+pre_osdi /Users/rwalters/share/pdk/ihp-sg13g2/libs.tech/ngspice/osdi/r3_cmc.osdi
+
+dc Vg 0 2.4 0.02
+wrdata /Users/rwalters/GitHub/sg13g2-ldo/.loom/worktrees/issue-13/sim/pass-device-screening/corners/20260909-220347-ed18110/dropout_w1u_l1.0u_tt_27c_dc.csv v(g) i(vout)
+
+alter Vg = 0
+ac lin 1 10meg 10meg
+let ig = i(vg)
+let cgate = abs(imag(ig)) / (2*3.14159265358979*10meg)
+echo "DROPOUT_CGATE $&cgate"
+.endc
+.end
