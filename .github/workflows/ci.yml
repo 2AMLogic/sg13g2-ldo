@@ -25,9 +25,16 @@ name: CI
 # by 2AMLogic/klayout-tools' own fetch script) is cached across runs via
 # actions/cache to keep the steady-state cost low.
 #
+# sim/ now has one landed deck (sim/pass-device-screening/, issue #13): the
+# `pass-device-screening-check` job below runs its `run_sweep.sh --check-env`
+# mode -- a syntax check of one generated netlist per bench via `ngspice -b`,
+# NOT the full 120-point corner sweep. Per sim/README.md "CI: syntax/
+# --check-env only, never a records/ entry": CI checks that the deck still
+# parses; it never mints append-only evidence. That stays a human/agent
+# action run locally against a real PDK + OSDI install (sim/pass-device-
+# screening/README.md "Cold-start reproduction").
+#
 # Explicitly excluded from CI (not "checks" yet, so nothing to wire up):
-#   - No sim/ harness self-test -- sim/ has no testbench yet (issue #8's own
-#     Non-goals). Add an equivalent CI step once one lands.
 #   - No linter/formatter is configured for this repo yet (package.json's
 #     `lint`/`check:ci` scripts are honest "not configured" placeholders);
 #     add a CI job for either if/when one is adopted.
@@ -115,3 +122,55 @@ jobs:
           PDK_ROOT: ${{ github.workspace }}/klayout-tools/pdks/ihp-open-pdk
           PDK: ihp-sg13g2
         run: python3 design/netlist.py --check -v
+
+  pass-device-screening-check:
+    name: sim/pass-device-screening run_sweep.sh --check-env (ngspice + ihp-sg13g2 PDK)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out sg13g2-ldo
+        uses: actions/checkout@v4
+
+      - name: Check out klayout-tools (pinned, for its PDK fetch script only)
+        uses: actions/checkout@v4
+        with:
+          repository: 2AMLogic/klayout-tools
+          ref: ${{ env.KLAYOUT_TOOLS_REF }}
+          path: klayout-tools
+
+      - name: Install ngspice
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ngspice
+
+      - name: Cache IHP-Open-PDK fetch
+        id: pdk-cache
+        uses: actions/cache@v4
+        with:
+          path: klayout-tools/pdks/ihp-open-pdk
+          key: ihp-open-pdk-v${{ env.IHP_OPEN_PDK_VERSION }}
+
+      - name: Fetch ihp-sg13g2 PDK (IHP-Open-PDK, pinned + checksum-verified)
+        run: klayout-tools/scripts/fetch-ihp-sg13g2.sh
+
+      # Cache the OSDI compiler download + build output separately from the
+      # PDK fetch above -- see sim/tools/build-osdi.sh's own header for full
+      # provenance (checksum-pinned OpenVAF-Reloaded, PDK's own Verilog-A
+      # sources). Keyed on the PDK version + this script's own hash so a
+      # future compiler/pin bump invalidates the cache automatically.
+      - name: Cache OSDI compiler download
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/sg13g2-ldo
+          key: sg13g2-ldo-osdi-${{ env.IHP_OPEN_PDK_VERSION }}-${{ hashFiles('sim/tools/build-osdi.sh') }}
+
+      - name: Build OSDI device models
+        env:
+          PDK_ROOT: ${{ github.workspace }}/klayout-tools/pdks/ihp-open-pdk
+          PDK: ihp-sg13g2
+        run: sim/tools/build-osdi.sh
+
+      - name: sim/pass-device-screening run_sweep.sh --check-env
+        env:
+          PDK_ROOT: ${{ github.workspace }}/klayout-tools/pdks/ihp-open-pdk
+          PDK: ihp-sg13g2
+        run: sim/pass-device-screening/run_sweep.sh --check-env
