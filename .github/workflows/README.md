@@ -3,13 +3,14 @@
 ## `ci.yml`
 
 Runs on every push to `main`, every pull request, and on manual
-`workflow_dispatch`. It runs the one self-check that exists in this repo
-today — nothing more.
+`workflow_dispatch`. It runs two jobs: `netlist-check` and
+`pass-device-screening-check`.
 
 ### What it checks
 
-- **`python3 design/netlist.py --check`** — re-runs the `xschem` netlist
-  export for every cell in `design/*.sch` into a scratch directory and:
+- **`python3 design/netlist.py --check`** (job `netlist-check`) — re-runs
+  the `xschem` netlist export for every cell in `design/*.sch` into a
+  scratch directory and:
   1. diffs the result against the committed `design/netlist/*.spice`
      byte-for-byte (catches a schematic edit whose export was never
      re-run, and confirms the export is machine-independent/reproducible);
@@ -21,6 +22,13 @@ today — nothing more.
   3. fails if the `ldo_core` top-level pinout, or any cell's symbol-pin-vs-
      schematic-port order, has drifted from the interface `design/README.md`
      documents.
+- **`sim/pass-device-screening/run_sweep.sh --check-env`** (job
+  `pass-device-screening-check`) — builds ngspice 46 and the PDK's OSDI
+  device models, then syntax-checks one generated netlist per bench via
+  `ngspice -b` at `mos_tt`/27°C. This is **not** the full 120-point corner
+  sweep and never mints a `sim/pass-device-screening/records/` entry — see
+  "What it does NOT check (known gaps)" below and `sim/README.md`'s "CI:
+  syntax/`--check-env` only, never a `records/` entry".
 
 To do any of that, the job needs `xschem >= 3.4.7` on `PATH` and a real
 `ihp-sg13g2` PDK install — `design/netlist.py --check` isn't a syntax check,
@@ -76,9 +84,14 @@ with `actions/cache` absorbing the repeat-fetch cost instead.
 
 ### What it does NOT check (known gaps)
 
-- **No `sim/` harness self-test.** `sim/` has no testbench yet (issue #8's
-  own Non-goals, and `sim/README.md` as of this workflow's introduction).
-  Add an equivalent CI step once one lands.
+- **`pass-device-screening-check` is `--check-env` only, not a corner
+  sweep.** It syntax-checks one generated netlist per bench at `mos_tt`/27°C
+  via `ngspice -b`; it never runs the full `{tt,ss,ff,sf,fs} x
+  {-40,27,125}°C` grid and never mints a `sim/pass-device-screening/records/`
+  entry. Per `sim/README.md` "CI: syntax/`--check-env` only, never a
+  `records/` entry", minting actual evidence stays a human/agent action run
+  locally against a real PDK + OSDI install. If/when another `sim/`
+  experiment lands, add an equivalent `--check-env`-style CI step for it too.
 - **No linter/formatter.** `package.json`'s `lint` and `check:ci` scripts
   are honest "not configured" placeholders. Add a CI job for either if/when
   one is adopted.
