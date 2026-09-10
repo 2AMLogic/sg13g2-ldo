@@ -483,6 +483,9 @@ in a committed filename order:
    continuous-short condition), the SG13G2 analogue of gf180 `DR-0002` and
    sky130 `DR-001`/`DR-003` combined. This is the single most consequential
    record — nearly every other row and record below depends on it.
+   **Ratified**: [`DR-0001`](decision-records/DR-0001-pass-device-flavor.md)
+   — confirmed, with the `|Vsg|` gate-oxide finding carried forward as a
+   binding constraint on item 6 below.
 2. **Output capacitor / ESR window** — re-derived from the pass device's
    actual gate capacitance and the loop's large-signal response, sequenced
    *after* #1 per sky130 `DR-002`'s own explicit sequencing argument (the
