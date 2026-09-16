@@ -1,0 +1,98 @@
+
+Note: No compatibility mode selected!
+
+
+Circuit: * sg13g2-ldo -- sg13cmos5l closed-loop psrr bench (issue #21).
+
+Doing analysis at TEMP = -40.000000 and TNOM = 27.000000
+
+Using SPARSE 1.3 as Direct Linear Solver
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.Note: Starting dynamic gmin stepping
+Note: Dynamic gmin stepping completed
+xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+OSDI(debug) n.xtop.xamp.xrz.nr1: WARNING: V(i1,c) voltage is greater than specified by vmax
+
+No. of Data Rows : 161
+Note: Simulation executed from .control section 

@@ -181,7 +181,62 @@ independently trustworthy pending real silicon characterization), but the
 qualitative verdict (this compensation network has essentially no margin)
 does not depend on that caveat.
 
-## Results
+## Results (issue #25, post-resize -- current sizing)
+
+**Every spec row now passes at every corner.** Issue #25 resized `Mpass`
+and re-derived the error-amp's `Cc`/`Rz` compensation network and bias
+currents against the pre-resize evidence below (full derivation:
+[`spec/decision-records/DR-0003-sg13cmos5l-mpass-resize-and-compensation.md`](../../spec/decision-records/DR-0003-sg13cmos5l-mpass-resize-and-compensation.md)),
+then re-ran this same unmodified harness against the resized schematic.
+
+Record cited: [`records/20260916-112842-c25ff53.csv`](records/20260916-112842-c25ff53.csv)
+(main 15-point PVT grid) and
+[`records/20260916-112842-c25ff53.sensitivity.csv`](records/20260916-112842-c25ff53.sensitivity.csv)
+(Cc-value / Rz-corner sensitivity) -- see
+[`records/20260916-112842-c25ff53.md`](records/20260916-112842-c25ff53.md)
+for the full run manifest. `51/51` simulation points passed (ngspice exit
+0, no convergence/model-load errors); completeness matrix OK.
+
+| Parameter | Target | Before (#21, pre-resize) | After (#25, this record) | Verdict |
+|---|---|---|---|---|
+| Output accuracy | 1.8V +/-2% | 1.80022V-1.80040V | 1.80023V-1.80064V | **PASS** |
+| Dropout @ 50mA | < 300mV worst corner | 1.29V-1.83V, 4/15 corners never regulate | 0.20V-0.24V (worst `ss/125C`), all corners regulate | **PASS** (was FAIL) |
+| Line regulation | < 5 mV/V | 0.151-0.200 mV/V | 0.162-0.245 mV/V | **PASS** (no-load only -- see caveat below) |
+| Load regulation | < 1% over full load | 0.021%-248%, 4/15 corners fail | 0.0076%-0.025% | **PASS** (was FAIL) |
+| Iq, no load | < 30uA | 16.94uA-16.99uA | 21.87uA-22.98uA | **PASS** (higher due to raised bias currents, still well under target) |
+| Iq, full load | < 30uA | not separable from the dropout failure | 23.05uA-23.08uA | **PASS** (newly measurable and passing) |
+| PSRR @ 1kHz | > 50dB | 65.9dB-69.3dB | 58.21dB-61.85dB | **PASS** (reduced margin -- see DR-0003 "PSRR trade-off") |
+| PSRR @ 100kHz | > 20dB | 35.8dB-40.6dB | 33.82dB-35.28dB | **PASS** |
+| Stability: phase margin | >= 45 deg worst corner | 0.19deg-0.35deg | 54.40deg-72.72deg | **PASS** (was FAIL) |
+| Stability: gain margin | >= 10dB worst corner | 4.0dB-5.4dB | 17.07dB-25.87dB | **PASS** (was FAIL) |
+| Current limit | 65-80mA brickwall | n/a | n/a | **not implemented** (`design/README.md` "Known gaps": no current-limit circuit exists on this branch) |
+| Startup | monotonic ramp, <2% within 3ms | n/a | n/a | **not implemented** (no soft-start circuit) |
+| Enable/shutdown | -- | n/a | n/a | **not implemented** (no `EN` pin on this branch) |
+
+Cc-value (`0.5x`-`2x` nominal) / Rz-corner (`res_bcs`/`res_typ`/`res_wcs`)
+sensitivity, re-swept at the new nominal, `tt/27C`: phase margin
+56.9deg-76.4deg, gain margin 18.6dB-23.5dB across both sweeps -- the PASS
+verdict holds across the full sensitivity range tested, mirroring the
+same "verdict does not depend on the uncharacterized `Cc` value" reasoning
+the pre-resize FAIL verdict established (`cornerCAP.lib` still maps every
+corner/mismatch/stat section to the same nominal `cap_cmomi` model at this
+PDK's pin, so the *exact* numbers above remain `insufficient-evidence`
+pending real CMOS5L MoM-cap silicon characterization, even though the
+qualitative PASS verdict does not depend on that caveat).
+
+**Line-regulation caveat**: measured at no load only (see "Benches" above
+for why) -- unchanged from the pre-resize record.
+
+No spec row required relaxation to reach this result, per CLAUDE.md's rule
+that verification results are never relaxed to pass.
+
+## Results (issue #21, pre-resize -- historical, kept for evidence provenance)
+
+**This section is preserved unmodified as the append-only record of the
+first verification pass** (`sim/` results are append-only evidence per
+CLAUDE.md) -- the sizing it describes no longer matches the current
+schematic; see "Results (issue #25, post-resize)" above for the current
+state.
 
 Record cited throughout: [`records/20260916-083154-7aa1d3f.csv`](records/20260916-083154-7aa1d3f.csv)
 (main 15-point PVT grid) and
@@ -263,9 +318,11 @@ schematic's drawn `300um` -- this experiment's closed-loop dropout failure
 is consistent with, and adds circuit-level confirmation of, that earlier
 bare-device finding).
 
-#25 tracks the resizing pass this evidence motivates (`Mpass` width, and the
-`Cc`/`Rz` compensation network) -- see that issue for the next step; it is
-out of scope for this verification-only phase.
+#25 is the resizing pass this evidence motivated (`Mpass` width, and the
+`Cc`/`Rz` compensation network) -- see "Results (issue #25, post-resize)"
+above for the outcome; it was out of scope for this original
+verification-only phase, and is captured in full in
+[`DR-0003`](../../spec/decision-records/DR-0003-sg13cmos5l-mpass-resize-and-compensation.md).
 
 ## CI
 

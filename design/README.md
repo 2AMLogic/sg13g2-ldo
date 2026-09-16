@@ -185,20 +185,23 @@ Schematic capture for the SG13CMOS5L port, against the `ihp-sg13cmos5l` PDK
 (issue #20, phase 2/4 of the port tracked by #12, Epic `2AMLogic/2am#542`
 Phase 5A).
 
-> **Status: PVT-verified (issue #21, phase 3/4) — and the provisional
-> sizing this section documents does not hold up.** The closed loop is now
-> simulated across the full `{tt,ss,ff,sf,fs} × {-40,27,125}°C` grid:
-> [`sim/ldo-cmos5l-pvt-sweep/README.md`](../sim/ldo-cmos5l-pvt-sweep/README.md)
-> has the full spec table. Headline results: output accuracy, quiescent
-> current (no load), and PSRR all **pass** with margin; dropout @ 50mA
-> (1.29V–1.83V worst reachable, several corners never reach regulation at
-> all vs. a 300mV target), load regulation (fails at the same severe
-> corners), and loop stability (phase margin ≈0.2–0.35° vs. a 45° target,
-> essentially independent of the `Cc`/`Rz` sensitivity range tested) all
-> **fail** — consistent with, and now circuit-level confirmation of, the
-> undersizing `sim/pass-device-screening/` already implied for `Mpass` on
-> the SG13G2 branch's identical device flavor. Layout/DRC/LVS is phase 4
-> (#22); a resizing pass this evidence motivates is tracked as #25.
+> **Status: PVT-verified and re-sized (issues #21 and #25, phase 3/4) —
+> every spec row now passes.** #21's first closed-loop PVT sweep (the full
+> `{tt,ss,ff,sf,fs} × {-40,27,125}°C` grid) found the phase-2 provisional
+> sizing this section originally documented missed dropout by 4–7× and
+> never reached regulation at all at 4/15 corners, with phase margin
+> ≈0.2–0.35° (target 45°) essentially independent of `Cc`/`Rz` sensitivity.
+> #25 resized `Mpass` (`300u`→`2800u`) and re-derived the error amp's
+> `Cc`/`Rz` compensation and bias currents against that evidence; the
+> re-run sweep now **passes every spec row at every corner** — dropout
+> 0.20–0.24V (worst `ss/125°C`), load regulation ≤0.025%, phase margin
+> 54.4–72.7° worst-case, gain margin 17.1–25.9dB worst-case, PSRR
+> 58.2–61.9dB @ 1kHz / 33.8–35.3dB @ 100kHz, Iq 21.9–23.1µA (no load and
+> full load both), output accuracy 1.80023–1.80064V. Full spec table,
+> before/after evidence, and the pole/zero re-derivation:
+> [`sim/ldo-cmos5l-pvt-sweep/README.md`](../sim/ldo-cmos5l-pvt-sweep/README.md),
+> [`spec/decision-records/DR-0003-sg13cmos5l-mpass-resize-and-compensation.md`](../spec/decision-records/DR-0003-sg13cmos5l-mpass-resize-and-compensation.md).
+> Layout/DRC/LVS is phase 4 (#22).
 
 ### Cells
 
@@ -284,14 +287,18 @@ ideal VCVS with no gain stage, bias network, or compensation.
 body at `VIN` (the source) — DR-0002 Decision (a), the same flavour and
 topology `DR-0001` ratified for SG13G2.
 
-**Sizing is not ratified** — DR-0002 says so in as many words ("Sizing is
-explicitly not decided here … #20/#21 own it"). `w=300u l=0.5u ng=1 m=1` is
-a DC-sanity first cut for connectivity/ERC, chosen to match the SG13G2
-branch's own provisional value so that a phase-3 comparison between the two
-branches is not confounded by a sizing difference. It is **not** sized
-against any dropout, current-limit, or area target. `l=0.5u` is the one
-non-arbitrary part: the process spec rates HV `VGS ≤ 3.3 V` only at
-`LG ≥ 0.5 µm`.
+**Sizing was resized by #25 from the phase-2 DC-sanity first cut.**
+`w=2800u l=0.5u ng=1 m=1` replaces the original `w=300u`, which #21's
+closed-loop PVT sweep found missed the 300mV dropout target by 4–7× and
+never reached regulation at all at 4/15 corners. `w=2800u` is derived from
+`sim/pass-device-screening`'s bare-device implied-width data (worst corner
+~2169–2350µm for 300mV/50mA) plus ~20–30% headroom for this closed-loop
+bench's discretized dropout-scan step and for interaction with the
+re-derived compensation network below; the re-run sweep confirms dropout
+0.20–0.24V (worst `ss/125°C`) against the 300mV target. `l=0.5u` is
+unchanged and still not arbitrary: the process spec rates HV
+`VGS ≤ 3.3 V` only at `LG ≥ 0.5 µm`. Full derivation:
+[`spec/decision-records/DR-0003-sg13cmos5l-mpass-resize-and-compensation.md`](../spec/decision-records/DR-0003-sg13cmos5l-mpass-resize-and-compensation.md).
 
 `DR-0001`'s carried-forward `|Vsg| ≤ 3.3 V` constraint is inherited by this
 branch and binds whatever current-limit loop it eventually grows — there is
@@ -327,31 +334,44 @@ sinks harder → `G1` falls → `Mn3` conducts less → `Mload2` pulls `OUT` up 
 
 #### Judgement calls this phase made that DR-0002 did not
 
-These are first-cut engineering choices, **not ratified decisions**, and
-none of them has a testbench behind it yet:
+The bias-mirror ratios and the `Cc`/`Rz` compensation network were
+re-derived by #25 against #21's closed-loop PVT evidence; see
+[`DR-0003`](../spec/decision-records/DR-0003-sg13cmos5l-mpass-resize-and-compensation.md)
+for the full pole/zero reasoning. These remain first-cut engineering
+choices — what the current PVT record supports, not a claim of
+optimality:
 
 1. **Bias scheme: an external `IBIAS` current input, mirrored on-block.**
    `Mb0` is a diode-connected `sg13_hv_pmos` from `VDD` whose gate/drain
-   node *is* the `IBIAS` pin; `Mtail` (`m=2`) and `Mload2` (`m=4`) mirror
-   from it, so an external sink of `Iref` sets tail = `2·Iref` and second
-   stage = `4·Iref`. Chosen over a `VBIAS` *voltage* port (would not track
-   the mirror's `Vsg` over PVT) and over an on-block resistor self-bias
+   node *is* the `IBIAS` pin; `Mtail` (`m=3`, raised from #20's `m=2` by
+   #25) and `Mload2` (`m=6`, raised from `m=4`) mirror from it, so an
+   external sink of `Iref` sets tail = `3·Iref` and second stage =
+   `6·Iref`. Chosen over a `VBIAS` *voltage* port (would not track the
+   mirror's `Vsg` over PVT) and over an on-block resistor self-bias
    (current becomes a direct function of the supply — bad PSRR in a
    regulator). An external current input is also the consistent interface
    for a block DR-0002 keeps bandgap-free: the reference is off-block, so
-   the bias should be too, and a phase-3 testbench can sweep it.
-2. **Nulling resistor `Rz`: included.** The RHP zero of a Miller stage sits
-   at `gm2/Cc`; at the ~8 µA second-stage bias this Iq budget allows, `gm2`
-   is order 1e-4 S, so that zero lands close enough to the intended
-   unity-gain frequency that omitting `Rz` is not defensible. Sized for the
-   textbook `Rz ≈ 1/gm2` first cut. **Issue #21 found phase margin is
-   essentially zero (≈0.2–0.35°, vs. a 45° target) regardless of `Rz`'s
-   corner** (`res_bcs`/`res_typ`/`res_wcs`, sensitivity-swept at nominal
-   `tt/27°C`) or `Cc`'s value (`0.5×`–`2×` nominal) — this compensation
-   network has no margin budget to lose in the first place, so the
-   fixed-resistor-spread refinement this note originally anticipated is not
-   the binding problem; a resizing/re-compensation pass is the actual next
-   step (`sim/ldo-cmos5l-pvt-sweep/README.md` "Results", tracked as #25).
+   the bias should be too, and a testbench can sweep it. The higher
+   mirror ratios speed up the first/second stage's own `gm` (see item 2)
+   while keeping Iq inside budget — confirmed at 21.9–23.1µA (no load and
+   full load) against the 30µA target.
+2. **Nulling resistor `Rz`: included, and substantially enlarged by #25**
+   (`l`: `5.3µm`→`1200µm`, `w` unchanged at the PDK's `rhigh` minimum,
+   `1µm`) from the phase-2 textbook `Rz≈1/gm2` first cut. **Issue #21
+   found that first cut alone left phase margin essentially zero
+   (≈0.2–0.35°, vs. a 45° target) regardless of `Rz`'s corner**
+   (`res_bcs`/`res_typ`/`res_wcs`) or `Cc`'s value (`0.5×`–`2×` nominal).
+   #25's re-derivation instead uses the enlarged `Rz` (in series with the
+   enlarged `Cc` below) to place a deliberate left-half-plane phase-lead
+   zero near the loop's unity-gain crossover (empirically ~50–140kHz
+   across the PVT grid at this sizing) — a standard technique for
+   reclaiming margin when a bare RHP-zero-cancellation estimate is
+   insufficient, at the cost of a much larger resistor (implied ~1.2–1.7
+   MΩ at `rhigh`'s corner spread, a schematic-level-only 1200:1 aspect
+   ratio deferred to phase 4's meandered layout). Re-run: phase margin
+   54.4–72.7° worst-case, gain margin 17.1–25.9dB worst-case, both across
+   the full 15-corner grid and the Cc-value/Rz-corner sensitivity sweeps
+   (`sim/ldo-cmos5l-pvt-sweep/README.md` "Results", tracked as #25).
 3. **`Rz` is a PDK `rhigh`, while the feedback divider is still behavioral
    `res.sym`.** `cornerRES.lib` gives `rhigh` a real corner spread (unlike
    `cornerCAP.lib`'s `Cc`, which has none at this PDK's pin — see the MoM-cap
@@ -370,43 +390,53 @@ none of them has a testbench behind it yet:
    declaration, so `sub!` would netlist as an undeclared, floating local
    node. This is the same "`VSS` is an explicit pin, never an implicit
    global-ground alias" rule the SG13G2 branch already follows.
-5. **Sizing generally** is a DC-sanity first cut, exactly as `Mpass`'s is.
-   `L ≥ 1 µm` on every amplifier device (the HV `VGS ≤ 3.3 V` rating needs
-   `LG ≥ 0.5 µm`, and longer channels buy the matching and output
-   resistance a 16–26 µA amplifier needs). `ng=1` throughout — fingering is
-   a phase-4 layout concern.
+5. **Sizing generally** is a DC-sanity first cut for every device #25 did
+   not touch — `Mb0`/`Minp`/`Minn`/`Mn1`/`Mn2`/`Mn3` keep #20's original
+   widths; only `Mtail`/`Mload2`'s mirror ratios and the `Cc`/`Rz`
+   compensation values changed in #25 (see items 1–2 above and `Mpass`
+   above). `L ≥ 1 µm` on every amplifier device (the HV `VGS ≤ 3.3 V`
+   rating needs `LG ≥ 0.5 µm`, and longer channels buy the matching and
+   output resistance a micro-power amplifier needs). `ng=1` throughout —
+   fingering is a phase-4 layout concern.
 
 | Device | Flavour | Size | Role |
 | ------ | ------- | ---- | ---- |
-| `Mpass` | `sg13_hv_pmos` | `w=300u l=0.5u m=1` | pass device |
+| `Mpass` | `sg13_hv_pmos` | `w=2800u l=0.5u m=1` | pass device |
 | `Mb0` | `sg13_hv_pmos` | `w=5u l=2u m=1` | bias mirror reference (gate/drain = `IBIAS`) |
-| `Mtail` | `sg13_hv_pmos` | `w=5u l=2u m=2` | tail current source |
+| `Mtail` | `sg13_hv_pmos` | `w=5u l=2u m=3` | tail current source |
 | `Minp` / `Minn` | `sg13_hv_pmos` | `w=20u l=1u m=1` | input pair (`FB` / `VREF`) |
 | `Mn1` / `Mn2` | `sg13_hv_nmos` | `w=5u l=1u m=1` | first-stage mirror (diode / output leg) |
 | `Mn3` | `sg13_hv_nmos` | `w=20u l=1u m=1` | second-stage common source |
-| `Mload2` | `sg13_hv_pmos` | `w=5u l=2u m=4` | second-stage current-source load |
-| `Cc` | `cap_cmomi` | `w=l=30 µm`, M1–M4 | Miller cap, **≈0.95 pF** |
-| `Rz` | `rhigh` | `w=1u l=5.3u b=0` | nulling resistor, **≈7.7 kΩ** |
+| `Mload2` | `sg13_hv_pmos` | `w=5u l=2u m=6` | second-stage current-source load |
+| `Cc` | `cap_cmomi` | `w=100u l=30u`, M1–M4 | Miller cap, **≈3.2 pF** |
+| `Rz` | `rhigh` | `w=1u l=1200u b=0` | nulling/phase-lead resistor, **≈1.70 MΩ** |
 | `Rtop` / `Rbot` | `res.sym` | `300k` each | feedback divider, `FB = VOUT/2` |
 
-The implied first-cut operating point at `Iref = 2 µA`: 2 µA mirror
-reference + 4 µA tail + 8 µA second stage = 14 µA in the amplifier, plus
-2 µA in the divider = **16 µA**, at the bottom of
-`spec/porting-plan.md`'s 16–26 µA total-block allocation. **No simulation
-backs that number** — it is arithmetic on the mirror ratios.
+The operating point implied by the sizes above, at `Iref = 2 µA`: 2 µA
+mirror reference + 6 µA tail + 12 µA second stage = 20 µA in the
+amplifier, plus 2 µA in the divider = **22 µA** nominal, confirmed by
+#25's closed-loop sweep at 21.9–23.0µA (no load) and 23.05–23.08µA (full
+load, 50mA) across the full PVT grid — comfortably inside
+`spec/porting-plan.md`'s 16–26 µA allocation and the ratified <30µA Iq
+target at both load points.
 
-`Cc`'s ≈0.95 pF is computed by the PDK's own display helper
+`Cc`'s ≈3.2 pF and `Rz`'s ≈1.70 MΩ are computed the same way the
+phase-2 values were: `Cc` by the PDK's own display helper
 (`libs.tech/xschem/sg13cmos5l_pr/cap_cmomi.tcl`, which reproduces
-`cap_cmomi.va`'s low-frequency capacitance: 1.09 fF/µm² over an M1–M4
-stack). `Rz`'s ≈7.7 kΩ is that symbol's own `value` expression evaluated at
-`w=1 µm`, `l=5.3 µm`, `b=0`.
+`cap_cmomi.va`'s low-frequency capacitance, ≈1.09 fF/µm² over an M1–M4
+stack, scaled from the original 30µm-square ≈0.95pF figure by area); `Rz`
+by that symbol's own `value` expression evaluated at `w=1 µm`,
+`l=1200 µm`, `b=0` (`rhigh.sym`'s `value=expr_eng(...)`, using
+`res_typ`'s ≈1360 Ω/sq — the corner sweep in
+`sim/ldo-cmos5l-pvt-sweep/records/` shows the real `res_bcs`/`res_wcs`
+spread, roughly ≈1.2–1.7 MΩ).
 
 ### PDK caveats honoured (evidence rules carried in)
 
 | Caveat | How this branch honours it |
 | ------ | -------------------------- |
 | **No MIM caps** — `cmim`/`rfcmim` need a layer this PDK forbids | The only capacitor in the hierarchy is `cap_cmomi`, a MoM cap. No MIM symbol is instantiated anywhere. |
-| **MoM caps are not validated on CMOS5L silicon** — `cornerCAP.lib` maps every corner/mismatch/stat section to the same nominal model | **Every result that depends on `Cc`'s value is `insufficient-evidence`** — confirmed by issue #21's own reading of `cornerCAP.lib` at this PDK's pin (every section maps to the identical nominal `cap_cmomi` model). That includes every phase- and gain-margin claim about this loop. Selecting a cap corner is a no-op on this PDK, so #21 ran a *value* sensitivity sweep instead (`Cc` width `0.5×`/`1×`/`2×` nominal, at `tt/27°C`): phase margin moved between `0.19°` and `0.35°` across that whole range — the near-zero-margin verdict itself does not depend on the uncharacterized `Cc` value, even though the exact number remains `insufficient-evidence` pending real silicon characterization (`sim/ldo-cmos5l-pvt-sweep/README.md` "MoM-cap (Cc) sensitivity sweep"). |
+| **MoM caps are not validated on CMOS5L silicon** — `cornerCAP.lib` maps every corner/mismatch/stat section to the same nominal model | **Every result that depends on `Cc`'s value is `insufficient-evidence`** — confirmed by issue #21's own reading of `cornerCAP.lib` at this PDK's pin (every section maps to the identical nominal `cap_cmomi` model). That includes every phase- and gain-margin claim about this loop. Selecting a cap corner is a no-op on this PDK, so #21 ran a *value* sensitivity sweep instead (`Cc` width `0.5×`/`1×`/`2×` nominal, at `tt/27°C`): with the phase-2 sizing, phase margin moved between `0.19°` and `0.35°` across that whole range — the near-zero-margin verdict itself did not depend on the uncharacterized `Cc` value. #25 re-ran the same sensitivity sweep at the resized `Cc`/`Rz` and found the PASS verdict holds the same way: phase margin `56.9°`–`76.4°` and gain margin `18.6dB`–`23.5dB` across both the `0.5×`–`2×` nominal `Cc` value sweep and the `res_bcs`/`res_typ`/`res_wcs` `Rz` corner sweep — the qualitative verdict (now PASS) still does not depend on the uncharacterized `Cc` value, even though the exact numbers remain `insufficient-evidence` pending real silicon characterization (`sim/ldo-cmos5l-pvt-sweep/README.md` "MoM-cap (Cc) sensitivity sweep"). |
 | **No isolated NMOS** in this PDK's design kit | Honoured by construction: the only NMOS flavour used is `sg13_hv_nmos`. |
 | **M1–M4 + TM1 metal stack only** | `Cc` is declared `mmin=1 mmax=4` — an M1–M4 MoM stack. Nothing in this branch's sources or documentation references a second thick top metal. |
 | **Bipolar input stage is structurally ruled out** (no HBT; `pnpMPA`'s collector is the substrate and β ≈ 1.1) | No bipolar device is instantiated. DR-0002 §"The installed PDK tree, read directly" is the evidence. |
@@ -417,6 +447,14 @@ stack). `Rz`'s ≈7.7 kΩ is that symbol's own `value` expression evaluated at
   flavour.** Phase 4 (#22) needs a real `rsil`/`rppd`/`rhigh` divider before
   LVS can see it. Inherited deferral from the SG13G2 branch, restated here
   because it becomes blocking one phase sooner on this one.
+- **`Mpass` (`w=2800u`) and `Rz` (`l=1200u`, implied ~1.2–1.7MΩ) are both
+  large, schematic-level-only draws #25 sized purely against electrical
+  targets.** Neither has a floorplanned layout yet — `Mpass` needs
+  multi-finger/multi-row layout (`ng`/`m` are both still `1`) and `Rz`
+  needs the PDK's own `rhigh` PCell meandering (`b` bends parameter,
+  currently `0`) to fit a practical die area. Both are phase-4 (#22)
+  layout concerns, not schematic-capture ones — DR-0003 records this
+  explicitly rather than leaving it implicit.
 - **No enable, current limit, soft start, output capacitor, load, or
   start-up circuit.** Same scope boundary as the SG13G2 branch. Note that a
   self-biased mirror needs no start-up circuit only because `IBIAS` is
