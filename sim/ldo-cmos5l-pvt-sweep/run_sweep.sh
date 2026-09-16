@@ -34,24 +34,42 @@
 #   - tb_loopgain_cmos5l.spice.tmpl: loop broken at FB (a high-impedance
 #     node) -> phase margin, gain margin, DC loop gain.
 #   - tb_psrr_cmos5l.spice.tmpl: closed-loop AC on Vin -> PSRR @ 1kHz/100kHz.
-# across the full process x temperature grid {tt,ff,ss,sf,fs} x
-# {-40,27,125}C = 15 points (cornerMOShv.lib's five sections -- confirmed
-# byte-identical to ihp-sg13g2's own copy at this PDK's pin, see
-# sim/pdk-cmos5l.json), PLUS two small sensitivity sweeps at the nominal
-# tt/27C corner only:
+# across the full process x temperature x RESISTOR-corner grid
+# {tt,ff,ss,sf,fs} x {-40,27,125}C x {res_typ,res_bcs,res_wcs} = 45 points
+# (cornerMOShv.lib's five sections -- confirmed byte-identical to
+# ihp-sg13g2's own copy at this PDK's pin, see sim/pdk-cmos5l.json --
+# crossed with cornerRES.lib's own three-point axis).
+#
+# The resistor axis was HELD at res_typ across the main grid for the #21 and
+# #25 runs and is CROSSED in full from issue #31 onward. Reason: until #28
+# the feedback divider was a pair of behavioural 300k res.sym resistors,
+# corner-independent by construction, so the only rhigh in the loop was the
+# error amp's nulling resistor Rz and a separate tt/27C-only Rz sensitivity
+# experiment covered it. Since #28 the divider is two real PDK rhigh
+# instances, and the same @@RES_SECTION@@ substitution is global across the
+# netlist -- so the resistor corner now moves the divider's absolute
+# impedance (and its standing current) as well as Rz, at every MOS/temp
+# point, and holding it at nominal would leave that spread unverified.
+# This supersedes README.md's earlier "no established MOS-corner/R-corner
+# correlation convention exists, so hold R at nominal" judgement call in the
+# only way that does not require inventing one: the resistor axis is swept
+# INDEPENDENTLY and reported per point, so every (MOS, temp) pair is
+# reported against all three resistor sections rather than against one
+# assumed-correlated section.
+#
+# PLUS two small sensitivity sweeps at the nominal tt/27C corner only:
 #   - Cc (Miller cap) value sensitivity {0.5x,1x,2x} -- cornerCAP.lib maps
 #     every corner/mismatch/stat section to the SAME nominal cap_cmomi
 #     model (no characterised corner spread exists for this PDK's MoM
 #     caps), so a PROCESS-corner sweep over Cc is a no-op; this VALUE
 #     sensitivity sweep is what design/README.md's "PDK caveats honoured"
 #     table says this issue owes instead.
-#   - Rz (nulling resistor) corner sensitivity {res_bcs,res_typ,res_wcs} --
-#     rhigh DOES have a real, characterised corner spread (cornerRES.lib),
-#     unlike Cc; this experiment holds Rz at res_typ across the main 15
-#     point PVT grid (there is no established MOS-corner/R-corner
-#     correlation convention in this repo yet -- see README.md "Resistor
-#     corner: held at nominal across the MOS sweep, checked separately")
-#     and checks its own spread's effect on phase margin here instead.
+#   - Resistor-corner sensitivity {res_bcs,res_typ,res_wcs} at tt/27C --
+#     retained from the #21/#25 runs (where it was labelled "Rz corner
+#     sensitivity", because Rz was then the only rhigh in the loop) so the
+#     sensitivity CSV stays row-comparable across records. Since #28 this
+#     knob moves Rz AND the feedback divider together, which is why it is
+#     labelled res_corner rather than rz_corner from #31 onward.
 set -euo pipefail
 
 CHECK_ENV=0
@@ -97,17 +115,17 @@ fi
 # --- Sync-check: tb_loopgain_cmos5l.spice.tmpl flattens ldo_core_cmos5l one
 # level (to insert the loop-gain break at FB, a high-impedance node -- see
 # that template's header for the full derivation) by hand-mirroring its
-# XMpass/Rtop/Rbot/Xamp instantiation lines. If a future schematic edit
+# XMpass/XRtop/XRbot/Xamp instantiation lines. If a future schematic edit
 # changes that connectivity, this bench would silently go stale -- so
 # diff the mirrored lines against the actual generated netlist every run,
 # not just at authoring time. ---
 assert_loopgain_topology_sync() {
   local body expected
-  body="$(awk '/^\.subckt ldo_core_cmos5l /,/^\.ends/' "${DESIGN_NETLIST}" | grep -E '^(XMpass|Rtop|Rbot|Xamp) ')"
+  body="$(awk '/^\.subckt ldo_core_cmos5l /,/^\.ends/' "${DESIGN_NETLIST}" | grep -E '^(XMpass|XRtop|XRbot|Xamp) ')"
   expected="$(cat <<'EOF'
 XMpass VOUT EAOUT VIN VIN sg13_hv_pmos w=2800u l=0.5u ng=1 m=1
-Rtop VOUT FB 300k m=1
-Rbot FB VSS 300k m=1
+XRtop VOUT FB VSS rhigh w=1e-6 l=25.43e-6 m=1 b=7
+XRbot FB VSS VSS rhigh w=1e-6 l=25.43e-6 m=1 b=7
 Xamp FB VREF EAOUT VIN VSS IBIAS ldo_erramp_cmos5l
 EOF
 )"
@@ -168,11 +186,26 @@ CORNERS_OUT="${EXPERIMENT_DIR}/corners/${RECORD_ID}"
 RECORDS_DIR="${EXPERIMENT_DIR}/records"
 CSV_OUT="${RECORDS_DIR}/${RECORD_ID}.csv"
 SENS_CSV_OUT="${RECORDS_DIR}/${RECORD_ID}.sensitivity.csv"
+DELTA_CSV_OUT="${RECORDS_DIR}/${RECORD_ID}.delta.csv"
 MD_OUT="${RECORDS_DIR}/${RECORD_ID}.md"
 mkdir -p "${SNAPSHOTS_OUT}" "${CORNERS_OUT}" "${RECORDS_DIR}"
 
 CORNERS=(tt ss ff sf fs)
 TEMPS=(-40 27 125)
+# Resistor-corner axis (cornerRES.lib), crossed with the MOS x temp grid in
+# full since issue #31 -- see this script's header for why it is swept
+# rather than held at nominal, and why it is swept INDEPENDENTLY rather
+# than correlated to the MOS corner. Labels here; sections are res_<label>.
+RES_LABELS=(typ bcs wcs)
+
+# Pre-conversion baseline this run is compared against: the #25 (post-
+# Mpass-resize, pre-#28) record, taken with the behavioural 300k res.sym
+# divider. The before/after/delta table in the generated record is derived
+# from this file. Pinned by name on purpose -- sim/ records are append-only
+# evidence, so this path is stable, and a future re-baselining is an
+# explicit edit here rather than an implicit "whatever the newest record
+# happens to be".
+BASELINE_CSV="${RECORDS_DIR}/20260916-112842-c25ff53.csv"
 
 total=0
 passed=0
@@ -217,22 +250,22 @@ run_ngspice() {
   return 0
 }
 
-# --- Main 15-point PVT grid: dcsweep + loopgain + psrr at each point ---
+# --- Main 45-point PVT x resistor-corner grid: dcsweep + loopgain + psrr
+# at each point. Point ids carry the resistor section explicitly (the
+# "_r<label>" suffix) so every artifact under corners/ and
+# netlist-snapshots/ states, in its own filename, which cornerRES.lib
+# section produced it -- issue #31 AC2. ---
 for corner in "${CORNERS[@]}"; do
   for temp in "${TEMPS[@]}"; do
-    mos_section="mos_${corner}"
-
-    point_id="dcsweep_${corner}_${temp}c"
-    netlist="$(gen_netlist dcsweep "${point_id}" "${mos_section}" res_typ cap_typ "${temp}" "${DESIGN_NETLIST}" "100u (nominal)")"
-    run_ngspice "${point_id}" "${netlist}" || true
-
-    point_id="loopgain_${corner}_${temp}c"
-    netlist="$(gen_netlist loopgain "${point_id}" "${mos_section}" res_typ cap_typ "${temp}" "${DESIGN_NETLIST}" "100u (nominal)")"
-    run_ngspice "${point_id}" "${netlist}" || true
-
-    point_id="psrr_${corner}_${temp}c"
-    netlist="$(gen_netlist psrr "${point_id}" "${mos_section}" res_typ cap_typ "${temp}" "${DESIGN_NETLIST}" "100u (nominal)")"
-    run_ngspice "${point_id}" "${netlist}" || true
+    for rlabel in "${RES_LABELS[@]}"; do
+      mos_section="mos_${corner}"
+      res_section="res_${rlabel}"
+      for bench in dcsweep loopgain psrr; do
+        point_id="${bench}_${corner}_${temp}c_r${rlabel}"
+        netlist="$(gen_netlist "${bench}" "${point_id}" "${mos_section}" "${res_section}" cap_typ "${temp}" "${DESIGN_NETLIST}" "100u (nominal)")"
+        run_ngspice "${point_id}" "${netlist}" || true
+      done
+    done
   done
 done
 
@@ -261,12 +294,17 @@ for label in 0.5x 1x 2x; do
   run_ngspice "${point_id}" "${netlist}" || true
 done
 
-# --- Rz (nulling resistor) corner sensitivity, at tt/27C only, nominal Cc ---
-for label_section in "bcs:res_bcs" "typ:res_typ" "wcs:res_wcs"; do
-  label="${label_section%%:*}"
-  res_section="${label_section##*:}"
-  point_id="loopgain_rzsens_${label}_tt_27c"
-  netlist="$(gen_netlist loopgain "${point_id}" mos_tt "${res_section}" cap_typ 27 "${DESIGN_NETLIST}" "100u (nominal)")"
+# --- Resistor-corner sensitivity, at tt/27C only, nominal Cc. Retained
+# from #21/#25 (where it was named "rzsens", Rz being the only rhigh in the
+# loop then) so the sensitivity CSV stays row-comparable across records;
+# renamed "ressens" from #31 onward because since #28 this same
+# cornerRES.lib section also moves the feedback divider. These three points
+# duplicate the tt/27C slice of the main grid above by construction -- that
+# redundancy is deliberate (it is the cross-check that the main grid's new
+# resistor axis and this pre-existing experiment agree). ---
+for label in bcs typ wcs; do
+  point_id="loopgain_ressens_${label}_tt_27c"
+  netlist="$(gen_netlist loopgain "${point_id}" mos_tt "res_${label}" cap_typ 27 "${DESIGN_NETLIST}" "100u (nominal)")"
   run_ngspice "${point_id}" "${netlist}" || true
 done
 
@@ -275,13 +313,18 @@ if [[ ${passed} -eq 0 ]]; then
   exit 1
 fi
 
-# --- Post-process everything into the two record CSVs ---
-python3 - "${CORNERS_OUT}" "${CSV_OUT}" "${SENS_CSV_OUT}" "${CORNERS[*]}" "${TEMPS[*]}" <<'PYEOF'
-import csv, sys, math
+# --- Post-process everything into the record CSVs + the before/after/delta
+# markdown fragment that gets inlined into the record below ---
+CMP_MD_FRAGMENT="${CORNERS_OUT}/_before_after_delta.md"
+python3 - "${CORNERS_OUT}" "${CSV_OUT}" "${SENS_CSV_OUT}" "${CORNERS[*]}" "${TEMPS[*]}" \
+         "${RES_LABELS[*]}" "${BASELINE_CSV}" "${DELTA_CSV_OUT}" "${CMP_MD_FRAGMENT}" <<'PYEOF'
+import csv, sys, math, os
 
-corners_dir, csv_out, sens_csv_out, corners_str, temps_str = sys.argv[1:6]
+(corners_dir, csv_out, sens_csv_out, corners_str, temps_str,
+ res_labels_str, baseline_csv, delta_csv_out, cmp_md_out) = sys.argv[1:10]
 CORNERS = corners_str.split()
 TEMPS = [t for t in temps_str.split()]
+RES_LABELS = res_labels_str.split()
 
 VOUT_TARGET = 1.8
 VIN_MIN, VIN_MAX, VIN_STEP = 2.00, 3.63, 0.01
@@ -305,11 +348,14 @@ def read_wrdata(path, ncols):
 
 def dc_metrics(path):
     """Parse a tb_dcsweep_cmos5l _dc.csv: columns
-    (scale,v(vin),scale,v(vout),scale,i(vin)) x N rows, nested sweep with
-    Vin as the fast/inner variable and Iload as the slow/outer variable
-    (see that template's header). Detect Iload-block boundaries by
-    watching Vin reset to a smaller value than the previous row."""
-    rows = read_wrdata(path, 6)
+    (scale,v(vin),scale,v(vout),scale,i(vin),scale,i(vdivsense)) x N rows,
+    nested sweep with Vin as the fast/inner variable and Iload as the
+    slow/outer variable (see that template's header). i(vdivsense) is the
+    feedback divider's own standing current, read off the non-invasive
+    rhigh replica that template instantiates (issue #31). Detect
+    Iload-block boundaries by watching Vin reset to a smaller value than
+    the previous row."""
+    rows = read_wrdata(path, 8)
     if not rows:
         return None
     blocks = []
@@ -320,7 +366,7 @@ def dc_metrics(path):
         if prev_vin is not None and vin < prev_vin - 1e-9:
             blocks.append(cur)
             cur = []
-        cur.append((vin, r[3], r[5]))
+        cur.append((vin, r[3], r[5], r[7]))
         prev_vin = vin
     blocks.append(cur)
     if len(blocks) < 5:
@@ -330,14 +376,20 @@ def dc_metrics(path):
         return min(block, key=lambda t: abs(t[0] - vin_target))
 
     out = {}
-    # Iq + no-load op point, block 0 (Iload=0), Vin=3.30V.
-    v, vo, i = nearest(blocks[0], 3.30)
+    # Iq + no-load op point + divider standing current, block 0 (Iload=0),
+    # Vin=3.30V.
+    v, vo, i, idiv = nearest(blocks[0], 3.30)
     out["iq_a"] = abs(i)
     out["vout_no_load_v"] = vo
+    out["i_divider_a"] = abs(idiv)
+    # Per-leg divider resistance implied by the measured current: both legs
+    # are the same drawn device and FB draws no DC current, so
+    # R_leg = (VOUT/2) / I_div.
+    out["r_divider_leg_ohm"] = (vo / 2.0) / abs(idiv) if idiv else float("nan")
 
     # Line regulation, block 0 (no load), Input row's {2.97,3.63}V window.
-    v_lo, vo_lo, _ = nearest(blocks[0], 2.97)
-    v_hi, vo_hi, _ = nearest(blocks[0], 3.63)
+    v_lo, vo_lo, _, _ = nearest(blocks[0], 2.97)
+    v_hi, vo_hi, _, _ = nearest(blocks[0], 3.63)
     out["line_reg_in_regulation"] = abs(vo_lo - VOUT_TARGET) < 0.01 * VOUT_TARGET and abs(vo_hi - VOUT_TARGET) < 0.01 * VOUT_TARGET
     out["line_reg_mv_per_v"] = (vo_hi - vo_lo) / (v_hi - v_lo) * 1000.0
 
@@ -345,10 +397,10 @@ def dc_metrics(path):
     # for the first point where VOUT falls below 0.99x the fixed 1.8V
     # target (README.md "Nested DC sweep").
     block50 = sorted(blocks[-1], key=lambda t: t[0])
-    v_at_max, vo_at_max, _ = block50[-1]
+    v_at_max, vo_at_max, _, _ = block50[-1]
     out["vout_at_vinmax_50ma_v"] = vo_at_max
     dropout_v = None
-    for v, vo, _ in reversed(block50):
+    for v, vo, _, _ in reversed(block50):
         if vo < 0.99 * VOUT_TARGET:
             break
         dropout_v = v - VOUT_TARGET
@@ -451,17 +503,20 @@ def psrr_metrics(path):
 main_rows = []
 for corner in CORNERS:
     for temp in TEMPS:
-        row = {"corner": corner, "temp_c": temp}
-        dc = dc_metrics(f"{corners_dir}/dcsweep_{corner}_{temp}c_dc.csv")
-        lg = loopgain_metrics(f"{corners_dir}/loopgain_{corner}_{temp}c_ac.csv")
-        ps = psrr_metrics(f"{corners_dir}/psrr_{corner}_{temp}c_ac.csv")
-        for src in (dc, lg, ps):
-            if src:
-                row.update({k: v for k, v in src.items() if k != "vout_at_vinmax_by_load"})
-        main_rows.append(row)
+        for rlabel in RES_LABELS:
+            row = {"corner": corner, "temp_c": temp, "res_section": f"res_{rlabel}"}
+            sfx = f"{corner}_{temp}c_r{rlabel}"
+            dc = dc_metrics(f"{corners_dir}/dcsweep_{sfx}_dc.csv")
+            lg = loopgain_metrics(f"{corners_dir}/loopgain_{sfx}_ac.csv")
+            ps = psrr_metrics(f"{corners_dir}/psrr_{sfx}_ac.csv")
+            for src in (dc, lg, ps):
+                if src:
+                    row.update({k: v for k, v in src.items() if k != "vout_at_vinmax_by_load"})
+            main_rows.append(row)
 
 fieldnames = [
-    "corner", "temp_c", "iq_a", "vout_no_load_v",
+    "corner", "temp_c", "res_section", "iq_a", "vout_no_load_v",
+    "i_divider_a", "r_divider_leg_ohm",
     "line_reg_in_regulation", "line_reg_mv_per_v",
     "dropout_v_50ma", "dropout_v_50ma_floor", "vout_at_vinmax_50ma_v",
     "load_reg_pct",
@@ -476,7 +531,7 @@ with open(csv_out, "w", newline="") as f:
     for row in main_rows:
         w.writerow({k: ("" if row.get(k) is None else row.get(k)) for k in fieldnames})
 
-# --- Sensitivity CSV: Cc value sweep + Rz corner sweep, tt/27C only ---
+# --- Sensitivity CSV: Cc value sweep + resistor corner sweep, tt/27C only ---
 sens_rows = []
 for label in ["0.5x", "1x", "2x"]:
     lg = loopgain_metrics(f"{corners_dir}/loopgain_ccsens_{label}_tt_27c_ac.csv")
@@ -485,8 +540,10 @@ for label in ["0.5x", "1x", "2x"]:
         row.update(lg)
     sens_rows.append(row)
 for label in ["bcs", "typ", "wcs"]:
-    lg = loopgain_metrics(f"{corners_dir}/loopgain_rzsens_{label}_tt_27c_ac.csv")
-    row = {"sweep": "rz_corner", "point": label}
+    lg = loopgain_metrics(f"{corners_dir}/loopgain_ressens_{label}_tt_27c_ac.csv")
+    # Named "rz_corner" in the #21/#25 records, when Rz was the only rhigh
+    # in the loop; since #28 this section moves the feedback divider too.
+    row = {"sweep": "res_corner", "point": label}
     if lg:
         row.update(lg)
     sens_rows.append(row)
@@ -502,19 +559,130 @@ with open(sens_csv_out, "w", newline="") as f:
     for row in sens_rows:
         w.writerow({k: ("" if row.get(k) is None else row.get(k)) for k in sens_fieldnames})
 
-print(f"run_sweep.sh (post-process): wrote {len(main_rows)} main rows, {len(sens_rows)} sensitivity rows")
+# --- Before / after / delta against the pre-conversion baseline record ---
+# "Before" is the #25 post-resize record, taken with the behavioural 300k
+# res.sym divider (corner-independent by construction) at res_typ; "after"
+# is this run, at each of the three cornerRES.lib sections. Issue #31 AC3.
+#
+# The one metric the baseline CSV does not carry a column for is the
+# divider's own standing current -- it had no reason to, because the
+# behavioural divider was an ideal, exactly-600k, corner-independent pair.
+# That makes its "before" value derivable rather than missing:
+# I_div = VOUT_no_load / 600k exactly, from the baseline's own recorded
+# VOUT. It is labelled "(derived)" in the table so no reader mistakes it
+# for a measured column that was there all along.
+BEHAVIOURAL_DIVIDER_TOTAL_OHM = 600e3
+
+baseline = {}
+if os.path.exists(baseline_csv):
+    with open(baseline_csv) as f:
+        for r in csv.DictReader(f):
+            def _f(k):
+                try:
+                    return float(r[k])
+                except (KeyError, TypeError, ValueError):
+                    return None
+            key = (r["corner"], r["temp_c"])
+            b = {k: _f(k) for k in ("dc_gain_db", "phase_margin_deg",
+                                    "gain_margin_db", "psrr_db_1khz",
+                                    "psrr_db_100khz", "iq_a",
+                                    "vout_no_load_v")}
+            vo = b["vout_no_load_v"]
+            b["i_divider_a"] = (vo / BEHAVIOURAL_DIVIDER_TOTAL_OHM) if vo else None
+            baseline[key] = b
+
+after = {(r["corner"], str(r["temp_c"]), r["res_section"]): r for r in main_rows}
+
+METRICS = [
+    # (csv key, heading, unit, scale, decimals, higher_is_better)
+    ("dc_gain_db", "DC loop gain", "dB", 1.0, 2, True),
+    ("phase_margin_deg", "Phase margin", "deg", 1.0, 2, True),
+    ("gain_margin_db", "Gain margin", "dB", 1.0, 2, True),
+    ("psrr_db_1khz", "PSRR @ 1kHz", "dB", 1.0, 2, True),
+    ("psrr_db_100khz", "PSRR @ 100kHz", "dB", 1.0, 2, True),
+    ("i_divider_a", "Divider standing current", "uA", 1e6, 3, False),
+]
+
+delta_rows = []
+for corner in CORNERS:
+    for temp in TEMPS:
+        b = baseline.get((corner, str(temp)), {})
+        for key, heading, unit, scale, dec, _hib in METRICS:
+            row = {"corner": corner, "temp_c": temp, "metric": key,
+                   "unit": unit, "before": b.get(key)}
+            afters = {}
+            for rlabel in RES_LABELS:
+                a = after.get((corner, str(temp), f"res_{rlabel}"), {})
+                afters[rlabel] = a.get(key)
+                row[f"after_res_{rlabel}"] = a.get(key)
+            vals = [v for v in afters.values() if v is not None]
+            row["after_min"] = min(vals) if vals else None
+            row["after_max"] = max(vals) if vals else None
+            bv = row["before"]
+            at = afters.get("typ")
+            row["delta_res_typ"] = (at - bv) if (bv is not None and at is not None) else None
+            if bv is not None and vals:
+                row["delta_worst"] = max((v - bv for v in vals), key=abs)
+            else:
+                row["delta_worst"] = None
+            delta_rows.append(row)
+
+delta_fieldnames = (["corner", "temp_c", "metric", "unit", "before"]
+                    + [f"after_res_{r}" for r in RES_LABELS]
+                    + ["after_min", "after_max", "delta_res_typ", "delta_worst"])
+with open(delta_csv_out, "w", newline="") as f:
+    w = csv.DictWriter(f, fieldnames=delta_fieldnames, extrasaction="ignore")
+    w.writeheader()
+    for row in delta_rows:
+        w.writerow({k: ("" if row.get(k) is None else row.get(k)) for k in delta_fieldnames})
+
+by_key = {}
+for row in delta_rows:
+    by_key.setdefault(row["metric"], []).append(row)
+
+
+def fmt(v, scale, dec, signed=False):
+    if v is None:
+        return "n/a"
+    s = f"{v * scale:+.{dec}f}" if signed else f"{v * scale:.{dec}f}"
+    return s
+
+
+with open(cmp_md_out, "w") as f:
+    for key, heading, unit, scale, dec, _hib in METRICS:
+        derived = " (before = derived, see note)" if key == "i_divider_a" else ""
+        f.write(f"\n### {heading} ({unit}){derived}\n\n")
+        f.write("| corner / temp | before (#25, behavioural 300k) "
+                "| after `res_typ` | after `res_bcs` | after `res_wcs` "
+                "| delta @ `res_typ` | delta, worst R corner |\n")
+        f.write("|---|---|---|---|---|---|---|\n")
+        for row in by_key.get(key, []):
+            f.write(
+                f"| `{row['corner']}` / {row['temp_c']}C "
+                f"| {fmt(row.get('before'), scale, dec)} "
+                f"| {fmt(row.get('after_res_typ'), scale, dec)} "
+                f"| {fmt(row.get('after_res_bcs'), scale, dec)} "
+                f"| {fmt(row.get('after_res_wcs'), scale, dec)} "
+                f"| {fmt(row.get('delta_res_typ'), scale, dec, signed=True)} "
+                f"| {fmt(row.get('delta_worst'), scale, dec, signed=True)} |\n")
+
+print(f"run_sweep.sh (post-process): wrote {len(main_rows)} main rows, "
+      f"{len(sens_rows)} sensitivity rows, {len(delta_rows)} delta rows")
 PYEOF
 
-# --- Completeness matrix: every (corner,temp) has all 3 benches present ---
+# --- Completeness matrix: every (corner,temp,res_section) has all 3
+# benches present ---
 COMPLETENESS_OK=1
 for corner in "${CORNERS[@]}"; do
   for temp in "${TEMPS[@]}"; do
-    for bench in dcsweep loopgain psrr; do
-      point_id="${bench}_${corner}_${temp}c"
-      if [[ " ${failed_points[*]-} " == *" ${point_id} "* ]]; then
-        echo "run_sweep.sh: INCOMPLETE ${point_id}" >&2
-        COMPLETENESS_OK=0
-      fi
+    for rlabel in "${RES_LABELS[@]}"; do
+      for bench in dcsweep loopgain psrr; do
+        point_id="${bench}_${corner}_${temp}c_r${rlabel}"
+        if [[ " ${failed_points[*]-} " == *" ${point_id} "* ]]; then
+          echo "run_sweep.sh: INCOMPLETE ${point_id}" >&2
+          COMPLETENESS_OK=0
+        fi
+      done
     done
   done
 done
@@ -525,13 +693,15 @@ done
   echo "- **Experiment**: ldo-cmos5l-pvt-sweep"
   echo "- **Claim**: design/sg13cmos5l/ldo_core_cmos5l.sch's closed loop"
   echo "  (issue #20), verified against the spec table re-derived at this"
-  echo "  PDK's rails (README.md), across the full process x temperature"
-  echo "  PVT grid, plus Cc-value and Rz-corner sensitivity sweeps -- the"
-  echo "  input to issue #21's acceptance criteria. This harness is #21's"
-  echo "  deliverable; a run against the Mpass-resized/recompensated"
-  echo "  schematic (issue #25) is evidence for #25's acceptance criteria"
-  echo "  instead when the design netlist's git sha postdates #21's merge --"
-  echo "  see this record's own git sha above to tell which."
+  echo "  PDK's rails (README.md), across the full process x temperature x"
+  echo "  RESISTOR-corner grid, plus Cc-value and resistor-corner"
+  echo "  sensitivity sweeps. This harness is issue #21's deliverable; which"
+  echo "  issue's acceptance criteria a given record is evidence for is told"
+  echo "  by the design netlist's git sha recorded below -- #21 (original"
+  echo "  sizing), #25 (Mpass resize + recompensation), or #31 (the first"
+  echo "  run against the PDK \`rhigh\` feedback divider that #28 substituted"
+  echo "  for the pre-#28 behavioural 300k \`res.sym\` pair, and the first to"
+  echo "  cross the resistor corner across the whole grid)."
   echo "- **PDK**: \`${PDK}\` at \`${PDK_ROOT}\` -- pinned revision: see"
   echo "  \`sim/pdk-cmos5l.json\` (commit \`607e18d\`, re-verified against the"
   echo "  installed checkout)."
@@ -541,20 +711,39 @@ done
   echo "- **Design netlist under test**: \`design/sg13cmos5l/netlist/ldo_core_cmos5l.spice\`"
   echo "  at this repo's git sha \`${REPO_GIT_SHA}\`."
   echo "- **Corner matrix run**: process {${CORNERS[*]}} (cornerMOShv.lib) x"
-  echo "  temperature {${TEMPS[*]}}C = 15 points x 3 benches (dcsweep,"
-  echo "  loopgain, psrr) = 45 points, plus 6 sensitivity points (Cc value"
-  echo "  {0.5x,1x,2x} + Rz corner {bcs,typ,wcs}, both at tt/27C only)."
+  echo "  temperature {${TEMPS[*]}}C x resistor corner {${RES_LABELS[*]/#/res_}}"
+  echo "  (cornerRES.lib) = 45 points x 3 benches (dcsweep, loopgain, psrr)"
+  echo "  = 135 points, plus 6 sensitivity points (Cc value {0.5x,1x,2x} +"
+  echo "  resistor corner {bcs,typ,wcs}, both at tt/27C only)."
   echo "- **Result**: ${passed}/${total} points PASS (ngspice exit 0, no"
   echo "  convergence/model-load error strings in the log)."
   if [[ ${#failed_points[@]} -gt 0 ]]; then
     echo "- **Failed points**: ${failed_points[*]}"
   fi
-  echo "- **Completeness matrix**: $( [[ ${COMPLETENESS_OK} -eq 1 ]] && echo 'OK -- every (corner,temp) has all 3 benches present' || echo 'INCOMPLETE -- see stderr log above' )"
-  echo "- **Resistor corner**: held at \`res_typ\` (nominal) across the main"
-  echo "  15-point PVT grid -- no established MOS-corner/R-corner"
-  echo "  correlation convention exists yet in this repo (see README.md);"
-  echo "  Rz's own real corner spread is checked separately via the"
-  echo "  \`loopgain_rzsens_*\` sensitivity points instead."
+  echo "- **Completeness matrix**: $( [[ ${COMPLETENESS_OK} -eq 1 ]] && echo 'OK -- every (corner,temp,res_section) has all 3 benches present' || echo 'INCOMPLETE -- see stderr log above' )"
+  echo "- **Resistor corner (issue #31 AC2)**: CROSSED in full across the"
+  echo "  main grid -- every (MOS corner, temperature) point was run against"
+  echo "  all three of cornerRES.lib's \`res_typ\`/\`res_bcs\`/\`res_wcs\`"
+  echo "  sections, and every row of \`records/${RECORD_ID}.csv\` names its"
+  echo "  own section in the \`res_section\` column (as does every filename"
+  echo "  under \`corners/${RECORD_ID}/\` and"
+  echo "  \`netlist-snapshots/${RECORD_ID}/\`, via the \`_r<label>\` suffix)."
+  echo "  The #21/#25 records held this axis at \`res_typ\` because the"
+  echo "  feedback divider was then a corner-independent behavioural 300k"
+  echo "  pair and Rz was the loop's only \`rhigh\`; #28 made the divider a"
+  echo "  real \`rhigh\`, so the axis is swept rather than held from this"
+  echo "  record onward. It is swept INDEPENDENTLY of the MOS corner, not"
+  echo "  correlated to it -- this repo still has no ratified"
+  echo "  MOS-corner/R-corner correlation convention, and crossing the axes"
+  echo "  in full reports every combination rather than inventing one."
+  echo "- **Feedback divider (issue #28) under test here**: \`XRtop\`/\`XRbot\`,"
+  echo "  PDK \`rhigh\`, \`w=1u l=25.43u b=7\` per leg. Its own standing current"
+  echo "  is measured per point (\`i_divider_a\`, with the implied per-leg"
+  echo "  resistance in \`r_divider_leg_ohm\`) from the non-invasive replica"
+  echo "  divider in \`testbench/tb_dcsweep_cmos5l.spice.tmpl\` -- an ideal"
+  echo "  unity-gain VCVS copy of VOUT driving a byte-identical pair of"
+  echo "  \`rhigh\` legs through a 0V ammeter, which loads neither VOUT nor"
+  echo "  \`i(vin)\`, so Iq stays directly comparable to the #21/#25 records."
   echo "- **MoM-cap (Cc) caveat**: cornerCAP.lib maps every corner/mismatch/stat"
   echo "  section to the SAME nominal \`cap_cmomi\` model at this PDK's pin (no"
   echo "  characterised corner spread exists) -- every phase-margin / loop-gain"
@@ -574,14 +763,34 @@ done
   echo "  - Per-point raw ngspice logs + per-point sweep CSVs:"
   echo "    \`corners/${RECORD_ID}/\`"
   echo "  - Main PVT-grid CSV (spec-row-relevant merged metrics, one row"
-  echo "    per corner/temp): \`records/${RECORD_ID}.csv\`"
-  echo "  - Cc-value / Rz-corner sensitivity CSV:"
+  echo "    per corner/temp/res_section): \`records/${RECORD_ID}.csv\`"
+  echo "  - Cc-value / resistor-corner sensitivity CSV:"
   echo "    \`records/${RECORD_ID}.sensitivity.csv\`"
+  echo "  - Before/after/delta CSV vs the pre-conversion baseline:"
+  echo "    \`records/${RECORD_ID}.delta.csv\`"
   echo "- **Timestamp / author**: $(date -u +%Y-%m-%dT%H:%M:%SZ), Loom Builder"
-  echo "  (agent), issue #21."
+  echo "  (agent), issue #31."
+  echo
+  echo "## Before / after / delta vs the pre-conversion baseline"
+  echo
+  echo "\"Before\" is \`records/$(basename "${BASELINE_CSV}")\` -- the #25"
+  echo "post-Mpass-resize record, taken against the behavioural 300k"
+  echo "\`res.sym\` divider, at \`res_typ\`. \"After\" is this run, against the"
+  echo "PDK \`rhigh\` divider, at each of the three cornerRES.lib sections."
+  echo "Both runs share the same benches, the same PDK pin and the same"
+  echo "ngspice build, so the deltas isolate the divider conversion plus the"
+  echo "resistor-corner axis and nothing else."
+  echo
+  echo "The divider standing current's \"before\" column is **derived, not"
+  echo "measured**: the behavioural divider was an ideal, exactly-600k,"
+  echo "corner-independent pair, so its current is"
+  echo "\`VOUT_no_load / 600k\` exactly, taken from the baseline record's own"
+  echo "recorded \`vout_no_load_v\`. There was no such column in the #21/#25"
+  echo "CSVs because there was nothing corner-dependent to record."
+  cat "${CMP_MD_FRAGMENT}"
 } > "${MD_OUT}"
 
-echo "run_sweep.sh: wrote ${MD_OUT}, ${CSV_OUT}, ${SENS_CSV_OUT}"
+echo "run_sweep.sh: wrote ${MD_OUT}, ${CSV_OUT}, ${SENS_CSV_OUT}, ${DELTA_CSV_OUT}"
 echo "run_sweep.sh: ${passed}/${total} points passed; completeness=$( [[ ${COMPLETENESS_OK} -eq 1 ]] && echo OK || echo INCOMPLETE )"
 
 if [[ ${#failed_points[@]} -gt 0 || ${COMPLETENESS_OK} -ne 1 ]]; then
