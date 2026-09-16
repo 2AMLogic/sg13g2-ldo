@@ -4,9 +4,11 @@ v {xschem version=3.4.7 file_version=1.3
 *
 * Captured against the ihp-sg13cmos5l PDK. Every device instance below is
 * an sg13cmos5l_pr/ symbol resolved out of
-* $PDK_ROOT/ihp-sg13cmos5l/libs.tech/xschem, or a generic xschem device
-* (devices/res.sym), or this branch's own ldo_erramp_cmos5l cell. Nothing
-* here references sg13g2_pr/.
+* $PDK_ROOT/ihp-sg13cmos5l/libs.tech/xschem, or this branch's own
+* ldo_erramp_cmos5l cell. Nothing here references sg13g2_pr/, and -- as of
+* issue #28's divider conversion below -- nothing here is a generic
+* behavioral xschem device (devices/res.sym) either: every device in this
+* cell is a real PDK instance.
 *
 * RATIFYING RECORD:
 * spec/decision-records/DR-0002-sg13cmos5l-device-topology.md (PR #23,
@@ -75,21 +77,59 @@ v {xschem version=3.4.7 file_version=1.3
 * decision record for this resize: spec/decision-records/DR-0003-sg13cmos5l-mpass-resize-and-compensation.md,
 * sim/ldo-cmos5l-pvt-sweep/README.md.
 *
-* FEEDBACK DIVIDER. Rtop (VOUT->FB) and Rbot (FB->VSS), 300k each, a plain
-* behavioral two-resistor divider giving FB = VOUT/2; against an
-* illustrative VREF = 0.9 V that servos VOUT to 1.8 V. Both the ratio and
-* the assumed VREF are provisional first-cut values, exactly as on the
-* SG13G2 branch -- no target spec has been ratified for either branch.
-* 900k total holds the divider's own standing current at 2 uA.
+* FEEDBACK DIVIDER. Rtop (VOUT->FB) and Rbot (FB->VSS), a two-resistor
+* divider giving FB = VOUT/2; against an illustrative VREF = 0.9 V that
+* servos VOUT to 1.8 V. Both the ratio and the assumed VREF are
+* provisional first-cut values, exactly as on the SG13G2 branch -- no
+* target spec has been ratified for either branch.
 *
-* These are generic res.sym, not a PDK resistor flavour. That is the same
-* deliberate deferral the SG13G2 branch made (design/README.md "Reference
-* voltage"), kept here so the two branches' dividers stay comparable, and
-* it is a KNOWN GAP for phase 4 (#22): a layout-matched divider needs a
-* real rsil/rppd/rhigh flavour before LVS can see it. Note the deliberate
-* asymmetry with ldo_erramp_cmos5l's nulling resistor, which IS a PDK
-* rhigh -- that cell's header explains why (Rz's corner spread is
-* load-bearing for phase margin; the divider's absolute value is not).
+* CONVERTED TO A PDK rhigh (issue #28, phase 4a). Through #25 both legs
+* were a generic devices/res.sym behavioral 300k -- a SPICE `R` primitive
+* that `klt extract` cannot see as a device at all, which design/README.md
+* "Known gaps on this branch" flagged as blocking the layout phase and
+* assigned to it. They are now the same PDK flavour Rz already uses,
+* sg13cmos5l_pr/rhigh.sym, so the drawn divider is LVS-visible:
+*
+*   w = 1e-6 (rhigh_minW is 0.50u; 1u is Rz's own width, kept identical so
+*             the three rhigh bodies in this hierarchy share one drawn
+*             width and one corner behaviour)
+*   l = 25.43e-6, b = 7  (eight 25.43u stripes, i.e. a meander, not a bar)
+*
+* rhigh, not rsil/rppd: at the PDK's own typical sheet rho (cornerRES.lib
+* `res_typ`: rsil 7.0, rppd 260.0, rhigh 1360.0 ohm/sq) a 300k leg is
+* ~221 squares of rhigh, ~1150 squares of rppd and ~43000 squares of rsil.
+* Only rhigh puts a 300k leg in a layout-reasonable area.
+*
+* VALUE, re-derived per this issue's own instruction. rhigh.sym's own
+* value expression (the PDK symbol's, not this repo's) is
+*   R = ( rzspec/w + rspec*leff/weff ) / m,
+*   leff = (b+1)*l + (2/kappa*weff + ps)*b,  weff = w - 0.04u,
+*   rzspec = 1.6e-4 ohm*m, rspec = 1360 ohm/sq, kappa = 1.85, ps = 0.18u
+* -> leff = 211.964u, R = 300.44 kOhm per leg. That is +0.15% on the 300k
+* behavioral value it replaces, and -- because both legs are the same
+* drawn device -- the divider RATIO is exactly 1/2 independent of sheet
+* rho, which is the only property this divider is relied on for. Total
+* 600.9k; the divider's own standing current at VOUT = 1.8 V is 3.0 uA.
+* (The pre-#28 header claimed "900k total ... 2 uA" for two 300k legs --
+* arithmetically wrong on its own numbers, 300k + 300k = 600k -> 3.0 uA;
+* corrected here rather than carried forward.)
+*
+* WHAT THIS CHANGES ELECTRICALLY, stated rather than implied: the divider
+* now carries rhigh's real PVT corner spread (cornerRES.lib gives rhigh
+* ~1.0-1.4 kOhm/sq) instead of a corner-independent behavioral 300k. The
+* ratio is unaffected (both legs track), but the divider's absolute
+* impedance -- and hence the FB node's own pole against whatever loads it
+* -- now moves with the resistor corner. #21/#25's closed-loop PVT
+* evidence (sim/ldo-cmos5l-pvt-sweep/) was taken BEFORE this conversion
+* and therefore does not cover that spread; re-running the sweep with the
+* PDK divider in place is tracked as its own follow-up, not silently
+* assumed harmless here.
+*
+* Note the (now former) asymmetry with ldo_erramp_cmos5l's nulling
+* resistor, which was already a PDK rhigh -- that cell's header explains
+* why it went first (Rz's corner spread is load-bearing for phase margin;
+* the divider's absolute value is not, which is why the divider's
+* conversion waited for the phase that actually needs it).
 *
 * ERROR AMPLIFIER POLARITY. INP=FB is the non-inverting input, INN=VREF
 * the inverting input -- the polarity a PMOS common-source pass device's
@@ -133,12 +173,12 @@ N 380 200 320 200 {}
 C {lab_pin.sym} 320 200 0 0 {name=l3 lab=EAOUT}
 N 420 200 490 200 {}
 C {lab_pin.sym} 490 200 0 0 {name=l4 lab=VIN}
-C {res.sym} 900 300 0 0 {name=Rtop value=300k}
+C {sg13cmos5l_pr/rhigh.sym} 900 300 0 0 {name=Rtop model=rhigh body=VSS w=1e-6 l=25.43e-6 b=7 m=1}
 N 900 270 900 210 {}
 C {lab_pin.sym} 900 210 0 0 {name=l5 lab=VOUT}
 N 900 330 900 390 {}
 C {lab_pin.sym} 900 390 0 0 {name=l6 lab=FB}
-C {res.sym} 900 600 0 0 {name=Rbot value=300k}
+C {sg13cmos5l_pr/rhigh.sym} 900 600 0 0 {name=Rbot model=rhigh body=VSS w=1e-6 l=25.43e-6 b=7 m=1}
 N 900 570 900 510 {}
 C {lab_pin.sym} 900 510 0 0 {name=l7 lab=FB}
 N 900 630 900 690 {}

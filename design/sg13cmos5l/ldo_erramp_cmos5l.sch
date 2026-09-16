@@ -109,13 +109,33 @@ v {xschem version=3.4.7 file_version=1.3
 *    terminal is tied to VSS rather than the PDK's global sub! node: this
 *    cell is a .subckt with an explicit VSS pin and no .global
 *    declaration, so sub! would netlist as an undeclared, floating local
-*    node. At rhigh's ~1.0-1.4 kOhm/sq corner spread, l=1200um/w=1um
-*    implies roughly 1.2-1.7 MOhm and a schematic-level-only 1200:1
-*    aspect ratio -- a layout-phase (#22) concern (meandering via the
-*    PDK's own rhigh PCell `b` bends parameter), not a schematic-capture
-*    one; DR-0003 records this explicitly as a known follow-up rather
-*    than a hidden cost. A gm-tracking triode-MOS Rz remains an available
-*    refinement if a future phase needs a smaller die footprint here.
+*    node. At rhigh's ~1.0-1.4 kOhm/sq corner spread this body implies
+*    roughly 1.2-1.7 MOhm.
+*
+*    MEANDERED IN #28 (phase 4a, the layout phase DR-0003 deferred this
+*    to). Through #25 this instance was `l=1200e-6 b=0` -- a single 1.2 mm
+*    straight bar at w=1um, a schematic-level-only 1200:1 aspect ratio
+*    that is not a drawable device. It is now `l=28.81e-6 b=39`: forty
+*    28.81um stripes on the PDK rhigh PCell's own `b` (bends) parameter,
+*    which is what that PCell means by a meander (`stripes = b+1` in
+*    rhigh_code.py's genSingleResistorLayout).
+*
+*    THE ELECTRICAL VALUE IS PRESERVED, not merely "close enough" -- this
+*    is a geometry change, not a re-sizing, so #21/#25's PVT evidence for
+*    the compensation network still describes this device. rhigh's own
+*    model (libs.tech/ngspice/models/resistors_mod.lib, `.subckt rhigh`)
+*    passes the r3_cmc instance an effective length
+*      leff = (b+1)*l + (2/kappa*weff + ps)*b,  weff = w - 0.04u,
+*             kappa = 1.85, ps = 0.18u
+*    i.e. the bends carry their own resistance. b=0/l=1200u gave
+*    leff = 1200.000u; b=39/l=28.81u gives leff = 1199.893u -- 0.009%
+*    low, and `l` stays on the PDK's 0.005um grid. Both W (weff) and L
+*    (leff) handed to the model are therefore the same to within that
+*    0.009%, so the simulated device is the same device: R = 1.70001 MOhm
+*    vs 1.70016 MOhm at the typical corner.
+*
+*    A gm-tracking triode-MOS Rz remains an available refinement if a
+*    future phase needs a smaller die footprint here.
 *
 * 3. Cc IS A MoM CAP AND ITS VALUE IS insufficient-evidence. cap_cmomi at
 *    w=100u l=30u (#25 widened from #20's w=l=30u) is ~3.2 pF by the PDK's
@@ -239,7 +259,7 @@ N 1700 570 1700 510 {}
 C {lab_pin.sym} 1700 510 0 0 {name=l33 lab=OUT}
 N 1700 630 1700 690 {}
 C {lab_pin.sym} 1700 690 0 0 {name=l34 lab=MZ}
-C {sg13cmos5l_pr/rhigh.sym} 1700 1000 0 0 {name=Rz model=rhigh body=VSS w=1e-6 l=1200e-6 b=0 m=1}
+C {sg13cmos5l_pr/rhigh.sym} 1700 1000 0 0 {name=Rz model=rhigh body=VSS w=1e-6 l=28.81e-6 b=39 m=1}
 N 1700 970 1700 910 {}
 C {lab_pin.sym} 1700 910 0 0 {name=l35 lab=MZ}
 N 1700 1030 1700 1090 {}
