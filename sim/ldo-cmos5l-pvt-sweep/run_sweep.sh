@@ -787,6 +787,53 @@ with open(cmp_md_out, "w") as f:
                 f"| {fmt(row.get('delta_res_typ'), scale, dec, signed=True)} "
                 f"| {fmt(row.get('delta_worst'), scale, dec, signed=True)} |\n")
 
+    # --- Mechanical spec gate. Thresholds are the repo root README.md's
+    # DRAFT spec table verbatim (the same table sim/ldo-cmos5l-pvt-sweep's
+    # own Results section is stated against), evaluated against EVERY point
+    # in this run's grid. This is computed, not asserted in prose, so a
+    # record can never claim a PASS its own CSV contradicts -- and so a
+    # regression in a future run surfaces in the record itself rather than
+    # relying on a reader re-deriving it from the CSV.
+    SPEC = [
+        ("phase_margin_deg", "Phase margin >= 45 deg", lambda v: v >= 45.0, "deg", 2),
+        ("gain_margin_db", "Gain margin >= 10 dB", lambda v: v >= 10.0, "dB", 2),
+        ("iq_a", "Iq (no load) < 30 uA", lambda v: v < 30e-6, "A", 9),
+        ("psrr_db_1khz", "PSRR @ 1kHz > 50 dB", lambda v: v > 50.0, "dB", 2),
+        ("psrr_db_100khz", "PSRR @ 100kHz > 20 dB", lambda v: v > 20.0, "dB", 2),
+        ("line_reg_mv_per_v", "Line regulation < 5 mV/V", lambda v: v < 5.0, "mV/V", 3),
+        ("load_reg_pct", "Load regulation < 1 %", lambda v: v < 1.0, "%", 4),
+        ("dropout_v_50ma", "Dropout @ 50mA < 300 mV", lambda v: v < 0.300, "V", 3),
+        ("vout_no_load_v", "Output accuracy 1.8V +/-2%", lambda v: abs(v - 1.8) <= 0.036, "V", 5),
+    ]
+    f.write("\n### Ratified-spec gate, evaluated over every point in this grid\n\n")
+    f.write("Thresholds are the repo root `README.md` spec table's, applied\n"
+            "mechanically to this record's own CSV -- not restated by hand.\n\n")
+    f.write("| Spec row | Points evaluated | Points failing | Worst point |\n")
+    f.write("|---|---|---|---|\n")
+    gate_failures = []
+    for key, label, ok, unit, dec in SPEC:
+        pts = [(r.get(key), r) for r in main_rows if r.get(key) is not None]
+        bad = [(v, r) for v, r in pts if not ok(v)]
+        if bad:
+            worst = min(bad, key=lambda t: t[0]) if key != "load_reg_pct" else max(bad, key=lambda t: t[0])
+            wv, wr = worst
+            worst_s = (f"`{wr['corner']}`/{wr['temp_c']}C/`{wr['res_section']}` "
+                       f"= {wv:.{dec}f} {unit}")
+            gate_failures.append((label, len(bad), len(pts), worst_s))
+        else:
+            worst_s = "--"
+        f.write(f"| {label} | {len(pts)} | **{len(bad)}** | {worst_s} |\n")
+    if gate_failures:
+        f.write("\n**Spec rows NOT met at every point in this grid:**\n\n")
+        for label, nbad, npts, worst_s in gate_failures:
+            f.write(f"- {label} -- fails at {nbad} of {npts} points; worst {worst_s}\n")
+        f.write("\nEvery failing point is listed row by row in "
+                f"`records/{os.path.basename(csv_out)}`. Per CLAUDE.md, no spec\n"
+                "row is relaxed to make this record pass; see the experiment\n"
+                "README's Results section and the decision record it cites.\n")
+    else:
+        f.write("\nEvery spec row above is met at every point in this grid.\n")
+
     f.write("\n### Divider attribution: the conversion's own contribution\n\n")
     f.write("Same point, same MOS corner, same temperature, same resistor\n"
             "section, same `Cc` -- the only difference is the feedback\n"
