@@ -1,19 +1,35 @@
 #!/usr/bin/env python3
-"""Export ngspice netlists from the xschem sources in ``design/`` for the
-SG13G2 LDO core (issue #6, T1 item 1: design sources).
+"""Export ngspice netlists from this repo's xschem sources (issue #6,
+T1 item 1: design sources; extended for the SG13CMOS5L branch by issue #20).
 
     python3 design/netlist.py            # regenerate design/netlist/*.spice
     python3 design/netlist.py --check    # verify committed netlists are current
     python3 design/netlist.py --cell ldo_erramp_placeholder -v
 
-Every ``design/*.sch`` cell netlists **as a ``.subckt``** (never a flat
-deck), with xschem's electrical rule check enabled (``xschem netlist
--erc``), into ``design/netlist/<cell>.spice``:
+    # the SG13CMOS5L branch (design/sg13cmos5l/, issue #20):
+    python3 design/netlist.py --design sg13cmos5l
+    python3 design/netlist.py --design sg13cmos5l --check -v
+
+There are two **designs** (see ``DESIGNS`` below), one per PDK branch: the
+original ``sg13g2`` design in ``design/`` and the ``sg13cmos5l`` design in
+``design/sg13cmos5l/``. A design bundles its source directory, its top
+cell, that top cell's expected port list, and the PDK variant it must be
+netlisted against -- so ``--design`` is the only flag needed to switch
+branches, and neither branch can be netlisted against the other's PDK by
+accident. ``--design sg13g2`` is the default, so every pre-#20 invocation
+(including ``.github/workflows/ci.yml``'s) behaves exactly as before.
+
+Every ``<design dir>/*.sch`` cell netlists **as a ``.subckt``** (never a
+flat deck), with xschem's electrical rule check enabled (``xschem netlist
+-erc``), into ``<design dir>/netlist/<cell>.spice``:
 
 * ``ldo_core.spice`` carries the whole hierarchy -- ``ldo_core`` plus every
   sub-circuit it instantiates (currently just ``ldo_erramp_placeholder``).
 * ``ldo_erramp_placeholder.spice`` is that sub-circuit on its own, so a
   future amp-only testbench can target it in isolation.
+
+...and correspondingly ``ldo_core_cmos5l.spice`` /
+``ldo_erramp_cmos5l.spice`` for the SG13CMOS5L design.
 
 The export is deterministic: absolute paths xschem records in ``sch_path``/
 ``sym_path`` comments are rewritten repo-relative, so the same sources
@@ -57,16 +73,7 @@ from pathlib import Path
 
 DESIGN_DIR = Path(__file__).resolve().parent
 REPO_ROOT = DESIGN_DIR.parent
-NETLIST_DIR = DESIGN_DIR / "netlist"
 XSCHEMRC = DESIGN_DIR / "xschemrc"
-
-TOP_CELL = "ldo_core"
-
-# The interface this issue establishes. Not a "ratified spec" claim (no
-# spec/target-spec.md exists yet -- see design/README.md) -- but a change
-# here is a deliberate interface change, not an accidental one, and this
-# check is what makes that true.
-EXPECTED_TOP_PORTS = ["VIN", "VOUT", "VSS", "VREF"]
 
 DEFAULT_VARIANT = "ihp-sg13g2"
 
@@ -82,13 +89,21 @@ BUILTIN_SEARCH_ROOTS = (
 )
 
 INSTALL_HINT = """\
-ihp-sg13g2 PDK not found.
+PDK not found.
 
 Fetch the pinned IHP-Open-PDK release (see spec/porting-plan.md's "Sources
 and their limits" for the pinned v0.3.0 tag/checksum this repo targets),
 e.g. via klayout-tools' scripts/fetch-ihp-sg13g2.sh, then either:
 
     export PDK_ROOT=/path/to/pdk-root PDK=ihp-sg13g2   # pdk-root/ihp-sg13g2/libs.tech/...
+
+NOTE for the SG13CMOS5L branch (--design sg13cmos5l): ihp-sg13cmos5l's MOS
+symbols and HV model cards are *relative symlinks* into a sibling
+ihp-sg13g2 checkout, so an ihp-sg13cmos5l-only install has them dangling
+and a missing device will look like a missing symbol rather than a missing
+sibling PDK. Install both variants under the same PDK_ROOT. See
+spec/decision-records/DR-0002-sg13cmos5l-device-topology.md, "Dispatch
+hazard carried forward" (2AMLogic/2am#544).
 
 ...or install it under one of the usual open_pdks-shaped search roots this
 script already checks: /usr/share/pdk, /usr/local/share/pdk, ~/share/pdk,
@@ -113,11 +128,70 @@ ERC_FAILURE_RE = re.compile(
 
 
 class PdkNotFound(RuntimeError):
-    """Raised when no usable ihp-sg13g2 install can be located."""
+    """Raised when no usable PDK install can be located."""
 
 
 class ExportError(RuntimeError):
     pass
+
+
+@dataclass(frozen=True)
+class Design:
+    """One PDK branch's schematic sources, as a self-contained unit.
+
+    ``dir`` holds the ``.sch``/``.sym`` pairs and gets a ``netlist/``
+    subdirectory; ``top_cell`` is the cell whose hierarchy carries
+    everything else; ``expected_top_ports`` is the interface invariant
+    ``--check`` enforces; ``variant`` is the PDK directory name this
+    design's symbols resolve against (``sg13g2_pr/`` vs
+    ``sg13cmos5l_pr/`` references are not interchangeable, so the variant
+    belongs to the design, not to the invocation).
+    """
+
+    name: str
+    dir: Path
+    top_cell: str
+    expected_top_ports: list[str]
+    variant: str
+
+    @property
+    def netlist_dir(self) -> Path:
+        return self.dir / "netlist"
+
+    def sch(self, cell: str) -> Path:
+        return self.dir / f"{cell}.sch"
+
+    def sym(self, cell: str) -> Path:
+        return self.dir / f"{cell}.sym"
+
+
+# The interfaces issues #6 (sg13g2) and #20 (sg13cmos5l) establish. Not a
+# "ratified spec" claim (no spec/target-spec.md exists yet -- see
+# design/README.md) -- but a change here is a deliberate interface change,
+# not an accidental one, and this check is what makes that true.
+DESIGNS: dict[str, Design] = {
+    "sg13g2": Design(
+        name="sg13g2",
+        dir=DESIGN_DIR,
+        top_cell="ldo_core",
+        expected_top_ports=["VIN", "VOUT", "VSS", "VREF"],
+        variant="ihp-sg13g2",
+    ),
+    # Issue #20, phase 2/4 of the SG13CMOS5L port (#12). IBIAS is the one
+    # added port: the real two-stage OTA that replaces the SG13G2 branch's
+    # ideal-VCVS placeholder needs a bias reference, and
+    # spec/decision-records/DR-0002-sg13cmos5l-device-topology.md leaves
+    # the bias scheme to this phase. See design/README.md.
+    "sg13cmos5l": Design(
+        name="sg13cmos5l",
+        dir=DESIGN_DIR / "sg13cmos5l",
+        top_cell="ldo_core_cmos5l",
+        expected_top_ports=["VIN", "VOUT", "VSS", "VREF", "IBIAS"],
+        variant="ihp-sg13cmos5l",
+    ),
+}
+
+DEFAULT_DESIGN = "sg13g2"
 
 
 @dataclass(frozen=True)
@@ -150,7 +224,15 @@ def _is_valid_variant_dir(path: Path) -> bool:
 
 
 def find_pdk(variant: str | None = None) -> Pdk:
-    """Locate an ihp-sg13g2 install, or raise :class:`PdkNotFound`."""
+    """Locate a PDK install for ``variant``, or raise :class:`PdkNotFound`.
+
+    ``variant`` comes from the selected :class:`Design` (or ``--pdk-variant``)
+    and is authoritative when given -- a design's symbols reference a
+    specific ``<variant>_pr/`` library, so the environment must not be able
+    to silently swap it. ``PDK``/``PDK_ROOT`` in the environment still pick
+    the *install root*, and ``PDK`` still supplies the variant for a bare
+    call with no design selected.
+    """
     variant = variant or os.environ.get("PDK") or DEFAULT_VARIANT
 
     tried: list[str] = []
@@ -171,24 +253,24 @@ def find_pdk(variant: str | None = None) -> Pdk:
             return Pdk(root=root, variant=variant, source=f"search_root:{candidate}")
 
     raise PdkNotFound(
-        "Looked for %r variant %r in:\n  %s\n\n%s"
-        % (DEFAULT_VARIANT, variant, "\n  ".join(tried), INSTALL_HINT)
+        "Looked for PDK variant %r in:\n  %s\n\n%s"
+        % (variant, "\n  ".join(tried), INSTALL_HINT)
     )
 
 
-def cells() -> list[str]:
-    """All cells in design/, top level first then sub-circuits alphabetically."""
-    names = sorted(p.stem for p in DESIGN_DIR.glob("*.sch"))
-    if TOP_CELL not in names:
-        raise ExportError(f"{DESIGN_DIR}/{TOP_CELL}.sch is missing")
-    return [TOP_CELL] + [n for n in names if n != TOP_CELL]
+def cells(design: Design) -> list[str]:
+    """All cells in the design dir, top level first then the rest alphabetically."""
+    names = sorted(p.stem for p in design.dir.glob("*.sch"))
+    if design.top_cell not in names:
+        raise ExportError(f"{design.sch(design.top_cell)} is missing")
+    return [design.top_cell] + [n for n in names if n != design.top_cell]
 
 
-def xschem_env(pdk: Pdk) -> dict[str, str]:
+def xschem_env(pdk: Pdk, design: Design) -> dict[str, str]:
     env = dict(os.environ)
     env["PDK_ROOT"] = str(pdk.root)
     env["PDK"] = pdk.variant
-    env.setdefault("XSCHEM_USER_LIBRARY_PATH", str(DESIGN_DIR))
+    env["XSCHEM_USER_LIBRARY_PATH"] = str(design.dir)
     return env
 
 
@@ -223,15 +305,16 @@ def run_xschem_netlist(sch: Path, outdir: Path, env: dict[str, str]) -> str:
             f"--- stdout ---\n{proc.stdout}\n--- stderr ---\n{proc.stderr}"
         )
     header = (
-        f"* {sch.stem} -- generated by design/netlist.py from design/{sch.name}\n"
+        f"* {sch.stem} -- generated by design/netlist.py from "
+        f"{sch.relative_to(REPO_ROOT)}\n"
         f"* Do not edit: edit the schematic and re-run the export.\n"
     )
     return header + normalize(produced.read_text())
 
 
-def symbol_pins(cell: str) -> list[str] | None:
-    """Pin names, in order, from design/<cell>.sym (None if there is no symbol)."""
-    sym = DESIGN_DIR / f"{cell}.sym"
+def symbol_pins(design: Design, cell: str) -> list[str] | None:
+    """Pin names, in order, from <design>/<cell>.sym (None if there is no symbol)."""
+    sym = design.sym(cell)
     if not sym.is_file():
         return None
     pins: list[str] = []
@@ -246,10 +329,10 @@ def symbol_pins(cell: str) -> list[str] | None:
     return pins
 
 
-def schematic_ports(cell: str) -> list[str]:
+def schematic_ports(design: Design, cell: str) -> list[str]:
     """Port names, in order, from the ipin/opin/iopin instances in <cell>.sch."""
     ports: list[str] = []
-    for line in (DESIGN_DIR / f"{cell}.sch").read_text().splitlines():
+    for line in design.sch(cell).read_text().splitlines():
         match = SCH_PIN_RE.match(line)
         if not match:
             continue
@@ -277,26 +360,31 @@ def instance_lines(netlist: str, cell: str) -> list[list[str]]:
     return found
 
 
-def check_invariants(netlists: dict[str, str]) -> list[str]:
+def check_invariants(design: Design, netlists: dict[str, str]) -> list[str]:
     """Pinout / port-order invariants. Returns a list of failure messages."""
     failures: list[str] = []
+    top_cell = design.top_cell
 
-    top_ports = subckt_ports(netlists[TOP_CELL], TOP_CELL)
-    if top_ports != EXPECTED_TOP_PORTS:
+    top_ports = subckt_ports(netlists[top_cell], top_cell)
+    if top_ports != design.expected_top_ports:
         failures.append(
-            f"top-level pinout drifted from the interface issue #6 established:\n"
-            f"    expected: {EXPECTED_TOP_PORTS}\n"
+            f"{design.name}: top-level pinout drifted from the established "
+            f"interface:\n"
+            f"    expected: {design.expected_top_ports}\n"
             f"    netlist:  {top_ports}\n"
-            f"  (see design/README.md)"
+            f"  (see design/README.md and DESIGNS in this file)"
         )
 
     for cell, netlist in netlists.items():
         ports = subckt_ports(netlist, cell)
-        pins = symbol_pins(cell)
+        pins = symbol_pins(design, cell)
         if pins is None:
-            failures.append(f"{cell}: no design/{cell}.sym -- cell is not instantiable")
+            failures.append(
+                f"{cell}: no {design.sym(cell).relative_to(REPO_ROOT)} -- "
+                f"cell is not instantiable"
+            )
             continue
-        sch_pins = schematic_ports(cell)
+        sch_pins = schematic_ports(design, cell)
         if pins != sch_pins:
             failures.append(
                 f"{cell}: symbol pins and schematic ports disagree.\n"
@@ -312,39 +400,45 @@ def check_invariants(netlists: dict[str, str]) -> list[str]:
                 f"    .subckt:    {ports}"
             )
 
-    top = netlists[TOP_CELL]
+    top = netlists[top_cell]
     for cell in netlists:
-        if cell == TOP_CELL:
+        if cell == top_cell:
             continue
         instances = instance_lines(top, cell)
         if not instances:
-            failures.append(f"{cell}: not instantiated in {TOP_CELL}")
+            failures.append(f"{cell}: not instantiated in {top_cell}")
             continue
         width = len(subckt_ports(netlists[cell], cell))
         for tokens in instances:
             nets = tokens[1:-1]
             if len(nets) != width:
                 failures.append(
-                    f"{TOP_CELL}: instance {tokens[0]} of {cell} connects "
+                    f"{top_cell}: instance {tokens[0]} of {cell} connects "
                     f"{len(nets)} nets, but {cell} has {width} ports"
                 )
     return failures
 
 
-def run(check: bool, only: str | None, verbose: bool) -> int:
+def run(
+    design: Design,
+    check: bool,
+    only: str | None,
+    verbose: bool,
+    variant: str | None = None,
+) -> int:
     try:
-        pdk = find_pdk()
+        pdk = find_pdk(variant or design.variant)
     except PdkNotFound as exc:
         print(f"design/netlist.py: {exc}", file=sys.stderr)
         return 2
-    env = xschem_env(pdk)
+    env = xschem_env(pdk, design)
 
-    wanted = [only] if only else cells()
+    wanted = [only] if only else cells(design)
     netlists: dict[str, str] = {}
     with tempfile.TemporaryDirectory(prefix="sg13g2-ldo-netlist-") as tmp:
         outdir = Path(tmp)
         for cell in wanted:
-            sch = DESIGN_DIR / f"{cell}.sch"
+            sch = design.sch(cell)
             netlists[cell] = run_xschem_netlist(sch, outdir, env)
             if verbose:
                 print(f"  netlisted {cell} (PDK: {pdk.path}, via {pdk.source})")
@@ -353,12 +447,12 @@ def run(check: bool, only: str | None, verbose: bool) -> int:
         # A single-cell run cannot evaluate the cross-cell invariants.
         failures: list[str] = []
     else:
-        failures = check_invariants(netlists)
+        failures = check_invariants(design, netlists)
 
     status = 0
     if check:
         for cell, text in netlists.items():
-            committed = NETLIST_DIR / f"{cell}.spice"
+            committed = design.netlist_dir / f"{cell}.spice"
             if not committed.is_file():
                 failures.append(f"{committed.relative_to(REPO_ROOT)} is missing")
                 continue
@@ -378,9 +472,9 @@ def run(check: bool, only: str | None, verbose: bool) -> int:
                     f"reproducible:\n{diff}"
                 )
     else:
-        NETLIST_DIR.mkdir(exist_ok=True)
+        design.netlist_dir.mkdir(parents=True, exist_ok=True)
         for cell, text in netlists.items():
-            target = NETLIST_DIR / f"{cell}.spice"
+            target = design.netlist_dir / f"{cell}.spice"
             target.write_text(text)
             print(f"wrote {target.relative_to(REPO_ROOT)}")
 
@@ -399,7 +493,21 @@ def run(check: bool, only: str | None, verbose: bool) -> int:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Export ngspice netlists from design/*.sch via xschem.",
+        description="Export ngspice netlists from this repo's xschem sources.",
+    )
+    parser.add_argument(
+        "--design",
+        choices=sorted(DESIGNS),
+        default=DEFAULT_DESIGN,
+        help="which PDK branch to netlist: 'sg13g2' (design/, ihp-sg13g2) or "
+             "'sg13cmos5l' (design/sg13cmos5l/, ihp-sg13cmos5l). "
+             f"Default: {DEFAULT_DESIGN}.",
+    )
+    parser.add_argument(
+        "--pdk-variant",
+        help="override the PDK variant directory the selected design is "
+             "netlisted against (escape hatch for a non-standard install; "
+             "the design's own variant is used by default)",
     )
     parser.add_argument(
         "--check",
@@ -414,7 +522,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("-v", "--verbose", action="store_true")
     args = parser.parse_args(argv)
     try:
-        return run(check=args.check, only=args.cell, verbose=args.verbose)
+        return run(
+            design=DESIGNS[args.design],
+            check=args.check,
+            only=args.cell,
+            verbose=args.verbose,
+            variant=args.pdk_variant,
+        )
     except ExportError as exc:
         print(f"design/netlist.py: {exc}", file=sys.stderr)
         return 1
