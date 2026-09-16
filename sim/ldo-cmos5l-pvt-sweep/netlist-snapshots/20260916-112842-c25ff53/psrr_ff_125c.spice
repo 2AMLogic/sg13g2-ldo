@@ -1,0 +1,50 @@
+* sg13g2-ldo -- SG13CMOS5L closed-loop PSRR bench (issue #21).
+* Generated from
+* sim/ldo-cmos5l-pvt-sweep/testbench/tb_psrr_cmos5l.spice.tmpl by
+* sim/ldo-cmos5l-pvt-sweep/run_sweep.sh -- do not edit a generated
+* netlist-snapshots/*.spice file directly. Full methodology in
+* sim/ldo-cmos5l-pvt-sweep/README.md; this header is a short pointer.
+*
+* Generated for: corner=mos_ff temp=125C
+* PDK: ihp-sg13cmos5l /home/ubuntu/share/pdk (see sim/pdk-cmos5l.json for the pinned release)
+* OSDI models: /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi (built by sim/tools/build-osdi.sh)
+* Design netlist under test (frozen at this repo's git sha in the record):
+*   /home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-25/design/sg13cmos5l/netlist/ldo_core_cmos5l.spice
+*
+* Closed-loop bench (no flattening/loop-break needed, unlike
+* tb_loopgain_cmos5l.spice.tmpl): ldo_core_cmos5l is instantiated whole.
+* Vin carries a 1V AC stimulus (dc still 3.30V); Vref's AC component is
+* held at 0 so the only AC excitation into the loop is the supply ripple
+* under test. PSRR_dB(f) = -20*log10(|v(vout)/v(vin)|) -- reported as a
+* positive rejection number (higher = better), the sign convention
+* README.md's "Target specification" table's PSRR row assumes.
+
+.lib "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/models/cornerMOShv.lib" mos_ff
+.lib "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/models/cornerRES.lib" res_typ
+.lib "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/models/cornerCAP.lib" cap_typ
+
+.options temp=125 tnom=27
+
+.include "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-25/design/sg13cmos5l/netlist/ldo_core_cmos5l.spice"
+
+Vin VIN 0 dc 3.30 ac 1
+Vref VREF 0 dc 0.90 ac 0
+Ibias IBIAS 0 dc 2u
+Iload VOUT 0 dc 0.001
+Cout VOUT 0 1u
+
+Xtop VIN VOUT 0 VREF IBIAS ldo_core_cmos5l
+
+.control
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/psp103.osdi
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/psp103_nqs.osdi
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/mosvar.osdi
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/r3_cmc.osdi
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/cap_cmomi.osdi
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/cap_cmomf.osdi
+
+ac dec 20 1 100meg
+let psrr_db = -db(v(vout)/v(vin))
+wrdata /home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-25/sim/ldo-cmos5l-pvt-sweep/corners/20260916-112842-c25ff53/psrr_ff_125c_ac.csv psrr_db
+.endc
+.end
