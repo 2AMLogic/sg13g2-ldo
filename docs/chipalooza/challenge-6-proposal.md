@@ -182,7 +182,7 @@ continuous min/typ/max the evidence does not support.
 |---|---|---|---|---|---|---|
 | Output accuracy | 1.8 V +/-2% (1.764-1.836 V) | 1.80023 V | 1.80030 V | 1.80064 V | **PASS**, all 15 corners | `vout_no_load_v` column |
 | Dropout @ 50 mA | < 300 mV worst corner | 0.200 V (`tt`/-40degC, floors at the bench's discretization step — see `sim/ldo-cmos5l-pvt-sweep/README.md` "Benches") | 0.200 V | 0.240 V (`ss`/125degC) | **PASS**, all 15 corners now reach regulation | `dropout_v_50ma` column |
-| Line regulation | < 5 mV/V (no-load only — see caveat below) | 0.162 mV/V (`sf`/-40degC) | 0.179 mV/V | 0.245 mV/V (`ss`/125degC) | **PASS** | `line_reg_mv_per_v` column |
+| Line regulation | < 5 mV/V (no-load only — see caveat below) | 0.162 mV/V (`ss`/-40degC) | 0.179 mV/V | 0.245 mV/V (`ff`/125degC) | **PASS** | `line_reg_mv_per_v` column |
 | Load regulation | < 1% over full load, measured at `Vin`=3.63 V (best-case headroom — see `sim/ldo-cmos5l-pvt-sweep/README.md` "Why Vin=3.63V for load regulation") | 0.0076% (`sf`/-40degC) | 0.0095% | 0.0248% (`ff`/125degC) | **PASS**, all 15 corners | `load_reg_pct` column |
 | Iq, no load | < 30 uA | 21.87 uA (`ff`/125degC) | 22.97 uA | 22.98 uA (`fs`/-40degC) | **PASS** | `iq_a` column |
 | Iq, full load (50 mA) | < 30 uA | -- | -- | 23.05-23.08 uA (range across the 15-point grid; not separately broken out by corner in the merged CSV — see `sim/ldo-cmos5l-pvt-sweep/README.md` "Results (issue #25...)") | **PASS** | per-corner raw sweep CSVs, `sim/ldo-cmos5l-pvt-sweep/corners/20260916-112842-c25ff53/` |
