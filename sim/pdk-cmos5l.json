@@ -1,0 +1,36 @@
+{
+  "_comment": "Pinned SG13CMOS5L PDK revision this sim/ tree's SG13CMOS5L-branch evidence records (sim/ldo-cmos5l-pvt-sweep/) were generated against -- the SG13CMOS5L counterpart of sim/pdk.json (SG13G2). Every record under sim/ldo-cmos5l-pvt-sweep/records/*.md must trace to this file (or a later commit that bumps it) -- see sim/README.md 'PDK pin'. Not consumed by tooling; kept as a plain, greppable fact sheet.",
+  "source": "IHP-GmbH/ihp-sg13cmos5l",
+  "fetch_method": "git clone https://github.com/IHP-GmbH/ihp-sg13cmos5l.git (a separate upstream repository, NOT a variant directory inside the IHP-Open-PDK tarball sim/pdk.json's fetch_method pulls -- see design/README.md 'Known gaps' on this branch and 2AMLogic/klayout-tools#1929, the tracked upstream gap for a pinned fetch script equivalent to fetch-ihp-sg13g2.sh)",
+  "release_tag": "none -- this PDK ships no tagged releases as of this pin; pinned by commit sha on the main branch instead (see pinned_commit below)",
+  "pinned_commit": "607e18d4bd9214a52575c194b4181ef449f9252f",
+  "pinned_commit_date": "2026-08-25T12:13:21Z",
+  "pinned_commit_verified": "2026-09-16 -- re-verified directly against the installed checkout's `git log -1 --format=%H` before use, per issue #21's instruction not to trust the commit string cited in the issue body without re-checking; it matched exactly.",
+  "pdk_root_layout": "PDK_ROOT/ihp-sg13cmos5l -- installed NEXT TO an ihp-sg13g2 checkout under the SAME PDK_ROOT (design/README.md 'Install shape is a dispatch hazard': this PDK's device symbols and HV model cards are relative symlinks into a sibling ihp-sg13g2 tree, e.g. libs.tech/ngspice/models/cornerMOShv.lib is byte-identical to ihp-sg13g2's own copy -- confirmed directly, both files diff clean, at this pin).",
+  "variant": "ihp-sg13cmos5l",
+  "local_install_verified": {
+    "path_marker": "<PDK_ROOT>/ihp-sg13cmos5l/.git (no .fetched-version marker on this PDK -- it is a plain git checkout, not an open_pdks-shaped release tarball)",
+    "value_read": "607e18d4bd9214a52575c194b4181ef449f9252f (git rev-parse HEAD)",
+    "checked": "2026-09-16"
+  },
+  "osdi_toolchain": {
+    "_comment": "Same toolchain and pins as sim/pdk.json's osdi_toolchain block (sim/tools/build-osdi.sh is PDK-parameterized via ${PDK}/${PDK_ROOT}, not SG13G2-specific -- see sim/env.sh); restated here because this PDK's OSDI outputs live under a different PDK_ROOT/<PDK> path and additionally cover the two MoM-cap models SG13G2's own tree does not need (cap_cmomi/cap_cmomf -- the Miller compensation cap XCc in ldo_erramp_cmos5l.sch).",
+    "approach": "source-compile the PDK's own Verilog-A models with a checksum-pinned prebuilt OpenVAF-Reloaded (openvaf-r)",
+    "build_script": "sim/tools/build-osdi.sh (invoke with PDK=ihp-sg13cmos5l)",
+    "compiler_repo": "OpenVAF/OpenVAF-Reloaded",
+    "compiler_tag": "v24.0.1mob",
+    "compiler_invocation_name": "openvaf-r",
+    "models_built": ["psp103.osdi", "psp103_nqs.osdi", "r3_cmc.osdi", "mosvar.osdi", "cap_cmomi.osdi", "cap_cmomf.osdi"],
+    "install_dir": "PDK_ROOT/ihp-sg13cmos5l/libs.tech/ngspice/osdi (PDK-install territory, not tracked in this repo)",
+    "models_this_study_actually_needs": ["psp103.osdi (sg13_hv_pmos/sg13_hv_nmos, PSP103.6)", "r3_cmc.osdi (rhigh nulling resistor Rz)", "cap_cmomi.osdi (Miller cap Cc)"],
+    "note": "cap_cmomf.osdi and psp103_nqs.osdi/mosvar.osdi are loaded by every testbench in sim/ldo-cmos5l-pvt-sweep/ per the shared pre_osdi convention even though this design does not instantiate cap_cmomf or use the NQS/mosvar variants -- same posture sim/pdk.json's note takes for the SG13G2 tree.",
+    "ngspice_actually_used": "ngspice-46 (see sim/ldo-cmos5l-pvt-sweep/records/*.md for the exact `ngspice -v` string each record was generated with)",
+    "osdi_abi_emitted": "v0.4",
+    "ngspice_version_floor": "46 -- identical constraint to sim/pdk.json; see that file for the full rationale (OSDI ABI v0.4 vs. Ubuntu 24.04's apt ngspice 42)."
+  },
+  "pdk_caveats_honoured": {
+    "_comment": "The SG13CMOS5L-specific analog caveats design/README.md 'PDK caveats honoured' already lists for the schematic; restated here because sim/ldo-cmos5l-pvt-sweep/ is the experiment that has to actually EVIDENCE them, per issue #21's acceptance criteria.",
+    "mom_cap_no_corner_or_mismatch_model": "cornerCAP.lib (this pin): every cap_typ/cap_typ_mismatch/cap_typ_stat/cap_bcs/cap_wcs/cap_wcs_mismatch section maps to the SAME nominal cap_cmomi.lib/cap_cmomf.lib include -- verified directly by reading the file at this pin, not assumed. A PVT corner sweep over Cc's value is therefore a no-op by construction; sim/ldo-cmos5l-pvt-sweep/README.md 'MoM-cap (Cc) sensitivity sweep' runs a VALUE sensitivity sweep instead (Cc width scaled 0.5x/1x/2x nominal), the sweep design/README.md's own 'PDK caveats honoured' table says this issue owes.",
+    "cap_cmomi_not_validated_on_cmos5l_silicon": "cap_cmomi.lib's own header (read at this pin): coefficients are TRANSFERRED from the SG13G2 characterisation by layer count, none measured on cmos5l silicon; explicitly flagged 'APPROXIMATE MODEL -- NOT YET VALIDATED'. Every loop-gain/phase-margin result in this experiment that depends on Cc's value inherits this caveat and is marked insufficient-evidence in the spec table, per issue #21 acceptance criterion 4."
+  }
+}

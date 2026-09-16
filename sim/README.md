@@ -14,10 +14,15 @@ artifact").
 
 ## PDK pin
 
-Every record in this tree is generated against the PDK revision pinned in
+Every record in this tree's SG13G2-branch experiments (everything except
+`ldo-cmos5l-pvt-sweep/`) is generated against the PDK revision pinned in
 [`pdk.json`](pdk.json) (`IHP-Open-PDK` tag `v0.3.0`, fetchable via
-`klayout-tools`' `scripts/fetch-ihp-sg13g2.sh`). `source env.sh` resolves
-`PDK_ROOT`/`PDK` the same way both sibling repos' `sim/env.sh` do (env vars
+`klayout-tools`' `scripts/fetch-ihp-sg13g2.sh`). The SG13CMOS5L branch's own
+experiment (`ldo-cmos5l-pvt-sweep/`) traces instead to
+[`pdk-cmos5l.json`](pdk-cmos5l.json) (`IHP-GmbH/ihp-sg13cmos5l`, a separate
+upstream repository with no tagged releases, pinned by commit sha) — see
+that file for why the fetch/pin shape differs from `pdk.json`'s. `source
+env.sh` resolves `PDK_ROOT`/`PDK` the same way both sibling repos' `sim/env.sh` do (env vars
 first, then the usual `open_pdks` install prefixes) — every experiment's
 `run_*.sh` sources it, and an interactive `ngspice` session can too.
 
@@ -128,3 +133,14 @@ the actual evidence.
   consequential record". See that experiment's README for the full
   methodology, corner-grid rationale, and the `sg13_hv_pmos` hypothesis
   verdict.
+- [`ldo-cmos5l-pvt-sweep/`](ldo-cmos5l-pvt-sweep/README.md) — the first
+  circuit-level (closed-loop) PVT verification in this repo, on either PDK
+  branch: verifies `design/sg13cmos5l/ldo_core_cmos5l.sch`'s closed loop
+  (pass device + real two-stage OTA error amp, issue #20) against a spec
+  table re-derived at SG13CMOS5L's 3.3V analog rail, across the full
+  `{tt,ss,ff,sf,fs} × {-40,27,125}°C` process/temperature grid plus a
+  Miller-cap (`Cc`) value sensitivity sweep and an `Rz` corner sensitivity
+  sweep (issue #21, phase 3/4 of the SG13CMOS5L port tracked by #12). See
+  that experiment's README for the loop-gain measurement method, the
+  spec-table verdicts, and why several rows fail against the schematic's
+  current (explicitly provisional, unratified) sizing.
