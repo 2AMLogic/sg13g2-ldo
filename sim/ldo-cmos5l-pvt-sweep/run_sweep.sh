@@ -356,6 +356,48 @@ for label in bcs typ wcs; do
   run_ngspice "${point_id}" "${netlist}" || true
 done
 
+# --- Divider attribution, over the whole 45-point grid (issue #31 AC3/AC4).
+#
+# Crossing the resistor corner moves TWO rhigh devices at once: the feedback
+# divider #28 converted, and the error amp's nulling resistor Rz (already a
+# PDK rhigh since #20). A raw before/after against the #21/#25 records
+# therefore cannot, on its own, say which of the two a margin shift belongs
+# to -- and this issue exists to answer exactly that about the divider.
+#
+# So: re-run the loop-gain bench at every main-grid point with the divider
+# swapped BACK to the pre-#28 behavioural 300k pair while everything else
+# (MOS corner, temperature, resistor section, Cc) is held identical. The
+# difference between these points and the main grid's loopgain points is
+# the divider conversion's own contribution, with Rz's spread held common
+# to both sides and cancelled out.
+#
+# The substitution is applied to the GENERATED bench netlist, not to the
+# design netlist: tb_loopgain_cmos5l.spice.tmpl flattens ldo_core_cmos5l
+# one level (see its header), so the divider lines it actually simulates
+# are the mirrored copies in the bench, not the ones inside the .include'd
+# subckt. Substituting the design netlist would silently change nothing.
+BEHDIV_TOP='XRtop VOUT FB VSS rhigh w=1e-6 l=25.43e-6 m=1 b=7'
+BEHDIV_BOT='XRbot FB VSS VSS rhigh w=1e-6 l=25.43e-6 m=1 b=7'
+for corner in "${CORNERS[@]}"; do
+  for temp in "${TEMPS[@]}"; do
+    for rlabel in "${RES_LABELS[@]}"; do
+      point_id="loopgain_divattr_${corner}_${temp}c_r${rlabel}"
+      netlist="$(gen_netlist loopgain "${point_id}" "mos_${corner}" "res_${rlabel}" cap_typ "${temp}" "${DESIGN_NETLIST}" "100u (nominal)")"
+      sed -e "s|^${BEHDIV_TOP}\$|Rtop VOUT FB 300k m=1|" \
+          -e "s|^${BEHDIV_BOT}\$|Rbot FB VSS 300k m=1|" \
+          "${netlist}" > "${netlist}.behdiv"
+      mv "${netlist}.behdiv" "${netlist}"
+      if ! grep -q '^Rtop VOUT FB 300k m=1$' "${netlist}" \
+         || ! grep -q '^Rbot FB VSS 300k m=1$' "${netlist}"; then
+        echo "run_sweep.sh: FATAL -- behavioural-divider substitution did not take in ${netlist}" >&2
+        echo "run_sweep.sh: (tb_loopgain_cmos5l.spice.tmpl's flattened divider lines may have drifted)." >&2
+        exit 4
+      fi
+      run_ngspice "${point_id}" "${netlist}" || true
+    done
+  done
+done
+
 if [[ ${passed} -eq 0 ]]; then
   echo "run_sweep.sh: no points passed -- refusing to write a summary." >&2
   exit 1
@@ -696,6 +738,37 @@ def fmt(v, scale, dec, signed=False):
     return s
 
 
+# --- Divider attribution: same point, same resistor section, divider
+# swapped back to the pre-#28 behavioural 300k pair. The difference is the
+# conversion's OWN contribution, with Rz's corner spread common to both
+# sides and therefore cancelled.
+attr_rows = []
+for corner in CORNERS:
+    for temp in TEMPS:
+        for rlabel in RES_LABELS:
+            sfx = f"{corner}_{temp}c_r{rlabel}"
+            beh = loopgain_metrics(f"{corners_dir}/loopgain_divattr_{sfx}_ac.csv")
+            rh = after.get((corner, str(temp), f"res_{rlabel}"), {})
+            row = {"corner": corner, "temp_c": temp, "res_section": f"res_{rlabel}"}
+            for key in ("phase_margin_deg", "gain_margin_db", "dc_gain_db"):
+                bv = (beh or {}).get(key)
+                av = rh.get(key)
+                row[f"{key}_behavioural_divider"] = bv
+                row[f"{key}_rhigh_divider"] = av
+                row[f"{key}_divider_delta"] = (av - bv) if (bv is not None and av is not None) else None
+            attr_rows.append(row)
+
+attr_fieldnames = ["corner", "temp_c", "res_section"]
+for key in ("phase_margin_deg", "gain_margin_db", "dc_gain_db"):
+    attr_fieldnames += [f"{key}_behavioural_divider", f"{key}_rhigh_divider",
+                        f"{key}_divider_delta"]
+attr_csv_out = delta_csv_out.replace(".delta.csv", ".divider-attribution.csv")
+with open(attr_csv_out, "w", newline="") as f:
+    w = csv.DictWriter(f, fieldnames=attr_fieldnames, extrasaction="ignore")
+    w.writeheader()
+    for row in attr_rows:
+        w.writerow({k: ("" if row.get(k) is None else row.get(k)) for k in attr_fieldnames})
+
 with open(cmp_md_out, "w") as f:
     for key, heading, unit, scale, dec, _hib in METRICS:
         derived = " (before = derived, see note)" if key == "i_divider_a" else ""
@@ -714,8 +787,30 @@ with open(cmp_md_out, "w") as f:
                 f"| {fmt(row.get('delta_res_typ'), scale, dec, signed=True)} "
                 f"| {fmt(row.get('delta_worst'), scale, dec, signed=True)} |\n")
 
+    f.write("\n### Divider attribution: the conversion's own contribution\n\n")
+    f.write("Same point, same MOS corner, same temperature, same resistor\n"
+            "section, same `Cc` -- the only difference is the feedback\n"
+            "divider: the pre-#28 behavioural 300k pair vs the PDK `rhigh`\n"
+            "pair now in the schematic. Because `Rz`'s corner spread is\n"
+            "common to both sides, it cancels, and what is left is the\n"
+            "divider conversion's own effect. (Machine-readable:\n"
+            f"`records/{os.path.basename(attr_csv_out)}`.)\n\n")
+    f.write("| corner / temp / R corner | PM, behavioural 300k (deg) "
+            "| PM, PDK `rhigh` (deg) | PM delta (deg) "
+            "| GM delta (dB) | loop gain delta (dB) |\n")
+    f.write("|---|---|---|---|---|---|\n")
+    for row in attr_rows:
+        f.write(
+            f"| `{row['corner']}` / {row['temp_c']}C / `{row['res_section']}` "
+            f"| {fmt(row.get('phase_margin_deg_behavioural_divider'), 1.0, 2)} "
+            f"| {fmt(row.get('phase_margin_deg_rhigh_divider'), 1.0, 2)} "
+            f"| {fmt(row.get('phase_margin_deg_divider_delta'), 1.0, 2, signed=True)} "
+            f"| {fmt(row.get('gain_margin_db_divider_delta'), 1.0, 2, signed=True)} "
+            f"| {fmt(row.get('dc_gain_db_divider_delta'), 1.0, 2, signed=True)} |\n")
+
 print(f"run_sweep.sh (post-process): wrote {len(main_rows)} main rows, "
-      f"{len(sens_rows)} sensitivity rows, {len(delta_rows)} delta rows")
+      f"{len(sens_rows)} sensitivity rows, {len(delta_rows)} delta rows, "
+      f"{len(attr_rows)} divider-attribution rows")
 PYEOF
 
 # --- Completeness matrix: every (corner,temp,res_section) has all 3
@@ -830,6 +925,9 @@ done
   echo "    \`records/${RECORD_ID}.sensitivity.csv\`"
   echo "  - Before/after/delta CSV vs the pre-conversion baseline:"
   echo "    \`records/${RECORD_ID}.delta.csv\`"
+  echo "  - Divider-attribution CSV (PDK \`rhigh\` divider vs the pre-#28"
+  echo "    behavioural 300k pair, everything else held identical):"
+  echo "    \`records/${RECORD_ID}.divider-attribution.csv\`"
   echo "- **Timestamp / author**: $(date -u +%Y-%m-%dT%H:%M:%SZ), Loom Builder"
   echo "  (agent), issue #31."
   echo
