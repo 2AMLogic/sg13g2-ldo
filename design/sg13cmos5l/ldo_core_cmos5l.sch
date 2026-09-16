@@ -56,15 +56,24 @@ v {xschem version=3.4.7 file_version=1.3
 * the supply rail. Gate driven directly by the error amplifier output
 * (EAOUT); no gate buffer in this increment.
 *
-* SIZING IS NOT RATIFIED. DR-0002 Decision (a) says so in as many words
-* ("Sizing is explicitly not decided here ... #20/#21 own it"). w=300u
-* l=0.5u ng=1 m=1 is a DC-sanity first cut for connectivity/ERC, chosen to
-* match the SG13G2 branch's own provisional value so a phase-3 comparison
-* between the two branches is not confounded by a sizing difference. It is
-* NOT sized against any dropout, current-limit, or area target. l=0.5u is
-* not arbitrary: the process spec rates HV VGS <= 3.3 V only at
-* LG >= 0.5 um (SG13CMOS5L_os_process_spec.pdf Rev. 0.2 Sec 2.1.5, quoted
-* in DR-0002's ratings table).
+* SIZING -- RESIZED (issue #25) FROM THE ORIGINAL DC-SANITY FIRST CUT.
+* w=2800u l=0.5u ng=1 m=1 replaces the phase-2 provisional w=300u after
+* #21's closed-loop PVT sweep (sim/ldo-cmos5l-pvt-sweep/) found w=300u
+* missed the dropout target by 4-7x and never reached regulation at all at
+* 4/15 corners. l=0.5u is unchanged and still not arbitrary: the process
+* spec rates HV VGS <= 3.3 V only at LG >= 0.5 um
+* (SG13CMOS5L_os_process_spec.pdf Rev. 0.2 Sec 2.1.5, quoted in DR-0002's
+* ratings table). w=2800u is derived from, and sits ~20-30% above,
+* sim/pass-device-screening's own bare-device implied-width data (worst
+* corner ~2169-2350um for 300mV/50mA, `w1u_l0.5u`/`w300u_l0.5u` rows of
+* sim/pass-device-screening/records/20260909-220347-ed18110.csv) -- the
+* margin above that bare-device estimate is deliberate headroom against
+* this closed-loop bench's discretized 10mV dropout-scan step and against
+* the amplifier's own re-derived compensation (see
+* ldo_erramp_cmos5l.sch's header) rather than a fresh independent
+* derivation. Full before/after PVT evidence, corner table, and the
+* decision record for this resize: spec/decision-records/DR-0003-sg13cmos5l-mpass-resize-and-compensation.md,
+* sim/ldo-cmos5l-pvt-sweep/README.md.
 *
 * FEEDBACK DIVIDER. Rtop (VOUT->FB) and Rbot (FB->VSS), 300k each, a plain
 * behavioral two-resistor divider giving FB = VOUT/2; against an
@@ -115,7 +124,7 @@ K {}
 V {}
 S {}
 E {}
-C {sg13cmos5l_pr/sg13_hv_pmos.sym} 400 200 0 0 {name=Mpass model=sg13_hv_pmos w=300u l=0.5u ng=1 m=1}
+C {sg13cmos5l_pr/sg13_hv_pmos.sym} 400 200 0 0 {name=Mpass model=sg13_hv_pmos w=2800u l=0.5u ng=1 m=1}
 N 420 170 420 110 {}
 C {lab_pin.sym} 420 110 0 0 {name=l1 lab=VIN}
 N 420 230 420 290 {}

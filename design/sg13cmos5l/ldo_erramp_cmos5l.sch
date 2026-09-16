@@ -32,7 +32,7 @@ v {xschem version=3.4.7 file_version=1.3
 *
 *        VDD ---+----------+-------------------------+
 *               |          |                         |
-*             [Mb0]      [Mtail] m=2               [Mload2] m=4
+*             [Mb0]      [Mtail] m=3               [Mload2] m=6
 *            diode          |                         |
 *               |         TAIL                        |
 *            IBIAS      +---+---+                     |
@@ -59,66 +59,98 @@ v {xschem version=3.4.7 file_version=1.3
 *
 * ---------------------------------------------------------------------
 * JUDGEMENT CALLS THIS FILE MAKES THAT DR-0002 DID NOT MAKE.
-* DR-0002 ratified device flavours and structure only; it explicitly left
-* sizing, the bias scheme, and the nulling resistor to this phase. These
-* are first-cut engineering choices, NOT ratified decisions, and none of
-* them is backed by a testbench yet (phase 3, #21, owns that):
+* DR-0002 ratified device flavours and structure only; sizing, the bias
+* scheme, and the nulling resistor were left to later phases. #21's
+* closed-loop PVT sweep (sim/ldo-cmos5l-pvt-sweep/) found the phase-2
+* first cut below (Mtail=2/Mload2=4/Cc=30u/Rz l=5.3u) gave ~0.2-0.35deg
+* phase margin and 4-5.4dB gain margin at EVERY corner -- essentially no
+* stability margin at all, confirmed across a Cc-value and Rz-corner
+* sensitivity sweep. #25 re-derives the bias currents and the Cc/Rz
+* compensation network below against that evidence; see
+* spec/decision-records/DR-0003-sg13cmos5l-mpass-resize-and-compensation.md
+* for the full re-derivation, the pole/zero reasoning, and the closed-loop
+* PVT re-verification. These remain first-cut engineering choices, not
+* ratified decisions -- they are what the current PVT record supports,
+* not a claim of optimality:
 *
 * 1. BIAS SCHEME: an external IBIAS current-input port, mirrored on-block.
 *    Mb0 is a diode-connected sg13_hv_pmos from VDD whose gate/drain node
-*    IS the IBIAS pin; Mtail (m=2) and Mload2 (m=4) mirror from it. An
-*    external sink pulls Iref out of IBIAS; the mirror sets tail = 2*Iref
-*    and second-stage = 4*Iref. Chosen over (a) a VBIAS *voltage* port,
-*    which would not track the mirror's Vsg over PVT, and (b) an on-block
-*    resistor-to-VSS self-bias, whose current is a direct function of the
-*    supply and would wreck PSRR in a regulator. An external current input
-*    is also the honest interface for a block DR-0002 keeps bandgap-free:
-*    the reference is off-block, so the bias should be too, and a
-*    testbench can sweep it. IBIAS is a new top-level port of
-*    ldo_core_cmos5l -- see design/README.md's pinout table.
+*    IS the IBIAS pin; Mtail (m=3) and Mload2 (m=6) mirror from it --
+*    raised from #20's m=2/m=4 by #25 to speed up the first/second stage's
+*    own gm (see item 2) while staying inside the Iq budget (see below).
+*    An external sink pulls Iref out of IBIAS; the mirror sets
+*    tail = 3*Iref and second-stage = 6*Iref. Chosen over (a) a VBIAS
+*    *voltage* port, which would not track the mirror's Vsg over PVT, and
+*    (b) an on-block resistor-to-VSS self-bias, whose current is a direct
+*    function of the supply and would wreck PSRR in a regulator. An
+*    external current input is also the honest interface for a block
+*    DR-0002 keeps bandgap-free: the reference is off-block, so the bias
+*    should be too, and a testbench can sweep it. IBIAS is a top-level
+*    port of ldo_core_cmos5l -- see design/README.md's pinout table.
 *
-* 2. NULLING RESISTOR Rz: included, not omitted. The RHP zero of a Miller
-*    stage sits at gm2/Cc; at the ~8 uA second-stage bias this Iq budget
-*    allows (spec/porting-plan.md's 16-26 uA total-block allocation), gm2
-*    is order 1e-4 S, so the RHP zero lands close enough to the intended
-*    unity-gain frequency that ignoring it is not defensible. Rz is sized
-*    for the textbook Rz ~ 1/gm2 first cut. It is an rhigh PDK resistor,
-*    not a generic behavioral res.sym, deliberately: cornerRES.lib gives
-*    rhigh a real corner spread, so phase 3's PVT sweep sees Rz's own
-*    variation instead of a resistor that is identical at every corner.
-*    (Contrast the feedback divider in ldo_core_cmos5l.sch, which is still
-*    behavioral -- its ratio, not its absolute PVT spread, is what matters
-*    there, and it is a documented deferral inherited from the SG13G2
-*    branch.) Rz's body terminal is tied to VSS rather than the PDK's
-*    global sub! node: this cell is a .subckt with an explicit VSS pin and
-*    no .global declaration, so sub! would netlist as an undeclared,
-*    floating local node.
-*    A gm-tracking triode-MOS Rz is the obvious refinement if phase 3
-*    shows the fixed-resistor spread costs too much phase margin.
+* 2. NULLING RESISTOR Rz: included, not omitted, and substantially
+*    enlarged by #25 (l: 5.3um -> 1200um, w unchanged at the PDK's rhigh
+*    minimum, 1um) from the phase-2 textbook Rz~1/gm2 first cut. That
+*    first cut alone left the loop with essentially zero phase margin at
+*    every corner (see above); DR-0003's re-derivation instead uses Rz
+*    (in series with the enlarged Cc below) to place a deliberate
+*    left-half-plane phase-lead zero near the loop's unity-gain crossover
+*    (empirically ~50-110kHz across the PVT grid at this sizing) -- a
+*    standard technique for reclaiming margin, but leading to a much
+*    larger resistor than a bare RHP-zero-cancellation estimate. It is an
+*    rhigh PDK resistor, not a generic behavioral res.sym, deliberately:
+*    cornerRES.lib gives rhigh a real corner spread, so the PVT sweep
+*    sees Rz's own variation instead of a resistor that is identical at
+*    every corner (checked via the loopgain_rzsens_* sensitivity points,
+*    sim/ldo-cmos5l-pvt-sweep/README.md). (Contrast the feedback divider
+*    in ldo_core_cmos5l.sch, which is still behavioral -- its ratio, not
+*    its absolute PVT spread, is what matters there, and it is a
+*    documented deferral inherited from the SG13G2 branch.) Rz's body
+*    terminal is tied to VSS rather than the PDK's global sub! node: this
+*    cell is a .subckt with an explicit VSS pin and no .global
+*    declaration, so sub! would netlist as an undeclared, floating local
+*    node. At rhigh's ~1.0-1.4 kOhm/sq corner spread, l=1200um/w=1um
+*    implies roughly 1.2-1.7 MOhm and a schematic-level-only 1200:1
+*    aspect ratio -- a layout-phase (#22) concern (meandering via the
+*    PDK's own rhigh PCell `b` bends parameter), not a schematic-capture
+*    one; DR-0003 records this explicitly as a known follow-up rather
+*    than a hidden cost. A gm-tracking triode-MOS Rz remains an available
+*    refinement if a future phase needs a smaller die footprint here.
 *
 * 3. Cc IS A MoM CAP AND ITS VALUE IS insufficient-evidence. cap_cmomi at
-*    w=l=30 um over M1-M4 is ~0.95 pF by the PDK's own display helper
-*    (libs.tech/xschem/sg13cmos5l_pr/cap_cmomi.tcl, which reproduces
-*    cap_cmomi.va's low-frequency C). MoM caps are NOT validated on CMOS5L
-*    silicon and cornerCAP.lib maps every corner/mismatch/stat section to
-*    the same nominal model, so selecting a cap corner is a no-op and a
-*    PVT sweep over it measures nothing. Per DR-0002's "Flagged, not
-*    resolved" section, every result that depends on this value is
-*    insufficient-evidence until #21's sensitivity sweep bounds it.
+*    w=100u l=30u (#25 widened from #20's w=l=30u) is ~3.2 pF by the PDK's
+*    own display helper (libs.tech/xschem/sg13cmos5l_pr/cap_cmomi.tcl,
+*    which reproduces cap_cmomi.va's low-frequency C, scaled from the
+*    30u-square ~0.95 pF figure by area). MoM caps are NOT validated on
+*    CMOS5L silicon and cornerCAP.lib maps every corner/mismatch/stat
+*    section to the same nominal model, so selecting a cap corner is a
+*    no-op and a PVT sweep over it measures nothing -- #25 re-ran the
+*    Cc-value sensitivity sweep {0.5x,1x,2x} at this new nominal and found
+*    the PASS verdict (phase margin, gain margin) holds across the whole
+*    range, not just at 1x (see DR-0003). Per DR-0002's "Flagged, not
+*    resolved" section, the exact numbers are still insufficient-evidence
+*    pending real CMOS5L MoM-cap silicon characterization; the qualitative
+*    PASS verdict does not depend on that caveat (same reasoning #21
+*    established for the pre-#25 FAIL verdict).
 *
 * 4. SIZING generally is a DC-sanity first cut for connectivity/ERC and a
-*    plausible operating point, exactly as design/ldo_core.sch's w=300u
-*    Mpass is on the SG13G2 branch. L >= 1 um on every device here (the
-*    process spec rates HV VGS <= 3.3 V only at LG >= 0.5 um, and longer
-*    channels buy matching and output resistance that a 16-26 uA amp
-*    needs). ng=1 throughout: fingering is a layout concern for phase 4
-*    (#22), not a schematic-capture one.
+*    plausible operating point for every device NOT called out above --
+*    Mb0/Minp/Minn/Mn1/Mn2/Mn3 keep #20's original widths; only the
+*    Mtail/Mload2 mirror ratios and the Cc/Rz compensation values changed
+*    in #25. L >= 1 um on every device here (the process spec rates HV
+*    VGS <= 3.3 V only at LG >= 0.5 um, and longer channels buy matching
+*    and output resistance a micro-power amp needs). ng=1 throughout:
+*    fingering is a layout concern for phase 4 (#22), not a
+*    schematic-capture one.
 *
-* First-cut operating point implied by the sizes below, at Iref = 2 uA:
-* tail 4 uA (2 uA per input device), second stage 8 uA, mirror reference
-* 2 uA => 14 uA in this cell, plus the 2 uA feedback divider in
-* ldo_core_cmos5l = 16 uA. That is at the bottom of the porting plan's
-* 16-26 uA allocation, with no simulation behind it.
+* Operating point implied by the sizes below, at Iref = 2 uA: tail 6 uA
+* (3 uA per input device), second stage 12 uA, mirror reference 2 uA =>
+* 20 uA in this cell, plus the 2 uA feedback divider in ldo_core_cmos5l =
+* 22 uA nominal -- confirmed by #25's closed-loop sweep at ~22.0-22.98 uA
+* (no load) and ~23.06-23.08 uA (full load, 50 mA) across the full PVT
+* grid, comfortably inside the porting plan's 16-26 uA allocation and the
+* ratified <30uA Iq target (design/README.md's spec table) at both load
+* points.
 *
 * NO ENABLE, NO CURRENT LIMIT, NO SOFT START, NO START-UP CIRCUIT. Same
 * scope boundary the SG13G2 branch drew; phases 3/4 and later increments
@@ -139,7 +171,7 @@ N 180 200 140 200 {}
 C {lab_pin.sym} 140 200 0 0 {name=l3 lab=IBIAS}
 N 220 200 270 200 {}
 C {lab_pin.sym} 270 200 0 0 {name=l4 lab=VDD}
-C {sg13cmos5l_pr/sg13_hv_pmos.sym} 500 200 0 0 {name=Mtail model=sg13_hv_pmos w=5u l=2u ng=1 m=2}
+C {sg13cmos5l_pr/sg13_hv_pmos.sym} 500 200 0 0 {name=Mtail model=sg13_hv_pmos w=5u l=2u ng=1 m=3}
 N 520 170 520 110 {}
 C {lab_pin.sym} 520 110 0 0 {name=l5 lab=VDD}
 N 520 230 520 290 {}
@@ -148,7 +180,7 @@ N 480 200 440 200 {}
 C {lab_pin.sym} 440 200 0 0 {name=l7 lab=IBIAS}
 N 520 200 570 200 {}
 C {lab_pin.sym} 570 200 0 0 {name=l8 lab=VDD}
-C {sg13cmos5l_pr/sg13_hv_pmos.sym} 1400 200 0 0 {name=Mload2 model=sg13_hv_pmos w=5u l=2u ng=1 m=4}
+C {sg13cmos5l_pr/sg13_hv_pmos.sym} 1400 200 0 0 {name=Mload2 model=sg13_hv_pmos w=5u l=2u ng=1 m=6}
 N 1420 170 1420 110 {}
 C {lab_pin.sym} 1420 110 0 0 {name=l9 lab=VDD}
 N 1420 230 1420 290 {}
@@ -202,12 +234,12 @@ N 1380 1000 1340 1000 {}
 C {lab_pin.sym} 1340 1000 0 0 {name=l31 lab=G1}
 N 1420 1000 1470 1000 {}
 C {lab_pin.sym} 1470 1000 0 0 {name=l32 lab=VSS}
-C {sg13cmos5l_pr/cap_cmomi.sym} 1700 600 0 0 {name=Cc model=cap_cmomi w=30e-6 l=30e-6 mmin=1 mmax=4 feed=double subblock=0 m=1 mm_ok=1}
+C {sg13cmos5l_pr/cap_cmomi.sym} 1700 600 0 0 {name=Cc model=cap_cmomi w=100e-6 l=30e-6 mmin=1 mmax=4 feed=double subblock=0 m=1 mm_ok=1}
 N 1700 570 1700 510 {}
 C {lab_pin.sym} 1700 510 0 0 {name=l33 lab=OUT}
 N 1700 630 1700 690 {}
 C {lab_pin.sym} 1700 690 0 0 {name=l34 lab=MZ}
-C {sg13cmos5l_pr/rhigh.sym} 1700 1000 0 0 {name=Rz model=rhigh body=VSS w=1e-6 l=5.3e-6 b=0 m=1}
+C {sg13cmos5l_pr/rhigh.sym} 1700 1000 0 0 {name=Rz model=rhigh body=VSS w=1e-6 l=1200e-6 b=0 m=1}
 N 1700 970 1700 910 {}
 C {lab_pin.sym} 1700 910 0 0 {name=l35 lab=MZ}
 N 1700 1030 1700 1090 {}

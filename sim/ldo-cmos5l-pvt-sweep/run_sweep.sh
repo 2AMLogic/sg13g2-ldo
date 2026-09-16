@@ -105,7 +105,7 @@ assert_loopgain_topology_sync() {
   local body expected
   body="$(awk '/^\.subckt ldo_core_cmos5l /,/^\.ends/' "${DESIGN_NETLIST}" | grep -E '^(XMpass|Rtop|Rbot|Xamp) ')"
   expected="$(cat <<'EOF'
-XMpass VOUT EAOUT VIN VIN sg13_hv_pmos w=300u l=0.5u ng=1 m=1
+XMpass VOUT EAOUT VIN VIN sg13_hv_pmos w=2800u l=0.5u ng=1 m=1
 Rtop VOUT FB 300k m=1
 Rbot FB VSS 300k m=1
 Xamp FB VREF EAOUT VIN VSS IBIAS ldo_erramp_cmos5l
@@ -223,15 +223,15 @@ for corner in "${CORNERS[@]}"; do
     mos_section="mos_${corner}"
 
     point_id="dcsweep_${corner}_${temp}c"
-    netlist="$(gen_netlist dcsweep "${point_id}" "${mos_section}" res_typ cap_typ "${temp}" "${DESIGN_NETLIST}" "30u (nominal)")"
+    netlist="$(gen_netlist dcsweep "${point_id}" "${mos_section}" res_typ cap_typ "${temp}" "${DESIGN_NETLIST}" "100u (nominal)")"
     run_ngspice "${point_id}" "${netlist}" || true
 
     point_id="loopgain_${corner}_${temp}c"
-    netlist="$(gen_netlist loopgain "${point_id}" "${mos_section}" res_typ cap_typ "${temp}" "${DESIGN_NETLIST}" "30u (nominal)")"
+    netlist="$(gen_netlist loopgain "${point_id}" "${mos_section}" res_typ cap_typ "${temp}" "${DESIGN_NETLIST}" "100u (nominal)")"
     run_ngspice "${point_id}" "${netlist}" || true
 
     point_id="psrr_${corner}_${temp}c"
-    netlist="$(gen_netlist psrr "${point_id}" "${mos_section}" res_typ cap_typ "${temp}" "${DESIGN_NETLIST}" "30u (nominal)")"
+    netlist="$(gen_netlist psrr "${point_id}" "${mos_section}" res_typ cap_typ "${temp}" "${DESIGN_NETLIST}" "100u (nominal)")"
     run_ngspice "${point_id}" "${netlist}" || true
   done
 done
@@ -239,14 +239,17 @@ done
 # --- Cc (Miller cap) value sensitivity, at tt/27C only -- see header ---
 CC_NETLISTS_DIR="${SNAPSHOTS_OUT}/design-netlist-cc-sensitivity"
 mkdir -p "${CC_NETLISTS_DIR}"
-declare -A CC_WIDTHS=( ["0.5x"]="15e-6" ["1x"]="30e-6" ["2x"]="60e-6" )
+declare -A CC_WIDTHS=( ["0.5x"]="50e-6" ["1x"]="100e-6" ["2x"]="200e-6" )
 for label in 0.5x 1x 2x; do
   w="${CC_WIDTHS[${label}]}"
   cc_netlist="${CC_NETLISTS_DIR}/ldo_core_cmos5l_cc${label}.spice"
-  # XCc's line is `XCc OUT MZ cap_cmomi w=30e-6 l=30e-6 ...` -- substitute
-  # ONLY the w=30e-6 token (Cc's width; l is held fixed at 30e-6), leaving
-  # every other device in the file untouched.
-  sed "s/XCc OUT MZ cap_cmomi w=30e-6 l=30e-6/XCc OUT MZ cap_cmomi w=${w} l=30e-6/" \
+  # XCc's line is `XCc OUT MZ cap_cmomi w=100e-6 l=30e-6 ...` -- substitute
+  # ONLY the w=100e-6 token (Cc's width; l is held fixed at 30e-6), leaving
+  # every other device in the file untouched. (#25 raised Cc's nominal
+  # width from 30e-6 to 100e-6; this base pattern and CC_WIDTHS above were
+  # updated to match -- see design/sg13cmos5l/ldo_erramp_cmos5l.sch's
+  # header.)
+  sed "s/XCc OUT MZ cap_cmomi w=100e-6 l=30e-6/XCc OUT MZ cap_cmomi w=${w} l=30e-6/" \
     "${DESIGN_NETLIST}" > "${cc_netlist}"
   if [[ "${label}" != "1x" ]] && diff -q "${cc_netlist}" "${DESIGN_NETLIST}" >/dev/null; then
     echo "run_sweep.sh: FATAL -- Cc width substitution for ${label} did not change ${cc_netlist} (XCc line text may have drifted from what this script expects)." >&2
@@ -254,7 +257,7 @@ for label in 0.5x 1x 2x; do
   fi
 
   point_id="loopgain_ccsens_${label}_tt_27c"
-  netlist="$(gen_netlist loopgain "${point_id}" mos_tt res_typ cap_typ 27 "${cc_netlist}" "${w} (${label} of nominal 30e-6)")"
+  netlist="$(gen_netlist loopgain "${point_id}" mos_tt res_typ cap_typ 27 "${cc_netlist}" "${w} (${label} of nominal 100e-6)")"
   run_ngspice "${point_id}" "${netlist}" || true
 done
 
@@ -263,7 +266,7 @@ for label_section in "bcs:res_bcs" "typ:res_typ" "wcs:res_wcs"; do
   label="${label_section%%:*}"
   res_section="${label_section##*:}"
   point_id="loopgain_rzsens_${label}_tt_27c"
-  netlist="$(gen_netlist loopgain "${point_id}" mos_tt "${res_section}" cap_typ 27 "${DESIGN_NETLIST}" "30u (nominal)")"
+  netlist="$(gen_netlist loopgain "${point_id}" mos_tt "${res_section}" cap_typ 27 "${DESIGN_NETLIST}" "100u (nominal)")"
   run_ngspice "${point_id}" "${netlist}" || true
 done
 
@@ -524,7 +527,11 @@ done
   echo "  (issue #20), verified against the spec table re-derived at this"
   echo "  PDK's rails (README.md), across the full process x temperature"
   echo "  PVT grid, plus Cc-value and Rz-corner sensitivity sweeps -- the"
-  echo "  input to issue #21's acceptance criteria."
+  echo "  input to issue #21's acceptance criteria. This harness is #21's"
+  echo "  deliverable; a run against the Mpass-resized/recompensated"
+  echo "  schematic (issue #25) is evidence for #25's acceptance criteria"
+  echo "  instead when the design netlist's git sha postdates #21's merge --"
+  echo "  see this record's own git sha above to tell which."
   echo "- **PDK**: \`${PDK}\` at \`${PDK_ROOT}\` -- pinned revision: see"
   echo "  \`sim/pdk-cmos5l.json\` (commit \`607e18d\`, re-verified against the"
   echo "  installed checkout)."
