@@ -109,22 +109,57 @@ v {xschem version=3.4.7 file_version=1.3
 * behavioral value it replaces, and -- because both legs are the same
 * drawn device -- the divider RATIO is exactly 1/2 independent of sheet
 * rho, which is the only property this divider is relied on for. Total
-* 600.9k; the divider's own standing current at VOUT = 1.8 V is 3.0 uA.
+* 600.9k -> a nominal standing current of 3.0 uA at VOUT = 1.8 V.
 * (The pre-#28 header claimed "900k total ... 2 uA" for two 300k legs --
 * arithmetically wrong on its own numbers, 300k + 300k = 600k -> 3.0 uA;
 * corrected here rather than carried forward.)
+*
+* THE SIMULATED DEVICE IS NOT 300.44 kOhm: it is 313.5 kOhm per leg
+* (measured at res_typ/27C, issue #31, sim/ldo-cmos5l-pvt-sweep record
+* 20260916-210331-9d3ace1), so the measured standing current is 2.87 uA,
+* not the 3.0 uA the symbol expression above implies. The 4.35% gap is the
+* PDK's own: resistors_mod.lib's rhigh subckt narrows the width once
+* (weff = w - 0.04e-6) and hands W=weff to its r3_cmc model card, whose own
+* xw=-0.04 narrows it again. 1360*211.965u/0.92u + 160 = 313.5k reproduces
+* the simulated value; the same formula at 0.96u reproduces the symbol's
+* 300.44k. Both numbers are stated here rather than one being quietly
+* replaced, because the symbol expression is what a schematic reader sees
+* and the model is what every simulation uses. Every rhigh on this branch
+* is affected, Rz included -- it is not specific to this divider, and it
+* did not change any earlier result (the #21/#25 records simulated the
+* same model). See DR-0004's "Separate observation" section.
 *
 * WHAT THIS CHANGES ELECTRICALLY, stated rather than implied: the divider
 * now carries rhigh's real PVT corner spread (cornerRES.lib gives rhigh
 * ~1.0-1.4 kOhm/sq) instead of a corner-independent behavioral 300k. The
 * ratio is unaffected (both legs track), but the divider's absolute
 * impedance -- and hence the FB node's own pole against whatever loads it
-* -- now moves with the resistor corner. #21/#25's closed-loop PVT
-* evidence (sim/ldo-cmos5l-pvt-sweep/) was taken BEFORE this conversion
-* and therefore does not cover that spread; re-running the sweep with the
-* PDK divider in place -- across the RESISTOR corner (cornerRES.lib's
-* res_typ/res_bcs/res_wcs), which is a separate axis from the MOS corner --
-* is tracked as issue #31, not silently assumed harmless here.
+* -- now moves with the resistor corner.
+*
+* THAT RE-RUN HAS NOW HAPPENED (issue #31) -- it is no longer an open
+* question here. sim/ldo-cmos5l-pvt-sweep was re-run against this netlist
+* across the full MOS x temperature x RESISTOR corner grid
+* ({tt,ss,ff,sf,fs} x {-40,27,125}C x {res_typ,res_bcs,res_wcs} = 45
+* points x 3 benches, 186/186 passing), with the loop-gain bench also
+* re-run at all 45 points against a behavioral-300k divider so the
+* conversion's own contribution is separated from Rz's corner spread
+* rather than inferred. Result:
+*   - The conversion is harmless, as this header predicted. Its own worst
+*     contribution anywhere in the grid is -0.53 deg of phase margin,
+*     -0.19 dB of loop gain and +/-1.16 dB of gain margin; PSRR does not
+*     move at res_typ to the resolution recorded.
+*   - The divider's standing current is now corner-dependent, as expected:
+*     1.97 uA - 4.82 uA across the grid, against a corner-independent
+*     3.00 uA before. No-load Iq moves 21.87-22.98 uA -> 21.72-24.72 uA,
+*     still inside the 30 uA spec everywhere.
+*   - The same run found something this divider is NOT responsible for:
+*     phase margin misses the ratified >= 45 deg row at res_bcs/125C at
+*     all five MOS corners (43.35-44.48 deg), driven by Rz's own corner
+*     spread compounding with its temperature coefficient. It is present
+*     with the behavioral divider too (43.92 vs 43.93 deg at tt/125C), and
+*     no earlier record could have caught it because #21/#25 swept the
+*     resistor corner at 27C only. Recorded, not relaxed:
+*     spec/decision-records/DR-0004-sg13cmos5l-resistor-corner-stability.md.
 *
 * Note the (now former) asymmetry with ldo_erramp_cmos5l's nulling
 * resistor, which was already a PDK rhigh -- that cell's header explains

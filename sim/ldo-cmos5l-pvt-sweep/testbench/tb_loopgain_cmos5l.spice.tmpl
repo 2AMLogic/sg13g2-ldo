@@ -20,7 +20,7 @@
 * feedback-divider node that drives the amplifier's INP pin (a MOSFET gate:
 * zero DC/AC current draw both before and after the break, so the break
 * does not perturb the original DC operating point -- see README.md for
-* the full derivation of why this is valid here). The XMpass/Rtop/Rbot/Xamp
+* the full derivation of why this is valid here). The XMpass/XRtop/XRbot/Xamp
 * instantiation lines below are reproduced VERBATIM from
 * design/sg13cmos5l/netlist/ldo_core_cmos5l.spice's ldo_core_cmos5l subckt
 * body (only FB -> FBAMP on Xamp's first pin, plus the inserted Vbreak,
@@ -68,8 +68,8 @@ Cout VOUT 0 1u
 * assert_loopgain_topology_sync() diffs against the generated netlist. ---
 Vgnd VSS 0 dc 0
 XMpass VOUT EAOUT VIN VIN sg13_hv_pmos w=2800u l=0.5u ng=1 m=1
-Rtop VOUT FB 300k m=1
-Rbot FB VSS 300k m=1
+XRtop VOUT FB VSS rhigh w=1e-6 l=25.43e-6 m=1 b=7
+XRbot FB VSS VSS rhigh w=1e-6 l=25.43e-6 m=1 b=7
 Vbreak FB FBAMP 0 ac 1
 Xamp FBAMP VREF EAOUT VIN VSS IBIAS ldo_erramp_cmos5l
 

@@ -17,7 +17,9 @@
 * netlist, instantiated whole (NOT flattened -- this bench does not need a
 * loop break, unlike tb_loopgain_cmos5l.spice.tmpl). VREF is held at the
 * schematic's own illustrative 0.9V (design/README.md "Reference voltage":
-* Rtop=Rbot=300k gives FB=VOUT/2, so VREF=0.9V servos VOUT to 1.8V).
+* Rtop=Rbot by construction gives FB=VOUT/2 -- since #28 both legs are the
+* same drawn PDK rhigh device, so the RATIO is 1/2 independent of sheet
+* rho -- so VREF=0.9V servos VOUT to 1.8V).
 * IBIAS is externally sunk at 2uA, the bias point design/README.md's
 * "Judgement calls" section 1 assumes (tail=2x, second stage=4x that
 * reference).
@@ -44,6 +46,9 @@
 *     for why this Vin point, not the nominal 3.30V, is used (the
 *     schematic's provisional Mpass sizing does not hold regulation at
 *     50mA at every Vin in this sweep -- see "Results").
+*   - Feedback-divider standing current (issue #31): |i(vdivsense)| at the
+*     Iload=0 block, Vin=3.30V row, from the non-invasive divider replica
+*     below -- the part of Iq that cornerRES.lib's resistor corner moves.
 *
 * run_sweep.sh's own post-processing does all dropout-crossing / line-slope
 * / load-spread extraction (Python, inline in the script -- no separate
@@ -66,6 +71,27 @@ Cout VOUT 0 1u
 
 Xtop VIN VOUT 0 VREF IBIAS ldo_core_cmos5l
 
+* --- Feedback-divider standing-current probe (issue #31). ---
+* The divider inside Xtop is now two PDK rhigh instances (issue #28), so
+* its absolute impedance -- and hence its own standing current, part of
+* this block's Iq -- moves with cornerRES.lib's res_typ/res_bcs/res_wcs
+* sections. ngspice cannot report a branch current inside a subcircuit
+* instance whose device is an OSDI r3_cmc, so this probe is an exact,
+* non-invasive REPLICA of the divider instead: Erep is an ideal
+* unity-gain VCVS that copies VOUT onto REPTOP, drawing zero current from
+* VOUT (so neither the regulation loop nor i(vin)/Iq is perturbed), and
+* XRrep_top/XRrep_bot are byte-identical copies of ldo_core_cmos5l's own
+* XRtop/XRbot device lines. Same geometry, same bias voltage, same
+* @@RES_SECTION@@ corner and same @@TEMP@@C temperature as the real
+* divider, so i(vdivsense) IS the real divider's standing current, and
+* (v(vout)/2)/i(vdivsense) is its per-leg resistance at this corner.
+* Its own node set (REPTOP/REPT/REPFB) is disjoint from the circuit under
+* test, so nothing here can leak into any other measured quantity.
+Erep REPTOP 0 VOUT 0 1.0
+Vdivsense REPTOP REPT dc 0
+XRrep_top REPT REPFB 0 rhigh w=1e-6 l=25.43e-6 m=1 b=7
+XRrep_bot REPFB 0 0 rhigh w=1e-6 l=25.43e-6 m=1 b=7
+
 .control
 pre_osdi @@OSDI_DIR@@/psp103.osdi
 pre_osdi @@OSDI_DIR@@/psp103_nqs.osdi
@@ -76,6 +102,6 @@ pre_osdi @@OSDI_DIR@@/cap_cmomf.osdi
 
 dc Vin 2.00 3.63 0.01 Iload 0 0.05 0.0125
 * Iload points realized by the range above: 0, 12.5mA, 25mA, 37.5mA, 50mA.
-wrdata @@DC_CSV@@ v(vin) v(vout) i(vin)
+wrdata @@DC_CSV@@ v(vin) v(vout) i(vin) i(vdivsense)
 .endc
 .end
