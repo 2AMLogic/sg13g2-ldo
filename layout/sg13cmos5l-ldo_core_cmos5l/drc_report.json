@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "file": "sg13cmos5l-ldo_core_cmos5l.gds",
+  "deck": "sg13cmos5l",
+  "dbu_um": 0.001,
+  "status": "clean",
+  "violation_count": 0,
+  "rule_counts": {},
+  "violations": [],
+  "coverage": {
+    "deck_layers": [
+      "1/0",
+      "5/0",
+      "8/0",
+      "10/0",
+      "19/0",
+      "29/0",
+      "30/0",
+      "49/0",
+      "50/0",
+      "125/0",
+      "126/0"
+    ],
+    "layers_checked": [
+      "1/0",
+      "5/0",
+      "8/0",
+      "10/0",
+      "19/0",
+      "29/0",
+      "30/0"
+    ],
+    "layers_in_stream_without_rules": [
+      "6/0",
+      "7/0",
+      "8/2",
+      "10/2",
+      "14/0",
+      "28/0",
+      "30/2",
+      "31/0",
+      "31/2",
+      "44/0",
+      "63/0",
+      "99/39",
+      "111/0",
+      "128/0"
+    ],
+    "rules_skipped": [
+      "metal3.enclosing.via3.1",
+      "metal4.enclosing.topvia1.1",
+      "metal4.space.1",
+      "metal4.width.1",
+      "topmetal1.enclosing.topvia1.1",
+      "topmetal1.space.1",
+      "topmetal1.width.1",
+      "topvia1.space.1",
+      "topvia1.width.1",
+      "via3.space.1",
+      "via3.width.1"
+    ],
+    "voltage_domain_warnings": [
+      {
+        "marker": "44/0",
+        "description": "ThickGateOx (44/0) marks cmos5l's thick-gate-oxide ('-HV') MOS voltage domain (see general_derivations.lvs's ngate_hv_base/pgate_hv_base -- confirmed present in cmos5l's own (symlinked-but-resolved) LVS source, mos_extraction.lvs's sg13_hv_nmos/sg13_hv_pmos extract_devices calls). Issue #1416 added the HV MOSFlavour entry to EXTRACTION_DECK.mos_flavours, so a transistor drawn inside this marker now recognises and binds correctly (mirroring sg13g2.py's own #1231 follow-on) -- what remains unmodelled is this curated deck's DRC rules, which still apply the general-case thresholds to geometry regardless of ThickGateOx's presence (the channel-length-specific Gat.a1/Gat.a2 GatPoly-width rules that do read it are not transcribed here, mirroring sg13g2.py's own note)."
+      }
+    ],
+    "deck_scope": [
+      "5.16 Metal1",
+      "5.17 Metaln",
+      "5.19 Via1",
+      "5.20 Vian",
+      "5.21 TopVia1",
+      "5.22 TopMetal1",
+      "5.5 Activ",
+      "5.8 GatPoly"
+    ]
+  },
+  "provenance": {
+    "klt_version": "0.5.0",
+    "klayout_version": "0.30.12",
+    "pdk": null,
+    "deck": {
+      "name": "sg13cmos5l",
+      "content_hash": "sha256:5b5309ecd586f527d6df271384f18e8f1fcd528a09935544b46aed563b66a92e",
+      "released": true
+    },
+    "input": {
+      "content_hash": "sha256:fd6ba13c60ad17fe7604703cf697fbc9c54c6d91d2ab9d2df8c653398466c863"
+    }
+  }
+}

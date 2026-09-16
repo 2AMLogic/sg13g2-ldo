@@ -1,0 +1,66 @@
+{
+  "schema": "sg13g2-ldo.drc.pdk-deck/1",
+  "deck": "ihp-sg13cmos5l/libs.tech/klayout/tech/drc/ihp-sg13cmos5l.drc",
+  "engine": "standalone KLayout 0.28.16",
+  "invocations": [
+    {
+      "name": "full-strength tables",
+      "tables": [
+        "nwell",
+        "pwellblock",
+        "activ",
+        "activfiller",
+        "thickgateox",
+        "gatpolyfiller",
+        "psd",
+        "cont",
+        "contbar",
+        "latchup",
+        "via1",
+        "vian",
+        "topvia1",
+        "topmetal1",
+        "topmetal1filler",
+        "metalnfiller",
+        "passiv",
+        "pad",
+        "metalslits",
+        "lbe",
+        "pin",
+        "offgrid",
+        "forbidden",
+        "forbidden_cmos5l"
+      ],
+      "deck_vars": [
+        "no_feol=true",
+        "no_beol=true"
+      ],
+      "rules_executed": 183,
+      "violations": 0
+    },
+    {
+      "name": "precheck-mode tables",
+      "tables": [
+        "gatpoly",
+        "metal1",
+        "metaln"
+      ],
+      "deck_vars": [
+        "no_feol=true",
+        "no_beol=true",
+        "precheck_drc=true"
+      ],
+      "rules_executed": 39,
+      "violations": 0
+    }
+  ],
+  "skipped_rules": {
+    "Gat.a1, Gat.a2": "1.2 V (LV) FET channel-length rules; this design has no LV FET",
+    "Gat.g, M1.g, M1.i, Mn.g, Mn.i": "45-degree-geometry rules; unrunnable on this host (the deck uses with_angle(45, absolute), which this KLayout build does not provide) and vacuous for this layout, which generate.py asserts is Manhattan",
+    "3_2_angle table": "same construct, same reason",
+    "Seal.k, Seal.l, Seal.m, Seal.n": "seal-ring rules; no EdgeSeal drawn",
+    "density.drc": "not part of the deck's own `main` table selection"
+  },
+  "violations_total": 0,
+  "rules_executed_total": 222
+}

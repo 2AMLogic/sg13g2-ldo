@@ -1,0 +1,272 @@
+* extracted by klt extract --deck sg13cmos5l
+
+* cell sg13cmos5l_ldo_core_cmos5l
+* pin IBIAS
+* pin VIN
+* pin VOUT
+* pin VREF
+* pin VSS
+.SUBCKT sg13cmos5l_ldo_core_cmos5l IBIAS VIN VOUT VREF VSS
+* device instance $1 r0 *1 101,2.5 nfet
+M$1 N1 N1 VSS VSS nfet L=1U W=5U AS=2.5P AD=2.5P PS=11U PD=11U
+* device instance $2 r0 *1 106,2.5 nfet
+M$2 G1 N1 VSS VSS nfet L=1U W=5U AS=2.5P AD=2.5P PS=11U PD=11U
+* device instance $3 r0 *1 111,10 nfet
+M$3 EAOUT G1 VSS VSS nfet L=1U W=20U AS=10P AD=10P PS=41U PD=41U
+* device instance $4 r0 *1 0.75,12.5 pfet
+M$4 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=12.5P AD=6.25P PS=51U PD=25.5U
+* device instance $5 r0 *1 1.75,12.5 pfet
+M$5 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $6 r0 *1 2.75,12.5 pfet
+M$6 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $7 r0 *1 3.75,12.5 pfet
+M$7 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $8 r0 *1 4.75,12.5 pfet
+M$8 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $9 r0 *1 5.75,12.5 pfet
+M$9 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $10 r0 *1 6.75,12.5 pfet
+M$10 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $11 r0 *1 7.75,12.5 pfet
+M$11 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $12 r0 *1 8.75,12.5 pfet
+M$12 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $13 r0 *1 9.75,12.5 pfet
+M$13 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $14 r0 *1 10.75,12.5 pfet
+M$14 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $15 r0 *1 11.75,12.5 pfet
+M$15 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $16 r0 *1 12.75,12.5 pfet
+M$16 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $17 r0 *1 13.75,12.5 pfet
+M$17 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $18 r0 *1 14.75,12.5 pfet
+M$18 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $19 r0 *1 15.75,12.5 pfet
+M$19 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $20 r0 *1 16.75,12.5 pfet
+M$20 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $21 r0 *1 17.75,12.5 pfet
+M$21 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $22 r0 *1 18.75,12.5 pfet
+M$22 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $23 r0 *1 19.75,12.5 pfet
+M$23 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $24 r0 *1 20.75,12.5 pfet
+M$24 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $25 r0 *1 21.75,12.5 pfet
+M$25 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $26 r0 *1 22.75,12.5 pfet
+M$26 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $27 r0 *1 23.75,12.5 pfet
+M$27 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $28 r0 *1 24.75,12.5 pfet
+M$28 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $29 r0 *1 25.75,12.5 pfet
+M$29 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $30 r0 *1 26.75,12.5 pfet
+M$30 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $31 r0 *1 27.75,12.5 pfet
+M$31 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=12.5P PS=25.5U PD=51U
+* device instance $32 r0 *1 46.5,2.5 pfet
+M$32 IBIAS IBIAS VIN VIN pfet L=2U W=5U AS=2.5P AD=2.5P PS=11U PD=11U
+* device instance $33 r0 *1 54.5,2.5 pfet
+M$33 TAIL IBIAS VIN VIN pfet L=2U W=5U AS=2.5P AD=1.25P PS=11U PD=5.5U
+* device instance $34 r0 *1 57,2.5 pfet
+M$34 VIN IBIAS TAIL VIN pfet L=2U W=5U AS=1.25P AD=1.25P PS=5.5U PD=5.5U
+* device instance $35 r0 *1 59.5,2.5 pfet
+M$35 TAIL IBIAS VIN VIN pfet L=2U W=5U AS=1.25P AD=2.5P PS=5.5U PD=11U
+* device instance $36 r0 *1 67.5,2.5 pfet
+M$36 EAOUT IBIAS VIN VIN pfet L=2U W=5U AS=2.5P AD=1.25P PS=11U PD=5.5U
+* device instance $37 r0 *1 70,2.5 pfet
+M$37 VIN IBIAS EAOUT VIN pfet L=2U W=5U AS=1.25P AD=1.25P PS=5.5U PD=5.5U
+* device instance $38 r0 *1 72.5,2.5 pfet
+M$38 EAOUT IBIAS VIN VIN pfet L=2U W=5U AS=1.25P AD=1.25P PS=5.5U PD=5.5U
+* device instance $39 r0 *1 75,2.5 pfet
+M$39 VIN IBIAS EAOUT VIN pfet L=2U W=5U AS=1.25P AD=1.25P PS=5.5U PD=5.5U
+* device instance $40 r0 *1 77.5,2.5 pfet
+M$40 EAOUT IBIAS VIN VIN pfet L=2U W=5U AS=1.25P AD=1.25P PS=5.5U PD=5.5U
+* device instance $41 r0 *1 80,2.5 pfet
+M$41 VIN IBIAS EAOUT VIN pfet L=2U W=5U AS=1.25P AD=2.5P PS=5.5U PD=11U
+* device instance $42 r0 *1 89,10 pfet
+M$42 G1 FB TAIL TAIL pfet L=1U W=20U AS=10P AD=10P PS=41U PD=41U
+* device instance $43 r0 *1 94,10 pfet
+M$43 N1 VREF TAIL TAIL pfet L=1U W=20U AS=10P AD=10P PS=41U PD=41U
+* device instance $44 r0 *1 0.75,74.5 pfet
+M$44 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=12.5P AD=6.25P PS=51U PD=25.5U
+* device instance $45 r0 *1 1.75,74.5 pfet
+M$45 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $46 r0 *1 2.75,74.5 pfet
+M$46 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $47 r0 *1 3.75,74.5 pfet
+M$47 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $48 r0 *1 4.75,74.5 pfet
+M$48 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $49 r0 *1 5.75,74.5 pfet
+M$49 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $50 r0 *1 6.75,74.5 pfet
+M$50 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $51 r0 *1 7.75,74.5 pfet
+M$51 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $52 r0 *1 8.75,74.5 pfet
+M$52 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $53 r0 *1 9.75,74.5 pfet
+M$53 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $54 r0 *1 10.75,74.5 pfet
+M$54 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $55 r0 *1 11.75,74.5 pfet
+M$55 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $56 r0 *1 12.75,74.5 pfet
+M$56 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $57 r0 *1 13.75,74.5 pfet
+M$57 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $58 r0 *1 14.75,74.5 pfet
+M$58 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $59 r0 *1 15.75,74.5 pfet
+M$59 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $60 r0 *1 16.75,74.5 pfet
+M$60 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $61 r0 *1 17.75,74.5 pfet
+M$61 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $62 r0 *1 18.75,74.5 pfet
+M$62 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $63 r0 *1 19.75,74.5 pfet
+M$63 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $64 r0 *1 20.75,74.5 pfet
+M$64 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $65 r0 *1 21.75,74.5 pfet
+M$65 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $66 r0 *1 22.75,74.5 pfet
+M$66 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $67 r0 *1 23.75,74.5 pfet
+M$67 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $68 r0 *1 24.75,74.5 pfet
+M$68 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $69 r0 *1 25.75,74.5 pfet
+M$69 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $70 r0 *1 26.75,74.5 pfet
+M$70 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $71 r0 *1 27.75,74.5 pfet
+M$71 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=12.5P PS=25.5U PD=51U
+* device instance $72 r0 *1 0.75,43.5 pfet
+M$72 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=12.5P AD=6.25P PS=51U PD=25.5U
+* device instance $73 r0 *1 1.75,43.5 pfet
+M$73 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $74 r0 *1 2.75,43.5 pfet
+M$74 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $75 r0 *1 3.75,43.5 pfet
+M$75 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $76 r0 *1 4.75,43.5 pfet
+M$76 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $77 r0 *1 5.75,43.5 pfet
+M$77 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $78 r0 *1 6.75,43.5 pfet
+M$78 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $79 r0 *1 7.75,43.5 pfet
+M$79 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $80 r0 *1 8.75,43.5 pfet
+M$80 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $81 r0 *1 9.75,43.5 pfet
+M$81 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $82 r0 *1 10.75,43.5 pfet
+M$82 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $83 r0 *1 11.75,43.5 pfet
+M$83 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $84 r0 *1 12.75,43.5 pfet
+M$84 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $85 r0 *1 13.75,43.5 pfet
+M$85 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $86 r0 *1 14.75,43.5 pfet
+M$86 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $87 r0 *1 15.75,43.5 pfet
+M$87 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $88 r0 *1 16.75,43.5 pfet
+M$88 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $89 r0 *1 17.75,43.5 pfet
+M$89 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $90 r0 *1 18.75,43.5 pfet
+M$90 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $91 r0 *1 19.75,43.5 pfet
+M$91 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $92 r0 *1 20.75,43.5 pfet
+M$92 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $93 r0 *1 21.75,43.5 pfet
+M$93 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $94 r0 *1 22.75,43.5 pfet
+M$94 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $95 r0 *1 23.75,43.5 pfet
+M$95 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $96 r0 *1 24.75,43.5 pfet
+M$96 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $97 r0 *1 25.75,43.5 pfet
+M$97 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $98 r0 *1 26.75,43.5 pfet
+M$98 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $99 r0 *1 27.75,43.5 pfet
+M$99 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=12.5P PS=25.5U PD=51U
+* device instance $100 r0 *1 0.75,105.5 pfet
+M$100 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=12.5P AD=6.25P PS=51U PD=25.5U
+* device instance $101 r0 *1 1.75,105.5 pfet
+M$101 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $102 r0 *1 2.75,105.5 pfet
+M$102 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $103 r0 *1 3.75,105.5 pfet
+M$103 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $104 r0 *1 4.75,105.5 pfet
+M$104 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $105 r0 *1 5.75,105.5 pfet
+M$105 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $106 r0 *1 6.75,105.5 pfet
+M$106 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $107 r0 *1 7.75,105.5 pfet
+M$107 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $108 r0 *1 8.75,105.5 pfet
+M$108 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $109 r0 *1 9.75,105.5 pfet
+M$109 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $110 r0 *1 10.75,105.5 pfet
+M$110 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $111 r0 *1 11.75,105.5 pfet
+M$111 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $112 r0 *1 12.75,105.5 pfet
+M$112 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $113 r0 *1 13.75,105.5 pfet
+M$113 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $114 r0 *1 14.75,105.5 pfet
+M$114 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $115 r0 *1 15.75,105.5 pfet
+M$115 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $116 r0 *1 16.75,105.5 pfet
+M$116 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $117 r0 *1 17.75,105.5 pfet
+M$117 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $118 r0 *1 18.75,105.5 pfet
+M$118 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $119 r0 *1 19.75,105.5 pfet
+M$119 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $120 r0 *1 20.75,105.5 pfet
+M$120 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $121 r0 *1 21.75,105.5 pfet
+M$121 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $122 r0 *1 22.75,105.5 pfet
+M$122 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $123 r0 *1 23.75,105.5 pfet
+M$123 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $124 r0 *1 24.75,105.5 pfet
+M$124 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $125 r0 *1 25.75,105.5 pfet
+M$125 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $126 r0 *1 26.75,105.5 pfet
+M$126 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
+* device instance $127 r0 *1 27.75,105.5 pfet
+M$127 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=12.5P PS=25.5U PD=51U
+* device instance $128 r0 *1 130,0 cap_cmomi
+XD_$128 EAOUT MZ cap_cmomi PARAMS: W=100 L=30
+* device instance $129 r0 *1 23.51,-95.595 rhigh
+R$129 MZ G1 VSS 1576811.2 rhigh
+* device instance $130 r0 *1 55.63,-94.285 rhigh
+R$130 VOUT FB VSS 278392 rhigh
+* device instance $131 r0 *1 68.63,-94.285 rhigh
+R$131 FB VSS VSS 278392 rhigh
+.ENDS sg13cmos5l_ldo_core_cmos5l
