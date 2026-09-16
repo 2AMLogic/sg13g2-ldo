@@ -156,6 +156,15 @@ MN_E = 0.24  # Mn_e   -- Metal2..4 space when one line is > 0.195 um wide
 V1_A = 0.19  # V1_a   -- Via1 size (min AND max)
 V1_B = 0.22  # V1_b   -- Via1 space
 V1_C = 0.01  # V1_c   -- Metal1 enclosure of Via1
+#: ``Vn_a`` -- Via2/Via3 size (min AND max). A *separate* rule key from
+#: ``V1_a`` in the PDK's own value table, checked by a separate deck table
+#: (``rule_decks/beol/5_20_vian.drc``, which instantiates it per via level as
+#: ``V2.a``/``V3.a`` -- there is no ``V2_a`` key to cite), that happens to
+#: carry the same 0.19 um value. Named here rather than reusing ``V1_A`` so
+#: :func:`via2` cites the rule that actually governs it: the two keys are not
+#: required to track each other, and their enclosure siblings already do not
+#: (``V1_c`` 0.01 vs ``Vn_c`` 0.005).
+VN_A = 0.19  # Vn_a   -- Via2..Vian size (min AND max)
 NW_C1 = 0.62  # NW_c1  -- NWell enclosure of p+ Activ
 NW_B = 0.62  # NW_b   -- NWell space (same net)
 NW_F1 = 0.62  # NW_f1  -- NWell space to a substrate tie inside ThickGateOx
@@ -306,8 +315,10 @@ def via1(b: Builder, x: float, y: float) -> None:
 
 
 def via2(b: Builder, x: float, y: float) -> None:
-    """One ``Via2`` cut centred at ``(x, y)`` (``Vn.a``, same 0.19 um)."""
-    b.box(L_VIA2, x - V1_A / 2, y - V1_A / 2, x + V1_A / 2, y + V1_A / 2)
+    """One ``Via2`` cut centred at ``(x, y)``. Sized by ``Vn.a`` (``VN_A``),
+    the Via2/Via3 rule -- which the PDK's own value table sets to the same
+    0.19 um as ``V1.a``, but as its own key, so this cites its own rule."""
+    b.box(L_VIA2, x - VN_A / 2, y - VN_A / 2, x + VN_A / 2, y + VN_A / 2)
 
 
 def via_stack_12(b: Builder, x: float, y: float, pad: float = 0.4) -> None:
@@ -353,13 +364,20 @@ def route_v(
 #: and leaves 0.17 um from each contact edge to the neighbouring gate.
 SD_W_UM = 0.5
 
-#: How far a gate's poly runs *below* the Activ strip before its contact row.
-#: Derived, not chosen: the contact must clear the Activ by ``Cnt.e`` (0.14),
-#: the poly must enclose the contact by ``Cnt.d`` (0.07), and the gate endcap
-#: past the Activ is ``Gat_c`` (0.18) -- so the tail is
-#: ``Gat_c + 0.20 + Cnt_a + 0.10``, with 0.06/0.03 um of margin on the two
-#: rule terms.
-GATE_TAIL_UM = GAT_C + 0.20 + CNT_A + 0.10
+#: Clearance from the Activ strip down to the gate contact row: ``Cnt.e``
+#: (0.14) is the rule, drawn at 0.20 for 0.06 um of margin.
+GATE_CONT_CLEAR_UM = 0.20
+
+#: How far the poly runs on past that contact: ``Cnt.d`` (0.07) is the poly
+#: enclosure of a contact, drawn at 0.10 for 0.03 um of margin.
+GATE_CONT_ENCL_UM = 0.10
+
+#: How far a gate's poly runs *below* the Activ strip, tail end to Activ
+#: edge. Derived, not chosen: the gate endcap past the Activ is ``Gat_c``
+#: (0.18), then the two clearances above. :func:`draw_mos_row` places the
+#: contact row from the same two terms, so the tail length and the geometry
+#: that produces it cannot drift apart.
+GATE_TAIL_UM = GAT_C + GATE_CONT_CLEAR_UM + CNT_A + GATE_CONT_ENCL_UM
 
 
 def draw_mos_row(
@@ -377,7 +395,6 @@ def draw_mos_row(
     *,
     draw_well: bool = True,
     draw_tgo: bool = True,
-    drain_on_metal2: bool = True,
 ) -> dict:
     """Draw one interdigitated, shared-diffusion row of ``fingers`` HV MOS
     fingers of width ``w_finger`` and channel length ``l_gate``.
@@ -413,7 +430,10 @@ def draw_mos_row(
     source bus, so the two escape in the same direction without a short. (The
     curated deck models the full ``Metal1..TopMetal1`` stack with its vias as
     of klayout-tools #1417, so a second routing level is real here, not a
-    drawing-only convenience.)
+    drawing-only convenience.) The Metal2 transition is unconditional and has
+    to be: the source bus spans the full row width at the same y the drain
+    straps would have to cross, so a drain escaping on ``Metal1`` would short
+    to the source net rather than merely violate a spacing rule.
 
     Returns the row's terminal geometry for the caller's floorplan: the bus
     boxes (``gate_bus``, ``source_bus``, ``drain_bus``), the device
@@ -431,9 +451,9 @@ def draw_mos_row(
     b.box(L_ACTIV, act_x0, act_y0, act_x1, act_y1)
 
     # -- gates ------------------------------------------------------------- #
-    gate_cont_top = act_y0 - GAT_C - 0.20
+    gate_cont_top = act_y0 - GAT_C - GATE_CONT_CLEAR_UM
     gate_cont_bot = gate_cont_top - CNT_A
-    poly_bot = gate_cont_bot - 0.10
+    poly_bot = act_y0 - GATE_TAIL_UM  # == gate_cont_bot - GATE_CONT_ENCL_UM
     for i in range(fingers):
         gx0 = x0 + SD_W_UM + i * pitch
         b.box(L_GATPOLY, gx0, poly_bot, gx0 + l_gate, act_y1 + GAT_C)
@@ -464,7 +484,7 @@ def draw_mos_row(
         is_source = j % 2 == 0
         strap_top = source_bus_y1 if is_source else drain_strap_top
         b.box(L_METAL1, cx0 + M1_C1, act_y0, cx1 - M1_C1, strap_top)
-        if not is_source and drain_on_metal2:
+        if not is_source:
             via1(b, (cx0 + cx1) / 2, m2_pad_y)
             b.box(
                 L_METAL2,
@@ -476,15 +496,8 @@ def draw_mos_row(
 
     source_bus = b.box(L_METAL1, act_x0, source_bus_y0, act_x1, source_bus_y1)
     b.label(source_net, (act_x0 + act_x1) / 2, (source_bus_y0 + source_bus_y1) / 2)
-    if drain_on_metal2:
-        drain_bus = b.box(L_METAL2, act_x0, drain_bus_y0, act_x1, drain_bus_y1)
-        b.label(drain_net, (act_x0 + act_x1) / 2, (drain_bus_y0 + drain_bus_y1) / 2, level=2)
-    else:  # single-finger case: the drain column escapes on Metal1 directly
-        drain_bus = b.box(L_METAL1, act_x0, drain_bus_y0, act_x1, drain_bus_y1)
-        for j in range(1, fingers + 1, 2):
-            cx0 = x0 + j * pitch
-            b.box(L_METAL1, cx0 + M1_C1, drain_strap_top, cx0 + SD_W_UM - M1_C1, drain_bus_y1)
-        b.label(drain_net, (act_x0 + act_x1) / 2, (drain_bus_y0 + drain_bus_y1) / 2)
+    drain_bus = b.box(L_METAL2, act_x0, drain_bus_y0, act_x1, drain_bus_y1)
+    b.label(drain_net, (act_x0 + act_x1) / 2, (drain_bus_y0 + drain_bus_y1) / 2, level=2)
 
     # -- implant / well / thick oxide -------------------------------------- #
     nwell = None
@@ -527,7 +540,7 @@ def draw_mos_row(
         "gate_bus": gate_bus,
         "source_bus": source_bus,
         "drain_bus": drain_bus,
-        "drain_level": 2 if drain_on_metal2 else 1,
+        "drain_level": 2,  # the drain bus is always Metal2 -- see "Escape routing"
         "nwell": nwell,
         "tgo": tgo,
         "bbox": (
@@ -702,22 +715,6 @@ def draw_rhigh(
             max(pad_a[3], pad_b[3], y_top) + PSD_C,
         ),
     }
-
-
-def rhigh_drawn_squares(w_um: float, l_seg_um: float, bends: int) -> float:
-    """Number of squares :func:`draw_rhigh` actually draws, counting each
-    corner square once -- the geometric figure the curated deck's
-    ``R = L/W * sheet_rho`` is the first-order transcription of.
-
-    A meander of ``b+1`` stripes of length ``l`` at width ``w`` on a ``w+ps``
-    pitch has ``b`` links; each link contributes ``ps/w`` squares of straight
-    run plus the two corner squares it shares with its stripes. Counting a
-    corner as one square (the usual first-order convention; the PDK's own
-    model instead adds a ``2/kappa*weff + ps`` term per bend, which is the
-    same idea with a measured corner-crowding coefficient) gives
-    ``(b+1)*l/w + b*(ps/w + 1)``.
-    """
-    return (bends + 1) * (l_seg_um / w_um) + bends * (RHIGH_PS_UM / w_um + 1.0)
 
 
 # --------------------------------------------------------------------------- #
