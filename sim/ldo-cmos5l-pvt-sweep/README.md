@@ -48,6 +48,15 @@ Three testbenches, generated from templates by `run_sweep.sh`:
      does not meaningfully load the divider/pass device differently).
    - **Load regulation**: `Vin=3.63V` (best-case headroom) rows across all
      five `Iload` points -- see "Why Vin=3.63V for load regulation" below.
+   - **Feedback-divider standing current** (since issue #31):
+     `|i(vdivsense)|` at the `Iload=0` block, `Vin=3.30V` row, plus the
+     per-leg resistance it implies. Read off a non-invasive replica of the
+     divider -- an ideal unity-gain VCVS copy of `VOUT` driving a
+     byte-identical pair of `rhigh` legs through a 0V ammeter -- because
+     ngspice cannot report a branch current inside a subcircuit instance
+     whose device is an OSDI `r3_cmc`. The replica draws nothing from
+     `VOUT` and sits on a disjoint node set, so `Iq` and every other
+     measured quantity stay directly comparable to the #21/#25 records.
 2. **`testbench/tb_loopgain_cmos5l.spice.tmpl`** -- loop broken at `FB`
    (the feedback-divider node driving the amp's `INP` pin, a MOSFET gate)
    for an AC phase/gain-margin sweep. See "Loop-gain measurement method"
@@ -58,9 +67,11 @@ Three testbenches, generated from templates by `run_sweep.sh`:
    at 0), `PSRR_dB(f) = -20*log10(|v(vout)/v(vin)|)`.
 
 All three share: `VREF=0.90V` DC (the schematic's own illustrative bias,
-`design/README.md` "Reference voltage" -- `Rtop=Rbot=300k` gives
-`FB=VOUT/2`, so `0.90V` servos `VOUT` to `1.80V`), `IBIAS` externally sunk
-at `2uA` (the bias point `design/README.md`'s "Judgement calls" section 1
+`design/README.md` "Reference voltage" -- `Rtop=Rbot` by construction gives
+`FB=VOUT/2`, so `0.90V` servos `VOUT` to `1.80V`; since #28 both legs are
+the same drawn PDK `rhigh`, so that ratio is exactly 1/2 independent of
+sheet rho and therefore of the resistor corner), `IBIAS` externally sunk at
+`2uA` (the bias point `design/README.md`'s "Judgement calls" section 1
 assumes: tail=2x, second stage=4x that reference), `Cout=1uF` (a first-cut
 point inside the DRAFT table's `0.33-4.7uF` output-cap window, `ESR=0`).
 
@@ -105,7 +116,7 @@ operating point agree to 5 significant figures (`VOUT=1.800208V` both ways
 at `tt/27C`, no load), confirming the break does not perturb the bias
 point.
 
-`XMpass`/`Rtop`/`Rbot`/`Xamp`'s instantiation lines in
+`XMpass`/`XRtop`/`XRbot`/`Xamp`'s instantiation lines in
 `tb_loopgain_cmos5l.spice.tmpl` are a byte-for-byte mirror of
 `ldo_core_cmos5l`'s subckt body in the generated design netlist (`FB` ->
 `FBAMP` on `Xamp`'s first pin, plus the inserted `Vbreak`, excepted).
@@ -141,17 +152,32 @@ into a sibling `ihp-sg13g2` checkout.
 
 **`cornerRES.lib` and `cornerCAP.lib` do NOT share this five-corner scheme**
 -- both use a three-point `{typ, bcs (best case), wcs (worst case)}` axis,
-independent of the MOS process corner. This experiment holds the resistor
-corner at `res_typ` and the cap corner at `cap_typ` across the entire main
-15-point MOS-corner grid: **no established MOS-corner/R-corner correlation
-convention exists yet in this repo** (an `ss`-process-correlates-with-
-`res_wcs` mapping would need its own decision record this issue does not
-own), so rather than invent one, `Rz`'s own real corner spread is
-characterized *separately*, at nominal `tt/27C`, via the
-`loopgain_rzsens_{bcs,typ,wcs}` sensitivity points (`records/*.sensitivity.csv`).
-This is a first-cut judgement call, flagged as such -- a future phase that
-needs a tighter stability bound should replace it with a real correlation
-record.
+independent of the MOS process corner.
+
+**Resistor corner: crossed in full since issue #31.** Every `(MOS corner,
+temperature)` point is run against all three of `res_typ`/`res_bcs`/
+`res_wcs`, giving a 45-point main grid. The axis is swept *independently* of
+the MOS corner rather than correlated to it: **no established
+MOS-corner/R-corner correlation convention exists in this repo** (an
+`ss`-process-correlates-with-`res_wcs` mapping would need its own decision
+record, argued on foundry data), and crossing the axes in full reports every
+combination instead of inventing one. `DR-0004` ratifies this as the
+experiment's standing policy -- a future record that holds the resistor axis
+at nominal is a regression against it.
+
+*Why it was not always so, and what that cost:* the `#21` and `#25` records
+held the main grid at `res_typ` and characterised the resistor spread
+separately at `tt/27C` only, via `loopgain_rzsens_{bcs,typ,wcs}`. That was
+defensible when `Rz` was the loop's only `rhigh` and the feedback divider
+was a corner-independent behavioural 300k pair -- but the separate
+experiment ran at one temperature, and the loop's phase-margin failure needs
+`res_bcs` *and* `125C` together. Crossing the axes surfaced it immediately.
+The `tt/27C` sensitivity experiment is retained (renamed `res_corner`, since
+since #28 it moves the divider as well as `Rz`) as a cross-check on the main
+grid's new axis, not as the primary resistor evidence.
+
+**Cap corner** is still held at `cap_typ`, for the different and stronger
+reason below: selecting a cap corner on this PDK is a literal no-op.
 
 ## MoM-cap (Cc) sensitivity sweep
 
@@ -181,7 +207,156 @@ independently trustworthy pending real silicon characterization), but the
 qualitative verdict (this compensation network has essentially no margin)
 does not depend on that caveat.
 
-## Results (issue #25, post-resize -- current sizing)
+## Results (issue #31, PDK `rhigh` divider + full resistor-corner cross -- current)
+
+**The `rhigh` divider conversion is harmless, as #28 predicted. Crossing the
+resistor corner, which this run did for the first time, found something
+else: phase margin misses the ratified `>= 45deg` row at `res_bcs`/125C, at
+all five MOS corners.** Full argument, mechanism, options considered and the
+decision not to relax the spec:
+[`spec/decision-records/DR-0004-sg13cmos5l-resistor-corner-stability.md`](../../spec/decision-records/DR-0004-sg13cmos5l-resistor-corner-stability.md).
+
+Record cited: [`records/20260916-210331-9d3ace1.md`](records/20260916-210331-9d3ace1.md)
+(run manifest, before/after/delta tables, the mechanical spec gate, and the
+divider-attribution table), with
+[`records/20260916-210331-9d3ace1.csv`](records/20260916-210331-9d3ace1.csv)
+(45-point PVT x resistor grid),
+[`.sensitivity.csv`](records/20260916-210331-9d3ace1.sensitivity.csv),
+[`.delta.csv`](records/20260916-210331-9d3ace1.delta.csv) and
+[`.divider-attribution.csv`](records/20260916-210331-9d3ace1.divider-attribution.csv).
+`186/186` simulation points passed; completeness matrix OK.
+
+### What changed in the harness
+
+This is the first run against the post-#28 design netlist, and the first to
+sweep `cornerRES.lib` across the whole grid rather than holding it at
+`res_typ`:
+
+- **Resistor corner crossed in full**: `{tt,ss,ff,sf,fs} x {-40,27,125}C x
+  {res_typ,res_bcs,res_wcs}` = 45 points x 3 benches. Every point id, every
+  snapshot filename and every CSV row names its own section, so no reader
+  has to infer which corner produced a number. The axis is swept
+  *independently* of the MOS corner, not correlated to it -- this repo still
+  has no ratified correlation convention, and crossing in full reports every
+  combination rather than inventing one.
+- **Divider standing current measured per point**, from a non-invasive
+  replica in `tb_dcsweep_cmos5l.spice.tmpl`: an ideal unity-gain VCVS copy
+  of `VOUT` driving a byte-identical pair of `rhigh` legs through a 0V
+  ammeter. It loads neither `VOUT` nor `i(vin)`, so `Iq` stays directly
+  comparable to the #21/#25 records.
+- **Divider attribution sweep**: the loop-gain bench re-run at all 45 points
+  with the divider swapped *back* to the pre-#28 behavioural 300k pair and
+  everything else held identical, so `Rz`'s corner spread cancels and what
+  is left is the conversion's own contribution.
+- **Mechanical spec gate**: the record now evaluates the root `README.md`
+  spec table against its own CSV, so a record cannot claim a PASS its data
+  contradicts.
+- **`Warning: singular matrix` is no longer treated as a failure.** ngspice
+  emits it while walking its own convergence-aid ladder and then reports
+  `Dynamic gmin stepping completed` and a converged result; 9 of this grid's
+  points do so (the #21/#25 runs never did -- the `rhigh` divider adds
+  internal nodes to the DC solve). They are counted and named in the record
+  rather than discarded. To keep this from being a net loosening, the pass
+  criterion also gained a *positive* check it never had: every point must
+  have written exactly the row count its own analysis statement implies.
+
+### Finding 1: the divider conversion itself is harmless
+
+Measured, not argued -- the attribution sweep above, across all 45 points:
+
+| Metric | Worst contribution of the `rhigh` conversion |
+|---|---|
+| Phase margin | `-0.53deg` (at `ff`/-40C/`res_wcs`); `>= -0.31deg` at `res_typ` |
+| Gain margin | `+/-1.16dB` |
+| DC loop gain | `-0.19dB` |
+| PSRR @ 1kHz | below display resolution at `res_typ` |
+
+At the five points that miss the phase-margin spec, the conversion's
+contribution is `+0.00deg` to `+0.01deg` -- it is not a contributor there.
+
+What the conversion does change is the divider's own standing current: a
+corner-independent `3.00uA` before (an ideal 600k across 1.8V) becomes
+`1.97uA`-`4.82uA` across the PVT x resistor grid. Total no-load `Iq` moves
+from `21.87-22.98uA` to `21.72-24.72uA` -- still inside the `30uA` spec at
+every point.
+
+### Finding 2: PM < 45deg at `res_bcs`/125C
+
+| MOS corner @ 125C | `res_bcs` | `res_typ` | `res_wcs` |
+|---|---|---|---|
+| `tt` | **43.93deg** | 54.91deg | 62.87deg |
+| `ss` | **43.35deg** | 54.35deg | 62.42deg |
+| `ff` | **44.48deg** | 55.45deg | 63.31deg |
+| `sf` | **44.19deg** | 55.18deg | 63.09deg |
+| `fs` | **43.65deg** | 54.64deg | 62.65deg |
+
+Five of 45 points, short by `0.5deg`-`1.7deg`. Every other spec row passes
+at all 45 points. `Rz` -- not the divider -- is the mechanism: at
+`res_bcs`/125C its sheet rho (`1020/1360` = `0.75x`) and its temperature
+coefficient (`tc1=-2300e-6` over `98K` => `0.795x`) compound to `~0.60x`,
+moving its nulling zero up in frequency so the phase boost arrives too late
+at crossover. Gain margin is *best* at exactly that point (`29.76dB`),
+which is the signature of a zero that moved rather than a loop that lost
+gain; `res_wcs` moves the same knob the other way and improves phase margin.
+
+No earlier record could have caught this: #21/#25 held the main grid at
+`res_typ` and swept the resistor corner at `tt`/27C only, where `res_bcs`
+costs `8.4deg` and still passes comfortably (`59.98deg`). The failure needs
+the resistor corner *and* 125C together.
+
+**The spec is not relaxed.** Per CLAUDE.md, the `PM >= 45deg` row stands as
+ratified; DR-0004 records the narrowed verdict and defers re-compensation to
+its own issue rather than changing `Cc`/`Rz` inside a verification run.
+
+### Spec table at this record
+
+| Parameter | Target | #25 (pre-conversion, `res_typ` only) | #31 (this record, 45-point grid) | Verdict |
+|---|---|---|---|---|
+| Output accuracy | 1.8V +/-2% | 1.80023V-1.80064V | 1.80023V-1.80066V | **PASS** |
+| Dropout @ 50mA | < 300mV worst corner | 0.20V-0.24V | 0.20V-0.24V | **PASS** |
+| Line regulation | < 5 mV/V | 0.162-0.245 mV/V | 0.162-0.246 mV/V | **PASS** (no-load only -- see caveat) |
+| Load regulation | < 1% over full load | 0.0076%-0.025% | 0.0076%-0.025% | **PASS** |
+| Iq, no load | < 30uA | 21.87uA-22.98uA | 21.72uA-24.72uA | **PASS** |
+| Divider standing current | (not a spec row; part of Iq) | 3.00uA, corner-independent by construction | 1.97uA-4.82uA | n/a (newly measurable) |
+| PSRR @ 1kHz | > 50dB | 58.21dB-61.85dB | 58.20dB-61.87dB | **PASS** |
+| PSRR @ 100kHz | > 20dB | 33.82dB-35.28dB | 32.58dB-36.81dB | **PASS** |
+| Stability: phase margin | >= 45 deg worst corner | 54.40deg-72.72deg | 43.35deg-73.25deg | **FAIL** at 5/45 points, all `res_bcs`/125C -- see DR-0004 |
+| Stability: gain margin | >= 10dB worst corner | 17.07dB-25.87dB | 13.83dB-29.76dB | **PASS** |
+| Current limit | 65-80mA brickwall | n/a | n/a | **not implemented** |
+| Startup | monotonic ramp, <2% within 3ms | n/a | n/a | **not implemented** |
+| Enable/shutdown | -- | n/a | n/a | **not implemented** |
+
+The MoM-cap (`Cc`) `insufficient-evidence` caveat below still applies to
+every loop-gain and margin number in this table, unchanged: `cornerCAP.lib`
+maps every section to the same nominal `cap_cmomi` model at this PDK's pin.
+The `Cc`-value sensitivity sweep was re-run at this record
+(`sweep=cc_value`: phase margin `56.72deg`-`76.24deg` at `tt`/27C over the
+`0.5x`-`2x` width range), and, as before, the qualitative verdict does not
+depend on that caveat.
+
+### PDK observation: `rhigh`'s symbol expression and its model disagree by 4.35%
+
+This record's directly-measured per-leg divider resistance is **313.5 kOhm**
+at `res_typ`/27C. `rhigh.sym`'s own `value` expression -- the source of the
+`300.44 kOhm` figure `design/sg13cmos5l/ldo_core_cmos5l.sch`'s header and
+`design/README.md` both quote -- gives `300.44 kOhm`. The difference is the
+width offset applied twice: `resistors_mod.lib`'s `rhigh` subckt narrows the
+width once (`weff = w - 0.04e-6`) and hands `W=weff` to the `r3_cmc` model
+card, whose own `xw=-0.04` narrows it again. Every `rhigh` on this branch is
+affected, `Rz` included (1.700 MOhm by the expression, `~1.774 MOhm` as
+simulated). It is **not** a change introduced here -- the #21/#25 records
+simulated the same model -- so no earlier result moves; see DR-0004's
+"Separate observation" section.
+
+## Results (issue #25, post-resize -- superseded in part by #31 above)
+
+> **Superseded in part.** This section's evidence remains valid for what it
+> measured -- the `res_typ` slice of the grid, against the pre-#28
+> behavioural divider. Its "every spec row passes at every corner" headline
+> does **not** survive the resistor-corner cross issue #31 ran: see
+> "Results (issue #31)" above and DR-0004. The sizing and compensation
+> topology DR-0003 ratified are unchanged and still correct everywhere
+> except `res_bcs`/125C.
 
 **Every spec row now passes at every corner.** Issue #25 resized `Mpass`
 and re-derived the error-amp's `Cc`/`Rz` compensation network and bias

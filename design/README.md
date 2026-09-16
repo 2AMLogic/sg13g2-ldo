@@ -185,8 +185,20 @@ Schematic capture for the SG13CMOS5L port, against the `ihp-sg13cmos5l` PDK
 (issue #20, phase 2/4 of the port tracked by #12, Epic `2AMLogic/2am#542`
 Phase 5A).
 
-> **Status: PVT-verified and re-sized (issues #21 and #25, phase 3/4) —
-> every spec row now passes.** #21's first closed-loop PVT sweep (the full
+> **Status: PVT-verified and re-sized (issues #21, #25, #31, phases 3–4b) —
+> every spec row passes except phase margin at `res_bcs`/125 °C.** #31
+> crossed the resistor corner with the full MOS × temperature grid for the
+> first time (45 points, against the post-#28 PDK `rhigh` divider) and found
+> phase margin at `43.35°`–`44.48°` there, short of the ratified `≥ 45°` at
+> all five MOS corners; every other spec row still passes at all 45 points.
+> The cause is `Rz`'s corner spread compounding with its temperature
+> coefficient, not the divider conversion (measured directly: that
+> contributes `+0.00°`–`+0.01°` at those points). Not relaxed, recorded:
+> [`DR-0004`](../spec/decision-records/DR-0004-sg13cmos5l-resistor-corner-stability.md).
+> The pre-#31 status, which remains accurate for the `res_typ` slice it
+> measured, follows.
+>
+> #21's first closed-loop PVT sweep (the full
 > `{tt,ss,ff,sf,fs} × {-40,27,125}°C` grid) found the phase-2 provisional
 > sizing this section originally documented missed dropout by 4–7× and
 > never reached regulation at all at 4/15 corners, with phase margin
@@ -372,19 +384,39 @@ optimality:
    54.4–72.7° worst-case, gain margin 17.1–25.9dB worst-case, both across
    the full 15-corner grid and the Cc-value/Rz-corner sensitivity sweeps
    (`sim/ldo-cmos5l-pvt-sweep/README.md` "Results", tracked as #25).
-3. **`Rz` is a PDK `rhigh`, while the feedback divider is still behavioral
-   `res.sym`.** `cornerRES.lib` gives `rhigh` a real corner spread (unlike
-   `cornerCAP.lib`'s `Cc`, which has none at this PDK's pin — see the MoM-cap
-   caveat row below); issue #21's main 15-point PVT grid holds `Rz` at
-   `res_typ` throughout (no established MOS-corner/R-corner correlation
-   convention exists yet in this repo) and checks `Rz`'s own corner spread
-   separately, at nominal `tt/27°C` only (`sim/ldo-cmos5l-pvt-sweep/README.md`
-   "PDK pin, corner naming, and the resistor/cap corner axes") — not, as an
-   earlier draft of this note anticipated, folded into the main corner
-   sweep itself. The divider's *ratio*, not its absolute PVT spread, is what
-   matters there, and keeping it behavioral preserves the SG13G2 branch's
-   documented deferral so the two dividers stay comparable. See "Known
-   gaps" below — this is a real gap for #22.
+   **#31 found the cost of that technique**: because the zero's position
+   goes as `1/(Rz·Cc)`, it is only as stable as `Rz` is, and `Rz` is an
+   `rhigh`. At `res_bcs`/125 °C its sheet rho (`1020/1360` = `0.75×`) and
+   its temperature coefficient (`tc1 = −2300e-6` over `98 K` ⇒ `0.795×`)
+   compound to `≈0.60×`, moving the zero up out of the crossover region and
+   dropping phase margin to `43.35°`–`44.48°` — below the ratified `≥ 45°`.
+   #25's sensitivity sweep could not have seen this: it ran the resistor
+   corner at `tt/27°C` only, where `res_bcs` costs 8.4° and still passes at
+   `59.98°`. Gain margin is *best* at exactly the failing point
+   (`29.76 dB`), the signature of a zero that moved rather than a loop that
+   lost gain. See
+   [`DR-0004`](../spec/decision-records/DR-0004-sg13cmos5l-resistor-corner-stability.md);
+   re-compensation is deliberately deferred to its own issue rather than
+   done inside a verification run.
+3. **`Rz` and the feedback divider are both PDK `rhigh`, and the resistor
+   corner is swept, not held.** `cornerRES.lib` gives `rhigh` a real corner
+   spread (unlike `cornerCAP.lib`'s `Cc`, which has none at this PDK's pin —
+   see the MoM-cap caveat row below). The history of how this was handled is
+   worth keeping, because the shortcut is what hid `DR-0004`'s finding:
+   issues #21/#25 held the main 15-point grid at `res_typ` and checked the
+   resistor spread separately at `tt/27°C` only, on the reasoning that `Rz`
+   was the loop's only `rhigh` and the divider — then behavioral `res.sym` —
+   was relied on for its *ratio*, not its absolute value. #28 made the
+   divider a real `rhigh`; #31 then crossed `cornerRES.lib`'s three sections
+   with the whole MOS × temperature grid, and the `res_bcs`/125 °C
+   phase-margin miss above appeared immediately. The resistor corner is a
+   first-class axis of that experiment from `DR-0004` onward — a future
+   record that holds it at nominal is a regression
+   (`sim/ldo-cmos5l-pvt-sweep/README.md` "PDK pin, corner naming, and the
+   resistor/cap corner axes"). It is still swept *independently* of the MOS
+   corner rather than correlated to it: no MOS-corner/R-corner correlation
+   convention exists in this repo, and inventing one whose effect would be
+   to delete the failing points is not a convention, it is a relaxation.
 4. **`Rz`'s body terminal is tied to `VSS`, not the PDK's global `sub!`.**
    These cells are `.subckt`s with an explicit `VSS` pin and no `.global`
    declaration, so `sub!` would netlist as an undeclared, floating local
@@ -429,14 +461,19 @@ by that symbol's own `value` expression evaluated at `w=1 µm`,
 `l=1200 µm`, `b=0` (`rhigh.sym`'s `value=expr_eng(...)`, using
 `res_typ`'s ≈1360 Ω/sq — the corner sweep in
 `sim/ldo-cmos5l-pvt-sweep/records/` shows the real `res_bcs`/`res_wcs`
-spread, roughly ≈1.2–1.7 MΩ).
+spread, roughly ≈1.2–1.7 MΩ). Two corrections from #31's evidence, neither
+of which changes a drawn value: the *simulated* `Rz` is ≈1.774 MΩ, not
+1.700 MΩ, for the width-offset double-count described under "Known gaps"
+below; and that corner spread is not benign — it is what pushes phase
+margin below the ratified `≥ 45°` at `res_bcs`/125 °C
+([`DR-0004`](../spec/decision-records/DR-0004-sg13cmos5l-resistor-corner-stability.md)).
 
 ### PDK caveats honoured (evidence rules carried in)
 
 | Caveat | How this branch honours it |
 | ------ | -------------------------- |
 | **No MIM caps** — `cmim`/`rfcmim` need a layer this PDK forbids | The only capacitor in the hierarchy is `cap_cmomi`, a MoM cap. No MIM symbol is instantiated anywhere. |
-| **MoM caps are not validated on CMOS5L silicon** — `cornerCAP.lib` maps every corner/mismatch/stat section to the same nominal model | **Every result that depends on `Cc`'s value is `insufficient-evidence`** — confirmed by issue #21's own reading of `cornerCAP.lib` at this PDK's pin (every section maps to the identical nominal `cap_cmomi` model). That includes every phase- and gain-margin claim about this loop. Selecting a cap corner is a no-op on this PDK, so #21 ran a *value* sensitivity sweep instead (`Cc` width `0.5×`/`1×`/`2×` nominal, at `tt/27°C`): with the phase-2 sizing, phase margin moved between `0.19°` and `0.35°` across that whole range — the near-zero-margin verdict itself did not depend on the uncharacterized `Cc` value. #25 re-ran the same sensitivity sweep at the resized `Cc`/`Rz` and found the PASS verdict holds the same way: phase margin `56.9°`–`76.4°` and gain margin `18.6dB`–`23.5dB` across both the `0.5×`–`2×` nominal `Cc` value sweep and the `res_bcs`/`res_typ`/`res_wcs` `Rz` corner sweep — the qualitative verdict (now PASS) still does not depend on the uncharacterized `Cc` value, even though the exact numbers remain `insufficient-evidence` pending real silicon characterization (`sim/ldo-cmos5l-pvt-sweep/README.md` "MoM-cap (Cc) sensitivity sweep"). |
+| **MoM caps are not validated on CMOS5L silicon** — `cornerCAP.lib` maps every corner/mismatch/stat section to the same nominal model | **Every result that depends on `Cc`'s value is `insufficient-evidence`** — confirmed by issue #21's own reading of `cornerCAP.lib` at this PDK's pin (every section maps to the identical nominal `cap_cmomi` model). That includes every phase- and gain-margin claim about this loop. Selecting a cap corner is a no-op on this PDK, so #21 ran a *value* sensitivity sweep instead (`Cc` width `0.5×`/`1×`/`2×` nominal, at `tt/27°C`): with the phase-2 sizing, phase margin moved between `0.19°` and `0.35°` across that whole range — the near-zero-margin verdict itself did not depend on the uncharacterized `Cc` value. #25 re-ran the same sensitivity sweep at the resized `Cc`/`Rz` and found the PASS verdict holds the same way: phase margin `56.9°`–`76.4°` and gain margin `18.6dB`–`23.5dB` across both the `0.5×`–`2×` nominal `Cc` value sweep and the `res_bcs`/`res_typ`/`res_wcs` `Rz` corner sweep — the qualitative verdict still does not depend on the uncharacterized `Cc` value, even though the exact numbers remain `insufficient-evidence` pending real silicon characterization (`sim/ldo-cmos5l-pvt-sweep/README.md` "MoM-cap (Cc) sensitivity sweep"). **#31 narrowed that PASS**: #25's resistor-corner sensitivity ran at `tt/27°C` only, and crossing the resistor corner with the full MOS × temperature grid shows phase margin falling to `43.35°`–`44.48°` at `res_bcs`/125 °C, below the ratified `≥ 45°` — see [`DR-0004`](../spec/decision-records/DR-0004-sg13cmos5l-resistor-corner-stability.md). The `Cc` caveat is unchanged and orthogonal to it. |
 | **No isolated NMOS** in this PDK's design kit | Honoured by construction: the only NMOS flavour used is `sg13_hv_nmos`. |
 | **M1–M4 + TM1 metal stack only** | `Cc` is declared `mmin=1 mmax=4` — an M1–M4 MoM stack. Nothing in this branch's sources or documentation references a second thick top metal. |
 | **Bipolar input stage is structurally ruled out** (no HBT; `pnpMPA`'s collector is the substrate and β ≈ 1.1) | No bipolar device is instantiated. DR-0002 §"The installed PDK tree, read directly" is the evidence. |
@@ -449,9 +486,33 @@ spread, roughly ≈1.2–1.7 MΩ).
   the PDK symbol's own value expression — +0.15 % on the 300 kΩ they replace,
   with the divider ratio exactly 1/2 by construction since both legs are the
   same drawn device). The divider is LVS-visible; see
-  `layout/README.md`. **One consequence to carry forward:** the divider now
+  `layout/README.md`. ~~**One consequence to carry forward:** the divider now
   carries `rhigh`'s real corner spread, which #21/#25's PVT evidence — taken
-  against the behavioural 300 kΩ — predates.
+  against the behavioural 300 kΩ — predates.~~ **Verified in phase 4b (#31),
+  record `20260916-210331-9d3ace1`:** the sweep was re-run against this
+  netlist across the full `{tt,ss,ff,sf,fs} × {−40,27,125}°C ×
+  {res_typ,res_bcs,res_wcs}` grid, plus a 45-point attribution sweep that
+  re-runs the loop-gain bench against a behavioural-300 kΩ divider so the
+  conversion's own contribution is *measured* rather than inferred. The
+  conversion is harmless, as predicted: its worst contribution anywhere is
+  −0.53° of phase margin, −0.19 dB of loop gain and ±1.16 dB of gain margin,
+  and at the grid's worst stability points it contributes +0.00°–+0.01°. The
+  divider's standing current does become corner-dependent — 1.97 µA–4.82 µA
+  against a corner-independent 3.00 µA before — moving no-load `Iq` from
+  21.87–22.98 µA to 21.72–24.72 µA, still inside the 30 µA spec everywhere.
+  **Two things that run found which this divider is not responsible for**,
+  both recorded in
+  [`DR-0004`](../spec/decision-records/DR-0004-sg13cmos5l-resistor-corner-stability.md):
+  phase margin misses the ratified `≥ 45°` row at `res_bcs`/125 °C at all
+  five MOS corners (43.35°–44.48°, driven by `Rz`'s corner spread compounding
+  with its temperature coefficient — present with the behavioural divider
+  too, and invisible to #21/#25 because they swept the resistor corner at
+  27 °C only); and the PDK's `rhigh` **symbol value expression and simulation
+  model disagree by 4.35 %** (the `w − 0.04 µm` width offset is applied twice
+  — once in `resistors_mod.lib`'s subckt, again via the `r3_cmc` card's
+  `xw=-0.04`), so the 300.44 kΩ per leg quoted above is the symbol's number
+  and 313.5 kΩ is what every simulation has actually used, on this branch's
+  `Rz` as much as on this divider.
 - ~~**`Mpass` (`w=2800u`) and `Rz` (`l=1200u`) have no floorplanned
   layout.**~~ **Closed in phase 4a (#28).** `Rz` is now declared
   `l=28.81u b=39` (forty stripes; a geometry change, not a resize — `leff`

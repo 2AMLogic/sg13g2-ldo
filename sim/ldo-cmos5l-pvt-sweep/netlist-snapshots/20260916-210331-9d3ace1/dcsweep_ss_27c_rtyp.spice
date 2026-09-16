@@ -1,0 +1,107 @@
+* sg13g2-ldo -- SG13CMOS5L closed-loop DC sweep bench (issue #21, phase 3/4
+* of the SG13CMOS5L port tracked by #12).
+* Generated from
+* sim/ldo-cmos5l-pvt-sweep/testbench/tb_dcsweep_cmos5l.spice.tmpl by
+* sim/ldo-cmos5l-pvt-sweep/run_sweep.sh -- do not edit a generated
+* netlist-snapshots/*.spice file directly, edit this template and re-run
+* the sweep. Full methodology in sim/ldo-cmos5l-pvt-sweep/README.md; this
+* header is a short pointer.
+*
+* Generated for: corner=mos_ss temp=27C
+* PDK: ihp-sg13cmos5l /home/ubuntu/share/pdk (see sim/pdk-cmos5l.json for the pinned release)
+* OSDI models: /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi (built by sim/tools/build-osdi.sh)
+* Design netlist under test (frozen at this repo's git sha in the record):
+*   /home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-31/design/sg13cmos5l/netlist/ldo_core_cmos5l.spice
+*
+* Circuit under test: design/sg13cmos5l/ldo_core_cmos5l.sch's exported
+* netlist, instantiated whole (NOT flattened -- this bench does not need a
+* loop break, unlike tb_loopgain_cmos5l.spice.tmpl). VREF is held at the
+* schematic's own illustrative 0.9V (design/README.md "Reference voltage":
+* Rtop=Rbot by construction gives FB=VOUT/2 -- since #28 both legs are the
+* same drawn PDK rhigh device, so the RATIO is 1/2 independent of sheet
+* rho -- so VREF=0.9V servos VOUT to 1.8V).
+* IBIAS is externally sunk at 2uA, the bias point design/README.md's
+* "Judgement calls" section 1 assumes (tail=2x, second stage=4x that
+* reference).
+*
+* Nested DC sweep: Vin (fast/inner variable, 2.00V..3.63V step 10mV) x
+* Iload (slow/outer variable, 0/12.5m/25m/37.5m/50m A, 5 evenly-spaced
+* points spanning the spec's 0-50mA window -- ngspice's nested .dc does not
+* accept a LIST sweep on the outer variable together with a ranged inner
+* variable in this build, so the outer axis is a plain linear range rather
+* than the {0,1m,10m,25m,50m} non-uniform list an earlier draft of this
+* bench used). A single deck covers the whole grid this bench needs:
+*   - Iq (Iload=0 block, Vin=3.30V row): |i(vin)|, excluding load per the
+*     Iq spec row's own definition.
+*   - Dropout @ 50mA (Iload=0.05 block): scan Vin downward from 3.63V for
+*     the first point where VOUT falls below 0.99x its in-regulation
+*     value; dropout = that Vin - Vout_target.
+*   - Line regulation (Iload=0 block -- no-load, since Iq itself is only
+*     ~17uA and does not meaningfully load the divider/pass device
+*     differently from a light nonzero load): slope of VOUT vs Vin over
+*     the Input row's own {2.97V..3.63V} window.
+*   - Load regulation (Vin=3.63V rows across all Iload values): VOUT
+*     spread from Iload=0 to Iload=0.05A, at the best-case (max headroom)
+*     supply corner -- see README.md "Why Vin=3.63V for load regulation"
+*     for why this Vin point, not the nominal 3.30V, is used (the
+*     schematic's provisional Mpass sizing does not hold regulation at
+*     50mA at every Vin in this sweep -- see "Results").
+*   - Feedback-divider standing current (issue #31): |i(vdivsense)| at the
+*     Iload=0 block, Vin=3.30V row, from the non-invasive divider replica
+*     below -- the part of Iq that cornerRES.lib's resistor corner moves.
+*
+* run_sweep.sh's own post-processing does all dropout-crossing / line-slope
+* / load-spread extraction (Python, inline in the script -- no separate
+* tool needed at this scale, same posture pass-device-screening/run_sweep.sh
+* takes).
+
+.lib "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/models/cornerMOShv.lib" mos_ss
+.lib "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/models/cornerRES.lib" res_typ
+.lib "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/models/cornerCAP.lib" cap_typ
+
+.options temp=27 tnom=27
+
+.include "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-31/design/sg13cmos5l/netlist/ldo_core_cmos5l.spice"
+
+Vin VIN 0 dc 3.30
+Vref VREF 0 dc 0.90
+Ibias IBIAS 0 dc 2u
+Iload VOUT 0 dc 0
+Cout VOUT 0 1u
+
+Xtop VIN VOUT 0 VREF IBIAS ldo_core_cmos5l
+
+* --- Feedback-divider standing-current probe (issue #31). ---
+* The divider inside Xtop is now two PDK rhigh instances (issue #28), so
+* its absolute impedance -- and hence its own standing current, part of
+* this block's Iq -- moves with cornerRES.lib's res_typ/res_bcs/res_wcs
+* sections. ngspice cannot report a branch current inside a subcircuit
+* instance whose device is an OSDI r3_cmc, so this probe is an exact,
+* non-invasive REPLICA of the divider instead: Erep is an ideal
+* unity-gain VCVS that copies VOUT onto REPTOP, drawing zero current from
+* VOUT (so neither the regulation loop nor i(vin)/Iq is perturbed), and
+* XRrep_top/XRrep_bot are byte-identical copies of ldo_core_cmos5l's own
+* XRtop/XRbot device lines. Same geometry, same bias voltage, same
+* res_typ corner and same 27C temperature as the real
+* divider, so i(vdivsense) IS the real divider's standing current, and
+* (v(vout)/2)/i(vdivsense) is its per-leg resistance at this corner.
+* Its own node set (REPTOP/REPT/REPFB) is disjoint from the circuit under
+* test, so nothing here can leak into any other measured quantity.
+Erep REPTOP 0 VOUT 0 1.0
+Vdivsense REPTOP REPT dc 0
+XRrep_top REPT REPFB 0 rhigh w=1e-6 l=25.43e-6 m=1 b=7
+XRrep_bot REPFB 0 0 rhigh w=1e-6 l=25.43e-6 m=1 b=7
+
+.control
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/psp103.osdi
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/psp103_nqs.osdi
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/mosvar.osdi
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/r3_cmc.osdi
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/cap_cmomi.osdi
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/cap_cmomf.osdi
+
+dc Vin 2.00 3.63 0.01 Iload 0 0.05 0.0125
+* Iload points realized by the range above: 0, 12.5mA, 25mA, 37.5mA, 50mA.
+wrdata /home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-31/sim/ldo-cmos5l-pvt-sweep/corners/20260916-210331-9d3ace1/dcsweep_ss_27c_rtyp_dc.csv v(vin) v(vout) i(vin) i(vdivsense)
+.endc
+.end
