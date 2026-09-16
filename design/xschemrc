@@ -23,9 +23,15 @@ set XSCHEM_LIBRARY_PATH {}
 append XSCHEM_LIBRARY_PATH :${XSCHEM_SHAREDIR}/xschem_library/devices
 
 #### PDK_ROOT / PDK: pass through from the shell environment. This repo's
-#### PDK variant directory is always named "ihp-sg13g2" (IHP-Open-PDK's own
+#### default PDK variant directory is named "ihp-sg13g2" (IHP-Open-PDK's own
 #### layout, the same "klt pdk find" convention this fleet's other SG13G2
-#### canaries already use).
+#### canaries already use). The SG13CMOS5L branch under design/sg13cmos5l/
+#### (issue #20) uses the same file with PDK=ihp-sg13cmos5l in the
+#### environment -- design/netlist.py sets it, or set it yourself for an
+#### interactive session:
+####   PDK=ihp-sg13cmos5l xschem --rcfile design/xschemrc \
+####     design/sg13cmos5l/ldo_core_cmos5l.sch
+#### Nothing below is variant-specific; only $PDK changes.
 
 if {[info exists env(PDK_ROOT)]} {
   set PDK_ROOT $env(PDK_ROOT)
@@ -76,6 +82,15 @@ if { ![info exists PDK_ROOT] || $PDK_ROOT eq {} } {
 set REPO_ROOT [file dirname [file dirname [file normalize [info script]]]]
 
 append XSCHEM_LIBRARY_PATH :[file join $REPO_ROOT design]
+
+#### The SG13CMOS5L branch's own cells (issue #20). Its cell names are
+#### suffixed _cmos5l rather than shadowing the SG13G2 names, so a bare
+#### symbol reference can never resolve to the wrong branch's symbol no
+#### matter which of these two directories the search hits first -- xschem
+#### takes a .subckt's port list from the *symbol*, so a silent
+#### cross-branch match would miswire every instantiation rather than
+#### erroring.
+append XSCHEM_LIBRARY_PATH :[file join $REPO_ROOT design sg13cmos5l]
 
 #### Netlisting behaviour (the load-bearing part of this file). Every cell
 #### in design/ -- including the top level -- is a reusable block a future

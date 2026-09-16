@@ -1,9 +1,20 @@
 # design/ — xschem sources and netlist export
 
-Schematic entry for the LDO core, in xschem, against the `ihp-sg13g2` PDK.
-This directory is the source of truth for the block's electrical interface —
-a future `sim/` harness and `layout/` LVS flow will both consume the
-netlists exported from here.
+Schematic entry for the LDO core, in xschem. This directory is the source of
+truth for the block's electrical interface — a future `sim/` harness and
+`layout/` LVS flow will both consume the netlists exported from here.
+
+**There are two PDK branches, in two directories, with no shared cells:**
+
+| Branch | Directory | PDK variant | Top cell | Issue |
+| ------ | --------- | ----------- | -------- | ----- |
+| SG13G2 | `design/` | `ihp-sg13g2` | `ldo_core` | #6 |
+| SG13CMOS5L | `design/sg13cmos5l/` | `ihp-sg13cmos5l` | `ldo_core_cmos5l` | #20 |
+
+Everything from here down to ["SG13CMOS5L branch"](#sg13cmos5l-branch-designsg13cmos5l)
+describes the **SG13G2** branch. `design/netlist.py --design sg13cmos5l`
+selects the other one; `--design sg13g2` is the default, so every command in
+this file that omits the flag means the SG13G2 branch.
 
 > **Status (issue #6, T1 item 1 of the bronze evidence ladder — #5): sources
 > exist and are reproducible, nothing is corner-verified.** This is a
@@ -121,6 +132,12 @@ model) is not a ratified contract — a real amplifier will very likely need a
 `VDD` pin (and possibly `EN`), and that pin-list change will be made and
 documented when the real amp lands, not assumed here.
 
+That prediction has since been borne out on the *other* branch: the
+SG13CMOS5L amplifier's pin list is `INP INN OUT VDD VSS IBIAS` — see
+["Error amplifier"](#error-amplifier-1) under "SG13CMOS5L branch". It does
+**not** settle anything for SG13G2: DR-0002 binds the SG13CMOS5L branch
+only, and `spec/porting-plan.md` §4 item 5 remains open here.
+
 ## Reference voltage
 
 `VREF` is a top-level port of `ldo_core` — an external, ideal input, not an
@@ -162,7 +179,277 @@ value are provisional first-cut choices, not derived from any measurement.
   both choices as provisional per the sections above, but does not file or
   resolve either record.
 
+## SG13CMOS5L branch (`design/sg13cmos5l/`)
+
+Schematic capture for the SG13CMOS5L port, against the `ihp-sg13cmos5l` PDK
+(issue #20, phase 2/4 of the port tracked by #12, Epic `2AMLogic/2am#542`
+Phase 5A).
+
+> **Status: sources exist, netlist and ERC are clean, nothing is
+> simulated.** No `sim/` evidence exists for this branch at all — not a DC
+> operating point, not an ICMR sweep, not a loop-gain run. `xschem netlist
+> -erc`'s connectivity check (via `python3 design/netlist.py --design
+> sg13cmos5l --check`) is the only verification this phase performs. PVT
+> verification is phase 3 (#21); layout/DRC/LVS is phase 4 (#22).
+
+### Cells
+
+```
+ldo_core_cmos5l                   top level — issue #20
+└── ldo_erramp_cmos5l             two-stage Miller-compensated OTA — issue #20
+```
+
+Cell names are suffixed `_cmos5l` rather than reusing `ldo_core` /
+`ldo_erramp_placeholder`. That is deliberate and load-bearing, not
+cosmetic: `design/xschemrc` puts **both** `design/` and
+`design/sg13cmos5l/` on `XSCHEM_LIBRARY_PATH`, and xschem takes a
+`.subckt`'s port list from the *symbol* it resolves by bare name. Shadowed
+names would let a bare `ldo_core.sym` reference resolve to the other
+branch's symbol depending on search order — silently miswiring or dropping
+ports instead of erroring.
+
+### What ratifies this topology
+
+[`spec/decision-records/DR-0002-sg13cmos5l-device-topology.md`](../spec/decision-records/DR-0002-sg13cmos5l-device-topology.md)
+(PR #23, closing #19). Both schematics cite it by path in their own header
+comments. DR-0002 ratifies device flavours and structure only; it
+explicitly leaves sizing, the bias scheme, and the nulling resistor to this
+phase, and those choices are flagged as provisional everywhere they appear
+below.
+
+### `ldo_core_cmos5l` pinout (in netlist port order)
+
+| Pin     | Dir   | Meaning |
+| ------- | ----- | ------- |
+| `VIN`   | inout | Supply — the **3.3 V analog rail** |
+| `VOUT`  | inout | Regulated output |
+| `VSS`   | inout | Ground |
+| `VREF`  | in    | External reference input — no on-chip bandgap (DR-0002) |
+| `IBIAS` | inout | External bias-current input — **new on this branch**, see below |
+
+`ldo_erramp_cmos5l` pinout: `INP INN OUT VDD VSS IBIAS`. `VDD` and `IBIAS`
+are the two pins the SG13G2 branch's ideal-VCVS placeholder did not need
+and which ["Error amplifier"](#error-amplifier) above predicted a real
+amplifier would; DR-0002's Consequences section anticipated the same.
+
+`python3 design/netlist.py --design sg13cmos5l --check` asserts both port
+lists (and that each cell's `.sym` pin order matches its `.sch` port order),
+so a schematic edit that drifts from this interface fails loudly.
+
+### Rails and the Challenge #6 slot budget
+
+The Challenge #6 brief pairs a **1.2 V digital** rail with a **3.3 V
+analog** rail. Per DR-0002, this block sits entirely on the analog rail:
+`VIN` is that rail, the amplifier's `VDD` is tied to `VIN`, and every
+transistor in the hierarchy is an HV (3.3 V-class) flavour —
+`sg13_hv_pmos` / `sg13_hv_nmos`, never an LV device. **There is no 1.2 V
+node anywhere in this hierarchy.** LV devices are disqualified on ratings,
+not on preference: DR-0002's table quotes `BVDSSP013` = −2.2 V worst case
+against a 3.3–3.63 V rail and a 1.65 V `VGS` limit.
+
+Against the brief's slot budget, this block claims **no digital control
+inputs and no digital test outputs**. It presents `VIN`/`VOUT`/`VSS` plus
+two analog lines (`VREF`, `IBIAS`) — so adding the real amplifier cost one
+additional analog line versus the SG13G2 placeholder, and nothing else.
+
+### Clean-room provenance
+
+`ldo_core_cmos5l.sch` and `ldo_erramp_cmos5l.sch` were authored from
+DR-0002 and this PDK's own device menu — not by copying or mechanically
+translating this repo's `design/ldo_core.sch` /
+`design/ldo_erramp_placeholder.sch`, and not from either sibling repo's
+sources. This is the same discipline ["Clean-room provenance"](#clean-room-provenance)
+above records for the SG13G2 schematic, applied here relative to the SG13G2
+files in *this* repo.
+
+What is deliberately carried across is **interface convention, not circuit
+content**: the `VIN`/`VOUT`/`VSS`/`VREF` port names and order, the
+`FB`/`EAOUT` node names, the two-resistor feedback-divider approach, and the
+`INP=FB` / `INN=VREF` polarity convention. The polarity itself is re-derived
+in each new schematic's header from that schematic's own devices. There is
+also nothing to have copied from the placeholder amplifier: it is a single
+ideal VCVS with no gain stage, bias network, or compensation.
+
+### Pass device
+
+`Mpass` is `sg13_hv_pmos`, common-source, source at `VIN`, drain at `VOUT`,
+body at `VIN` (the source) — DR-0002 Decision (a), the same flavour and
+topology `DR-0001` ratified for SG13G2.
+
+**Sizing is not ratified** — DR-0002 says so in as many words ("Sizing is
+explicitly not decided here … #20/#21 own it"). `w=300u l=0.5u ng=1 m=1` is
+a DC-sanity first cut for connectivity/ERC, chosen to match the SG13G2
+branch's own provisional value so that a phase-3 comparison between the two
+branches is not confounded by a sizing difference. It is **not** sized
+against any dropout, current-limit, or area target. `l=0.5u` is the one
+non-arbitrary part: the process spec rates HV `VGS ≤ 3.3 V` only at
+`LG ≥ 0.5 µm`.
+
+`DR-0001`'s carried-forward `|Vsg| ≤ 3.3 V` constraint is inherited by this
+branch and binds whatever current-limit loop it eventually grows — there is
+no current limit in this increment.
+
+### Error amplifier
+
+`Xamp` (`ldo_erramp_cmos5l.sch`/`.sym`) is a real two-stage,
+Miller-compensated, single-ended-output OTA built entirely from HV devices,
+replacing the SG13G2 branch's ideal-VCVS placeholder. Structure, per
+DR-0002 Decision (b):
+
+- **Tail** `Mtail` — `sg13_hv_pmos` current source from the rail.
+- **Input pair** `Minp`/`Minn` — `sg13_hv_pmos`, `INP=FB` (non-inverting),
+  `INN=VREF` (inverting). PMOS because at `VICM ≈ 0.9 V` an HV-NMOS pair is
+  at or below its lower ICMR limit *nominally* (DR-0002's hand calculation;
+  #21 still owes the simulated sweep).
+- **First-stage load** `Mn1`/`Mn2` — `sg13_hv_nmos` mirror, diode-connected
+  on the `VREF`-side leg (`Mn1`), first-stage output `G1` taken at the
+  `FB`-side leg (`Mn2`).
+- **Second stage** `Mn3` — single `sg13_hv_nmos` common-source device,
+  source at `VSS`, drain at `OUT`, loaded by the `Mload2` `sg13_hv_pmos`
+  current source from the rail.
+- **Compensation** — `Cc` (MoM) in series with `Rz` from `OUT` back to `G1`.
+- **`VREF` stays an external port.** No on-chip bandgap.
+
+Polarity check, re-derived in the schematic header: `FB` rises → `Minp`
+conducts less → the `VREF` leg takes more tail current → `N1` rises → `Mn2`
+sinks harder → `G1` falls → `Mn3` conducts less → `Mload2` pulls `OUT` up →
+`Mpass`'s `|Vsg|` shrinks → `VOUT` falls. Negative feedback.
+
+#### Judgement calls this phase made that DR-0002 did not
+
+These are first-cut engineering choices, **not ratified decisions**, and
+none of them has a testbench behind it yet:
+
+1. **Bias scheme: an external `IBIAS` current input, mirrored on-block.**
+   `Mb0` is a diode-connected `sg13_hv_pmos` from `VDD` whose gate/drain
+   node *is* the `IBIAS` pin; `Mtail` (`m=2`) and `Mload2` (`m=4`) mirror
+   from it, so an external sink of `Iref` sets tail = `2·Iref` and second
+   stage = `4·Iref`. Chosen over a `VBIAS` *voltage* port (would not track
+   the mirror's `Vsg` over PVT) and over an on-block resistor self-bias
+   (current becomes a direct function of the supply — bad PSRR in a
+   regulator). An external current input is also the consistent interface
+   for a block DR-0002 keeps bandgap-free: the reference is off-block, so
+   the bias should be too, and a phase-3 testbench can sweep it.
+2. **Nulling resistor `Rz`: included.** The RHP zero of a Miller stage sits
+   at `gm2/Cc`; at the ~8 µA second-stage bias this Iq budget allows, `gm2`
+   is order 1e-4 S, so that zero lands close enough to the intended
+   unity-gain frequency that omitting `Rz` is not defensible. Sized for the
+   textbook `Rz ≈ 1/gm2` first cut. A gm-tracking triode-MOS `Rz` is the
+   obvious refinement if #21 shows the fixed-resistor spread costs too much
+   phase margin.
+3. **`Rz` is a PDK `rhigh`, while the feedback divider is still behavioral
+   `res.sym`.** The asymmetry is deliberate: `cornerRES.lib` gives `rhigh` a
+   real corner spread, so phase 3's PVT sweep sees `Rz`'s own variation
+   instead of a resistor that is identical at every corner — and `Rz`'s
+   spread is load-bearing for phase margin. The divider's *ratio*, not its
+   absolute PVT spread, is what matters there, and keeping it behavioral
+   preserves the SG13G2 branch's documented deferral so the two dividers
+   stay comparable. See "Known gaps" below — this is a real gap for #22.
+4. **`Rz`'s body terminal is tied to `VSS`, not the PDK's global `sub!`.**
+   These cells are `.subckt`s with an explicit `VSS` pin and no `.global`
+   declaration, so `sub!` would netlist as an undeclared, floating local
+   node. This is the same "`VSS` is an explicit pin, never an implicit
+   global-ground alias" rule the SG13G2 branch already follows.
+5. **Sizing generally** is a DC-sanity first cut, exactly as `Mpass`'s is.
+   `L ≥ 1 µm` on every amplifier device (the HV `VGS ≤ 3.3 V` rating needs
+   `LG ≥ 0.5 µm`, and longer channels buy the matching and output
+   resistance a 16–26 µA amplifier needs). `ng=1` throughout — fingering is
+   a phase-4 layout concern.
+
+| Device | Flavour | Size | Role |
+| ------ | ------- | ---- | ---- |
+| `Mpass` | `sg13_hv_pmos` | `w=300u l=0.5u m=1` | pass device |
+| `Mb0` | `sg13_hv_pmos` | `w=5u l=2u m=1` | bias mirror reference (gate/drain = `IBIAS`) |
+| `Mtail` | `sg13_hv_pmos` | `w=5u l=2u m=2` | tail current source |
+| `Minp` / `Minn` | `sg13_hv_pmos` | `w=20u l=1u m=1` | input pair (`FB` / `VREF`) |
+| `Mn1` / `Mn2` | `sg13_hv_nmos` | `w=5u l=1u m=1` | first-stage mirror (diode / output leg) |
+| `Mn3` | `sg13_hv_nmos` | `w=20u l=1u m=1` | second-stage common source |
+| `Mload2` | `sg13_hv_pmos` | `w=5u l=2u m=4` | second-stage current-source load |
+| `Cc` | `cap_cmomi` | `w=l=30 µm`, M1–M4 | Miller cap, **≈0.95 pF** |
+| `Rz` | `rhigh` | `w=1u l=5.3u b=0` | nulling resistor, **≈7.7 kΩ** |
+| `Rtop` / `Rbot` | `res.sym` | `300k` each | feedback divider, `FB = VOUT/2` |
+
+The implied first-cut operating point at `Iref = 2 µA`: 2 µA mirror
+reference + 4 µA tail + 8 µA second stage = 14 µA in the amplifier, plus
+2 µA in the divider = **16 µA**, at the bottom of
+`spec/porting-plan.md`'s 16–26 µA total-block allocation. **No simulation
+backs that number** — it is arithmetic on the mirror ratios.
+
+`Cc`'s ≈0.95 pF is computed by the PDK's own display helper
+(`libs.tech/xschem/sg13cmos5l_pr/cap_cmomi.tcl`, which reproduces
+`cap_cmomi.va`'s low-frequency capacitance: 1.09 fF/µm² over an M1–M4
+stack). `Rz`'s ≈7.7 kΩ is that symbol's own `value` expression evaluated at
+`w=1 µm`, `l=5.3 µm`, `b=0`.
+
+### PDK caveats honoured (evidence rules carried in)
+
+| Caveat | How this branch honours it |
+| ------ | -------------------------- |
+| **No MIM caps** — `cmim`/`rfcmim` need a layer this PDK forbids | The only capacitor in the hierarchy is `cap_cmomi`, a MoM cap. No MIM symbol is instantiated anywhere. |
+| **MoM caps are not validated on CMOS5L silicon** — `cornerCAP.lib` maps every corner/mismatch/stat section to the same nominal model | **Every result that depends on `Cc`'s value is `insufficient-evidence`** until #21's sensitivity sweep bounds it. That includes every phase- and gain-margin claim about this loop. Selecting a cap corner is a no-op on this PDK, so a PVT sweep over `Cc` measures nothing — the sweep #21 owes is a *sensitivity* sweep over the value, not a corner sweep. |
+| **No isolated NMOS** in this PDK's design kit | Honoured by construction: the only NMOS flavour used is `sg13_hv_nmos`. |
+| **M1–M4 + TM1 metal stack only** | `Cc` is declared `mmin=1 mmax=4` — an M1–M4 MoM stack. Nothing in this branch's sources or documentation references a second thick top metal. |
+| **Bipolar input stage is structurally ruled out** (no HBT; `pnpMPA`'s collector is the substrate and β ≈ 1.1) | No bipolar device is instantiated. DR-0002 §"The installed PDK tree, read directly" is the evidence. |
+
+### Known gaps on this branch
+
+- **The feedback divider is behavioral `res.sym`, not a PDK resistor
+  flavour.** Phase 4 (#22) needs a real `rsil`/`rppd`/`rhigh` divider before
+  LVS can see it. Inherited deferral from the SG13G2 branch, restated here
+  because it becomes blocking one phase sooner on this one.
+- **No enable, current limit, soft start, output capacitor, load, or
+  start-up circuit.** Same scope boundary as the SG13G2 branch. Note that a
+  self-biased mirror needs no start-up circuit only because `IBIAS` is
+  externally driven — if the bias is ever moved on-block, start-up becomes a
+  real requirement.
+- **No CI job** runs `--design sg13cmos5l --check`.
+  `.github/workflows/ci.yml` provisions `ihp-sg13g2` via klayout-tools'
+  `scripts/fetch-ihp-sg13g2.sh`, and no equivalent pinned fetch script
+  exists for `ihp-sg13cmos5l` — it is a separate upstream repository
+  (`IHP-GmbH/ihp-sg13cmos5l`), not a variant directory inside the
+  `IHP-Open-PDK` tarball that script downloads. Filed upstream as
+  `2AMLogic/klayout-tools#1929`. Until that lands, this branch's check is a
+  local/manual step.
+- **Install shape is a dispatch hazard.** `ihp-sg13cmos5l`'s device symbols
+  and HV model cards are *relative* symlinks into a sibling `ihp-sg13g2`
+  checkout (`../../../../ihp-sg13g2/...`). Install **both** variants under
+  the same `PDK_ROOT` or every device symbol dangles, and the failure looks
+  like a missing device rather than a missing sibling PDK. DR-0002 carries
+  this forward for phases 2–4; `2AMLogic/klayout-tools#1406` is the upstream
+  report.
+
+### Exporting and checking this branch
+
+```bash
+python3 design/netlist.py --design sg13cmos5l            # regenerate
+python3 design/netlist.py --design sg13cmos5l --check -v # verify + ERC
+python3 design/netlist.py --design sg13cmos5l --cell ldo_erramp_cmos5l -v
+```
+
+Requirements are the same as the SG13G2 branch (**`xschem` >= 3.4.7**), plus
+an `ihp-sg13cmos5l` install *next to* an `ihp-sg13g2` install under the same
+`PDK_ROOT`. `--design` selects the source directory, the top cell, the
+expected port list, and the PDK variant together (see `DESIGNS` in
+`design/netlist.py`), so neither branch can be netlisted against the other's
+PDK by accident.
+
+In the GUI:
+
+```bash
+PDK=ihp-sg13cmos5l xschem --rcfile design/xschemrc \
+  design/sg13cmos5l/ldo_core_cmos5l.sch
+```
+
+PDK devices on this branch are referenced as `sg13cmos5l_pr/<device>.sym`
+(never `sg13g2_pr/`), resolved against `$PDK_ROOT/$PDK/libs.tech/xschem`.
+Everything else in ["Working in the GUI"](#working-in-the-gui) below applies
+unchanged.
+
 ## Exporting the netlist
+
+> SG13G2 branch. For `design/sg13cmos5l/`, see
+> ["Exporting and checking this branch"](#exporting-and-checking-this-branch)
+> above.
 
 ```bash
 python3 design/netlist.py            # regenerate design/netlist/*.spice
@@ -258,6 +545,20 @@ Xdut VIN VOUT VSS VREF ldo_core
 Port order is positional in SPICE — take it from the `.subckt` line of the
 file you include, or from the symbol pin list, which the check above keeps
 in sync.
+
+The SG13CMOS5L branch has its own `design/sg13cmos5l/netlist/` with the same
+one-file-per-cell shape — `ldo_core_cmos5l.spice` (whole hierarchy) and
+`ldo_erramp_cmos5l.spice` (the amplifier alone). Its top-level port list is
+five wide, not four:
+
+```spice
+.include design/sg13cmos5l/netlist/ldo_core_cmos5l.spice
+Xdut VIN VOUT VSS VREF IBIAS ldo_core_cmos5l
+```
+
+A testbench for that branch must also sink a bias current out of `IBIAS`
+(see ["Error amplifier"](#error-amplifier-1) under "SG13CMOS5L branch") —
+leaving it open starves the amplifier.
 
 ## Working in the GUI
 
