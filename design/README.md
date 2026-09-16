@@ -185,12 +185,20 @@ Schematic capture for the SG13CMOS5L port, against the `ihp-sg13cmos5l` PDK
 (issue #20, phase 2/4 of the port tracked by #12, Epic `2AMLogic/2am#542`
 Phase 5A).
 
-> **Status: sources exist, netlist and ERC are clean, nothing is
-> simulated.** No `sim/` evidence exists for this branch at all — not a DC
-> operating point, not an ICMR sweep, not a loop-gain run. `xschem netlist
-> -erc`'s connectivity check (via `python3 design/netlist.py --design
-> sg13cmos5l --check`) is the only verification this phase performs. PVT
-> verification is phase 3 (#21); layout/DRC/LVS is phase 4 (#22).
+> **Status: PVT-verified (issue #21, phase 3/4) — and the provisional
+> sizing this section documents does not hold up.** The closed loop is now
+> simulated across the full `{tt,ss,ff,sf,fs} × {-40,27,125}°C` grid:
+> [`sim/ldo-cmos5l-pvt-sweep/README.md`](../sim/ldo-cmos5l-pvt-sweep/README.md)
+> has the full spec table. Headline results: output accuracy, quiescent
+> current (no load), and PSRR all **pass** with margin; dropout @ 50mA
+> (1.29V–1.83V worst reachable, several corners never reach regulation at
+> all vs. a 300mV target), load regulation (fails at the same severe
+> corners), and loop stability (phase margin ≈0.2–0.35° vs. a 45° target,
+> essentially independent of the `Cc`/`Rz` sensitivity range tested) all
+> **fail** — consistent with, and now circuit-level confirmation of, the
+> undersizing `sim/pass-device-screening/` already implied for `Mpass` on
+> the SG13G2 branch's identical device flavor. Layout/DRC/LVS is phase 4
+> (#22); a resizing pass this evidence motivates is tracked as #25.
 
 ### Cells
 
@@ -299,8 +307,10 @@ DR-0002 Decision (b):
 - **Tail** `Mtail` — `sg13_hv_pmos` current source from the rail.
 - **Input pair** `Minp`/`Minn` — `sg13_hv_pmos`, `INP=FB` (non-inverting),
   `INN=VREF` (inverting). PMOS because at `VICM ≈ 0.9 V` an HV-NMOS pair is
-  at or below its lower ICMR limit *nominally* (DR-0002's hand calculation;
-  #21 still owes the simulated sweep).
+  at or below its lower ICMR limit *nominally* (DR-0002's hand calculation).
+  Issue #21's closed-loop DC sweep converges around this bias point at
+  every one of the 15 PVT corners without an input-pair headroom failure,
+  but does not include a dedicated ICMR-margin sweep — that remains open.
 - **First-stage load** `Mn1`/`Mn2` — `sg13_hv_nmos` mirror, diode-connected
   on the `VREF`-side leg (`Mn1`), first-stage output `G1` taken at the
   `FB`-side leg (`Mn2`).
@@ -334,17 +344,27 @@ none of them has a testbench behind it yet:
    at `gm2/Cc`; at the ~8 µA second-stage bias this Iq budget allows, `gm2`
    is order 1e-4 S, so that zero lands close enough to the intended
    unity-gain frequency that omitting `Rz` is not defensible. Sized for the
-   textbook `Rz ≈ 1/gm2` first cut. A gm-tracking triode-MOS `Rz` is the
-   obvious refinement if #21 shows the fixed-resistor spread costs too much
-   phase margin.
+   textbook `Rz ≈ 1/gm2` first cut. **Issue #21 found phase margin is
+   essentially zero (≈0.2–0.35°, vs. a 45° target) regardless of `Rz`'s
+   corner** (`res_bcs`/`res_typ`/`res_wcs`, sensitivity-swept at nominal
+   `tt/27°C`) or `Cc`'s value (`0.5×`–`2×` nominal) — this compensation
+   network has no margin budget to lose in the first place, so the
+   fixed-resistor-spread refinement this note originally anticipated is not
+   the binding problem; a resizing/re-compensation pass is the actual next
+   step (`sim/ldo-cmos5l-pvt-sweep/README.md` "Results", tracked as #25).
 3. **`Rz` is a PDK `rhigh`, while the feedback divider is still behavioral
-   `res.sym`.** The asymmetry is deliberate: `cornerRES.lib` gives `rhigh` a
-   real corner spread, so phase 3's PVT sweep sees `Rz`'s own variation
-   instead of a resistor that is identical at every corner — and `Rz`'s
-   spread is load-bearing for phase margin. The divider's *ratio*, not its
-   absolute PVT spread, is what matters there, and keeping it behavioral
-   preserves the SG13G2 branch's documented deferral so the two dividers
-   stay comparable. See "Known gaps" below — this is a real gap for #22.
+   `res.sym`.** `cornerRES.lib` gives `rhigh` a real corner spread (unlike
+   `cornerCAP.lib`'s `Cc`, which has none at this PDK's pin — see the MoM-cap
+   caveat row below); issue #21's main 15-point PVT grid holds `Rz` at
+   `res_typ` throughout (no established MOS-corner/R-corner correlation
+   convention exists yet in this repo) and checks `Rz`'s own corner spread
+   separately, at nominal `tt/27°C` only (`sim/ldo-cmos5l-pvt-sweep/README.md`
+   "PDK pin, corner naming, and the resistor/cap corner axes") — not, as an
+   earlier draft of this note anticipated, folded into the main corner
+   sweep itself. The divider's *ratio*, not its absolute PVT spread, is what
+   matters there, and keeping it behavioral preserves the SG13G2 branch's
+   documented deferral so the two dividers stay comparable. See "Known
+   gaps" below — this is a real gap for #22.
 4. **`Rz`'s body terminal is tied to `VSS`, not the PDK's global `sub!`.**
    These cells are `.subckt`s with an explicit `VSS` pin and no `.global`
    declaration, so `sub!` would netlist as an undeclared, floating local
@@ -386,7 +406,7 @@ stack). `Rz`'s ≈7.7 kΩ is that symbol's own `value` expression evaluated at
 | Caveat | How this branch honours it |
 | ------ | -------------------------- |
 | **No MIM caps** — `cmim`/`rfcmim` need a layer this PDK forbids | The only capacitor in the hierarchy is `cap_cmomi`, a MoM cap. No MIM symbol is instantiated anywhere. |
-| **MoM caps are not validated on CMOS5L silicon** — `cornerCAP.lib` maps every corner/mismatch/stat section to the same nominal model | **Every result that depends on `Cc`'s value is `insufficient-evidence`** until #21's sensitivity sweep bounds it. That includes every phase- and gain-margin claim about this loop. Selecting a cap corner is a no-op on this PDK, so a PVT sweep over `Cc` measures nothing — the sweep #21 owes is a *sensitivity* sweep over the value, not a corner sweep. |
+| **MoM caps are not validated on CMOS5L silicon** — `cornerCAP.lib` maps every corner/mismatch/stat section to the same nominal model | **Every result that depends on `Cc`'s value is `insufficient-evidence`** — confirmed by issue #21's own reading of `cornerCAP.lib` at this PDK's pin (every section maps to the identical nominal `cap_cmomi` model). That includes every phase- and gain-margin claim about this loop. Selecting a cap corner is a no-op on this PDK, so #21 ran a *value* sensitivity sweep instead (`Cc` width `0.5×`/`1×`/`2×` nominal, at `tt/27°C`): phase margin moved between `0.19°` and `0.35°` across that whole range — the near-zero-margin verdict itself does not depend on the uncharacterized `Cc` value, even though the exact number remains `insufficient-evidence` pending real silicon characterization (`sim/ldo-cmos5l-pvt-sweep/README.md` "MoM-cap (Cc) sensitivity sweep"). |
 | **No isolated NMOS** in this PDK's design kit | Honoured by construction: the only NMOS flavour used is `sg13_hv_nmos`. |
 | **M1–M4 + TM1 metal stack only** | `Cc` is declared `mmin=1 mmax=4` — an M1–M4 MoM stack. Nothing in this branch's sources or documentation references a second thick top metal. |
 | **Bipolar input stage is structurally ruled out** (no HBT; `pnpMPA`'s collector is the substrate and β ≈ 1.1) | No bipolar device is instantiated. DR-0002 §"The installed PDK tree, read directly" is the evidence. |
