@@ -1,0 +1,15 @@
+{
+  "schema": "klt.lvs.request/1",
+  "engine": "klayout",
+  "layout": {
+    "netlist": "sg13cmos5l-ldo_core_cmos5l.extracted.spice",
+    "top": "sg13cmos5l_ldo_core_cmos5l"
+  },
+  "reference": {
+    "netlist": "sg13cmos5l-ldo_core_cmos5l.lvs_reference.spice",
+    "top": "sg13cmos5l_ldo_core_cmos5l"
+  },
+  "options": {
+    "combine_devices": true
+  }
+}

@@ -1,0 +1,122 @@
+{
+  "schema_version": 1,
+  "engine": "klayout",
+  "layout": "sg13cmos5l-ldo_core_cmos5l.extracted.spice",
+  "reference": "sg13cmos5l-ldo_core_cmos5l.lvs_reference.spice",
+  "top": "SG13CMOS5L_LDO_CORE_CMOS5L",
+  "reference_top": "SG13CMOS5L_LDO_CORE_CMOS5L",
+  "parameter_tolerance": null,
+  "options": {
+    "combine_devices": true,
+    "combine_devices_per_circuit": null,
+    "flatten_layout": false,
+    "flatten_reference": false,
+    "netgen_setup": null,
+    "parameter_tolerance": null
+  },
+  "status": "match",
+  "mismatch_count": 0,
+  "error_count": 0,
+  "category_counts": {},
+  "category_error_counts": {},
+  "counts": {
+    "nets": {
+      "layout": 11,
+      "reference": 11,
+      "matched": 13
+    },
+    "devices": {
+      "layout": 12,
+      "reference": 12,
+      "matched": 12
+    },
+    "pins": {
+      "layout": 5,
+      "reference": 5,
+      "matched": 7
+    }
+  },
+  "device_classes": null,
+  "environment": {
+    "engine": "klayout",
+    "engine_version": "0.30.12",
+    "layout_sha256": "a57c6e318496d2ee808f07a17d97fb0a97db2e00e909f1da81674250aca3fdae",
+    "reference_sha256": "8d739f73575a1df97c3d4900d25e29de81cd116d93c21b772a25b321676dcb1e",
+    "extracted_netlist": null
+  },
+  "provenance": {
+    "klt_version": "0.5.0",
+    "klayout_version": "0.30.12",
+    "pdk": null,
+    "deck": null,
+    "input": null
+  },
+  "mismatches": [],
+  "net_correspondence": [
+    {
+      "layout": "1",
+      "reference": "1",
+      "pin": true
+    },
+    {
+      "layout": "2",
+      "reference": "2",
+      "pin": true
+    },
+    {
+      "layout": "EAOUT",
+      "reference": "EAOUT",
+      "pin": false
+    },
+    {
+      "layout": "FB",
+      "reference": "FB",
+      "pin": false
+    },
+    {
+      "layout": "G1",
+      "reference": "G1",
+      "pin": false
+    },
+    {
+      "layout": "IBIAS",
+      "reference": "IBIAS",
+      "pin": true
+    },
+    {
+      "layout": "MZ",
+      "reference": "MZ",
+      "pin": false
+    },
+    {
+      "layout": "N1",
+      "reference": "N1",
+      "pin": false
+    },
+    {
+      "layout": "TAIL",
+      "reference": "TAIL",
+      "pin": false
+    },
+    {
+      "layout": "VIN",
+      "reference": "VIN",
+      "pin": true
+    },
+    {
+      "layout": "VOUT",
+      "reference": "VOUT",
+      "pin": true
+    },
+    {
+      "layout": "VREF",
+      "reference": "VREF",
+      "pin": true
+    },
+    {
+      "layout": "VSS",
+      "reference": "VSS",
+      "pin": true
+    }
+  ]
+}

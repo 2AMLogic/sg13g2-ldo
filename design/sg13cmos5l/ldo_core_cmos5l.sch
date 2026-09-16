@@ -122,8 +122,9 @@ v {xschem version=3.4.7 file_version=1.3
 * -- now moves with the resistor corner. #21/#25's closed-loop PVT
 * evidence (sim/ldo-cmos5l-pvt-sweep/) was taken BEFORE this conversion
 * and therefore does not cover that spread; re-running the sweep with the
-* PDK divider in place is tracked as its own follow-up, not silently
-* assumed harmless here.
+* PDK divider in place -- across the RESISTOR corner (cornerRES.lib's
+* res_typ/res_bcs/res_wcs), which is a separate axis from the MOS corner --
+* is tracked as issue #31, not silently assumed harmless here.
 *
 * Note the (now former) asymmetry with ldo_erramp_cmos5l's nulling
 * resistor, which was already a PDK rhigh -- that cell's header explains

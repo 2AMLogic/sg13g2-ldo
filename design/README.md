@@ -443,18 +443,25 @@ spread, roughly ≈1.2–1.7 MΩ).
 
 ### Known gaps on this branch
 
-- **The feedback divider is behavioral `res.sym`, not a PDK resistor
-  flavour.** Phase 4 (#22) needs a real `rsil`/`rppd`/`rhigh` divider before
-  LVS can see it. Inherited deferral from the SG13G2 branch, restated here
-  because it becomes blocking one phase sooner on this one.
-- **`Mpass` (`w=2800u`) and `Rz` (`l=1200u`, implied ~1.2–1.7MΩ) are both
-  large, schematic-level-only draws #25 sized purely against electrical
-  targets.** Neither has a floorplanned layout yet — `Mpass` needs
-  multi-finger/multi-row layout (`ng`/`m` are both still `1`) and `Rz`
-  needs the PDK's own `rhigh` PCell meandering (`b` bends parameter,
-  currently `0`) to fit a practical die area. Both are phase-4 (#22)
-  layout concerns, not schematic-capture ones — DR-0003 records this
-  explicitly rather than leaving it implicit.
+- ~~**The feedback divider is behavioral `res.sym`, not a PDK resistor
+  flavour.**~~ **Closed in phase 4a (#28).** `Rtop`/`Rbot` are now real
+  `sg13cmos5l_pr/rhigh` instances (`w=1u l=25.43u b=7`, 300.44 kΩ per leg by
+  the PDK symbol's own value expression — +0.15 % on the 300 kΩ they replace,
+  with the divider ratio exactly 1/2 by construction since both legs are the
+  same drawn device). The divider is LVS-visible; see
+  `layout/README.md`. **One consequence to carry forward:** the divider now
+  carries `rhigh`'s real corner spread, which #21/#25's PVT evidence — taken
+  against the behavioural 300 kΩ — predates.
+- ~~**`Mpass` (`w=2800u`) and `Rz` (`l=1200u`) have no floorplanned
+  layout.**~~ **Closed in phase 4a (#28).** `Rz` is now declared
+  `l=28.81u b=39` (forty stripes; a geometry change, not a resize — `leff`
+  moves 1200.000 µm → 1199.896 µm, 0.009 % low, and the simulated device is
+  unchanged at 1.700 MΩ), and `Mpass` is drawn as 4 rows × 28 fingers × 25 µm
+  = 2800 µm. `ng`/`m` stay `1` in the *schematic* on purpose: the
+  row/finger split is a layout decision recorded in
+  `layout/sg13cmos5l-ldo_core_cmos5l/generate.py`, and the schematic
+  continues to state only the electrical total. DR-0003 records the original
+  deferral.
 - **No enable, current limit, soft start, output capacitor, load, or
   start-up circuit.** Same scope boundary as the SG13G2 branch. Note that a
   self-biased mirror needs no start-up circuit only because `IBIAS` is
