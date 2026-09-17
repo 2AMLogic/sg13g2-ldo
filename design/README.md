@@ -153,7 +153,9 @@ VOUT/2`. Assuming an illustrative `VREF = 0.9 V` (chosen only to exercise
 the loop; not a spec commitment — `spec/target-spec.md` does not exist yet
 in this repo, see "Non-goals" below), this divider ratio would servo `VOUT`
 to `1.8 V`, matching `README.md`'s DRAFT output target. The divider's
-900 kΩ total holds its own standing current at `1.8 V / 900 kΩ = 2 µA`,
+600 kΩ total (300k + 300k per `design/netlist/ldo_core.spice` lines 7–8;
+earlier documentation incorrectly stated 900 kΩ / 2 µA, an arithmetic error
+corrected in issue #37) holds its own standing current at `1.8 V / 600 kΩ = 3.0 µA`,
 inside the DRAFT `< 30 µA` Iq row. Both the ratio and the assumed `VREF`
 value are provisional first-cut choices, not derived from any measurement.
 
