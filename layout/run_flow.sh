@@ -312,7 +312,7 @@ control parameter-control 's/^MMpass \(.*\) W=2800U/MMpass \1 W=2772U/' \
 # "LVS: what is compared at device level, and what is not".
 control cap-presence-control '@drop:^XCc ' "Cc deleted from the reference"
 control cap-topology-control 's/^XCc EAOUT MZ/XCc EAOUT G1/' "Cc MZ -> G1"
-control cap-parameter-control 's/^XCc \(.*\)W=100 L=30/XCc \1W=50 L=30/' \
-  "Cc W 100u -> 50u"
+control cap-parameter-control 's/^XCc \(.*\)W=170 L=30/XCc \1W=85 L=30/' \
+  "Cc W 170u -> 85u"
 
 say "done"

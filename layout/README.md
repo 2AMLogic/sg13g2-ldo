@@ -14,7 +14,7 @@ layout/run_flow.sh --check    # verify the committed artifacts reproduce, byte f
 A full run takes about 15 seconds and prints one block per stage:
 
 ```
-=== 1. generate            11751 shapes, 163.10 x 231.28 um
+=== 1. generate            11856 shapes, 163.10 x 281.18 um
 === 2. DRC -- klt's curated sg13cmos5l deck      clean, 0 violations
 === 3. DRC -- the PDK's own ihp-sg13cmos5l deck  222 rules, 0 violations
 === 4. DRC negative control                      both decks flag a planted defect
@@ -66,14 +66,27 @@ reproduce byte for byte before it will re-verify the reports.
 
 | Tool | Version used here | Why |
 | --- | --- | --- |
-| `klt` | 0.5.0 | curated DRC deck, device extraction, LVS compare |
-| KLayout Python module | 0.30.12 | pulled in by `klt`; also what `generate.py` draws with |
+| `klt` | 0.4.0 (was 0.5.0 through #28) | curated DRC deck, device extraction, LVS compare |
+| KLayout Python module | 0.30.10 (was 0.30.12 through #28) | pulled in by `klt`; also what `generate.py` draws with |
 | standalone `klayout` | 0.28.16 | runs the PDK's **own** DRC-DSL deck (stage 3) |
 | `ihp-sg13cmos5l` | pin `607e18d4` (`sim/pdk-cmos5l.json`) | the deck, the layer table, the PCell sources every constant is cited from |
 
 `PDK_ROOT` defaults to `~/share/pdk`; override it in the environment. Install
 `ihp-sg13cmos5l` **next to** an `ihp-sg13g2` checkout under the same
 `PDK_ROOT` — see `design/README.md`, "Install shape is a dispatch hazard".
+
+> **The `klt`/KLayout versions moved *down* between #28 and #35, and the
+> committed reports say so.** #28's reports were produced on `klt` 0.5.0 /
+> KLayout 0.30.12; the host #35 re-ran the flow on carries `klt` 0.4.0 /
+> KLayout 0.30.10. Every report's `provenance` block records the versions
+> that actually produced it, so this shows up as a `[DRIFT]` line in
+> `run_flow.sh --check` rather than being silently normalised. It is not a
+> deliberate downgrade and nothing in the *results* depends on it: DRC is
+> 0 violations on both decks either way, LVS matches either way, and all
+> five negative controls mismatch either way. Two cosmetic differences to
+> expect in a diff of the artifacts: 0.4.0 writes a `metrics` block into
+> the DRC/extract reports that 0.5.0 did not, and it emits `L=`/`W=` on
+> extracted `rhigh` cards. Re-running on a 0.5.0 host will move them back.
 
 There is no CI job for this flow, for the same reason there is none for
 `design/netlist.py --design sg13cmos5l --check`: no checksum-pinned fetch
@@ -121,8 +134,8 @@ construction.
 
 ## The layout
 
-`sg13cmos5l_ldo_core_cmos5l`, one flat cell, **163.10 × 231.28 µm**
-(≈ 37.7 × 10³ µm²), 11 751 axis-aligned boxes, on the PDK's own 5 nm grid
+`sg13cmos5l_ldo_core_cmos5l`, one flat cell, **163.10 × 281.18 µm**
+(≈ 45.9 × 10³ µm²), 11 856 axis-aligned boxes, on the PDK's own 5 nm grid
 (`techParams['grid']`) at `dbu = 0.001` (`sg13cmos5l.lyt`'s own `<dbu>`).
 
 Three horizontal bands with a routing channel between them:
@@ -162,6 +175,18 @@ The divider legs (`Rtop`/`Rbot`) were behavioural `res.sym` 300 kΩ primitives
 until this phase — SPICE `R` cards that extraction cannot see as devices at
 all. They are now real `rhigh` instances, which is what makes the divider
 LVS-visible; `design/README.md` had that gap flagged as blocking this phase.
+
+**A third device now shares that billing: `Cc`.** Issue #35 widened the
+Miller cap from `w=100u` to `w=170u` (the compensation change that closes
+the `res_bcs`/125 °C phase-margin gap — see
+`spec/decision-records/DR-0005-sg13cmos5l-cc-recompensation.md`). It is
+drawn on the same origin, so it grows upward only and no riser corridor,
+well or trunk moved; but at 170 µm it is now the **tallest object in the
+active band** — the `Mpass` array tops out at 118 µm — and it is what sets
+this cell's bounding box in Y. That is a 22 % area increase (37.7 → 45.9 ×
+10³ µm²) bought deliberately, for the cap-value tolerance `DR-0005`
+decision (b) argues for; a future area-constrained phase that wants it back
+should re-open that decision knowingly rather than shrink the cap here.
 
 **Area is not optimised.** The bands are laid out for verifiability, not
 density: the routing channel is mostly air, and a real block would fold the
@@ -213,7 +238,7 @@ which must mismatch:
 | parameter | `Mpass` W 2800 → 2772 µm (1 %, deliberately *less* than one 25 µm row) | device parameters are not compared, or are compared with a tolerance |
 | cap presence | `Cc` deleted from the reference | the MoM cap is not compared at all |
 | cap topology | `Cc` moved from `MZ` to `G1` | ditto, for connectivity |
-| cap parameter | `Cc` W 100 → 50 µm | ditto, for parameters |
+| cap parameter | `Cc` W 170 → 85 µm | ditto, for parameters |
 
 The three cap controls exist because the cap is the one device that does *not*
 appear in the LVS report's device census — see the next section. Without them,
@@ -290,7 +315,7 @@ But KLayout has no SPICE element letter for a custom `GenericDeviceExtractor`
 class, so the writer emits it as a subcircuit call:
 
 ```
-XD_$128 EAOUT MZ cap_cmomi PARAMS: W=100 L=30
+XD_$128 EAOUT MZ cap_cmomi PARAMS: W=170 L=30
 ```
 
 and `klt lvs`'s plain `NetlistSpiceReader` reads that back as an abstract
@@ -349,10 +374,10 @@ polygons exactly — those three shapes are the entire input to device
 recognition, and the extractor computes no capacitance at all (the real
 device's `C` comes from its Verilog-A model). The *interior* is a coarse
 interdigitated comb on a 2 µm row pitch rather than the PCell's own 0.89 µm
-lattice of 0.21 µm bars, which at 30 × 100 µm would be ~63 000 rectangles this
+lattice of 0.21 µm bars, which at 30 × 170 µm would be ~107 000 rectangles this
 phase has no way to verify. So the footprint occupies the right area and
 extracts as the right device with the right `W`/`L`, but its **drawn** fringe
-capacitance is not the PCell's ≈ 3.2 pF. It is a placeholder for a real
+capacitance is not the PCell's ≈ 5.5 pF. It is a placeholder for a real
 `cap_cmomi` PCell instance, not a substitute for one.
 
 ## What this layout is, and is not

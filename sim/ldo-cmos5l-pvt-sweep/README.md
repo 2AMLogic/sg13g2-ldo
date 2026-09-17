@@ -194,20 +194,163 @@ already anticipated this and said the sweep this issue owes is a **value**
 sensitivity sweep, not a corner sweep.
 
 `run_sweep.sh` generates three frozen copies of the design netlist with
-`Cc`'s width scaled `{0.5x, 1x (nominal, 30um), 2x}` (capacitance scales
+`Cc`'s width scaled `{0.5x, 1x (nominal), 2x}` (capacitance scales
 ~linearly with area for this device, `l` held fixed) and runs the loop-gain
-bench against each, at `tt/27C`. Result (`records/*.sensitivity.csv`,
-`sweep=cc_value`): phase margin moves from `0.35deg` (0.5x) to `0.19deg`
-(2x) -- **the near-zero phase margin this experiment finds (see "Results")
-is not an artifact of the uncharacterized `Cc` value**; it holds across the
-full 4x width range tested. Every phase-margin/loop-gain number in
-`records/*.csv` is still marked `insufficient-evidence` in the spec table
-below per issue #21 acceptance criterion 4 (the *absolute* numbers are not
-independently trustworthy pending real silicon characterization), but the
-qualitative verdict (this compensation network has essentially no margin)
-does not depend on that caveat.
+bench against each, at `tt/27C` (`records/*.sensitivity.csv`,
+`sweep=cc_value`). These three points are retained unchanged, and are
+row-comparable back to the #21 record -- at #21 they showed phase margin
+moving only from `0.35deg` (0.5x) to `0.19deg` (2x), i.e. that the
+*near-zero* margin of the original compensation was not an artifact of the
+uncharacterized `Cc` value.
 
-## Results (issue #31, PDK `rhigh` divider + full resistor-corner cross -- current)
+**Since issue #35 they are no longer the load-bearing evidence for the
+robustness claim, and the `Cc` value-tolerance sweep below is.** They run
+at `tt/27C`, which was near this loop's worst case until #31 crossed the
+resistor corner and found `res_bcs`/125C (DR-0004). At `tt/27C` every spec
+row now passes with tens of degrees and dB to spare, so a `{0.5x,1x,2x}`
+sweep there would report PASS at `0.5x` while `0.5x` in fact misses
+`PM >= 45deg` at `res_bcs`/125C. Reporting that as evidence of robustness
+would be a hollow claim.
+
+### `Cc` value-tolerance window (issue #35)
+
+What the uncharacterized-cap caveat actually needs is a measured answer to
+"how wrong may the cap value be, in either direction, before a ratified row
+fails" -- so `run_sweep.sh` measures exactly that. `Cc`'s width is swept
+across `{85, 110, 130, 170, 220, 259, 340}e-6` at **`ss`/125C**, against
+**both** resistor sections that hold a worst case (`res_bcs` for phase
+margin, `res_wcs` for gain margin), with **both** the loop-gain and PSRR
+benches run at every point. Output:
+`records/*.cc-tolerance.csv`, plus a table in the record itself.
+
+`Cc` is bounded on both sides by ratified spec rows, which is why both ends
+have to be measured:
+
+- **too small** and the `Rz*Cc` phase-lead zero lands above crossover at
+  `res_bcs`/125C (where `Rz` has shrunk to `~0.60x`), failing `PM >= 45deg`;
+- **too large** and the Miller-split dominant pole -- and with it the 1 kHz
+  loop gain that sets PSRR there -- drops far enough to fail
+  `PSRR@1kHz > 50dB`.
+
+At the current `w=170e-6` nominal the measured window is
+`110e-6`-`259e-6`, i.e. **x0.65 to x1.52** of nominal with every spec row
+still met at both binding corners; `85e-6` (x0.50) fails on phase margin
+and `340e-6` (x2.00) on PSRR. Both failing widths are kept in the sweep on
+purpose -- a tolerance window with no measured ends is not a tolerance
+window. `DR-0005` uses this measurement to place the nominal at the
+*geometric centre* of the window rather than at the first value that
+passed.
+
+Every phase-margin/loop-gain number in `records/*.csv` is still marked
+`insufficient-evidence` per issue #21 acceptance criterion 4 -- the
+*absolute* numbers are not independently trustworthy pending real silicon
+characterization -- but the qualitative verdict does not depend on that
+caveat, and now has a measured tolerance band attached to it rather than an
+assertion.
+
+## Results (issue #35, `Cc` re-compensation -- current)
+
+**Every ratified spec row is met at every one of the 45 grid points.** The
+`res_bcs`/125C phase-margin gap #31 found is closed by a single-parameter
+change to the error amplifier's Miller cap -- `Cc` `w` `100e-6` ->
+`170e-6`, with `Rz`, both bias mirrors, `Mpass` and every other device
+unchanged. Full lever study (including the two rejected levers, `Rz` and
+the bias mirrors, both measured over the full grid), the derivation of the
+value from the measured `Cc` pass window, and the one row that pays for it:
+[`spec/decision-records/DR-0005-sg13cmos5l-cc-recompensation.md`](../../spec/decision-records/DR-0005-sg13cmos5l-cc-recompensation.md).
+
+Record cited: [`records/20260917-023832-7061e8f.md`](records/20260917-023832-7061e8f.md),
+with [`.csv`](records/20260917-023832-7061e8f.csv) (45-point PVT x resistor
+grid), [`.sensitivity.csv`](records/20260917-023832-7061e8f.sensitivity.csv),
+[`.cc-tolerance.csv`](records/20260917-023832-7061e8f.cc-tolerance.csv) (new
+-- see "`Cc` value-tolerance window" above),
+[`.delta.csv`](records/20260917-023832-7061e8f.delta.csv) and
+[`.divider-attribution.csv`](records/20260917-023832-7061e8f.divider-attribution.csv).
+`214/214` simulation points passed; completeness matrix OK.
+
+### Spec table at this record
+
+Before/after is against the #31 record at the **same** `(MOS corner,
+temperature, resistor section)` on both sides -- same benches, same PDK
+pin, same ngspice build -- so the deltas isolate the `Cc` change and
+nothing else.
+
+| Parameter | Target | #31 (before) | #35 (this record) | Verdict |
+|---|---|---|---|---|
+| Output accuracy | 1.8V +/-2% | 1.80023V-1.80066V | 1.80023V-1.80066V | **PASS** (unchanged) |
+| Dropout @ 50mA | < 300mV worst corner | 0.20V-0.24V | 0.20V-0.24V | **PASS** (unchanged) |
+| Line regulation | < 5 mV/V | 0.162-0.246 mV/V | 0.162-0.246 mV/V | **PASS** (unchanged, no-load only -- see caveat) |
+| Load regulation | < 1% over full load | 0.0076%-0.025% | 0.0076%-0.025% | **PASS** (unchanged) |
+| Iq, no load | < 30uA | 21.72uA-24.72uA | 21.72uA-24.72uA | **PASS** (unchanged) |
+| PSRR @ 1kHz | > 50dB | 58.20dB-61.87dB | 53.64dB-57.37dB | **PASS**, margin down 4.56dB -- the cost, see below |
+| PSRR @ 100kHz | > 20dB | 32.58dB-36.81dB | 33.23dB-37.00dB | **PASS** (slightly improved) |
+| Stability: phase margin | >= 45 deg worst corner | 43.35deg-73.25deg (**FAIL** 5/45) | 53.87deg-76.94deg | **PASS** (was FAIL) |
+| Stability: gain margin | >= 10dB worst corner | 13.83dB-29.76dB | 13.87dB-29.89dB | **PASS** (unchanged) |
+| Current limit | 65-80mA brickwall | n/a | n/a | **not implemented** |
+| Startup | monotonic ramp, <2% within 3ms | n/a | n/a | **not implemented** |
+| Enable/shutdown | -- | n/a | n/a | **not implemented** |
+
+"Unchanged" on the first five rows is meant literally, and that is a result
+rather than luck: `Cc` carries no DC current, so every DC-sweep metric (Iq,
+dropout, line and load regulation, output accuracy) and the loop's DC gain
+are analytically invariant under any change to it. Checked cell by cell
+against the #31 CSV: `vout_no_load_v`, `dropout_v_50ma`,
+`line_reg_mv_per_v`, `load_reg_pct`, `i_divider_a` and `r_divider_leg_ohm`
+are byte-identical at all 45 points, while `iq_a` differs by at most
+`1e-13 A` and DC loop gain by at most `0.0004 dB` -- the DC solve's own
+numerical noise. Had any of them moved by a physically meaningful amount,
+something other than `Cc` would have changed.
+
+### The one row that pays
+
+Worst-corner PSRR @ 1kHz falls `4.56dB`, from `58.20dB` to `53.64dB`
+against a `50dB` row -- from `8.2dB` of margin to `3.6dB`. A larger Miller
+cap lowers the dominant pole, and the loop gain at 1 kHz *is* what rejects
+supply ripple there. This is not a late discovery: it is the bound that set
+the value (`DR-0005` decision (b)), and it is why `Cc` is `170e-6` rather
+than the `220e-6`-`259e-6` that would have bought another 5-8 degrees of
+phase margin. **PSRR @ 1kHz is now the second-tightest row on this block**,
+behind gain margin's `3.87dB`; anything that lowers the dominant pole
+further has to be checked against it first.
+
+### Worst-corner summary, all 45 points
+
+| Row | Worst value | Binding point | Margin |
+|---|---|---|---|
+| Phase margin | 53.87deg | `ss`/125C/`res_bcs` | +8.87deg |
+| Gain margin | 13.87dB | `ff`/-40C/`res_wcs` | +3.87dB |
+| PSRR @ 1kHz | 53.64dB | `ss`/125C/`res_wcs` | +3.64dB |
+| PSRR @ 100kHz | 33.23dB | `ff`/27C/`res_bcs` | +13.23dB |
+| Iq, no load | 24.72uA | `ss`/125C/`res_bcs` | +5.28uA |
+| Dropout @ 50mA | 0.24V | `ss` @ 125C | +60mV |
+
+`res_wcs` was checked explicitly, because a fix that trades one resistor
+corner for another is the obvious way to pass this gate dishonestly: phase
+margin improves at `res_wcs` too (`tt`/125C: `62.87deg` -> `71.30deg`), and
+gain margin -- the row `res_wcs`/cold holds the worst case on -- improves
+marginally rather than degrading.
+
+### What changed in the harness
+
+- **New `Cc` value-tolerance experiment** (see above): 7 widths x
+  `{res_bcs,res_wcs}` x `{loopgain,psrr}` = 28 points at `ss`/125C, written
+  to `records/*.cc-tolerance.csv`. Point count per run goes `186` -> `214`.
+- **Before/after/delta re-baselined** from the #25 record to the #31 one,
+  and re-keyed on `(corner, temperature, res_section)`. The #25 record held
+  the resistor axis at `res_typ`, so it has no `res_bcs`/`res_wcs` rows to
+  compare against -- and `res_bcs`/125C is precisely the point at issue.
+  The metric list also widened from five metrics to every spec row.
+- **`Cc`'s nominal width is now a single `CC_NOMINAL_W` variable**, used by
+  both the sensitivity substitution and its FATAL guard, so the two cannot
+  drift apart when the value moves again.
+
+## Results (issue #31, PDK `rhigh` divider + full resistor-corner cross -- superseded in part by #35 above)
+
+> **Superseded in part.** This record's Finding 1 (the `rhigh` divider
+> conversion is harmless) stands unchanged and is not re-litigated. Its
+> Finding 2 -- `PM < 45deg` at `res_bcs`/125C -- is the gap issue #35
+> closed; see "Results (issue #35)" above and `DR-0005`. The tables below
+> are what this run measured and are not retro-edited.
 
 **The `rhigh` divider conversion is harmless, as #28 predicted. Crossing the
 resistor corner, which this run did for the first time, found something

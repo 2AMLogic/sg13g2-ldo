@@ -12,7 +12,8 @@
     "flatten_layout": false,
     "flatten_reference": false,
     "netgen_setup": null,
-    "parameter_tolerance": null
+    "parameter_tolerance": null,
+    "compare_parameters": null
   },
   "status": "match",
   "mismatch_count": 0,
@@ -39,17 +40,18 @@
   "device_classes": null,
   "environment": {
     "engine": "klayout",
-    "engine_version": "0.30.12",
-    "layout_sha256": "a57c6e318496d2ee808f07a17d97fb0a97db2e00e909f1da81674250aca3fdae",
-    "reference_sha256": "8d739f73575a1df97c3d4900d25e29de81cd116d93c21b772a25b321676dcb1e",
+    "engine_version": "0.30.10",
+    "layout_sha256": "cd162f1ac1c2f118a9180467baac2725f5bc6779d34699e72443783e2de0e707",
+    "reference_sha256": "02b9c554d7dd5c6a4ba8e5ba3f69493e5b553279f6fc82145dff4758c952c19f",
     "extracted_netlist": null
   },
   "provenance": {
-    "klt_version": "0.5.0",
-    "klayout_version": "0.30.12",
+    "klt_version": "0.4.0",
+    "klayout_version": "0.30.10",
     "pdk": null,
     "deck": null,
-    "input": null
+    "input": null,
+    "klayout_version_mismatch": false
   },
   "mismatches": [],
   "net_correspondence": [

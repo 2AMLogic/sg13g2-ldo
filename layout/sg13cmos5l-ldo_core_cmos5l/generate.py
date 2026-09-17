@@ -263,10 +263,19 @@ def build() -> c.Builder:
     riser(b, "TAIL", 92.0, 18.5, 1)
 
     # ---------------------------------------------------------------- #
-    # 3. Cc: the Miller cap. w=100u (Y) x l=30u (X), per the extractor's own
+    # 3. Cc: the Miller cap. w=170u (Y) x l=30u (X), per the extractor's own
     #    axis mapping (L = marker bbox width, W = marker bbox height).
+    #
+    #    #35 (DR-0005) widened this from 100u to 170u -- the only device
+    #    change in that issue. It is drawn on the same origin, so the cap
+    #    grows upward only: at 170u it is the tallest object in the active
+    #    band (the Mpass array tops out at 118u), and it sets this cell's
+    #    bounding box in Y. Nothing else lives at x >= 130u in the active
+    #    band, so no riser corridor or well moves; RISER_MIN_DX still
+    #    asserts that from the database rather than from this comment.
     # ---------------------------------------------------------------- #
-    c.draw_cap_cmomi(b, "Cc", 100.0, 30.0, 130.0, 0.0, "EAOUT", "MZ")
+    CC_W_UM = 170.0
+    c.draw_cap_cmomi(b, "Cc", CC_W_UM, 30.0, 130.0, 0.0, "EAOUT", "MZ")
     riser(b, "EAOUT", 130.3, 2.0, 1)
     riser(b, "MZ", 159.7, 2.0, 1)
 

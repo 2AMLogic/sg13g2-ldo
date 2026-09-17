@@ -5,7 +5,7 @@
   "top": "sg13cmos5l_ldo_core_cmos5l",
   "dbu_um": 0.001,
   "netlist_path": "sg13cmos5l-ldo_core_cmos5l.extracted.spice",
-  "netlist_sha256": "a57c6e318496d2ee808f07a17d97fb0a97db2e00e909f1da81674250aca3fdae",
+  "netlist_sha256": "cd162f1ac1c2f118a9180467baac2725f5bc6779d34699e72443783e2de0e707",
   "status": "extracted",
   "device_count": 131,
   "net_count": 11,
@@ -675,7 +675,7 @@
         "b": "MZ"
       },
       "params": {
-        "w_um": 100.0,
+        "w_um": 170.0,
         "l_um": 30.0
       },
       "instance_path": []
@@ -2583,7 +2583,7 @@
         {
           "text": "EAOUT",
           "x_um": 130.3,
-          "y_um": 99.5
+          "y_um": 169.5
         }
       ]
     },
@@ -2704,7 +2704,7 @@
         {
           "text": "MZ",
           "x_um": 159.7,
-          "y_um": 99.5
+          "y_um": 169.5
         }
       ]
     },
@@ -2963,8 +2963,8 @@
   "matched_device_groups": [],
   "pdk": null,
   "provenance": {
-    "klt_version": "0.5.0",
-    "klayout_version": "0.30.12",
+    "klt_version": "0.4.0",
+    "klayout_version": "0.30.10",
     "pdk": null,
     "deck": {
       "name": "sg13cmos5l",
@@ -2972,9 +2972,14 @@
       "released": true
     },
     "input": {
-      "content_hash": "sha256:fd6ba13c60ad17fe7604703cf697fbc9c54c6d91d2ab9d2df8c653398466c863"
+      "content_hash": "sha256:f0f01392735616cbdb45166467972f8e4456426fd1cf794e3380d1713eabc062"
     }
   },
   "parasitics": null,
-  "spef_path": null
+  "spef_path": null,
+  "metrics": {
+    "extract__device__count": 131,
+    "extract__net__count": 11,
+    "extract__pin__count": 5
+  }
 }
