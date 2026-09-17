@@ -156,8 +156,22 @@ v {xschem version=3.4.7 file_version=1.3
 *    leff = 1200.000u; b=39/l=28.81u gives leff = 1199.893u -- 0.009%
 *    low, and `l` stays on the PDK's 0.005um grid. Both W (weff) and L
 *    (leff) handed to the model are therefore the same to within that
-*    0.009%, so the simulated device is the same device: R = 1.70001 MOhm
-*    vs 1.70016 MOhm at the typical corner.
+*    0.009%, so it is the same device before and after the meander:
+*    R = 1.70016 MOhm (b=0) -> 1.70001 MOhm (b=39) by rhigh.sym's own
+*    value expression (weff = w - 0.04u applied once, the number a
+*    schematic reader sees). CORRECTION (issue #36): that pair was
+*    mislabeled "the simulated device" above in an earlier revision of
+*    this header -- it is not. Every rhigh on this branch, Rz included,
+*    is subject to the width-offset double-count issue #36 confirmed as
+*    a PDK bug (resistors_mod.lib's rhigh subckt narrows weff once, then
+*    its r3_cmc .model card's own xw=-0.04 narrows it again; filed
+*    upstream as IHP-GmbH/IHP-Open-PDK#1235; see
+*    ldo_core_cmos5l.sch's header and
+*    spec/decision-records/DR-0006-rhigh-family-width-offset-double-count.md
+*    for the full arithmetic and verdict). The device r3_cmc actually
+*    simulates is R = 1.77407 MOhm (b=0) -> 1.77392 MOhm (b=39) --
+*    the same 0.009% geometry-preservation conclusion holds either way,
+*    just at the real simulated value rather than the symbol's.
 *
 *    A gm-tracking triode-MOS Rz remains an available refinement if a
 *    future phase needs a smaller die footprint here.
