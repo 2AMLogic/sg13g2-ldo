@@ -219,12 +219,16 @@ v {xschem version=3.4.7 file_version=1.3
 *
 * Operating point implied by the sizes below, at Iref = 2 uA: tail 6 uA
 * (3 uA per input device), second stage 12 uA, mirror reference 2 uA =>
-* 20 uA in this cell, plus the 2 uA feedback divider in ldo_core_cmos5l =
-* 22 uA nominal -- confirmed by #25's closed-loop sweep at ~22.0-22.98 uA
-* (no load) and ~23.06-23.08 uA (full load, 50 mA) across the full PVT
-* grid, comfortably inside the porting plan's 16-26 uA allocation and the
-* ratified <30uA Iq target (design/README.md's spec table) at both load
-* points.
+* 20 uA in this cell, plus the feedback divider in ldo_core_cmos5l --
+* which since #28 is a real rhigh pair and therefore corner-dependent,
+* 1.97-4.82 uA across the grid rather than a flat 2 uA. Measured no-load
+* Iq is 21.72-24.72 uA across the full 45-point PVT x resistor grid,
+* comfortably inside the porting plan's 16-26 uA allocation and the
+* ratified <30uA Iq target (design/README.md's spec table). #35's Cc
+* change does not move any of these numbers by construction: Cc carries
+* no DC current, so every DC-sweep metric is bit-identical to the #31
+* record (sim/ldo-cmos5l-pvt-sweep/README.md, "Results (issue #35)").
+* That Iq headroom is also what bounds the bias lever in item 1 above.
 *
 * NO ENABLE, NO CURRENT LIMIT, NO SOFT START, NO START-UP CIRCUIT. Same
 * scope boundary the SG13G2 branch drew; phases 3/4 and later increments

@@ -185,18 +185,38 @@ Schematic capture for the SG13CMOS5L port, against the `ihp-sg13cmos5l` PDK
 (issue #20, phase 2/4 of the port tracked by #12, Epic `2AMLogic/2am#542`
 Phase 5A).
 
-> **Status: PVT-verified and re-sized (issues #21, #25, #31, phases 3–4b) —
-> every spec row passes except phase margin at `res_bcs`/125 °C.** #31
-> crossed the resistor corner with the full MOS × temperature grid for the
-> first time (45 points, against the post-#28 PDK `rhigh` divider) and found
-> phase margin at `43.35°`–`44.48°` there, short of the ratified `≥ 45°` at
-> all five MOS corners; every other spec row still passes at all 45 points.
+> **Status: PVT-verified and re-compensated (issues #21, #25, #31, #35,
+> phases 3–4c) — every ratified spec row passes at all 45 grid points.**
+> #35 closed the `res_bcs`/125 °C phase-margin gap #31 found, with a
+> single-parameter change: the error amp's Miller cap `Cc` goes
+> `w=100u` → `w=170u` (≈3.2 pF → ≈5.5 pF), `Rz`, both bias mirrors and
+> `Mpass` all unchanged. Worst corner over
+> `{tt,ss,ff,sf,fs} × {−40,27,125}°C × {res_typ,res_bcs,res_wcs}`: phase
+> margin 53.87°, gain margin 13.87 dB, PSRR 53.64 dB @ 1 kHz / 33.23 dB @
+> 100 kHz, Iq 24.72 µA, dropout 0.24 V — every DC row unchanged from #31
+> (byte-identical at all 45 points bar numerical noise), because `Cc`
+> carries no DC current. The cost is 4.56 dB of PSRR @ 1 kHz
+> margin, which is the bound that set `Cc`'s value rather than a late
+> discovery; `Cc` is placed at the geometric centre of its own measured
+> pass window (×0.65–×1.52), because `cornerCAP.lib` offers no MoM-cap
+> corner spread to sweep and tolerance to a wrong cap value is the only
+> robustness that caveat can be given. Both alternative levers — a larger
+> `Rz`, and more bias current — were measured over the full grid and
+> rejected on evidence:
+> [`DR-0005`](../spec/decision-records/DR-0005-sg13cmos5l-cc-recompensation.md).
+>
+> The pre-#35 status follows, kept because it is what the earlier records
+> measured.
+>
+> **#31 (superseded in part by #35):** #31 crossed the resistor corner with
+> the full MOS × temperature grid for the first time (45 points, against
+> the post-#28 PDK `rhigh` divider) and found phase margin at
+> `43.35°`–`44.48°` at `res_bcs`/125 °C, short of the ratified `≥ 45°` at
+> all five MOS corners; every other spec row still passed at all 45 points.
 > The cause is `Rz`'s corner spread compounding with its temperature
 > coefficient, not the divider conversion (measured directly: that
 > contributes `+0.00°`–`+0.01°` at those points). Not relaxed, recorded:
 > [`DR-0004`](../spec/decision-records/DR-0004-sg13cmos5l-resistor-corner-stability.md).
-> The pre-#31 status, which remains accurate for the `res_typ` slice it
-> measured, follows.
 >
 > #21's first closed-loop PVT sweep (the full
 > `{tt,ss,ff,sf,fs} × {-40,27,125}°C` grid) found the phase-2 provisional
@@ -396,8 +416,21 @@ optimality:
    (`29.76 dB`), the signature of a zero that moved rather than a loop that
    lost gain. See
    [`DR-0004`](../spec/decision-records/DR-0004-sg13cmos5l-resistor-corner-stability.md);
-   re-compensation is deliberately deferred to its own issue rather than
+   re-compensation was deliberately deferred to its own issue rather than
    done inside a verification run.
+   **#35 closed that gap without touching `Rz`, and the reason is worth
+   keeping**: enlarging `Rz` *does* recover phase margin, but `Rz` also
+   sets the loop's high-frequency gain floor — above the zero it passes
+   `Cc`'s current straight through — so gain margin falls at the *opposite*
+   resistor corner. Measured over the full 45-point grid: `leff`
+   1200 µm → 1400 µm costs 1.6 dB of worst-corner gain margin, 1600 µm
+   costs 3.1 dB (leaving 0.73 dB of margin), and 1800 µm breaks the
+   ratified `GM ≥ 10 dB` row outright. `Cc` moves the same zero with no
+   gain-margin cost at all (13.83 → 13.87 dB across a 3.2× `Cc` range), so
+   `Cc` is the knob #35 moved and `Rz` keeps #25's value — which also
+   leaves #28's drawn forty-stripe meander valid, a consequence of the
+   decision rather than its reason
+   ([`DR-0005`](../spec/decision-records/DR-0005-sg13cmos5l-cc-recompensation.md)).
 3. **`Rz` and the feedback divider are both PDK `rhigh`, and the resistor
    corner is swept, not held.** `cornerRES.lib` gives `rhigh` a real corner
    spread (unlike `cornerCAP.lib`'s `Cc`, which has none at this PDK's pin —
@@ -422,11 +455,25 @@ optimality:
    declaration, so `sub!` would netlist as an undeclared, floating local
    node. This is the same "`VSS` is an explicit pin, never an implicit
    global-ground alias" rule the SG13G2 branch already follows.
-5. **Sizing generally** is a DC-sanity first cut for every device #25 did
-   not touch — `Mb0`/`Minp`/`Minn`/`Mn1`/`Mn2`/`Mn3` keep #20's original
-   widths; only `Mtail`/`Mload2`'s mirror ratios and the `Cc`/`Rz`
-   compensation values changed in #25 (see items 1–2 above and `Mpass`
-   above). `L ≥ 1 µm` on every amplifier device (the HV `VGS ≤ 3.3 V`
+5. **More bias current is not a usable lever here — a measured negative
+   result.** `DR-0003` found that doubling both mirrors (`m=2`/`m=4` →
+   `m=4`/`m=8`) bought back the 1 kHz loop gain, and therefore the PSRR,
+   that a large `Rz`/`Cc` pair costs. #35 needed exactly that headroom (a
+   larger `Cc` is bounded above by `PSRR@1kHz > 50 dB`) and re-tested the
+   lever at the only notch sizes the Iq budget admits: `m=4`/`m=8` would
+   put worst-corner Iq at ≈30.7 µA, over the ratified `< 30 µA` row, so
+   only single notches are available. `Mload2 m=6→7` moves worst-corner
+   PSRR @ 1 kHz by **+0.01 dB** for +2 µA of Iq; `Mtail m=3→4` buys
+   +1.7 dB but costs 1.4 dB of gain margin, +2 µA of Iq, and nearly
+   doubles the number of grid points whose loop gain crosses 0 dB a second
+   time near the top of the swept band. Both rejected in favour of `Cc`
+   alone
+   ([`DR-0005`](../spec/decision-records/DR-0005-sg13cmos5l-cc-recompensation.md)).
+6. **Sizing generally** is a DC-sanity first cut for every device #25/#35
+   did not touch — `Mb0`/`Minp`/`Minn`/`Mn1`/`Mn2`/`Mn3` keep #20's
+   original widths; `Mtail`/`Mload2`'s mirror ratios and `Rz` changed in
+   #25, and only `Cc` changed in #35 (see items 1–2 and 5 above, and
+   `Mpass` above). `L ≥ 1 µm` on every amplifier device (the HV `VGS ≤ 3.3 V`
    rating needs `LG ≥ 0.5 µm`, and longer channels buy the matching and
    output resistance a micro-power amplifier needs). `ng=1` throughout —
    fingering is a phase-4 layout concern.
@@ -440,9 +487,9 @@ optimality:
 | `Mn1` / `Mn2` | `sg13_hv_nmos` | `w=5u l=1u m=1` | first-stage mirror (diode / output leg) |
 | `Mn3` | `sg13_hv_nmos` | `w=20u l=1u m=1` | second-stage common source |
 | `Mload2` | `sg13_hv_pmos` | `w=5u l=2u m=6` | second-stage current-source load |
-| `Cc` | `cap_cmomi` | `w=100u l=30u`, M1–M4 | Miller cap, **≈3.2 pF** |
-| `Rz` | `rhigh` | `w=1u l=1200u b=0` | nulling/phase-lead resistor, **≈1.70 MΩ** |
-| `Rtop` / `Rbot` | `res.sym` | `300k` each | feedback divider, `FB = VOUT/2` |
+| `Cc` | `cap_cmomi` | `w=170u l=30u`, M1–M4 | Miller cap, **≈5.5 pF** (#35; was `w=100u`, ≈3.2 pF) |
+| `Rz` | `rhigh` | `w=1u l=28.81u b=39` | nulling/phase-lead resistor, forty stripes, `leff` ≈1200 µm, **≈1.70 MΩ** by the symbol expression (≈1.77 MΩ as simulated — see "Known gaps") |
+| `Rtop` / `Rbot` | `rhigh` | `w=1u l=25.43u b=7` each | feedback divider, `FB = VOUT/2` (#28; was a behavioural `res.sym` 300k pair) |
 
 The operating point implied by the sizes above, at `Iref = 2 µA`: 2 µA
 mirror reference + 6 µA tail + 12 µA second stage = 20 µA in the
@@ -452,28 +499,31 @@ load, 50mA) across the full PVT grid — comfortably inside
 `spec/porting-plan.md`'s 16–26 µA allocation and the ratified <30µA Iq
 target at both load points.
 
-`Cc`'s ≈3.2 pF and `Rz`'s ≈1.70 MΩ are computed the same way the
+`Cc`'s ≈5.5 pF and `Rz`'s ≈1.70 MΩ are computed the same way the
 phase-2 values were: `Cc` by the PDK's own display helper
 (`libs.tech/xschem/sg13cmos5l_pr/cap_cmomi.tcl`, which reproduces
 `cap_cmomi.va`'s low-frequency capacitance, ≈1.09 fF/µm² over an M1–M4
-stack, scaled from the original 30µm-square ≈0.95pF figure by area); `Rz`
-by that symbol's own `value` expression evaluated at `w=1 µm`,
-`l=1200 µm`, `b=0` (`rhigh.sym`'s `value=expr_eng(...)`, using
-`res_typ`'s ≈1360 Ω/sq — the corner sweep in
-`sim/ldo-cmos5l-pvt-sweep/records/` shows the real `res_bcs`/`res_wcs`
-spread, roughly ≈1.2–1.7 MΩ). Two corrections from #31's evidence, neither
-of which changes a drawn value: the *simulated* `Rz` is ≈1.774 MΩ, not
-1.700 MΩ, for the width-offset double-count described under "Known gaps"
-below; and that corner spread is not benign — it is what pushes phase
-margin below the ratified `≥ 45°` at `res_bcs`/125 °C
-([`DR-0004`](../spec/decision-records/DR-0004-sg13cmos5l-resistor-corner-stability.md)).
+stack, scaled from the original 30µm-square ≈0.95pF figure by area — 3.21 pF
+at `w=100 µm`, 5.47 pF at #35's `w=170 µm`); `Rz` by that symbol's own
+`value` expression evaluated at `w=1 µm` and the `leff` its `l`/`b` imply
+(`rhigh.sym`'s `value=expr_eng(...)`, using `res_typ`'s ≈1360 Ω/sq — the
+corner sweep in `sim/ldo-cmos5l-pvt-sweep/records/` shows the real
+`res_bcs`/`res_wcs` spread, roughly ≈1.2–1.7 MΩ). Two corrections from
+#31's evidence, neither of which changes a drawn value: the *simulated*
+`Rz` is ≈1.774 MΩ, not 1.700 MΩ, for the width-offset double-count
+described under "Known gaps" below; and that corner spread is not benign —
+it is what pushed phase margin below the ratified `≥ 45°` at
+`res_bcs`/125 °C
+([`DR-0004`](../spec/decision-records/DR-0004-sg13cmos5l-resistor-corner-stability.md)),
+which #35's wider `Cc` is what closes
+([`DR-0005`](../spec/decision-records/DR-0005-sg13cmos5l-cc-recompensation.md)).
 
 ### PDK caveats honoured (evidence rules carried in)
 
 | Caveat | How this branch honours it |
 | ------ | -------------------------- |
 | **No MIM caps** — `cmim`/`rfcmim` need a layer this PDK forbids | The only capacitor in the hierarchy is `cap_cmomi`, a MoM cap. No MIM symbol is instantiated anywhere. |
-| **MoM caps are not validated on CMOS5L silicon** — `cornerCAP.lib` maps every corner/mismatch/stat section to the same nominal model | **Every result that depends on `Cc`'s value is `insufficient-evidence`** — confirmed by issue #21's own reading of `cornerCAP.lib` at this PDK's pin (every section maps to the identical nominal `cap_cmomi` model). That includes every phase- and gain-margin claim about this loop. Selecting a cap corner is a no-op on this PDK, so #21 ran a *value* sensitivity sweep instead (`Cc` width `0.5×`/`1×`/`2×` nominal, at `tt/27°C`): with the phase-2 sizing, phase margin moved between `0.19°` and `0.35°` across that whole range — the near-zero-margin verdict itself did not depend on the uncharacterized `Cc` value. #25 re-ran the same sensitivity sweep at the resized `Cc`/`Rz` and found the PASS verdict holds the same way: phase margin `56.9°`–`76.4°` and gain margin `18.6dB`–`23.5dB` across both the `0.5×`–`2×` nominal `Cc` value sweep and the `res_bcs`/`res_typ`/`res_wcs` `Rz` corner sweep — the qualitative verdict still does not depend on the uncharacterized `Cc` value, even though the exact numbers remain `insufficient-evidence` pending real silicon characterization (`sim/ldo-cmos5l-pvt-sweep/README.md` "MoM-cap (Cc) sensitivity sweep"). **#31 narrowed that PASS**: #25's resistor-corner sensitivity ran at `tt/27°C` only, and crossing the resistor corner with the full MOS × temperature grid shows phase margin falling to `43.35°`–`44.48°` at `res_bcs`/125 °C, below the ratified `≥ 45°` — see [`DR-0004`](../spec/decision-records/DR-0004-sg13cmos5l-resistor-corner-stability.md). The `Cc` caveat is unchanged and orthogonal to it. |
+| **MoM caps are not validated on CMOS5L silicon** — `cornerCAP.lib` maps every corner/mismatch/stat section to the same nominal model | **Every result that depends on `Cc`'s value is `insufficient-evidence`** — confirmed by issue #21's own reading of `cornerCAP.lib` at this PDK's pin (every section maps to the identical nominal `cap_cmomi` model). That includes every phase- and gain-margin claim about this loop. Selecting a cap corner is a no-op on this PDK, so #21 ran a *value* sensitivity sweep instead (`Cc` width `0.5×`/`1×`/`2×` nominal, at `tt/27°C`): with the phase-2 sizing, phase margin moved between `0.19°` and `0.35°` across that whole range — the near-zero-margin verdict itself did not depend on the uncharacterized `Cc` value. #25 re-ran the same sensitivity sweep at the resized `Cc`/`Rz` and found the PASS verdict holds the same way: phase margin `56.9°`–`76.4°` and gain margin `18.6dB`–`23.5dB` across both the `0.5×`–`2×` nominal `Cc` value sweep and the `res_bcs`/`res_typ`/`res_wcs` `Rz` corner sweep — the qualitative verdict still does not depend on the uncharacterized `Cc` value, even though the exact numbers remain `insufficient-evidence` pending real silicon characterization (`sim/ldo-cmos5l-pvt-sweep/README.md` "MoM-cap (Cc) sensitivity sweep"). **#31 narrowed that PASS**: #25's resistor-corner sensitivity ran at `tt/27°C` only, and crossing the resistor corner with the full MOS × temperature grid shows phase margin falling to `43.35°`–`44.48°` at `res_bcs`/125 °C, below the ratified `≥ 45°` — see [`DR-0004`](../spec/decision-records/DR-0004-sg13cmos5l-resistor-corner-stability.md). **#35 restored the PASS and, in the process, gave this caveat a measured number instead of an assertion.** A `{0.5×,1×,2×}` sweep at `tt/27°C` stopped being a meaningful robustness test once `tt/27°C` stopped being near the worst case: at the post-#35 sizing it would report PASS at `0.5×` while `0.5×` in fact misses `PM ≥ 45°` at `res_bcs`/125 °C. So `run_sweep.sh` now also sweeps `Cc`'s width at `ss/125°C` against both binding resistor sections, with the loop-gain *and* PSRR benches at every point, and reports the resulting pass window: **`Cc` may be anywhere from ×0.65 to ×1.52 of its nominal value with every ratified row still met at every point** (bounded below by `PM ≥ 45°`, above by `PSRR@1kHz > 50 dB`). `Cc`'s nominal is placed at the geometric centre of that window precisely because the cap value is the uncharacterized quantity — see [`DR-0005`](../spec/decision-records/DR-0005-sg13cmos5l-cc-recompensation.md) and `sim/ldo-cmos5l-pvt-sweep/README.md` "`Cc` value-tolerance window". The exact numbers remain `insufficient-evidence` pending real silicon characterization; what is no longer assumed is how far wrong the model may be before the verdict changes. |
 | **No isolated NMOS** in this PDK's design kit | Honoured by construction: the only NMOS flavour used is `sg13_hv_nmos`. |
 | **M1–M4 + TM1 metal stack only** | `Cc` is declared `mmin=1 mmax=4` — an M1–M4 MoM stack. Nothing in this branch's sources or documentation references a second thick top metal. |
 | **Bipolar input stage is structurally ruled out** (no HBT; `pnpMPA`'s collector is the substrate and β ≈ 1.1) | No bipolar device is instantiated. DR-0002 §"The installed PDK tree, read directly" is the evidence. |
@@ -507,7 +557,10 @@ margin below the ratified `≥ 45°` at `res_bcs`/125 °C
   five MOS corners (43.35°–44.48°, driven by `Rz`'s corner spread compounding
   with its temperature coefficient — present with the behavioural divider
   too, and invisible to #21/#25 because they swept the resistor corner at
-  27 °C only); and the PDK's `rhigh` **symbol value expression and simulation
+  27 °C only; **closed in phase 4c (#35)** by widening `Cc` to `w=170u`,
+  worst-corner phase margin now 53.87°, see
+  [`DR-0005`](../spec/decision-records/DR-0005-sg13cmos5l-cc-recompensation.md));
+  and the PDK's `rhigh` **symbol value expression and simulation
   model disagree by 4.35 %** (the `w − 0.04 µm` width offset is applied twice
   — once in `resistors_mod.lib`'s subckt, again via the `r3_cmc` card's
   `xw=-0.04`), so the 300.44 kΩ per leg quoted above is the symbol's number

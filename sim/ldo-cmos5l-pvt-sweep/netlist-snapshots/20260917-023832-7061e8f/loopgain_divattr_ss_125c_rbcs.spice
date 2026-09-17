@@ -1,0 +1,93 @@
+* sg13g2-ldo -- SG13CMOS5L loop-gain / phase-margin bench (issue #21).
+* Generated from
+* sim/ldo-cmos5l-pvt-sweep/testbench/tb_loopgain_cmos5l.spice.tmpl by
+* sim/ldo-cmos5l-pvt-sweep/run_sweep.sh -- do not edit a generated
+* netlist-snapshots/*.spice file directly. Full methodology + the loop-gain
+* derivation below are in sim/ldo-cmos5l-pvt-sweep/README.md "Loop-gain
+* measurement method"; this header is a short pointer.
+*
+* Generated for: corner=mos_ss temp=125C res=res_bcs
+* cap=cap_typ Cc_w=170u (nominal)
+* PDK: ihp-sg13cmos5l /home/ubuntu/share/pdk (see sim/pdk-cmos5l.json for the pinned release)
+* OSDI models: /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi (built by sim/tools/build-osdi.sh)
+* Design netlist under test (frozen at this repo's git sha in the record,
+* or a Cc-width-substituted copy of it for the Cc-sensitivity points --
+* see README.md "MoM-cap (Cc) sensitivity sweep"):
+*   /home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-35/design/sg13cmos5l/netlist/ldo_core_cmos5l.spice
+*
+* THIS BENCH FLATTENS ldo_core_cmos5l ONE LEVEL, unlike tb_dcsweep_cmos5l
+* and tb_psrr_cmos5l, so a loop-break source can be inserted at FB -- the
+* feedback-divider node that drives the amplifier's INP pin (a MOSFET gate:
+* zero DC/AC current draw both before and after the break, so the break
+* does not perturb the original DC operating point -- see README.md for
+* the full derivation of why this is valid here). The XMpass/XRtop/XRbot/Xamp
+* instantiation lines below are reproduced VERBATIM from
+* design/sg13cmos5l/netlist/ldo_core_cmos5l.spice's ldo_core_cmos5l subckt
+* body (only FB -> FBAMP on Xamp's first pin, plus the inserted Vbreak,
+* differ) -- run_sweep.sh asserts this file's copy still matches the
+* generated netlist's topology every run (see that script's
+* assert_loopgain_topology_sync()), so a future schematic edit that
+* changes this connectivity fails loudly here instead of silently
+* invalidating this bench.
+*
+* Loop-gain derivation (full argument in README.md): break the loop with
+* an ideal series source Vbreak (0V DC, AC=1) between FB (the real
+* feedback-divider node) and FBAMP (the node that actually drives the
+* amp's INP pin). Because FBAMP carries zero current (only touches Vbreak
+* and a MOSFET gate) both before and after the break, and FB is purely
+* resistive-divider-determined by VOUT, algebra gives V(FB) = T(s)*V(FBAMP)
+* for the SAME T(s) an unbroken loop would have -- so T(s) is read
+* directly off this one AC analysis as the ratio of two node voltages, no
+* L/C blocking network needed (that network exists to protect the DC bias
+* point when the downstream node draws real current; it doesn't here).
+* Convention: Loop Gain L(s) = -v(fb)/v(fbamp) (sign flipped so a healthy
+* negative-feedback loop shows a large POSITIVE real L(0), phase near 0 at
+* DC, rolling toward -180 degrees at the unity-gain crossover -- the
+* standard Bode-plot convention phase margin = 180 + phase(L) at the
+* frequency where |L|=1 (0dB) is stated against).
+
+.lib "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/models/cornerMOShv.lib" mos_ss
+.lib "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/models/cornerRES.lib" res_bcs
+.lib "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/models/cornerCAP.lib" cap_typ
+
+.options temp=125 tnom=27
+
+.include "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-35/design/sg13cmos5l/netlist/ldo_core_cmos5l.spice"
+
+Vin VIN 0 dc 3.30
+Vref VREF 0 dc 0.90 ac 0
+Ibias IBIAS 0 dc 2u
+Iload VOUT 0 dc 0.001
+Cout VOUT 0 1u
+
+* --- flattened ldo_core_cmos5l, loop broken at FB (see header). VSS is
+* tied to global ground by the ideal 0V Vgnd source below (never aliased
+* to node "0" directly in the four mirrored lines) so this block stays a
+* byte-for-byte copy of ldo_core_cmos5l's subckt body, FB->FBAMP on Xamp's
+* first pin excepted -- exactly what run_sweep.sh's
+* assert_loopgain_topology_sync() diffs against the generated netlist. ---
+Vgnd VSS 0 dc 0
+XMpass VOUT EAOUT VIN VIN sg13_hv_pmos w=2800u l=0.5u ng=1 m=1
+Rtop VOUT FB 300k m=1
+Rbot FB VSS 300k m=1
+Vbreak FB FBAMP 0 ac 1
+Xamp FBAMP VREF EAOUT VIN VSS IBIAS ldo_erramp_cmos5l
+
+.control
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/psp103.osdi
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/psp103_nqs.osdi
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/mosvar.osdi
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/r3_cmc.osdi
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/cap_cmomi.osdi
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/cap_cmomf.osdi
+
+op
+echo "LOOPGAIN_VOUT_OP $&v(vout)"
+
+ac dec 20 1 100meg
+let loopgain = -v(fb)/v(fbamp)
+let loopgain_db = db(loopgain)
+let loopgain_deg = ph(loopgain)*180/3.14159265358979
+wrdata /home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-35/sim/ldo-cmos5l-pvt-sweep/corners/20260917-023832-7061e8f/loopgain_divattr_ss_125c_rbcs_ac.csv loopgain_db loopgain_deg
+.endc
+.end

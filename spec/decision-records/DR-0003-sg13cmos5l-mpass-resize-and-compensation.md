@@ -1,5 +1,25 @@
 # DR-0003: SG13CMOS5L port — `Mpass` resize and error-amp re-compensation
 
+> **AMENDED by [`DR-0005`](DR-0005-sg13cmos5l-cc-recompensation.md) (issue
+> #35), 2026-09-17, in exactly one value: `Cc` is `w=170µm, l=30µm`
+> (≈5.5 pF), not the `w=100µm` this record sized.** Everything else in
+> Decision (b) stands — the `Mtail`/`Mload2` mirror ratios (`m=3`/`m=6`),
+> `Rz` (`w=1µm`, `leff` 1200 µm), and above all the *approach* (use the
+> nulling resistor's zero as a deliberate phase-lead element near
+> crossover, not only as an RHP-zero canceller). Decision (a), the `Mpass`
+> resize to `w=2800µm`, is untouched.
+>
+> **Why**: this record's evidence held the resistor corner at `res_typ`
+> across its main grid and swept it only at `tt`/27 °C, so its "PASS at
+> every corner" stability verdict was never tested at `res_bcs`/125 °C.
+> [`DR-0004`](DR-0004-sg13cmos5l-resistor-corner-stability.md) found
+> `PM ≥ 45°` failing there at all five MOS corners once #31 crossed the
+> axes in full; `DR-0005` closes that gap on `Cc` alone and re-verifies at
+> all 45 points. **Cite `DR-0005`, not this record, for any claim about
+> this branch's stability across the resistor corner.** The tables below
+> are left as written — they are what was measured at the time, on the
+> grid that was run at the time — and are not retro-edited.
+
 - **Status**: Proposed (this PR is the ratification act — see "Status" below).
 - **Date**: 2026-09-16
 - **Scope**: The **SG13CMOS5L branch only** (issue #25, phase 3.5/4 of the

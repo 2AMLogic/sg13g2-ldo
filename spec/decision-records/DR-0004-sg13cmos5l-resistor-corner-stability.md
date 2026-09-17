@@ -1,5 +1,26 @@
 # DR-0004: SG13CMOS5L port — the resistor corner is a first-class PVT axis, and the loop misses PM ≥ 45° at `res_bcs`/125 °C
 
+> **DECISION 2 IS SUPERSEDED by
+> [`DR-0005`](DR-0005-sg13cmos5l-cc-recompensation.md) (issue #35),
+> 2026-09-17.** This record narrowed the branch's stability claim to *"PASS
+> at `res_typ` and `res_wcs`; FAIL at `res_bcs`/125 °C at all five MOS
+> corners."* That narrowing no longer holds: `DR-0005` re-compensates the
+> error amplifier on `Cc` alone (`w` 100 µm → 170 µm, everything else
+> unchanged) and re-verifies **every** ratified spec row at **all 45
+> points** of the same grid, worst-corner phase margin 53.87°.
+>
+> **Decisions 1, 3 and 4 are NOT superseded and remain in force**: the
+> `PM ≥ 45°` row still stands unrelaxed (decision 1 — `DR-0005` needed no
+> relief from it); the resistor corner is still a first-class axis of
+> `sim/ldo-cmos5l-pvt-sweep`, and a future record that holds it at nominal
+> is still a regression (decision 3); and decision 4's deferral is
+> discharged by `DR-0005`, which is the follow-up it named. The "Separate
+> observation" below — this PDK's `rhigh` symbol expression and simulation
+> model disagreeing by 4.35 % — is likewise untouched and still open.
+>
+> The failing table and the mechanism analysis below are left as written.
+> They are the diagnosis `DR-0005` is built on, not stale text.
+
 - **Status**: Proposed (this PR is the ratification act — see "Status" below).
 - **Date**: 2026-09-16
 - **Scope**: The **SG13CMOS5L branch only** (issue #31, phase 4b of the
