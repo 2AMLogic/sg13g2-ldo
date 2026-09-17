@@ -6,6 +6,9 @@
   "status": "clean",
   "violation_count": 0,
   "rule_counts": {},
+  "metrics": {
+    "drc__error__count": 0
+  },
   "violations": [],
   "coverage": {
     "deck_layers": [
@@ -77,8 +80,8 @@
     ]
   },
   "provenance": {
-    "klt_version": "0.5.0",
-    "klayout_version": "0.30.12",
+    "klt_version": "0.4.0",
+    "klayout_version": "0.30.10",
     "pdk": null,
     "deck": {
       "name": "sg13cmos5l",
@@ -86,7 +89,8 @@
       "released": true
     },
     "input": {
-      "content_hash": "sha256:fd6ba13c60ad17fe7604703cf697fbc9c54c6d91d2ab9d2df8c653398466c863"
-    }
+      "content_hash": "sha256:f0f01392735616cbdb45166467972f8e4456426fd1cf794e3380d1713eabc062"
+    },
+    "klayout_version_mismatch": false
   }
 }

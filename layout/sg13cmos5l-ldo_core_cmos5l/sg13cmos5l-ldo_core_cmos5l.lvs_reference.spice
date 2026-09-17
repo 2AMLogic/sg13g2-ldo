@@ -22,7 +22,7 @@ MMinn N1 VREF TAIL TAIL pfet L=1U W=20U
 MMn2 G1 N1 VSS VSS nfet L=1U W=5U
 MMn1 N1 N1 VSS VSS nfet L=1U W=5U
 MMn3 EAOUT G1 VSS VSS nfet L=1U W=20U
-XCc EAOUT MZ cap_cmomi PARAMS: W=100 L=30
+XCc EAOUT MZ cap_cmomi PARAMS: W=170 L=30
 * Rz: rhigh w=1u l=28.81u b=39 (40 stripes) -- deck model 1576811.2 ohm, PDK ngspice model 1700012.2 ohm
 RRz MZ G1 VSS 1576811.2 rhigh
 .ENDS sg13cmos5l_ldo_core_cmos5l

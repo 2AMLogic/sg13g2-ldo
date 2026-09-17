@@ -262,11 +262,11 @@ M$126 VOUT EAOUT VIN VIN pfet L=0.5U W=25U AS=6.25P AD=6.25P PS=25.5U PD=25.5U
 * device instance $127 r0 *1 27.75,105.5 pfet
 M$127 VIN EAOUT VOUT VIN pfet L=0.5U W=25U AS=6.25P AD=12.5P PS=25.5U PD=51U
 * device instance $128 r0 *1 130,0 cap_cmomi
-XD_$128 EAOUT MZ cap_cmomi PARAMS: W=100 L=30
+XD_$128 EAOUT MZ cap_cmomi PARAMS: W=170 L=30
 * device instance $129 r0 *1 23.51,-95.595 rhigh
-R$129 MZ G1 VSS 1576811.2 rhigh
+R$129 MZ G1 VSS 1576811.2 rhigh L=1159.42U W=1U
 * device instance $130 r0 *1 55.63,-94.285 rhigh
-R$130 VOUT FB VSS 278392 rhigh
+R$130 VOUT FB VSS 278392 rhigh L=204.7U W=1U
 * device instance $131 r0 *1 68.63,-94.285 rhigh
-R$131 FB VSS VSS 278392 rhigh
+R$131 FB VSS VSS 278392 rhigh L=204.7U W=1U
 .ENDS sg13cmos5l_ldo_core_cmos5l

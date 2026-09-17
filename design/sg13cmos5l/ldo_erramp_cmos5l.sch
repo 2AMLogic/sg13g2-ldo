@@ -73,6 +73,18 @@ v {xschem version=3.4.7 file_version=1.3
 * ratified decisions -- they are what the current PVT record supports,
 * not a claim of optimality:
 *
+* AMENDED BY #35 (DR-0005). #31 crossed cornerRES.lib's resistor corner
+* with the full MOS x temperature grid for the first time and found the
+* loop missing PM >= 45deg at res_bcs/125C at all five MOS corners
+* (43.35-44.48deg), because Rz -- a PDK rhigh -- shrinks to ~0.60x there
+* (sheet rho 0.75x x tempco 0.795x) and takes its phase-lead zero up out
+* of the crossover region with it (DR-0004). #35's fix is Cc ALONE:
+* w 100e-6 -> 170e-6 (~3.2pF -> ~5.5pF), with Rz, both mirror ratios and
+* every device size below unchanged. See
+* spec/decision-records/DR-0005-sg13cmos5l-cc-recompensation.md for the
+* measured Cc pass window, why Rz and the bias mirrors were both tried
+* and rejected as levers, and the 45-point PVT re-verification.
+*
 * 1. BIAS SCHEME: an external IBIAS current-input port, mirrored on-block.
 *    Mb0 is a diode-connected sg13_hv_pmos from VDD whose gate/drain node
 *    IS the IBIAS pin; Mtail (m=3) and Mload2 (m=6) mirror from it --
@@ -87,6 +99,19 @@ v {xschem version=3.4.7 file_version=1.3
 *    DR-0002 keeps bandgap-free: the reference is off-block, so the bias
 *    should be too, and a testbench can sweep it. IBIAS is a top-level
 *    port of ldo_core_cmos5l -- see design/README.md's pinout table.
+*
+*    NOT CHANGED BY #35, and this is a NEGATIVE RESULT worth stating.
+*    DR-0003 found that raising both mirrors together (m=2/m=4 -> m=4/m=8)
+*    bought back the 1kHz loop gain -- and therefore the PSRR -- that a
+*    large Rz/Cc pair costs, so a further bias increase was the obvious
+*    way to widen #35's Cc window upward. It does not survive measurement
+*    at the notch size the Iq budget can afford. Over the full 45-point
+*    grid (DR-0005): Mload2 m=6 -> m=7 moves worst-corner PSRR@1kHz by
+*    +0.01dB (54.20 -> 54.21dB) for +2uA of Iq, i.e. nothing; Mtail
+*    m=3 -> m=4 does buy +1.7dB of PSRR@1kHz, but costs 1.4dB of gain
+*    margin, 2uA of Iq, and raises the count of grid points with a
+*    second 0dB crossing from 15 to 27. Both are rejected: Cc alone
+*    reaches the target with more margin on every row and no Iq cost.
 *
 * 2. NULLING RESISTOR Rz: included, not omitted, and substantially
 *    enlarged by #25 (l: 5.3um -> 1200um, w unchanged at the PDK's rhigh
@@ -137,27 +162,56 @@ v {xschem version=3.4.7 file_version=1.3
 *    A gm-tracking triode-MOS Rz remains an available refinement if a
 *    future phase needs a smaller die footprint here.
 *
+*    NOT CHANGED BY #35, on evidence rather than on cost. Rz is the knob
+*    that moved the zero out of place at res_bcs/125C, so enlarging it is
+*    the obvious counter-move -- and it works for phase margin, but it
+*    also raises the loop's high-frequency gain floor (Rz feeds Cc's
+*    current straight through above the zero), so GAIN margin falls at
+*    the opposite resistor corner. Measured over the full 45-point grid
+*    (DR-0005): Rz leff 1200u -> 1400u costs 1.6dB of worst-corner gain
+*    margin (13.87 -> 12.23dB at ff/-40C/res_wcs), 1600u costs 3.1dB
+*    (10.73dB), and 1800u breaks the ratified GM >= 10dB row outright
+*    (9.34dB at 5 of 45 points). Cc, by contrast, moves the same zero
+*    with no gain-margin cost at all (13.83 -> 13.87dB across a 4x Cc
+*    range). So Rz stays at l=28.81e-6 b=39 -- which also leaves #28's
+*    drawn forty-stripe meander valid, but that is a consequence of the
+*    decision, not its reason.
+*
 * 3. Cc IS A MoM CAP AND ITS VALUE IS insufficient-evidence. cap_cmomi at
-*    w=100u l=30u (#25 widened from #20's w=l=30u) is ~3.2 pF by the PDK's
-*    own display helper (libs.tech/xschem/sg13cmos5l_pr/cap_cmomi.tcl,
-*    which reproduces cap_cmomi.va's low-frequency C, scaled from the
-*    30u-square ~0.95 pF figure by area). MoM caps are NOT validated on
-*    CMOS5L silicon and cornerCAP.lib maps every corner/mismatch/stat
-*    section to the same nominal model, so selecting a cap corner is a
-*    no-op and a PVT sweep over it measures nothing -- #25 re-ran the
-*    Cc-value sensitivity sweep {0.5x,1x,2x} at this new nominal and found
-*    the PASS verdict (phase margin, gain margin) holds across the whole
-*    range, not just at 1x (see DR-0003). Per DR-0002's "Flagged, not
-*    resolved" section, the exact numbers are still insufficient-evidence
-*    pending real CMOS5L MoM-cap silicon characterization; the qualitative
-*    PASS verdict does not depend on that caveat (same reasoning #21
-*    established for the pre-#25 FAIL verdict).
+*    w=170u l=30u (#35 widened from #25's w=100u l=30u, which had widened
+*    #20's w=l=30u) is ~5.5 pF by the PDK's own display helper
+*    (libs.tech/xschem/sg13cmos5l_pr/cap_cmomi.tcl, which reproduces
+*    cap_cmomi.va's low-frequency C, scaled from the 30u-square ~0.95 pF
+*    figure by area). MoM caps are NOT validated on CMOS5L silicon and
+*    cornerCAP.lib maps every corner/mismatch/stat section to the same
+*    nominal model, so selecting a cap corner is a no-op and a PVT sweep
+*    over it measures nothing -- the Cc-VALUE sensitivity sweep is what
+*    this repo runs instead (sim/ldo-cmos5l-pvt-sweep/README.md). Per
+*    DR-0002's "Flagged, not resolved" section, the exact numbers are
+*    still insufficient-evidence pending real CMOS5L MoM-cap silicon
+*    characterization.
+*
+*    WHY 170u SPECIFICALLY (#35 / DR-0005). Cc is bounded on BOTH sides
+*    by ratified spec rows, and the bounds were measured over the whole
+*    45-point grid rather than argued:
+*      - below w~110e-6 the phase-lead zero is too high at res_bcs/125C
+*        and PM >= 45deg fails (44.99deg at w=109e-6, ss/125C/res_bcs);
+*      - above w~259e-6 the dominant pole is low enough that loop gain at
+*        1 kHz -- which is what sets PSRR there -- drops under the
+*        PSRR@1kHz > 50dB row (49.99dB at w=260e-6, ss/125C/res_bcs).
+*    170e-6 is the GEOMETRIC centre of that [110e-6, 259e-6] window, so
+*    the verdict tolerates the largest symmetric multiplicative error in
+*    the uncharacterized MoM-cap value in either direction: x0.65 to
+*    x1.52 of nominal, with every spec row still met at all 45 points.
+*    That centring is the point -- with cornerCAP.lib offering no corner
+*    spread to sweep, tolerance to a wrong cap VALUE is the only
+*    robustness this caveat can actually be given.
 *
 * 4. SIZING generally is a DC-sanity first cut for connectivity/ERC and a
 *    plausible operating point for every device NOT called out above --
-*    Mb0/Minp/Minn/Mn1/Mn2/Mn3 keep #20's original widths; only the
-*    Mtail/Mload2 mirror ratios and the Cc/Rz compensation values changed
-*    in #25. L >= 1 um on every device here (the process spec rates HV
+*    Mb0/Minp/Minn/Mn1/Mn2/Mn3 keep #20's original widths; the
+*    Mtail/Mload2 mirror ratios and Rz keep #25's values, and only Cc
+*    changed in #35. L >= 1 um on every device here (the process spec rates HV
 *    VGS <= 3.3 V only at LG >= 0.5 um, and longer channels buy matching
 *    and output resistance a micro-power amp needs). ng=1 throughout:
 *    fingering is a layout concern for phase 4 (#22), not a
@@ -254,7 +308,7 @@ N 1380 1000 1340 1000 {}
 C {lab_pin.sym} 1340 1000 0 0 {name=l31 lab=G1}
 N 1420 1000 1470 1000 {}
 C {lab_pin.sym} 1470 1000 0 0 {name=l32 lab=VSS}
-C {sg13cmos5l_pr/cap_cmomi.sym} 1700 600 0 0 {name=Cc model=cap_cmomi w=100e-6 l=30e-6 mmin=1 mmax=4 feed=double subblock=0 m=1 mm_ok=1}
+C {sg13cmos5l_pr/cap_cmomi.sym} 1700 600 0 0 {name=Cc model=cap_cmomi w=170e-6 l=30e-6 mmin=1 mmax=4 feed=double subblock=0 m=1 mm_ok=1}
 N 1700 570 1700 510 {}
 C {lab_pin.sym} 1700 510 0 0 {name=l33 lab=OUT}
 N 1700 630 1700 690 {}

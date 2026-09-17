@@ -70,6 +70,18 @@
 #     sensitivity CSV stays row-comparable across records. Since #28 this
 #     knob moves Rz AND the feedback divider together, which is why it is
 #     labelled res_corner rather than rz_corner from #31 onward.
+#
+# PLUS, from issue #35, a Cc value-TOLERANCE window at the two corners that
+# actually bind it (ss/125C x {res_bcs,res_wcs}), with BOTH the loopgain and
+# psrr benches run at every width. The tt/27C sensitivity points above were
+# a fair robustness test while tt/27C was near the worst case; since #31
+# crossed the resistor corner it is not (DR-0004), and at tt/27C every spec
+# row passes with tens of degrees / dB to spare, so those three points can
+# no longer show that the PASS verdict survives a wrong MoM-cap value. The
+# tolerance window measures the two opposing bounds directly: too small a Cc
+# loses phase margin at res_bcs/125C, too large a Cc loses PSRR@1kHz. Both
+# experiments are kept -- the tt/27C one for record-to-record comparability,
+# the tolerance one because it is the claim that actually needs support.
 set -euo pipefail
 
 CHECK_ENV=0
@@ -160,7 +172,7 @@ if [[ ${CHECK_ENV} -eq 1 ]]; then
       -e "s|@@RES_SECTION@@|res_typ|g" \
       -e "s|@@CAP_SECTION@@|cap_typ|g" \
       -e "s|@@TEMP@@|27|g" \
-      -e "s|@@CC_W@@|30u (nominal)|g" \
+      -e "s|@@CC_W@@|nominal (--check-env)|g" \
       -e "s|@@DESIGN_NETLIST@@|${DESIGN_NETLIST}|g" \
       -e "s|@@DC_CSV@@|${tmp}/${bench}_check_dc.csv|g" \
       -e "s|@@AC_CSV@@|${tmp}/${bench}_check_ac.csv|g" \
@@ -198,14 +210,22 @@ TEMPS=(-40 27 125)
 # than correlated to the MOS corner. Labels here; sections are res_<label>.
 RES_LABELS=(typ bcs wcs)
 
-# Pre-conversion baseline this run is compared against: the #25 (post-
-# Mpass-resize, pre-#28) record, taken with the behavioural 300k res.sym
-# divider. The before/after/delta table in the generated record is derived
-# from this file. Pinned by name on purpose -- sim/ records are append-only
-# evidence, so this path is stable, and a future re-baselining is an
-# explicit edit here rather than an implicit "whatever the newest record
-# happens to be".
-BASELINE_CSV="${RECORDS_DIR}/20260916-112842-c25ff53.csv"
+# Baseline this run is compared against. The before/after/delta table in the
+# generated record is derived from this file. Pinned by name on purpose --
+# sim/ records are append-only evidence, so this path is stable, and a
+# re-baselining is an explicit edit here rather than an implicit "whatever
+# the newest record happens to be".
+#
+# RE-BASELINED BY #35, from the #25 record (20260916-112842-c25ff53) to the
+# #31 one. Reason: #25 held the resistor axis at res_typ, so it has no
+# res_bcs/res_wcs rows to compare against -- and res_bcs/125C is exactly
+# where #31 found the phase-margin gap #35 exists to close. The #31 record
+# is the last run before the #35 compensation change, shares this run's
+# benches, PDK pin, ngspice build and full 45-point grid, and is the
+# baseline issue #35 names. Comparing against it makes the before/after a
+# like-for-like, same-section comparison at every point rather than a
+# same-corner-different-section one.
+BASELINE_CSV="${RECORDS_DIR}/20260916-210331-9d3ace1.csv"
 
 total=0
 passed=0
@@ -310,7 +330,7 @@ for corner in "${CORNERS[@]}"; do
       res_section="res_${rlabel}"
       for bench in dcsweep loopgain psrr; do
         point_id="${bench}_${corner}_${temp}c_r${rlabel}"
-        netlist="$(gen_netlist "${bench}" "${point_id}" "${mos_section}" "${res_section}" cap_typ "${temp}" "${DESIGN_NETLIST}" "100u (nominal)")"
+        netlist="$(gen_netlist "${bench}" "${point_id}" "${mos_section}" "${res_section}" cap_typ "${temp}" "${DESIGN_NETLIST}" "170u (nominal)")"
         run_ngspice "${point_id}" "${netlist}" || true
       done
     done
@@ -320,26 +340,68 @@ done
 # --- Cc (Miller cap) value sensitivity, at tt/27C only -- see header ---
 CC_NETLISTS_DIR="${SNAPSHOTS_OUT}/design-netlist-cc-sensitivity"
 mkdir -p "${CC_NETLISTS_DIR}"
-declare -A CC_WIDTHS=( ["0.5x"]="50e-6" ["1x"]="100e-6" ["2x"]="200e-6" )
+CC_NOMINAL_W="170e-6"
+declare -A CC_WIDTHS=( ["0.5x"]="85e-6" ["1x"]="170e-6" ["2x"]="340e-6" )
+
+# Substitute ONLY the w= token on XCc's line (Cc's width; l is held fixed at
+# 30e-6), leaving every other device in the file untouched. `${CC_NOMINAL_W}`
+# must track design/sg13cmos5l/ldo_erramp_cmos5l.sch's own Cc width -- #20
+# drew 30e-6, #25 raised it to 100e-6, #35 raised it to 170e-6 -- and the
+# substitution FATALs below if the XCc line text has drifted from what this
+# expects, rather than silently simulating the nominal netlist three times.
+subst_cc_width() {  # <out-netlist> <width>
+  local out="$1" w="$2"
+  sed "s/XCc OUT MZ cap_cmomi w=${CC_NOMINAL_W} l=30e-6/XCc OUT MZ cap_cmomi w=${w} l=30e-6/" \
+    "${DESIGN_NETLIST}" > "${out}"
+  if [[ "${w}" != "${CC_NOMINAL_W}" ]] && diff -q "${out}" "${DESIGN_NETLIST}" >/dev/null; then
+    echo "run_sweep.sh: FATAL -- Cc width substitution to ${w} did not change ${out} (XCc line text may have drifted from what this script expects; CC_NOMINAL_W=${CC_NOMINAL_W})." >&2
+    exit 4
+  fi
+}
+
 for label in 0.5x 1x 2x; do
   w="${CC_WIDTHS[${label}]}"
   cc_netlist="${CC_NETLISTS_DIR}/ldo_core_cmos5l_cc${label}.spice"
-  # XCc's line is `XCc OUT MZ cap_cmomi w=100e-6 l=30e-6 ...` -- substitute
-  # ONLY the w=100e-6 token (Cc's width; l is held fixed at 30e-6), leaving
-  # every other device in the file untouched. (#25 raised Cc's nominal
-  # width from 30e-6 to 100e-6; this base pattern and CC_WIDTHS above were
-  # updated to match -- see design/sg13cmos5l/ldo_erramp_cmos5l.sch's
-  # header.)
-  sed "s/XCc OUT MZ cap_cmomi w=100e-6 l=30e-6/XCc OUT MZ cap_cmomi w=${w} l=30e-6/" \
-    "${DESIGN_NETLIST}" > "${cc_netlist}"
-  if [[ "${label}" != "1x" ]] && diff -q "${cc_netlist}" "${DESIGN_NETLIST}" >/dev/null; then
-    echo "run_sweep.sh: FATAL -- Cc width substitution for ${label} did not change ${cc_netlist} (XCc line text may have drifted from what this script expects)." >&2
-    exit 4
-  fi
+  subst_cc_width "${cc_netlist}" "${w}"
 
   point_id="loopgain_ccsens_${label}_tt_27c"
-  netlist="$(gen_netlist loopgain "${point_id}" mos_tt res_typ cap_typ 27 "${cc_netlist}" "${w} (${label} of nominal 100e-6)")"
+  netlist="$(gen_netlist loopgain "${point_id}" mos_tt res_typ cap_typ 27 "${cc_netlist}" "${w} (${label} of nominal ${CC_NOMINAL_W})")"
   run_ngspice "${point_id}" "${netlist}" || true
+done
+
+# --- Cc VALUE-TOLERANCE window, at the two corners that actually bind
+# (issue #35).
+#
+# The {0.5x,1x,2x} points above run at tt/27C, where every spec row passes
+# with tens of degrees / dB to spare -- so they cannot, on their own, show
+# that the PASS verdict survives a wrong MoM-cap value. They were a fair
+# test while tt/27C was near the worst case; since #31 crossed the resistor
+# corner it is not (DR-0004). What binds Cc is a pair of opposing rows at
+# ss/125C:
+#
+#   - too SMALL a Cc puts the Rz*Cc phase-lead zero above the loop's
+#     crossover at res_bcs/125C, where Rz has shrunk to ~0.60x nominal,
+#     and PM >= 45deg fails -- the DR-0004 failure this issue exists to fix;
+#   - too LARGE a Cc drags the dominant pole (and with it the loop gain at
+#     1kHz, which is what sets PSRR there) down until PSRR@1kHz > 50dB
+#     fails.
+#
+# So this experiment sweeps Cc's width across that window at ss/125C against
+# BOTH resistor sections that hold a worst case (res_bcs and res_wcs) and
+# runs BOTH the loopgain and psrr benches at every point, so the two bounds
+# are measured rather than asserted. DR-0005 cites the resulting edges.
+# ---
+CC_TOL_WIDTHS=(85e-6 110e-6 130e-6 170e-6 220e-6 259e-6 340e-6)
+for w in "${CC_TOL_WIDTHS[@]}"; do
+  cc_netlist="${CC_NETLISTS_DIR}/ldo_core_cmos5l_cctol_${w}.spice"
+  subst_cc_width "${cc_netlist}" "${w}"
+  for rlabel in bcs wcs; do
+    for bench in loopgain psrr; do
+      point_id="${bench}_cctol_${w}_ss_125c_r${rlabel}"
+      netlist="$(gen_netlist "${bench}" "${point_id}" mos_ss "res_${rlabel}" cap_typ 125 "${cc_netlist}" "${w} (Cc tolerance window)")"
+      run_ngspice "${point_id}" "${netlist}" || true
+    done
+  done
 done
 
 # --- Resistor-corner sensitivity, at tt/27C only, nominal Cc. Retained
@@ -352,7 +414,7 @@ done
 # resistor axis and this pre-existing experiment agree). ---
 for label in bcs typ wcs; do
   point_id="loopgain_ressens_${label}_tt_27c"
-  netlist="$(gen_netlist loopgain "${point_id}" mos_tt "res_${label}" cap_typ 27 "${DESIGN_NETLIST}" "100u (nominal)")"
+  netlist="$(gen_netlist loopgain "${point_id}" mos_tt "res_${label}" cap_typ 27 "${DESIGN_NETLIST}" "170u (nominal)")"
   run_ngspice "${point_id}" "${netlist}" || true
 done
 
@@ -382,7 +444,7 @@ for corner in "${CORNERS[@]}"; do
   for temp in "${TEMPS[@]}"; do
     for rlabel in "${RES_LABELS[@]}"; do
       point_id="loopgain_divattr_${corner}_${temp}c_r${rlabel}"
-      netlist="$(gen_netlist loopgain "${point_id}" "mos_${corner}" "res_${rlabel}" cap_typ "${temp}" "${DESIGN_NETLIST}" "100u (nominal)")"
+      netlist="$(gen_netlist loopgain "${point_id}" "mos_${corner}" "res_${rlabel}" cap_typ "${temp}" "${DESIGN_NETLIST}" "170u (nominal)")"
       sed -e "s|^${BEHDIV_TOP}\$|Rtop VOUT FB 300k m=1|" \
           -e "s|^${BEHDIV_BOT}\$|Rbot FB VSS 300k m=1|" \
           "${netlist}" > "${netlist}.behdiv"
@@ -407,14 +469,17 @@ fi
 # markdown fragment that gets inlined into the record below ---
 CMP_MD_FRAGMENT="${CORNERS_OUT}/_before_after_delta.md"
 python3 - "${CORNERS_OUT}" "${CSV_OUT}" "${SENS_CSV_OUT}" "${CORNERS[*]}" "${TEMPS[*]}" \
-         "${RES_LABELS[*]}" "${BASELINE_CSV}" "${DELTA_CSV_OUT}" "${CMP_MD_FRAGMENT}" <<'PYEOF'
+         "${RES_LABELS[*]}" "${BASELINE_CSV}" "${DELTA_CSV_OUT}" "${CMP_MD_FRAGMENT}" \
+         "${CC_TOL_WIDTHS[*]}" "${CC_NOMINAL_W}" <<'PYEOF'
 import csv, sys, math, os
 
 (corners_dir, csv_out, sens_csv_out, corners_str, temps_str,
- res_labels_str, baseline_csv, delta_csv_out, cmp_md_out) = sys.argv[1:10]
+ res_labels_str, baseline_csv, delta_csv_out, cmp_md_out,
+ cc_tol_widths_str, cc_nominal_w) = sys.argv[1:12]
 CORNERS = corners_str.split()
 TEMPS = [t for t in temps_str.split()]
 RES_LABELS = res_labels_str.split()
+CC_TOL_WIDTHS = cc_tol_widths_str.split()
 
 VOUT_TARGET = 1.8
 VIN_MIN, VIN_MAX, VIN_STEP = 2.00, 3.63, 0.01
@@ -649,20 +714,64 @@ with open(sens_csv_out, "w", newline="") as f:
     for row in sens_rows:
         w.writerow({k: ("" if row.get(k) is None else row.get(k)) for k in sens_fieldnames})
 
-# --- Before / after / delta against the pre-conversion baseline record ---
-# "Before" is the #25 post-resize record, taken with the behavioural 300k
-# res.sym divider (corner-independent by construction) at res_typ; "after"
-# is this run, at each of the three cornerRES.lib sections. Issue #31 AC3.
-#
-# The one metric the baseline CSV does not carry a column for is the
-# divider's own standing current -- it had no reason to, because the
-# behavioural divider was an ideal, exactly-600k, corner-independent pair.
-# That makes its "before" value derivable rather than missing:
-# I_div = VOUT_no_load / 600k exactly, from the baseline's own recorded
-# VOUT. It is labelled "(derived)" in the table so no reader mistakes it
-# for a measured column that was there all along.
-BEHAVIOURAL_DIVIDER_TOTAL_OHM = 600e3
+# --- Cc value-tolerance CSV: the two opposing bounds on Cc, measured at the
+# corners that actually bind them (issue #35 / DR-0005). PM comes from the
+# loopgain bench and PSRR from the psrr bench at the SAME point, so a row can
+# be read as "at this Cc, at this corner, here is every stability/PSRR row
+# the spec table asks for". ---
+cc_nominal_f = float(cc_nominal_w)
+cctol_rows = []
+for w_str in CC_TOL_WIDTHS:
+    for rlabel in ["bcs", "wcs"]:
+        sfx = f"cctol_{w_str}_ss_125c_r{rlabel}"
+        lg = loopgain_metrics(f"{corners_dir}/loopgain_{sfx}_ac.csv")
+        ps = psrr_metrics(f"{corners_dir}/psrr_{sfx}_ac.csv")
+        row = {"cc_w": w_str,
+               "cc_x_nominal": float(w_str) / cc_nominal_f,
+               "corner": "ss", "temp_c": 125, "res_section": f"res_{rlabel}"}
+        for src in (lg, ps):
+            if src:
+                row.update(src)
+        row["pm_ok"] = (row.get("phase_margin_deg") is not None
+                        and row["phase_margin_deg"] >= 45.0)
+        row["gm_ok"] = (row.get("gain_margin_db") is not None
+                        and row["gain_margin_db"] >= 10.0)
+        row["psrr_1khz_ok"] = (row.get("psrr_db_1khz") is not None
+                               and row["psrr_db_1khz"] > 50.0)
+        row["psrr_100khz_ok"] = (row.get("psrr_db_100khz") is not None
+                                 and row["psrr_db_100khz"] > 20.0)
+        row["all_ok"] = all(row[k] for k in
+                            ("pm_ok", "gm_ok", "psrr_1khz_ok", "psrr_100khz_ok"))
+        cctol_rows.append(row)
 
+cctol_fieldnames = [
+    "cc_w", "cc_x_nominal", "corner", "temp_c", "res_section",
+    "dc_gain_db", "n_0db_crossings", "unity_gain_freq_hz",
+    "phase_margin_deg", "gain_margin_db", "psrr_db_1khz", "psrr_db_100khz",
+    "pm_ok", "gm_ok", "psrr_1khz_ok", "psrr_100khz_ok", "all_ok",
+]
+cctol_csv_out = csv_out.replace(".csv", ".cc-tolerance.csv")
+with open(cctol_csv_out, "w", newline="") as f:
+    w = csv.DictWriter(f, fieldnames=cctol_fieldnames, extrasaction="ignore")
+    w.writeheader()
+    for row in cctol_rows:
+        w.writerow({k: ("" if row.get(k) is None else row.get(k)) for k in cctol_fieldnames})
+
+# --- Before / after / delta against the pinned baseline record ---
+# "Before" is the baseline record named by BASELINE_CSV. From issue #35 that
+# is the #31 record -- the first run against BOTH the PDK `rhigh` feedback
+# divider (#28) and the full crossed resistor axis, and the run that found
+# the res_bcs/125C phase-margin gap #35 exists to close. Because that record
+# already carries one row per (corner, temperature, res_section), the
+# comparison is like-for-like at every one of the 45 grid points: same
+# benches, same PDK pin, same ngspice build, same resistor section on both
+# sides, so the deltas isolate the compensation change and nothing else.
+#
+# (The #21/#25 records key on (corner, temperature) only -- they held the
+# resistor axis at res_typ -- so pointing BASELINE_CSV back at one of them
+# leaves the res_bcs/res_wcs "before" cells empty rather than silently
+# comparing against the wrong section. That is the intended behaviour: a
+# missing cell reads "n/a", it does not read as a zero delta.)
 baseline = {}
 if os.path.exists(baseline_csv):
     with open(baseline_csv) as f:
@@ -672,54 +781,49 @@ if os.path.exists(baseline_csv):
                     return float(r[k])
                 except (KeyError, TypeError, ValueError):
                     return None
-            key = (r["corner"], r["temp_c"])
-            b = {k: _f(k) for k in ("dc_gain_db", "phase_margin_deg",
-                                    "gain_margin_db", "psrr_db_1khz",
-                                    "psrr_db_100khz", "iq_a",
-                                    "vout_no_load_v")}
-            vo = b["vout_no_load_v"]
-            b["i_divider_a"] = (vo / BEHAVIOURAL_DIVIDER_TOTAL_OHM) if vo else None
-            baseline[key] = b
+            key = (r["corner"], r["temp_c"], r.get("res_section", "res_typ"))
+            baseline[key] = {k: _f(k) for k in
+                             ("dc_gain_db", "phase_margin_deg", "unity_gain_freq_hz",
+                              "gain_margin_db", "psrr_db_1khz", "psrr_db_100khz",
+                              "iq_a", "vout_no_load_v", "i_divider_a",
+                              "line_reg_mv_per_v", "load_reg_pct",
+                              "dropout_v_50ma")}
 
 after = {(r["corner"], str(r["temp_c"]), r["res_section"]): r for r in main_rows}
 
 METRICS = [
     # (csv key, heading, unit, scale, decimals, higher_is_better)
-    ("dc_gain_db", "DC loop gain", "dB", 1.0, 2, True),
     ("phase_margin_deg", "Phase margin", "deg", 1.0, 2, True),
     ("gain_margin_db", "Gain margin", "dB", 1.0, 2, True),
+    ("unity_gain_freq_hz", "Unity-gain frequency", "kHz", 1e-3, 2, None),
+    ("dc_gain_db", "DC loop gain", "dB", 1.0, 2, True),
     ("psrr_db_1khz", "PSRR @ 1kHz", "dB", 1.0, 2, True),
     ("psrr_db_100khz", "PSRR @ 100kHz", "dB", 1.0, 2, True),
+    ("iq_a", "Iq, no load", "uA", 1e6, 3, False),
+    ("dropout_v_50ma", "Dropout @ 50mA", "V", 1.0, 3, False),
+    ("line_reg_mv_per_v", "Line regulation", "mV/V", 1.0, 3, False),
+    ("load_reg_pct", "Load regulation", "%", 1.0, 4, False),
+    ("vout_no_load_v", "Output accuracy (VOUT, no load)", "V", 1.0, 5, None),
     ("i_divider_a", "Divider standing current", "uA", 1e6, 3, False),
 ]
 
 delta_rows = []
 for corner in CORNERS:
     for temp in TEMPS:
-        b = baseline.get((corner, str(temp)), {})
-        for key, heading, unit, scale, dec, _hib in METRICS:
-            row = {"corner": corner, "temp_c": temp, "metric": key,
-                   "unit": unit, "before": b.get(key)}
-            afters = {}
-            for rlabel in RES_LABELS:
-                a = after.get((corner, str(temp), f"res_{rlabel}"), {})
-                afters[rlabel] = a.get(key)
-                row[f"after_res_{rlabel}"] = a.get(key)
-            vals = [v for v in afters.values() if v is not None]
-            row["after_min"] = min(vals) if vals else None
-            row["after_max"] = max(vals) if vals else None
-            bv = row["before"]
-            at = afters.get("typ")
-            row["delta_res_typ"] = (at - bv) if (bv is not None and at is not None) else None
-            if bv is not None and vals:
-                row["delta_worst"] = max((v - bv for v in vals), key=abs)
-            else:
-                row["delta_worst"] = None
-            delta_rows.append(row)
+        for rlabel in RES_LABELS:
+            section = f"res_{rlabel}"
+            b = baseline.get((corner, str(temp), section), {})
+            a = after.get((corner, str(temp), section), {})
+            for key, heading, unit, scale, dec, _hib in METRICS:
+                bv, av = b.get(key), a.get(key)
+                delta_rows.append({
+                    "corner": corner, "temp_c": temp, "res_section": section,
+                    "metric": key, "unit": unit, "before": bv, "after": av,
+                    "delta": (av - bv) if (bv is not None and av is not None) else None,
+                })
 
-delta_fieldnames = (["corner", "temp_c", "metric", "unit", "before"]
-                    + [f"after_res_{r}" for r in RES_LABELS]
-                    + ["after_min", "after_max", "delta_res_typ", "delta_worst"])
+delta_fieldnames = ["corner", "temp_c", "res_section", "metric", "unit",
+                    "before", "after", "delta"]
 with open(delta_csv_out, "w", newline="") as f:
     w = csv.DictWriter(f, fieldnames=delta_fieldnames, extrasaction="ignore")
     w.writeheader()
@@ -770,22 +874,71 @@ with open(attr_csv_out, "w", newline="") as f:
         w.writerow({k: ("" if row.get(k) is None else row.get(k)) for k in attr_fieldnames})
 
 with open(cmp_md_out, "w") as f:
+    BASELINE_LABEL = os.path.basename(baseline_csv).replace(".csv", "")
     for key, heading, unit, scale, dec, _hib in METRICS:
-        derived = " (before = derived, see note)" if key == "i_divider_a" else ""
-        f.write(f"\n### {heading} ({unit}){derived}\n\n")
-        f.write("| corner / temp | before (#25, behavioural 300k) "
-                "| after `res_typ` | after `res_bcs` | after `res_wcs` "
-                "| delta @ `res_typ` | delta, worst R corner |\n")
-        f.write("|---|---|---|---|---|---|---|\n")
-        for row in by_key.get(key, []):
+        rows = by_key.get(key, [])
+        deltas = [r["delta"] for r in rows if r.get("delta") is not None]
+        worst = max(deltas, key=abs) if deltas else None
+        f.write(f"\n### {heading} ({unit})\n\n")
+        if deltas:
+            f.write(f"Largest change across all {len(deltas)} compared points: "
+                    f"**{fmt(worst, scale, dec, signed=True)} {unit}**.\n\n")
+        f.write(f"| corner / temp / R corner | before (`{BASELINE_LABEL}`) "
+                "| after (this run) | delta |\n")
+        f.write("|---|---|---|---|\n")
+        for row in rows:
             f.write(
-                f"| `{row['corner']}` / {row['temp_c']}C "
+                f"| `{row['corner']}` / {row['temp_c']}C / `{row['res_section']}` "
                 f"| {fmt(row.get('before'), scale, dec)} "
-                f"| {fmt(row.get('after_res_typ'), scale, dec)} "
-                f"| {fmt(row.get('after_res_bcs'), scale, dec)} "
-                f"| {fmt(row.get('after_res_wcs'), scale, dec)} "
-                f"| {fmt(row.get('delta_res_typ'), scale, dec, signed=True)} "
-                f"| {fmt(row.get('delta_worst'), scale, dec, signed=True)} |\n")
+                f"| {fmt(row.get('after'), scale, dec)} "
+                f"| {fmt(row.get('delta'), scale, dec, signed=True)} |\n")
+
+    # --- Cc value-tolerance window (issue #35 / DR-0005). ---
+    f.write("\n### `Cc` value-tolerance window, at the corners that bind it\n\n")
+    f.write("`cornerCAP.lib` maps every corner/mismatch/stat section to the\n"
+            "SAME nominal `cap_cmomi` model at this PDK's pin, so there is no\n"
+            "characterised MoM-cap corner spread to sweep -- and the PDK's own\n"
+            "documentation flags the model as not validated on CMOS5L silicon.\n"
+            "Tolerance to a wrong cap VALUE is therefore the only robustness\n"
+            "this caveat can be given, and it is measured here rather than\n"
+            "asserted: `Cc`'s width is swept at `ss`/125C against both resistor\n"
+            "sections that hold a worst case, with the loop-gain AND PSRR\n"
+            "benches run at every point. A small `Cc` fails from below (the\n"
+            "`Rz*Cc` zero lands above crossover at `res_bcs`, where `Rz` has\n"
+            "shrunk to ~0.60x); a large `Cc` fails from above (the dominant\n"
+            "pole, and with it the 1 kHz loop gain that sets PSRR, drops too\n"
+            f"far). Machine-readable: `records/{os.path.basename(cctol_csv_out)}`.\n\n")
+    f.write("| `Cc` w | x nominal | R corner | PM (deg) | GM (dB) "
+            "| PSRR@1kHz (dB) | PSRR@100kHz (dB) | all spec rows met |\n")
+    f.write("|---|---|---|---|---|---|---|---|\n")
+    for row in cctol_rows:
+        f.write(
+            f"| `{row['cc_w']}` | {row['cc_x_nominal']:.2f}x "
+            f"| `{row['res_section']}` "
+            f"| {fmt(row.get('phase_margin_deg'), 1.0, 2)} "
+            f"| {fmt(row.get('gain_margin_db'), 1.0, 2)} "
+            f"| {fmt(row.get('psrr_db_1khz'), 1.0, 2)} "
+            f"| {fmt(row.get('psrr_db_100khz'), 1.0, 2)} "
+            f"| {'yes' if row['all_ok'] else '**NO**'} |\n")
+    # A width counts as passing only if EVERY row at that width passes --
+    # one of the two binding sections failing is a failing width, not a
+    # half-passing one.
+    by_w = {}
+    for r in cctol_rows:
+        by_w.setdefault(r["cc_w"], []).append(r)
+    ok_w = [w for w in CC_TOL_WIDTHS if all(r["all_ok"] for r in by_w.get(w, []))]
+    bad_w = [w for w in CC_TOL_WIDTHS if w not in ok_w]
+    if ok_w:
+        lo, hi = ok_w[0], ok_w[-1]
+        f.write(f"\nEvery swept width from `{lo}` to `{hi}` meets every spec row at\n"
+                f"both binding corners. The nominal is `{cc_nominal_w}`, so the\n"
+                f"verdict tolerates a MoM-cap value from x{float(lo) / cc_nominal_f:.2f} to "
+                f"x{float(hi) / cc_nominal_f:.2f}\nof what this model says it is.\n")
+    if bad_w:
+        f.write("\nWidths that do NOT hold every row at both binding corners: "
+                + ", ".join(f"`{w}`" for w in bad_w)
+                + ".\nThey are in the sweep on purpose: a tolerance window with no\n"
+                  "measured ends is not a tolerance window.\n")
 
     # --- Mechanical spec gate. Thresholds are the repo root README.md's
     # DRAFT spec table verbatim (the same table sim/ldo-cmos5l-pvt-sweep's
@@ -856,7 +1009,8 @@ with open(cmp_md_out, "w") as f:
             f"| {fmt(row.get('dc_gain_db_divider_delta'), 1.0, 2, signed=True)} |\n")
 
 print(f"run_sweep.sh (post-process): wrote {len(main_rows)} main rows, "
-      f"{len(sens_rows)} sensitivity rows, {len(delta_rows)} delta rows, "
+      f"{len(sens_rows)} sensitivity rows, {len(cctol_rows)} Cc-tolerance rows, "
+      f"{len(delta_rows)} delta rows, "
       f"{len(attr_rows)} divider-attribution rows")
 PYEOF
 
@@ -884,14 +1038,16 @@ done
   echo "- **Claim**: design/sg13cmos5l/ldo_core_cmos5l.sch's closed loop"
   echo "  (issue #20), verified against the spec table re-derived at this"
   echo "  PDK's rails (README.md), across the full process x temperature x"
-  echo "  RESISTOR-corner grid, plus Cc-value and resistor-corner"
-  echo "  sensitivity sweeps. This harness is issue #21's deliverable; which"
-  echo "  issue's acceptance criteria a given record is evidence for is told"
-  echo "  by the design netlist's git sha recorded below -- #21 (original"
-  echo "  sizing), #25 (Mpass resize + recompensation), or #31 (the first"
-  echo "  run against the PDK \`rhigh\` feedback divider that #28 substituted"
-  echo "  for the pre-#28 behavioural 300k \`res.sym\` pair, and the first to"
-  echo "  cross the resistor corner across the whole grid)."
+  echo "  RESISTOR-corner grid, plus Cc-value, Cc-tolerance and"
+  echo "  resistor-corner sensitivity sweeps. This harness is issue #21's"
+  echo "  deliverable; which issue's acceptance criteria a given record is"
+  echo "  evidence for is told by the design netlist's git sha recorded"
+  echo "  below -- #21 (original sizing), #25 (Mpass resize +"
+  echo "  recompensation), #31 (the first run against the PDK \`rhigh\`"
+  echo "  feedback divider that #28 substituted for the pre-#28 behavioural"
+  echo "  300k \`res.sym\` pair, and the first to cross the resistor corner"
+  echo "  across the whole grid), or #35 (the \`Cc\` re-compensation that"
+  echo "  closes the res_bcs/125C phase-margin gap #31 found)."
   echo "- **PDK**: \`${PDK}\` at \`${PDK_ROOT}\` -- pinned revision: see"
   echo "  \`sim/pdk-cmos5l.json\` (commit \`607e18d\`, re-verified against the"
   echo "  installed checkout)."
@@ -904,7 +1060,10 @@ done
   echo "  temperature {${TEMPS[*]}}C x resistor corner {${RES_LABELS[*]/#/res_}}"
   echo "  (cornerRES.lib) = 45 points x 3 benches (dcsweep, loopgain, psrr)"
   echo "  = 135 points, plus 6 sensitivity points (Cc value {0.5x,1x,2x} +"
-  echo "  resistor corner {bcs,typ,wcs}, both at tt/27C only)."
+  echo "  resistor corner {bcs,typ,wcs}, both at tt/27C only), plus"
+  echo "  ${#CC_TOL_WIDTHS[@]} Cc widths x {res_bcs,res_wcs} x {loopgain,psrr}"
+  echo "  = $(( ${#CC_TOL_WIDTHS[@]} * 4 )) Cc value-tolerance points at ss/125C (issue #35),"
+  echo "  plus the 45-point divider-attribution loop-gain sweep (issue #31)."
   echo "- **Result**: ${passed}/${total} points PASS (ngspice exit 0, no"
   echo "  convergence/model-load error strings in the log, and the expected"
   echo "  full result set written -- ${EXPECT_ROWS_DC} rows per dcsweep point,"
@@ -953,8 +1112,13 @@ done
   echo "  characterised corner spread exists) -- every phase-margin / loop-gain"
   echo "  result in \`records/${RECORD_ID}.csv\` is therefore \`insufficient-evidence\`"
   echo "  pending the \`loopgain_ccsens_*\` VALUE sensitivity points in"
-  echo "  \`records/${RECORD_ID}.sensitivity.csv\`, per design/README.md's"
-  echo "  'PDK caveats honoured' table and issue #21 acceptance criterion 4."
+  echo "  \`records/${RECORD_ID}.sensitivity.csv\` and -- from issue #35 -- the"
+  echo "  \`*_cctol_*\` value-TOLERANCE points in"
+  echo "  \`records/${RECORD_ID}.cc-tolerance.csv\`, which measure how far the"
+  echo "  cap value may be wrong in EITHER direction before a spec row fails,"
+  echo "  at the corners that bind it rather than at tt/27C. Per"
+  echo "  design/README.md's 'PDK caveats honoured' table and issue #21"
+  echo "  acceptance criterion 4."
   echo "- **Netlist provenance**: circuit-level bench (this experiment"
   echo "  instantiates \`ldo_core_cmos5l\` -- whole for dcsweep/psrr, flattened"
   echo "  one level with a sync-checked loop break for loopgain -- not a"
@@ -970,34 +1134,30 @@ done
   echo "    per corner/temp/res_section): \`records/${RECORD_ID}.csv\`"
   echo "  - Cc-value / resistor-corner sensitivity CSV:"
   echo "    \`records/${RECORD_ID}.sensitivity.csv\`"
-  echo "  - Before/after/delta CSV vs the pre-conversion baseline:"
+  echo "  - Cc value-tolerance CSV (Cc width swept at the two corners that"
+  echo "    bind it, loopgain AND psrr at every point -- issue #35):"
+  echo "    \`records/${RECORD_ID}.cc-tolerance.csv\`"
+  echo "  - Before/after/delta CSV vs the pinned baseline record:"
   echo "    \`records/${RECORD_ID}.delta.csv\`"
   echo "  - Divider-attribution CSV (PDK \`rhigh\` divider vs the pre-#28"
   echo "    behavioural 300k pair, everything else held identical):"
   echo "    \`records/${RECORD_ID}.divider-attribution.csv\`"
   echo "- **Timestamp / author**: $(date -u +%Y-%m-%dT%H:%M:%SZ), Loom Builder"
-  echo "  (agent), issue #31."
+  echo "  (agent)."
   echo
-  echo "## Before / after / delta vs the pre-conversion baseline"
+  echo "## Before / after / delta vs the pinned baseline record"
   echo
-  echo "\"Before\" is \`records/$(basename "${BASELINE_CSV}")\` -- the #25"
-  echo "post-Mpass-resize record, taken against the behavioural 300k"
-  echo "\`res.sym\` divider, at \`res_typ\`. \"After\" is this run, against the"
-  echo "PDK \`rhigh\` divider, at each of the three cornerRES.lib sections."
-  echo "Both runs share the same benches, the same PDK pin and the same"
-  echo "ngspice build, so the deltas isolate the divider conversion plus the"
-  echo "resistor-corner axis and nothing else."
-  echo
-  echo "The divider standing current's \"before\" column is **derived, not"
-  echo "measured**: the behavioural divider was an ideal, exactly-600k,"
-  echo "corner-independent pair, so its current is"
-  echo "\`VOUT_no_load / 600k\` exactly, taken from the baseline record's own"
-  echo "recorded \`vout_no_load_v\`. There was no such column in the #21/#25"
-  echo "CSVs because there was nothing corner-dependent to record."
+  echo "\"Before\" is \`records/$(basename "${BASELINE_CSV}")\`; \"after\" is this"
+  echo "run. Both runs share the same benches, the same PDK pin, the same"
+  echo "ngspice build and the same 45-point grid, and every row below compares"
+  echo "the SAME (MOS corner, temperature, resistor section) point on both"
+  echo "sides -- so the deltas isolate what changed in the design netlist"
+  echo "between the two records and nothing else. A \`n/a\` cell means the"
+  echo "baseline record has no row for that point (it is not a zero delta)."
   cat "${CMP_MD_FRAGMENT}"
 } > "${MD_OUT}"
 
-echo "run_sweep.sh: wrote ${MD_OUT}, ${CSV_OUT}, ${SENS_CSV_OUT}, ${DELTA_CSV_OUT}"
+echo "run_sweep.sh: wrote ${MD_OUT}, ${CSV_OUT}, ${SENS_CSV_OUT}, ${CSV_OUT%.csv}.cc-tolerance.csv, ${DELTA_CSV_OUT}"
 echo "run_sweep.sh: ${passed}/${total} points passed; completeness=$( [[ ${COMPLETENESS_OK} -eq 1 ]] && echo OK || echo INCOMPLETE )"
 
 if [[ ${#failed_points[@]} -gt 0 || ${COMPLETENESS_OK} -ne 1 ]]; then

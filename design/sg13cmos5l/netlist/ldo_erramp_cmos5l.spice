@@ -11,6 +11,6 @@ XMinn N1 INN TAIL TAIL sg13_hv_pmos w=20u l=1u ng=1 m=1
 XMn2 G1 N1 VSS VSS sg13_hv_nmos w=5u l=1u ng=1 m=1
 XMn1 N1 N1 VSS VSS sg13_hv_nmos w=5u l=1u ng=1 m=1
 XMn3 OUT G1 VSS VSS sg13_hv_nmos w=20u l=1u ng=1 m=1
-XCc OUT MZ cap_cmomi w=100e-6 l=30e-6 mmin=1 mmax=4 feed=double subblock=0 m=1 mm_ok=1
+XCc OUT MZ cap_cmomi w=170e-6 l=30e-6 mmin=1 mmax=4 feed=double subblock=0 m=1 mm_ok=1
 XRz MZ G1 VSS rhigh w=1e-6 l=28.81e-6 m=1 b=39
 .ends
