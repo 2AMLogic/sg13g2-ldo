@@ -513,7 +513,15 @@ corner sweep in `sim/ldo-cmos5l-pvt-sweep/records/` shows the real
 `res_bcs`/`res_wcs` spread, roughly ≈1.2–1.7 MΩ). Two corrections from
 #31's evidence, neither of which changes a drawn value: the *simulated*
 `Rz` is ≈1.774 MΩ, not 1.700 MΩ, for the width-offset double-count
-described under "Known gaps" below; and that corner spread is not benign —
+described under "Known gaps" below — **confirmed a PDK bug, not an
+intentional convention, by issue #36** (`rsil`/`rhigh`/`rppd` all apply the
+identical construction, and the foundry's own process spec gives exactly
+one Line Width Delta target per device, matched by either application
+alone, never their sum); filed upstream as
+[`IHP-GmbH/IHP-Open-PDK#1235`](https://github.com/IHP-GmbH/IHP-Open-PDK/issues/1235),
+verdict recorded in
+[`DR-0006`](../spec/decision-records/DR-0006-rhigh-family-width-offset-double-count.md) —
+and that corner spread is not benign —
 it is what pushed phase margin below the ratified `≥ 45°` at
 `res_bcs`/125 °C
 ([`DR-0004`](../spec/decision-records/DR-0004-sg13cmos5l-resistor-corner-stability.md)),
@@ -567,7 +575,18 @@ which #35's wider `Cc` is what closes
   — once in `resistors_mod.lib`'s subckt, again via the `r3_cmc` card's
   `xw=-0.04`), so the 300.44 kΩ per leg quoted above is the symbol's number
   and 313.5 kΩ is what every simulation has actually used, on this branch's
-  `Rz` as much as on this divider.
+  `Rz` as much as on this divider. **Chased to a verdict in phase 4d (#36):
+  confirmed a PDK bug**, not an intentional convention — `rsil` and `rppd`
+  apply the identical construction (own `weff` offset in the subckt, the
+  same delta repeated via their own `r3_cmc` card's `xw`), and
+  `SG13G2_os_process_spec.pdf` gives exactly one Line Width Delta target
+  per device, matched by either application alone, never their sum. Both
+  PDK branches share the one bug (`ihp-sg13cmos5l`'s copy of
+  `resistors_mod.lib` is a symlink into this same `ihp-sg13g2` file). Filed
+  upstream:
+  [`IHP-GmbH/IHP-Open-PDK#1235`](https://github.com/IHP-GmbH/IHP-Open-PDK/issues/1235).
+  See
+  [`DR-0006`](../spec/decision-records/DR-0006-rhigh-family-width-offset-double-count.md).
 - ~~**`Mpass` (`w=2800u`) and `Rz` (`l=1200u`) have no floorplanned
   layout.**~~ **Closed in phase 4a (#28).** `Rz` is now declared
   `l=28.81u b=39` (forty stripes; a geometry change, not a resize — `leff`

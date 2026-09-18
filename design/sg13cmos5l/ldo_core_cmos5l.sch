@@ -129,6 +129,25 @@ v {xschem version=3.4.7 file_version=1.3
 * did not change any earlier result (the #21/#25 records simulated the
 * same model). See DR-0004's "Separate observation" section.
 *
+* VERDICT (issue #36, following on from DR-0004's "Separate observation",
+* which could not settle this from the installed tree alone): CONFIRMED
+* PDK BUG, not an intentional convention. resistors_mod.lib's rhigh, rsil
+* AND rppd subckts all apply this identical construction (each narrows
+* weff once in the subckt, then repeats the SAME delta via its r3_cmc
+* .model card's own xw parameter -- r3_cmc.va documents xw as the "width
+* offset (total)", i.e. sufficient alone). SG13G2_os_process_spec.pdf
+* Rev 1.2 gives exactly one Line Width Delta target per device
+* (DWRHIGH -40nm, DWRSIL +10nm, DWRPPD +6nm) that matches EITHER
+* application individually, never their sum -- there is no foundry
+* documentation sanctioning a doubled offset. Affects both PDK branches
+* identically: ihp-sg13cmos5l/libs.tech/ngspice/models/resistors_mod.lib
+* is a relative symlink into this same ihp-sg13g2 file (and the ngspice
+* and xyce copies within ihp-sg13g2 share the construction too), so there
+* is one bug, not a per-branch divergence. Filed upstream:
+* IHP-GmbH/IHP-Open-PDK#1235. This repo does not work around it -- the
+* 300.44k/313.5k pair above stands as the documented pair pending an
+* upstream fix, per spec/decision-records/DR-0006-rhigh-family-width-offset-double-count.md.
+*
 * WHAT THIS CHANGES ELECTRICALLY, stated rather than implied: the divider
 * now carries rhigh's real PVT corner spread (cornerRES.lib gives rhigh
 * ~1.0-1.4 kOhm/sq) instead of a corner-independent behavioral 300k. The
