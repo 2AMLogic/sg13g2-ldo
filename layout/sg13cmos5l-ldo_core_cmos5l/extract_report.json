@@ -2963,16 +2963,17 @@
   "matched_device_groups": [],
   "pdk": null,
   "provenance": {
-    "klt_version": "0.4.0",
+    "klt_version": "0.5.0+gb15edf5e3a2e",
     "klayout_version": "0.30.10",
     "pdk": null,
     "deck": {
       "name": "sg13cmos5l",
-      "content_hash": "sha256:5b5309ecd586f527d6df271384f18e8f1fcd528a09935544b46aed563b66a92e",
-      "released": true
+      "content_hash": "sha256:1912f17486e78de5259aab5d68533488ebbd239a05018f096217aa62ddee2909",
+      "released": false
     },
     "input": {
-      "content_hash": "sha256:f0f01392735616cbdb45166467972f8e4456426fd1cf794e3380d1713eabc062"
+      "content_hash": "sha256:f0f01392735616cbdb45166467972f8e4456426fd1cf794e3380d1713eabc062",
+      "role": "layout"
     }
   },
   "parasitics": null,

@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "file": "sg13cmos5l-ldo_core_cmos5l.gds",
   "deck": "sg13cmos5l",
   "dbu_um": 0.001,
@@ -49,6 +49,24 @@
       "111/0",
       "128/0"
     ],
+    "rules_checked": [
+      "activ.space.1",
+      "activ.width.1",
+      "gatpoly.space.1",
+      "gatpoly.width.1",
+      "metal1.enclosing.via1.1",
+      "metal1.space.1",
+      "metal1.width.1",
+      "metal2.enclosing.via2.1",
+      "metal2.space.1",
+      "metal2.width.1",
+      "metal3.space.1",
+      "metal3.width.1",
+      "via1.space.1",
+      "via1.width.1",
+      "via2.space.1",
+      "via2.width.1"
+    ],
     "rules_skipped": [
       "metal3.enclosing.via3.1",
       "metal4.enclosing.topvia1.1",
@@ -77,19 +95,90 @@
       "5.22 TopMetal1",
       "5.5 Activ",
       "5.8 GatPoly"
-    ]
+    ],
+    "schema_version": 1,
+    "known": true,
+    "checked": [
+      "activ.space.1",
+      "activ.width.1",
+      "gatpoly.space.1",
+      "gatpoly.width.1",
+      "metal1.enclosing.via1.1",
+      "metal1.space.1",
+      "metal1.width.1",
+      "metal2.enclosing.via2.1",
+      "metal2.space.1",
+      "metal2.width.1",
+      "metal3.space.1",
+      "metal3.width.1",
+      "via1.space.1",
+      "via1.width.1",
+      "via2.space.1",
+      "via2.width.1"
+    ],
+    "skipped": [],
+    "inapplicable": [
+      {
+        "id": "metal3.enclosing.via3.1",
+        "reason": "no_applicable_geometry"
+      },
+      {
+        "id": "metal4.enclosing.topvia1.1",
+        "reason": "no_applicable_geometry"
+      },
+      {
+        "id": "metal4.space.1",
+        "reason": "no_applicable_geometry"
+      },
+      {
+        "id": "metal4.width.1",
+        "reason": "no_applicable_geometry"
+      },
+      {
+        "id": "topmetal1.enclosing.topvia1.1",
+        "reason": "no_applicable_geometry"
+      },
+      {
+        "id": "topmetal1.space.1",
+        "reason": "no_applicable_geometry"
+      },
+      {
+        "id": "topmetal1.width.1",
+        "reason": "no_applicable_geometry"
+      },
+      {
+        "id": "topvia1.space.1",
+        "reason": "no_applicable_geometry"
+      },
+      {
+        "id": "topvia1.width.1",
+        "reason": "no_applicable_geometry"
+      },
+      {
+        "id": "via3.space.1",
+        "reason": "no_applicable_geometry"
+      },
+      {
+        "id": "via3.width.1",
+        "reason": "no_applicable_geometry"
+      }
+    ],
+    "unknown": [],
+    "nothing_checked": false,
+    "nothing_checked_reasons": []
   },
   "provenance": {
-    "klt_version": "0.4.0",
+    "klt_version": "0.5.0+gb15edf5e3a2e",
     "klayout_version": "0.30.10",
     "pdk": null,
     "deck": {
       "name": "sg13cmos5l",
-      "content_hash": "sha256:5b5309ecd586f527d6df271384f18e8f1fcd528a09935544b46aed563b66a92e",
-      "released": true
+      "content_hash": "sha256:1912f17486e78de5259aab5d68533488ebbd239a05018f096217aa62ddee2909",
+      "released": false
     },
     "input": {
-      "content_hash": "sha256:f0f01392735616cbdb45166467972f8e4456426fd1cf794e3380d1713eabc062"
+      "content_hash": "sha256:f0f01392735616cbdb45166467972f8e4456426fd1cf794e3380d1713eabc062",
+      "role": "layout"
     },
     "klayout_version_mismatch": false
   }

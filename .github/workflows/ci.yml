@@ -34,6 +34,14 @@ name: CI
 # action run locally against a real PDK + OSDI install (sim/pass-device-
 # screening/README.md "Cold-start reproduction").
 #
+# signoff/ now carries this block's klt signoff manifest and its committed
+# T1 tier report (issue #44): the `signoff-t1-report` job below re-grades
+# that report from the manifest with a pinned `klt` build and fails on any
+# drift -- the anti-rot gate that keeps the manifest's pinned content-hash
+# citations honest as the evidence under layout/ moves. See signoff/README.md
+# for the full contract (exit-code semantics, pinned-build pinning, the claim
+# disclosures the grader cannot make on our behalf).
+#
 # Explicitly excluded from CI (not "checks" yet, so nothing to wire up):
 #   - No linter/formatter is configured for this repo yet (package.json's
 #     `lint`/`check:ci` scripts are honest "not configured" placeholders);
@@ -81,6 +89,17 @@ env:
   # CI. Bump deliberately, alongside IHP_OPEN_PDK_VERSION above if the two
   # move together.
   KLAYOUT_TOOLS_REF: "v0.3.0"
+  # Pin the klt build that grades signoff/sg13g2-ldo.json (#44). The
+  # item-11 (power delivery) grading rules, the "erc" evidence kind, and
+  # input-artifact verification (citation `input_verified`, which re-hashes
+  # the cited input instead of trusting the envelope's say-so) all shipped
+  # upstream after the v0.5.0 release, so the tier report is graded with
+  # this exact post-release commit -- the same build whose stamp layout/'s
+  # committed erc_supply_report.json already records (provenance.klt_version
+  # "0.5.0+gb15edf5e3a2e"). Bump deliberately, in the same PR as the
+  # regenerated signoff/sg13g2-ldo.t1-report.json (the signoff-t1-report job
+  # fails on any drift, including this pin moving).
+  KLAYOUT_TOOLS_SIGNOFF_REF: "b15edf5e3a2e56467a3406c98a2555eb1a5ae45c"
 
 jobs:
   netlist-check:
@@ -219,3 +238,86 @@ jobs:
           PDK_ROOT: ${{ github.workspace }}/klayout-tools/pdks/ihp-open-pdk
           PDK: ihp-sg13g2
         run: sim/pass-device-screening/run_sweep.sh --check-env
+
+  signoff-t1-report:
+    name: signoff/ klt signoff --manifest (regenerate + gate the committed T1 report)
+    # `klt signoff --manifest` grades the committed klt JSON envelopes
+    # (signoff/sg13g2-ldo.json's citations) against the T1 checklist --
+    # pure JSON reading, no PDK, no xschem, no ngspice, no layout engine
+    # work -- so unlike the two jobs above it needs none of the source
+    # builds or PDK fetches, and runs on every push/PR in well under a
+    # minute (#44).
+    #
+    # The gate is regenerate-and-assert-no-diff, the same discipline
+    # klayout-tools' own check-signoff-example.sh applies to its committed
+    # example (#2241): the report is re-graded from the manifest against the
+    # CURRENT tree, and any difference from the committed
+    # signoff/sg13g2-ldo.t1-report.json fails the job. That is the anti-rot
+    # half of #44's point: every citation pins the content hash of the
+    # input artifact it ran against, and the grader independently re-hashes
+    # that input -- so a manifest citing an artifact that has since changed
+    # (a re-generated GDS, a re-extracted netlist) drifts the report and
+    # fails here instead of silently grading green against stale evidence.
+    #
+    # Exit codes: 0 means every T1 item met (tier: T1); 3 means the report
+    # ran clean and says the block is NOT yet T1 -- both are successful,
+    # well-formed grading runs and neither fails this job. Anything else is
+    # an error envelope and a real failure. The honest committed state today
+    # is exit 3 with t1_met_count 2/11; when this block actually reaches T1
+    # the job keeps passing with exit 0 and a fuller report.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out sg13g2-ldo
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Clone klayout-tools at the pinned signoff ref
+        # Deliberately NOT `pip install git+https://...@<sha>`: pip's
+        # direct-URL export loses the clean working-tree state the build's
+        # version stamp is derived from, so the build block reports
+        # `dirty: true` and the regenerated report byte-differs from the
+        # committed one on every run. A plain clone + checkout + path
+        # install reproduces the exact `0.5.0+gb15edf5e3a2e` stamp the
+        # committed evidence record carries (verified locally).
+        run: |
+          git clone --quiet https://github.com/2AMLogic/klayout-tools.git \
+            "${RUNNER_TEMP}/klayout-tools"
+          git -C "${RUNNER_TEMP}/klayout-tools" checkout \
+            "${KLAYOUT_TOOLS_SIGNOFF_REF}"
+          pip install "${RUNNER_TEMP}/klayout-tools"
+
+      - name: Regenerate the T1 report and assert no drift
+        run: |
+          set +e
+          klt signoff --manifest signoff/sg13g2-ldo.json --format json \
+            > "${RUNNER_TEMP}/t1-report.json"
+          rc=$?
+          set -e
+          if [ "$rc" -ne 0 ] && [ "$rc" -ne 3 ]; then
+            echo "klt signoff exited ${rc} -- grading error envelope:" >&2
+            cat "${RUNNER_TEMP}/t1-report.json" >&2
+            exit 1
+          fi
+          echo "klt signoff exited ${rc}" \
+            "$( [ "$rc" -eq 0 ] && echo '(tier T1)' || echo '(ran clean, block not yet T1)' )"
+          if ! cmp -s signoff/sg13g2-ldo.t1-report.json \
+              "${RUNNER_TEMP}/t1-report.json"; then
+            echo "signoff/sg13g2-ldo.t1-report.json has drifted from what" >&2
+            echo "the manifest grades on the current tree." >&2
+            echo "" >&2
+            echo "Not \"the grader is broken\": the cited evidence moved, or the" >&2
+            echo "pinned grading build moved. Regenerate and commit the report in" >&2
+            echo "the same PR as that change, re-reading signoff/README.md's claim" >&2
+            echo "disclosures alongside it:" >&2
+            echo "" >&2
+            echo "    klt signoff --manifest signoff/sg13g2-ldo.json --format json \\" >&2
+            echo "      > signoff/sg13g2-ldo.t1-report.json" >&2
+            echo "" >&2
+            diff -u signoff/sg13g2-ldo.t1-report.json \
+              "${RUNNER_TEMP}/t1-report.json" >&2 || true
+            exit 1
+          fi
+          echo "committed T1 report reproduces exactly (tier state is current)"
