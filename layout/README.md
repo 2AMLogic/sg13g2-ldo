@@ -68,7 +68,7 @@ reproduce byte for byte before it will re-verify the reports.
 
 | Tool | Version used here | Why |
 | --- | --- | --- |
-| `klt` | 0.4.0 (was 0.5.0 through #28) | curated DRC deck, device extraction, LVS compare |
+| `klt` | 0.5.0+gb15edf5e3a2e (was 0.4.0 before #44, 0.5.0 through #28) | curated DRC deck, device extraction, LVS compare |
 | KLayout Python module | 0.30.10 (was 0.30.12 through #28) | pulled in by `klt`; also what `generate.py` draws with |
 | standalone `klayout` | 0.28.16 | runs the PDK's **own** DRC-DSL deck (stage 3) |
 | `ihp-sg13cmos5l` | pin `607e18d4` (`sim/pdk-cmos5l.json`) | the deck, the layer table, the PCell sources every constant is cited from |
@@ -89,6 +89,22 @@ reproduce byte for byte before it will re-verify the reports.
 > expect in a diff of the artifacts: 0.4.0 writes a `metrics` block into
 > the DRC/extract reports that 0.5.0 did not, and it emits `L=`/`W=` on
 > extracted `rhigh` cards. Re-running on a 0.5.0 host will move them back.
+>
+> **#44 then moved the three signoff-cited envelopes (`drc`,
+> `extract`(`.spice`), `lvs`) forward to one uniform pinned build** --
+> `klt 0.5.0+gb15edf5e3a2e` / KLayout 0.30.10, the same post-release commit
+> `signoff/` pins as its grading build and that #43's ERC report already
+> recorded -- so every citation the manifest grades carries the
+> post-#1969 `provenance.input` content hash under one current deck
+> vintage. The refreshed under-commit deck (content hash `1912f174...`)
+> post-dates the last `klt` *release*, so its `released` flag reads
+> `false` and a host running release `klt` 0.4.0/0.5.0 will show
+> `[DRIFT] provenance.deck.content_hash` in `run_flow.sh --check` -- the
+> documented, expected drift line, not a failure. Nothing in the *results*
+> moved: the extracted netlist is byte-identical, LVS is `match` with
+> identical counts and `net_correspondence`, DRC is `clean` with 0
+> violations, and `run_flow.sh --check` passes green under the pinned
+> build itself.
 
 There is no CI job for this flow, for the same reason there is none for
 `design/netlist.py --design sg13cmos5l --check`: no checksum-pinned fetch

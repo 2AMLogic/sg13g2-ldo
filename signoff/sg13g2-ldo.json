@@ -1,0 +1,24 @@
+{
+  "block": "sg13g2-ldo",
+  "kind": "analog",
+  "evidence": {
+    "3": {
+      "file": "layout/sg13cmos5l-ldo_core_cmos5l/drc_report.json",
+      "content_hash": "sha256:f0f01392735616cbdb45166467972f8e4456426fd1cf794e3380d1713eabc062"
+    },
+    "4": {
+      "file": "layout/sg13cmos5l-ldo_core_cmos5l/lvs_report.json",
+      "content_hash": "sha256:cd162f1ac1c2f118a9180467baac2725f5bc6779d34699e72443783e2de0e707"
+    },
+    "11": [
+      {
+        "file": "layout/sg13cmos5l-ldo_core_cmos5l/erc_supply_report.json",
+        "content_hash": "sha256:f0f01392735616cbdb45166467972f8e4456426fd1cf794e3380d1713eabc062"
+      },
+      {
+        "file": "layout/sg13cmos5l-ldo_core_cmos5l/lvs_report.json",
+        "content_hash": "sha256:cd162f1ac1c2f118a9180467baac2725f5bc6779d34699e72443783e2de0e707"
+      }
+    ]
+  }
+}
