@@ -44,6 +44,8 @@ layout/
     drc_pdk_deck_report.json                the PDK's own deck, both invocations
     extract_report.json                     `klt extract --deck sg13cmos5l`
     lvs_request.json / lvs_report.json      `klt lvs`
+    erc-supply-spec.json                    T1 item 11 supply spec (`klt erc`, #43)
+    erc_supply_report.json                  the `klt erc` run against the committed GDS
 ```
 
 The directory is named `sg13cmos5l-<cell>` to match `sim/`'s own per-PDK prefix
@@ -244,6 +246,95 @@ The three cap controls exist because the cap is the one device that does *not*
 appear in the LVS report's device census — see the next section. Without them,
 "12 devices matched" would be silently saying nothing about the 13th.
 
+## T1 item 11 — the ERC supply check (#43)
+
+The T1 checklist grew an eleventh item on 2026-09-17
+([`klayout-tools`#2025](https://github.com/2AMLogic/klayout-tools/issues/2025)):
+**power delivery, structural** — "is the supply actually connected to what it
+powers" — graded, per block kind, from a [`klt
+erc`](https://github.com/2AMLogic/klayout-tools/blob/main/docs/cli/erc.md)
+supply-spec run. This is the fleet's first ERC supply spec for an IHP
+SG13-family PDK. Two artifacts in this directory:
+
+- `erc-supply-spec.json` — the declaration. Every GDS layer/datatype is
+  SG13CMOS5L's own, read from the PDK's `sg13cmos5l.lyp` and cross-checked
+  against the curated `sg13cmos5l` extraction deck (`EXTRACTION_DECK`'s
+  `poly`/`active`/`contact`/`metals`/`vias`/`metal_labels`) — transcribed from
+  neither gf180mcu's nor sky130's spec. The three power rails `VIN`, `VOUT`,
+  `VSS` are declared `kind: "supply"` and checked on the routing stack they
+  actually use: GatPoly → Metal1 → Metal2 → Metal3 bridged by `Cont`, `Via1`,
+  `Via2`, with text labels on the `.pin` layers of all three metals.
+  `VREF`/`IBIAS` are control inputs by DR-0002, not power rails, so they are
+  not declared.
+- `erc_supply_report.json` — the committed run. Its `provenance.input.
+  content_hash` is the committed GDS's own sha256
+  (`f0f01392735616cbdb45166467972f8e4456426fd1cf794e3380d1713eabc062`,
+  byte-verified), and its `provenance.spec.content_hash` pins the spec the
+  verdict was graded against.
+
+Read the three verdicts precisely in that report:
+
+- **One island per supply, and no supply shorts.** `erc_status: "clean"`:
+  zero `erc.unconnected_net` (each of VIN, VOUT, VSS resolves to exactly one
+  electrical island) and zero `erc.supply_short` (every declared-supply pair
+  resolves to *distinct* islands — VIN↔VOUT separated by the pass device,
+  VOUT↔VSS by the feedback divider's resistors, VIN↔VSS by everything else).
+  This is the item-11 question answered on the rails' real routing stack.
+- **Why `devices[]` is declared.** `klt erc`'s connectivity model traces
+  declared conductor layers as wires with no device recognition, so the three
+  `rhigh` meanders — drawn on GatPoly like everything else in this PDK's poly
+  — would chain the divider string `VOUT—Rtop—FB—Rbot—VSS` into one island
+  and report a **false `erc.supply_short`** against an LVS-matched layout:
+  exactly the gap [`klayout-tools`#2183](https://github.com/2AMLogic/klayout-tools/issues/2183)
+  filed for supply-sensing analog blocks. The spec declares the carve-out that
+  closes it — this deck's own `rhigh` recognition marker, PolyRes (128/0),
+  subtracted from the GatPoly role — and the report's
+  `provenance.devices[].body_area_um2` (1568.82 µm²) is the cross-check that
+  the carve-out actually removed geometry. `Cc` needs no declaration: its
+  interdigitated plates never touch, and bridging `EAOUT`↔`MZ` would not be a
+  declared-supply pair anyway.
+- **`erc.missing_tie` is NOT computed.** The spec deliberately declares no
+  `ties[]` (per this issue's curation: the ties[] reading was the
+  false-positive class of `klayout-tools`#2169 on real routed layouts, since
+  fixed upstream), so `erc.missing_tie` is never computed by this run — the
+  report's own `erc_coverage` carries that as
+  `inapplicable: erc.missing_tie / no_ties_declared`, which is an **absence of
+  evidence, not evidence of absence**. The well-tie evidence that stands in,
+  all against this same GDS: (1) the three drawn, contacted Activ tie bars —
+  the pass array's NWell tie (VIN, whose Metal1 strap also ties every row's
+  source bus into one rail), the diff pair's TAIL NWell tie, and the substrate
+  tie (VSS) — are extracted and compared by `klt lvs` (status `match`; well
+  nets named by the NWell.pin texts, tap geometry derived by the deck's
+  `tap_nplus`/`tap_pplus`, #1414), with `VIN`/`VOUT`/`VSS` all carried as
+  pins in `net_correspondence` — item 11's Analog-column requirement; (2) the
+  PDK deck's own latch-up rule (LU.b — every N+ implant within 20 µm of a
+  substrate tie) ran clean over this GDS; (3) the PG pin labels themselves sit
+  on the rails' `.pin` layers at every level they touch. Declaring a *checked*
+  tie in the spec (now that #2169's fix is upstream) is follow-up work, not a
+  silent gap.
+
+Two contract notes for anyone re-running it:
+
+- The command exits **4** with `status: "not_checked"` — that is the
+  *antenna* half of the report, which cannot be graded on this PDK (`klt`
+  has a real antenna-ratio table only for sky130), and antenna is not item
+  11's subject ([`klayout-tools`#1994](https://github.com/2AMLogic/klayout-tools/issues/1994)).
+  The structural verdict item 11 grades is the separate `erc_status` field:
+  `clean`. Gate on that, not on the exit code.
+- Released `klayout-tools` 0.5.0 — what pip/uv installs and what this host's
+  `klt` currently resolves to — predates both the `status`/`provenance`
+  envelope (#1968) and `devices[]` (#2183), so it can produce neither the
+  content-hash pin nor the carve-out. This report was made with an
+  upstream-main source build (version `0.5.0+gb15edf5e3a2e`, recorded in
+  `provenance.klt_version`); the one-line command in the spec's `_comment`
+  reproduces it verbatim once a klayout-tools release carrying those changes
+  is installed:
+
+```
+klt erc layout/sg13cmos5l-ldo_core_cmos5l/sg13cmos5l-ldo_core_cmos5l.gds \
+  layout/sg13cmos5l-ldo_core_cmos5l/erc-supply-spec.json --format json
+```
+
 ## Coverage, honestly
 
 Two DRC numbers, never conflated:
@@ -421,7 +512,11 @@ resistors), [#1416](https://github.com/2AMLogic/klayout-tools/issues/1416) (HV
 MOS flavour), [#1417](https://github.com/2AMLogic/klayout-tools/issues/1417)
 (the metal stack and its vias),
 [#1466](https://github.com/2AMLogic/klayout-tools/issues/1466) (`cap_cmomi`
-recognition). Still open and still shaping this flow:
+recognition) — and, for the ERC supply check above,
+[#2183](https://github.com/2AMLogic/klayout-tools/issues/2183) (the `devices[]`
+carve-out, without which the divider string false-shorts VOUT to VSS) and
+[#1968](https://github.com/2AMLogic/klayout-tools/issues/1968) (`klt erc`'s
+`status`/`provenance`, without which the report could not pin its input). Still open and still shaping this flow:
 [#1927](https://github.com/2AMLogic/klayout-tools/issues/1927) (`klt extract`
 drops a drawn resistor's `L`/`W`, which is why the reference states `R` rather
 than geometry), [#1928](https://github.com/2AMLogic/klayout-tools/issues/1928)
