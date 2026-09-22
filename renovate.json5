@@ -49,7 +49,8 @@
   "prConcurrentLimit": 5,
 
   // Add release notes and changelogs to PR body for agent review
-  "fetchReleaseNotes": true,
+  // (renamed from fetchReleaseNotes; "pr" is the default, set explicitly)
+  "fetchChangeLogs": "pr",
 
   // --- Package grouping ---
 
