@@ -334,6 +334,45 @@ topology:
    gf180 `DR-0002` refused to let the 5 V input-flavor headroom question be
    "decided implicitly by whoever designs the amplifier" (survey §3.3).
 
+**Sibling-canary dependency: `sg13g2-opamp` (declared, not yet adopted).**
+The fleet manifest already records this repo's error-amp dependency:
+`2AMLogic/2am`'s `repos.yml` lists `consumes: [sg13g2-opamp,
+sg13g2-bandgap]` for `sg13g2-ldo` — "error amp is an ideal placeholder
+today - the opamp canary is its real one" (read at `2AMLogic/2am` @
+`2725a58`, 2026-09-22). That edge does not (yet) mean the canary is the
+chosen amplifier: this repo's `reuse.lock.json` carries the in-tree entry
+`{"block": "error amplifier", "sibling": "2AMLogic/sg13g2-opamp",
+"status": "evaluate"}` (read @ `b38779c`, 2026-09-22) — bookkeeping added
+by #47, which deliberately punted the adopt-or-keep comparison until
+ratified local requirement rows exist. Three measured gaps stand between
+`evaluate` and any adoption record, all against rows the canary has already
+ratified (`2AMLogic/sg13g2-opamp` `spec/target-spec.md` @ `a33ace2`,
+2026-09-22):
+
+- **Voltage class.** The canary's ratified scope is **1.2 V LV-only**
+  (`sg13_lv_nmos`/`sg13_lv_pmos`, PSP 103.6); its 3.3 V HV flavor is an
+  explicitly unopened stretch row `[P]`. This block's error amp sits in a
+  3.3 V-primary loop (§1.1), so adoption needs either that HV stretch opened
+  on the canary side or a level-shift/bias scheme in this repo.
+- **Iq.** The canary's ratified Iq is ≤ 119.7 µA worst-case *including* its
+  external 10 µA `ibias` reference `[DR-2]` — against the ≈16–26 µA
+  total-block Iq allocation cited from gf180 (survey §5, and item 2 above),
+  a gap of roughly 5–7× that an adoption record would have to argue or
+  absorb.
+- **Offset.** The canary's systematic offset is ratified at +21.9 mV
+  worst-case `[DR-2]`, with a mismatch-inclusive worst-case total of 46.7 mV
+  measured but not yet re-ratified `[P]` — against the 36 mV 3σ
+  regulator-only budget item 1 above inherits from gf180
+  `DR-0003`/`DR-0004`.
+
+None of this resolves the three open questions above — input-stage device
+choice, Iq cost, and reference interface stay exactly as open as before.
+The note records why the `repos.yml` edge and the placeholder design
+(`design/ldo_erramp_placeholder.sch`) coexist: the dependency is declared
+fleet-side, the evaluation is bookkept `evaluate` (#47), and the numeric
+gaps above are what a future adoption-or-keep decision record (#47's punted
+steps 2–4) must argue through.
+
 ### 2.3 Spec rows the device set may make inappropriate, not merely harder
 
 Following gf180 `DR-0004`'s own discipline (a spec row whose target the
@@ -507,7 +546,17 @@ in a committed filename order:
    (default, per §1.2/§2.2) or reopens an on-chip bipolar bandgap. Sequenced
    after #1 (needs the pass-device's Cgate for compensation) but should be
    argued before schematic entry, per both siblings' own sequencing (gf180
-   #9 after #7/#8; sky130 #25 as a dedicated issue).
+   #9 after #7/#8; sky130 #25 as a dedicated issue). Resolving this record
+   also has a sibling-canary dimension (§2.2's dependency note):
+   `2am/repos.yml` declares `sg13g2-opamp` as this block's real error-amp
+   dependency while `reuse.lock.json` still records `status: evaluate`
+   (#47), and the canary's ratified 1.2 V LV-only scope means resolving
+   this record requires either that canary's HV (3.3 V) stretch row being
+   opened on its side or a level-shift/bias scheme in this repo — with its
+   Iq
+   (≤ 119.7 µA incl. `ibias`) and offset (+21.9 mV systematic ratified /
+   46.7 mV mismatch-inclusive unratified) argued against this repo's own
+   rows — before `evaluate` can move to `adopted` or `kept`.
 6. **Current-limit window** (§2.3) — sized against SG13G2's own resistor-
    flavor process spread (`rsil`/`rhigh`/`rppd`, whichever the sense path
    uses) from the start, informed by gf180's `DR-0005` negative-result
