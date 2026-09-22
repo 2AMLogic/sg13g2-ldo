@@ -1,6 +1,5 @@
 // Renovate configuration for 2AMLogic/sg13g2-ldo
 // Docs: https://docs.renovatebot.com/configuration-options/
-// Pipeline docs: docs/ops/dependency-security-pipeline.md
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
 
@@ -31,7 +30,8 @@
   // Never auto-merge. Agents review, humans merge.
   "automerge": false,
 
-  // Create PRs as drafts — consistent with AGENTS.md PR policy
+  // Create PRs as drafts — every update requires an explicit mark-ready
+  // review pass before it can merge
   "draftPR": true,
 
   // --- Schedule ---
@@ -42,21 +42,6 @@
   // "Security updates bypass any minimumReleaseAge checks"
   "schedule": ["before 10am on monday"],
   "timezone": "UTC",
-
-  // --- Python (uv) ---
-
-  // Update lockfile without widening pyproject.toml version ranges.
-  // Renovate detects uv.lock natively.
-  "rangeStrategy": "update-lockfile",
-
-  // Refresh uv.lock even when no direct dependency range changes.
-  // This is how Renovate keeps transitive dependencies current.
-  // Match the repo's Monday morning schedule explicitly; Renovate otherwise
-  // applies a separate lock-file-maintenance default schedule.
-  "lockFileMaintenance": {
-    "enabled": true,
-    "schedule": ["before 10am on monday"]
-  },
 
   // --- PR behavior ---
 
@@ -69,22 +54,11 @@
   // --- Package grouping ---
 
   "packageRules": [
-    // Group all non-major Python dependency updates into one PR
-    {
-      "groupName": "python minor/patch dependencies",
-      "matchManagers": ["pep621", "uv"],
-      "matchUpdateTypes": ["minor", "patch"]
-    },
-
-    // Python major updates get individual PRs (more risk, need individual review)
-    {
-      "matchManagers": ["pep621", "uv"],
-      "matchUpdateTypes": ["major"]
-    },
-
-    // Group all GitHub Actions SHA updates into one PR
-    // AGENTS.md mandates SHA pinning with inline version comments (# vX.Y.Z)
-    // Renovate preserves these comments natively when updating digests
+    // Group all GitHub Actions updates (including digest pins) into one PR.
+    // This repo currently pins actions by tag (e.g. actions/checkout@v4);
+    // digest-pin proposals here are a deliberate supply-chain hardening
+    // step, not an existing repo convention — review them as policy change.
+    // Renovate preserves inline "# vX.Y.Z" version comments when updating.
     {
       "groupName": "github-actions",
       "matchManagers": ["github-actions"],
@@ -105,11 +79,9 @@
 
   // --- Ignored paths ---
 
-  // Don't touch vendored dependencies (submodules)
+  // Don't touch local agent-orchestration config
   "ignorePaths": [
-    "vendor/**",
-    ".claude/**",
-    "infra/pulumi/**"
+    ".claude/**"
   ],
 
   // --- Vulnerability alerts ---
