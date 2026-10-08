@@ -44,35 +44,37 @@ The SG13G2 DRC/LVS deck in klayout-tools is a recently shipped starter deck.
 Part of this canary's job is to find what it cannot check yet and file those
 gaps upstream — never to route around them.
 
-## Target specification (DRAFT — to be ratified via spec/)
+## Target specification (ratification in progress)
 
 Port parity: the targets below mirror the ratified gf180-ldo spec — same
-block, third PDK. Ratification must confirm each row against SG13G2's device
-flavors (supply rails, pass-device options); where the PDK makes a target
-inappropriate rather than merely harder, change it through a decision record
-and record why.
+block, third PDK. Row-by-row ratification is recorded in [DR-0007](spec/decision-records/DR-0007-target-spec-row-ratification.md).
+**No row is ratified yet:** the two independent non-author review verdicts
+(`RATIFY-KEY: ee`, `RATIFY-KEY: market`) are pending, so each row is either
+*proposed* (author's proposal, awaiting those verdicts) or *OPEN*
+(unratified; missing evidence named in the record). An OPEN row is not a
+passing requirement. No target value was changed by the record.
 
-| Parameter | Target | Stretch |
-|---|---|---|
-| Input | 3.3 V ±10% — confirm against SG13G2 device flavors | — |
-| Output | 1.8 V ±2% (fixed) | programmable variants deferred |
-| Load | 0–50 mA (no external preload assumed) | 100 mA |
-| Dropout @ 50 mA | < 300 mV worst corner | < 200 mV |
-| Line / load regulation | < 5 mV/V; < 1% over full load, inside the accuracy window | — |
-| PSRR | > 50 dB @ 1 kHz, > 20 dB @ 100 kHz | > 60 dB @ 1 kHz |
-| Iq (excluding load) | < 30 µA at no load and at full load | < 10 µA |
-| Current limit | 65–80 mA brickwall over PVT; short-survivable | — |
-| Startup | monotonic, controlled ramp, inside ±2% within 3 ms of enable | — |
-| Stability | 0–50 mA, C_out 0.33–4.7 µF effective, ESR 0–500 mΩ; PM ≥ 45°, GM ≥ 10 dB worst corner | capless variant (separate fork) |
+| Parameter | Target | Stretch | Status ([DR-0007](spec/decision-records/DR-0007-target-spec-row-ratification.md)) |
+|---|---|---|---|
+| Input | 3.3 V ±10% — confirm against SG13G2 device flavors | — | OPEN — unratified (current-limit \|Vsg\| gate from DR-0001) |
+| Output | 1.8 V ±2% (fixed) | programmable variants deferred | OPEN — unratified (statistical; Monte Carlo missing) |
+| Load | 0–50 mA (no external preload assumed) | 100 mA | OPEN — unratified (no 0 mA dynamic evidence) |
+| Dropout @ 50 mA | < 300 mV worst corner | < 200 mV | PROPOSED — pending review (stretch not ratified) |
+| Line / load regulation | < 5 mV/V; < 1% over full load, inside the accuracy window | — | OPEN — unratified (loaded line / multi-Vin load regulation missing) |
+| PSRR | > 50 dB @ 1 kHz, > 20 dB @ 100 kHz | > 60 dB @ 1 kHz | OPEN — unratified (1 mA / 1 µF only; `Cc` un-cornered) |
+| Iq (excluding load) | < 30 µA at no load and at full load | < 10 µA | OPEN — unratified (no current full-load record) |
+| Current limit | 65–80 mA brickwall over PVT; short-survivable | — | OPEN — unratified (not implemented; statistical) |
+| Startup | monotonic, controlled ramp, inside ±2% within 3 ms of enable | — | OPEN — unratified (not implemented) |
+| Stability | 0–50 mA, C_out 0.33–4.7 µF effective, ESR 0–500 mΩ; PM ≥ 45°, GM ≥ 10 dB worst corner | capless variant (separate fork) | OPEN — unratified (one load/C_out/ESR point only) |
 
 Maturity ladder: spec ratified → schematic simulated across PVT → layout
 DRC/LVS-clean → post-layout re-verification → shuttle seat → measured
-silicon. **Current position: pre-spec.**
+silicon. **Current position: spec ratification in progress** (DR-0007 proposed; 0 of 10 rows ratified, awaiting the two review keys).
 
 ## Repo layout
 
 ```
-spec/          ratified spec + decision records
+spec/          target-spec ratification + decision records
 design/        schematics / netlists (xschem)
 sim/           testbenches + PVT corner results (ngspice)
 layout/        GDS + DRC/LVS reports (klayout-tools driven)
