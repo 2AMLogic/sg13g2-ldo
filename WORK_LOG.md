@@ -4,6 +4,7 @@ Chronological record of recently merged pull requests and closed issues, maintai
 
 ### 2026-10-08
 
+- **PR #65**: spec: ratify DR-0007 row 4 (dropout @ 50 mA) via the two-key ceremony; nine rows stay open
 - **PR #61**: spec: DR-0007 row-by-row ratification record for the target table (#54)
 - **Issue #54** (closed): spec: ratify the target-spec table through the two-key mechanism (prerequisite for T1 items 5 and 6)
 

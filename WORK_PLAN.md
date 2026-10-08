@@ -43,15 +43,19 @@ _None._
 
 Issues carrying `loom:curated`.
 
+- **#57**: Post-layout: klt pex extraction of the LDO core and spec re-run on the extracted netlist (T1 item 7) *(curated)*
 - **#58**: Characterization: one aggregated per-spec-row report with a generic envelope (T1 item 8) *(curated)*
 
 ## Proposed (Architect / Hermit)
 
-_None._
+- **#62**: SG13CMOS5L startup: add enable input and transient testbench for spec row 9 *(architect)*
+- **#63**: SG13CMOS5L current limiter: build the missing limiter (spec row 8 and DR-0001 Vsg gate) *(architect)*
+- **#64**: sim: parameterise loop-gain/PSRR benches over load, Cout and ESR for rows 3, 6, 10 dynamic coverage *(architect)*
 
 ## Epics
 
 - **#5**: Track the gap to T1 sim-validated / bronze (klayout-tools design-evidence tiers)
+- **#62**: SG13CMOS5L startup: add enable input and transient testbench for spec row 9
 
 ## Backlog Balance
 
@@ -63,7 +67,7 @@ _None._
 | In Progress (`loom:building`) | 0 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
-| Curated | 1 |
-| Architect / Hermit proposals | 0 |
-| Active epics | 1 |
+| Curated | 2 |
+| Architect / Hermit proposals | 3 |
+| Active epics | 2 |
 <!-- guide:plan-body:end -->
