@@ -51,7 +51,12 @@ directory's verdict-of-record statement.
 
 ## Item 8 pin refresh (#55)
 
-The item-8 `content_hash` had gone stale on `main`: `characterization-report.json` pins the root `README.md`'s sha256, which moved in the documentation-guide update (#72) after the pin was written, so the pinned grading build rendered item 8 `unmet / stale_evidence` and `sim/characterization/generate.py --check` failed. This PR regenerated the characterization artifact (a one-line change: the README pin), updated the manifest pin to the new envelope input hash, and regenerated the report (the item returns to `met`; `t1_met_count` is 3 again). No measurement or verdict content changed.
+The item-8 `content_hash` had gone stale on `main`: `characterization-report.json` pins the root `README.md`'s sha256, which moved in the documentation-guide update (#72) after the pin was written, so the pinned grading build rendered item 8 `unmet / stale_evidence` and `sim/characterization/generate.py --check` failed. This PR also edits a second pinned source, `sim/ldo-cmos5l-pvt-sweep/README.md` (the `superseded_evidence_statement`; it gains the item-5 evidence section). The characterization artifact was therefore regenerated *after* the last edit to either file, and exactly two source pins changed, one line each in `characterization-report.{json,md}`:
+
+- `target_table` `README.md`: `3d8f46e2…` → `29c85891…` (#72)
+- `superseded_evidence_statement` `sim/ldo-cmos5l-pvt-sweep/README.md`: `073e2f4e…` → `56db1791…` (#55)
+
+The envelope's `provenance.input.content_hash`, the manifest's item-8 `content_hash` and the cited `content_hash` in `sg13g2-ldo.t1-report.json` all moved from `sha256:5c1393fa…` to `sha256:3db06e10…` (the sha256 of the regenerated report). The tier report was regraded with the pinned build `0.5.0+gb15edf5e3a2e` (exit 3, item 8 `met`, `t1_met_count` 3). No measurement, row state or verdict content changed. Any later edit to a pinned source (see `characterization-report.json` → `sources`) needs the same regeneration in the same order: `generate.py`, then the manifest pin, then the tier report.
 
 ## Regenerating
 
