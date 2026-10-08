@@ -642,6 +642,60 @@ above for the outcome; it was out of scope for this original
 verification-only phase, and is captured in full in
 [`DR-0003`](../../spec/decision-records/DR-0003-sg13cmos5l-mpass-resize-and-compensation.md).
 
+## T1 item 5 evidence derivation and coverage inventory (issue #55)
+
+`item5_evidence.py` re-derives, with no simulator and no PDK, from the
+committed raw DC grids of record `20260917-023832-7061e8f`
+(`corners/20260917-023832-7061e8f/dcsweep_*_dc.csv`, 45 independent MOS x
+temperature x resistor points):
+
+- the record's own DC columns (it **fails** if they do not reproduce, so the
+  raw grid and the committed record CSV cannot silently disagree);
+- informational summaries the record never reported: full-load Iq (load
+  current excluded: `|i(Vin)| - Iload`, Vin = 3.30 V), line regulation at each
+  of the five swept loads, load regulation at 2.97 / 3.30 / 3.63 V. A value is
+  *valid* only if both end points are within 1 % of 1.8 V; invalid, truncated
+  or missing points stay in the counts;
+- a ten-row coverage inventory against DR-0007.
+
+```bash
+python3 sim/ldo-cmos5l-pvt-sweep/item5_evidence.py           # write
+python3 sim/ldo-cmos5l-pvt-sweep/item5_evidence.py --check   # byte-compare (CI)
+python3 -m unittest discover -s sim/ldo-cmos5l-pvt-sweep -p 'test_*.py' -v
+```
+
+Outputs: `evidence/20260917-023832-7061e8f/{coverage-inventory.json,
+coverage-inventory.md,dc-informational-summary.csv}`; inputs and their sha256
+are listed in the JSON. `dc_metrics.py` is the DC parser extracted from
+`run_sweep.sh`'s inline Python so both read the grid identically.
+
+What this is **not**:
+
+- It is not a `klt sim` envelope and item 5 in `signoff/` stays uncited.
+  `klt sim`'s batch/remote backends refuse `ihp-sg13cmos5l`
+  ([klayout-tools#2727](https://github.com/2AMLogic/klayout-tools/issues/2727)),
+  and the DC bench needs the PDK's OSDI models under ngspice >= 46, so the
+  ratified dropout measurement could not be re-run through the supported tool
+  from the dispatch host.
+- It does not ratify any Open row. Only row 4 (dropout) is ratified, and its
+  dropout is the **legacy** metric (lowest in-regulation grid Vin minus the
+  fixed 1.8 V target); 36 of 45 points sit at the 0.20 V sweep floor and are
+  upper bounds. The conventional `Vin - actual VOUT at 1 % loss` figure
+  (informational column in the CSV; 0.2546 V at the worst resolved point) is
+  not adopted: that definition is #70's. The SG13G2 branch has no closed-loop
+  evidence (#71) and nothing here transfers to it.
+- Full-load Iq resolution: the grid is printed to 9 significant digits, so
+  Iq at 50 mA is quantized at 1e-10 A; ngspice's own convergence noise on a
+  22 uA difference of two ~50 mA currents is not bounded beyond that floor
+  by this data.
+- Provenance: the record's git sha does not resolve and its snapshots
+  `.include` the design by absolute worktree path, so netlist freshness is
+  inferred from the DR-0007 hash pins and the record's nominal `Cc`, not
+  recorded. `run_sweep.sh`'s spec comparison table now labels every row's
+  DR-0007 status (only dropout is a gate; the rest are informational); this
+  affects future records only, existing records are unchanged.
+
+
 ## CI
 
 **No CI job runs `run_sweep.sh --check-env` for this experiment yet**, unlike
