@@ -44,22 +44,22 @@ The SG13G2 DRC/LVS deck in klayout-tools is a recently shipped starter deck.
 Part of this canary's job is to find what it cannot check yet and file those
 gaps upstream — never to route around them.
 
-## Target specification (ratification in progress)
+## Target specification (1 of 10 rows ratified; 9 open)
 
 Port parity: the targets below mirror the ratified gf180-ldo spec — same
 block, third PDK. Row-by-row ratification is recorded in [DR-0007](spec/decision-records/DR-0007-target-spec-row-ratification.md).
-**No row is ratified yet:** the two independent non-author review verdicts
-(`RATIFY-KEY: ee`, `RATIFY-KEY: market`) are pending, so each row is either
-*proposed* (author's proposal, awaiting those verdicts) or *OPEN*
-(unratified; missing evidence named in the record). An OPEN row is not a
-passing requirement. No target value was changed by the record.
+**One row is ratified:** dropout @ 50 mA, by the two independent non-author
+review verdicts (`RATIFY-KEY: ee`, `RATIFY-KEY: market`) on pull request
+#65. Every other row is *OPEN* (unratified; missing evidence named in the
+record). An OPEN row is not a passing requirement. No target value was
+changed by the record.
 
 | Parameter | Target | Stretch | Status ([DR-0007](spec/decision-records/DR-0007-target-spec-row-ratification.md)) |
 |---|---|---|---|
 | Input | 3.3 V ±10% — confirm against SG13G2 device flavors | — | OPEN — unratified (current-limit \|Vsg\| gate from DR-0001) |
 | Output | 1.8 V ±2% (fixed) | programmable variants deferred | OPEN — unratified (statistical; Monte Carlo missing) |
 | Load | 0–50 mA (no external preload assumed) | 100 mA | OPEN — unratified (no 0 mA dynamic evidence) |
-| Dropout @ 50 mA | < 300 mV worst corner | < 200 mV | PROPOSED — pending review (stretch not ratified) |
+| Dropout @ 50 mA | < 300 mV worst corner | < 200 mV | RATIFIED (stretch not ratified) |
 | Line / load regulation | < 5 mV/V; < 1% over full load, inside the accuracy window | — | OPEN — unratified (loaded line / multi-Vin load regulation missing) |
 | PSRR | > 50 dB @ 1 kHz, > 20 dB @ 100 kHz | > 60 dB @ 1 kHz | OPEN — unratified (1 mA / 1 µF only; `Cc` un-cornered) |
 | Iq (excluding load) | < 30 µA at no load and at full load | < 10 µA | OPEN — unratified (no current full-load record) |
@@ -69,7 +69,7 @@ passing requirement. No target value was changed by the record.
 
 Maturity ladder: spec ratified → schematic simulated across PVT → layout
 DRC/LVS-clean → post-layout re-verification → shuttle seat → measured
-silicon. **Current position: spec ratification in progress** (DR-0007 proposed; 0 of 10 rows ratified, awaiting the two review keys).
+silicon. **Current position: spec ratification in progress** (DR-0007: 1 of 10 rows ratified — dropout @ 50 mA; the other 9 are open).
 
 ## Repo layout
 

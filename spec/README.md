@@ -14,7 +14,8 @@ being present; ratification state is stated per row.
   #56 (Monte Carlo). A row is ratified only after both non-author review
   keys (`ratification/ee-key/`, `ratification/market-key/`) have posted and
   any request-changes/escalate verdict is resolved; until then rows are
-  *proposed* or *Open*.
+  *proposed* or *Open*. Current state: row 4 (dropout @ 50 mA) is ratified,
+  by the two key reviews on pull request #65; the other nine rows are Open.
 - [`porting-plan.md`](porting-plan.md) — informational port plan from the
   gf180/sky130 siblings; not a spec and not a decision record.
 
