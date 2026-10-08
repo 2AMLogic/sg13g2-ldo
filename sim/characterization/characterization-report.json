@@ -1,0 +1,968 @@
+{
+  "schema_version": 1,
+  "title": "sg13g2-ldo per-spec-row characterization report (T1 item 8)",
+  "generator": {
+    "path": "sim/characterization/generate.py",
+    "version": 1
+  },
+  "purpose_and_limits": [
+    "This is a CHARACTERIZATION report: one aggregated, current artifact summarizing per-row performance and citing the record behind each verdict.",
+    "Completeness is not compliance. The artifact can be complete and fresh while rows fail, are ambiguous, unmeasured or unimplemented; the envelope verdict reports artifact completeness only.",
+    "Open (unratified) targets are not passing requirements; a numeric 'pass' on an open row is a measurement against a draft target at the stated conditions.",
+    "All closed-loop numbers are SG13CMOS5L-branch evidence (DR-0007 'What evidence exists'); no closed-loop evidence exists on the SG13G2 branch.",
+    "No post-layout (extracted) performance evidence exists for any row; layout reports in layout/ are DRC/LVS/ERC and carry no performance metrics.",
+    "Other T1 items are not declared satisfied by this artifact."
+  ],
+  "selection": {
+    "file": "sim/characterization/selection.json",
+    "sha256": "b6c117f883973e9a8b1fc2928dc8b24ed8f16324b8e49b41a7dfc6153bf373de",
+    "circuit_record_id": "20260917-023832-7061e8f",
+    "experiment": "ldo-cmos5l-pvt-sweep",
+    "device_context_record_id": "20260909-220347-ed18110",
+    "policy": "Explicit selection only. The generator never discovers records by directory listing or filesystem order: the circuit record below is named here, its bytes are pinned by sha256, and a record that is missing or whose bytes differ from its pin is a hard generator error. Moving to a newer record is a deliberate edit to this file in the same change that regenerates the report. Historical records (other ids under sim/*/records/) are never read except where listed under superseded_evidence, and then only as a quoted, clearly-labelled statement about an older design, never as a current measurement."
+  },
+  "sources": [
+    {
+      "role": "bare_device_screening_csv",
+      "path": "sim/pass-device-screening/records/20260909-220347-ed18110.csv",
+      "sha256": "5652ffd472abe8c279348efe2665cec2161be0c974bc9bd40f84be7011b020fe",
+      "pinned": true
+    },
+    {
+      "role": "circuit_cc_tolerance_csv",
+      "path": "sim/ldo-cmos5l-pvt-sweep/records/20260917-023832-7061e8f.cc-tolerance.csv",
+      "sha256": "e990545a42d26841f1d1c169fb1d858c34133ae83800d3c82a2198807974359a",
+      "pinned": true
+    },
+    {
+      "role": "circuit_pvt_csv",
+      "path": "sim/ldo-cmos5l-pvt-sweep/records/20260917-023832-7061e8f.csv",
+      "sha256": "cc90f70546403389093f3cc0927a7af06eb04febc9ce378a26be3fdf71c77c8d",
+      "pinned": true
+    },
+    {
+      "role": "circuit_record_md",
+      "path": "sim/ldo-cmos5l-pvt-sweep/records/20260917-023832-7061e8f.md",
+      "sha256": "531ecd3bf8473c657dc2030869ad71cc5b28e337ece46e45a3153a1124a73ffe",
+      "pinned": true
+    },
+    {
+      "role": "design_netlist_freshness",
+      "path": "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice",
+      "sha256": "c6e630e92fe012d16adf71229c99b52d8eb6cc4b85fffbb891108930acf11041",
+      "pinned": true
+    },
+    {
+      "role": "design_netlist_freshness",
+      "path": "design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice",
+      "sha256": "7982d728a2db933165eedcae69feaa4985dbddf54c269fc68b82d88577c8e38c",
+      "pinned": true
+    },
+    {
+      "role": "ratification_record",
+      "path": "spec/decision-records/DR-0007-target-spec-row-ratification.md",
+      "sha256": "74496ee0800de6de36ff2f045796a7c2f802f6d647439255df5a8c8e69451556",
+      "pinned": false
+    },
+    {
+      "role": "superseded_evidence_statement",
+      "path": "sim/ldo-cmos5l-pvt-sweep/README.md",
+      "sha256": "073e2f4ed763a1f58998a1218d5f03484b8eb1da26f6c5e9279cfea85beb079e",
+      "pinned": false
+    },
+    {
+      "role": "target_table",
+      "path": "README.md",
+      "sha256": "3d8f46e23312944e6aaed467b0324fe1ed9da5306f9ef3fc57cccef3ee770f49",
+      "pinned": false
+    }
+  ],
+  "design_freshness": {
+    "state": "current",
+    "basis": "DR-0007 'The evidence base': these are the design netlist hashes the selected record was judged current against (the netlist last changed at commit 1a20b30, DR-0005; the record's own git sha does not resolve in this clone and its snapshots .include the design by absolute worktree path, so freshness is established by these pins, not by the record). If either netlist changes, the evidence is classified stale against the design and the envelope verdict becomes fail until a new record is selected.",
+    "pins": [
+      {
+        "path": "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice",
+        "pinned_sha256": "c6e630e92fe012d16adf71229c99b52d8eb6cc4b85fffbb891108930acf11041",
+        "actual_sha256": "c6e630e92fe012d16adf71229c99b52d8eb6cc4b85fffbb891108930acf11041",
+        "matches": true
+      },
+      {
+        "path": "design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice",
+        "pinned_sha256": "7982d728a2db933165eedcae69feaa4985dbddf54c269fc68b82d88577c8e38c",
+        "actual_sha256": "7982d728a2db933165eedcae69feaa4985dbddf54c269fc68b82d88577c8e38c",
+        "matches": true
+      }
+    ]
+  },
+  "bench_conditions": {
+    "grid": "process {tt,ss,ff,sf,fs} x temperature {-40,27,125} C x resistor corner {res_typ,res_bcs,res_wcs} = 45 points",
+    "dc_iq_and_vout": "no load, Vin = 3.30 V (record md: dcsweep bench)",
+    "dropout": "50 mA load; 1 % VOUT-loss definition; sweep floor 0.20 V (values at the floor are upper bounds)",
+    "line_regulation": "no load only",
+    "load_regulation": "0-50 mA, Vin = 3.63 V only",
+    "ac_loopgain_and_psrr": "Vin = 3.30 V, Iload = 1 mA, Cout = 1 uF, ESR = 0, ideal 0.90 V reference; Cc nominal (MoM-cap model has no corner spread at this PDK pin)"
+  },
+  "cc_tolerance_window": {
+    "low_x_nominal": 0.647,
+    "high_x_nominal": 1.524,
+    "corners": [
+      {
+        "corner": "ss",
+        "temp_c": 125
+      }
+    ],
+    "res_sections": [
+      "res_bcs",
+      "res_wcs"
+    ]
+  },
+  "rows": [
+    {
+      "id": 1,
+      "parameter": "Input",
+      "target": "3.3 V ±10% — confirm against SG13G2 device flavors",
+      "stretch": "—",
+      "ratification": {
+        "state": "open_unratified",
+        "readme_status": "OPEN — unratified (current-limit \\|Vsg\\| gate from DR-0001)",
+        "dr0007_disposition": "Open",
+        "dr0007_type": "deterministic",
+        "record": "spec/decision-records/DR-0007-target-spec-row-ratification.md"
+      },
+      "verdict": "not_measured",
+      "evidence_state": "bare_device_only",
+      "coverage": {
+        "state": "none",
+        "gaps": [
+          "no closed-loop evaluation of the input window",
+          "DR-0001 |Vsg| <= 3.3 V gate at Vin = 3.63 V needs a current limiter that does not exist"
+        ]
+      },
+      "metrics": [
+        {
+          "name": "closed-loop input-range operation (3.3 V +/-10 %)",
+          "unit": "V",
+          "verdict": "not_measured",
+          "reason": "No committed closed-loop record evaluates the input window as a row (no |Vgs| check in normal regulation; no current limiter exists to hold |Vsg| <= 3.3 V at Vin = 3.63 V under a short -- DR-0001 gate carried in DR-0007 row 1).",
+          "source": null
+        },
+        {
+          "name": "bare pass-device |Vsg| stress at Vin = 3.63 V (device context, NOT a circuit measurement)",
+          "unit": "V",
+          "verdict": "not_measured",
+          "context_only": true,
+          "device_context": {
+            "max_vsg_stress_v": 3.63,
+            "n_device_points": 60,
+            "n_exceeding_3p3v_rating": 60,
+            "branch": "SG13G2 bare-device screen (open-loop, no regulator)"
+          },
+          "reason": "Bare-device screening is separate from closed-loop evidence and cannot substitute for it; recorded only to show the gate the row carries.",
+          "source": {
+            "record": "sim/pass-device-screening/records/20260909-220347-ed18110.csv",
+            "column": "vsg_stress_v, vsg_exceeds_3p3v_rating"
+          }
+        }
+      ],
+      "stretch_note": null,
+      "notes": []
+    },
+    {
+      "id": 2,
+      "parameter": "Output",
+      "target": "1.8 V ±2% (fixed)",
+      "stretch": "programmable variants deferred",
+      "ratification": {
+        "state": "open_unratified",
+        "readme_status": "OPEN — unratified (statistical; Monte Carlo missing)",
+        "dr0007_disposition": "Open",
+        "dr0007_type": "statistical",
+        "record": "spec/decision-records/DR-0007-target-spec-row-ratification.md"
+      },
+      "verdict": "pass_partial_coverage",
+      "evidence_state": "current",
+      "coverage": {
+        "state": "partial",
+        "gaps": [
+          "corner grid only: error-amp offset and divider mismatch are statistical and unexercised (Monte Carlo missing, #56)",
+          "ideal 0.90 V reference: measures the regulator only, excluding reference error"
+        ]
+      },
+      "metrics": [
+        {
+          "name": "VOUT no load, lower bound 1.8 V -2 %",
+          "unit": "V",
+          "bound": {
+            "comparator": "ge",
+            "value": 1.764,
+            "unit": "V"
+          },
+          "n_points": 45,
+          "n_pass": 45,
+          "n_fail": 0,
+          "n_censored_upper_bound": 0,
+          "n_ambiguous": 0,
+          "worst_case": {
+            "value": 1.80022787,
+            "at": {
+              "corner": "ss",
+              "temp_c": -40,
+              "res_section": "res_bcs"
+            },
+            "n_points_at_this_value": 1
+          },
+          "verdict": "pass",
+          "conditions": "no load, Vin = 3.30 V (record md: dcsweep bench)",
+          "source": {
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20260917-023832-7061e8f.csv",
+            "column": "vout_no_load_v"
+          },
+          "observed_range": {
+            "min": 1.80022787,
+            "max": 1.8006551
+          }
+        },
+        {
+          "name": "VOUT no load, upper bound 1.8 V +2 %",
+          "unit": "V",
+          "bound": {
+            "comparator": "le",
+            "value": 1.836,
+            "unit": "V"
+          },
+          "n_points": 45,
+          "n_pass": 45,
+          "n_fail": 0,
+          "n_censored_upper_bound": 0,
+          "n_ambiguous": 0,
+          "worst_case": {
+            "value": 1.8006551,
+            "at": {
+              "corner": "ff",
+              "temp_c": 125,
+              "res_section": "res_wcs"
+            },
+            "n_points_at_this_value": 1
+          },
+          "verdict": "pass",
+          "conditions": "no load, Vin = 3.30 V (record md: dcsweep bench)",
+          "source": {
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20260917-023832-7061e8f.csv",
+            "column": "vout_no_load_v"
+          }
+        }
+      ],
+      "stretch_note": "programmable variants deferred; no evidence",
+      "notes": []
+    },
+    {
+      "id": 3,
+      "parameter": "Load",
+      "target": "0–50 mA (no external preload assumed)",
+      "stretch": "100 mA",
+      "ratification": {
+        "state": "open_unratified",
+        "readme_status": "OPEN — unratified (no 0 mA dynamic evidence)",
+        "dr0007_disposition": "Open",
+        "dr0007_type": "deterministic",
+        "record": "spec/decision-records/DR-0007-target-spec-row-ratification.md"
+      },
+      "verdict": "pass_partial_coverage",
+      "evidence_state": "current",
+      "coverage": {
+        "state": "partial",
+        "gaps": [
+          "DC regulation at 50 mA only checked here at Vin = 3.63 V",
+          "no 0 mA dynamic/stability evidence",
+          "100 mA stretch has no evidence"
+        ]
+      },
+      "metrics": [
+        {
+          "name": "VOUT at 50 mA, lower bound 1.8 V -2 %",
+          "unit": "V",
+          "bound": {
+            "comparator": "ge",
+            "value": 1.764,
+            "unit": "V"
+          },
+          "n_points": 45,
+          "n_pass": 45,
+          "n_fail": 0,
+          "n_censored_upper_bound": 0,
+          "n_ambiguous": 0,
+          "worst_case": {
+            "value": 1.80014429,
+            "at": {
+              "corner": "ss",
+              "temp_c": -40,
+              "res_section": "res_typ"
+            },
+            "n_points_at_this_value": 3
+          },
+          "verdict": "pass",
+          "conditions": "50 mA load, Vin = 3.63 V (record md: dcsweep bench)",
+          "source": {
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20260917-023832-7061e8f.csv",
+            "column": "vout_at_vinmax_50ma_v"
+          }
+        },
+        {
+          "name": "VOUT at 50 mA, upper bound 1.8 V +2 %",
+          "unit": "V",
+          "bound": {
+            "comparator": "le",
+            "value": 1.836,
+            "unit": "V"
+          },
+          "n_points": 45,
+          "n_pass": 45,
+          "n_fail": 0,
+          "n_censored_upper_bound": 0,
+          "n_ambiguous": 0,
+          "worst_case": {
+            "value": 1.80028575,
+            "at": {
+              "corner": "ff",
+              "temp_c": 125,
+              "res_section": "res_wcs"
+            },
+            "n_points_at_this_value": 1
+          },
+          "verdict": "pass",
+          "conditions": "50 mA load, Vin = 3.63 V (record md: dcsweep bench)",
+          "source": {
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20260917-023832-7061e8f.csv",
+            "column": "vout_at_vinmax_50ma_v"
+          }
+        },
+        {
+          "name": "dynamic behaviour at 0 mA (no external preload)",
+          "unit": "A",
+          "verdict": "not_measured",
+          "reason": "AC loop-gain and PSRR benches run at 1 mA only; no 0 mA dynamic evidence.",
+          "source": null
+        }
+      ],
+      "stretch_note": "100 mA: no evidence",
+      "notes": []
+    },
+    {
+      "id": 4,
+      "parameter": "Dropout @ 50 mA",
+      "target": "< 300 mV worst corner",
+      "stretch": "< 200 mV",
+      "ratification": {
+        "state": "ratified",
+        "readme_status": "RATIFIED (stretch not ratified)",
+        "dr0007_disposition": "Ratified as written",
+        "dr0007_type": "deterministic",
+        "record": "spec/decision-records/DR-0007-target-spec-row-ratification.md"
+      },
+      "verdict": "pass_full_coverage",
+      "evidence_state": "current",
+      "coverage": {
+        "state": "full",
+        "gaps": []
+      },
+      "metrics": [
+        {
+          "name": "dropout at 50 mA",
+          "unit": "V",
+          "bound": {
+            "comparator": "lt",
+            "value": 0.3,
+            "unit": "V"
+          },
+          "n_points": 45,
+          "n_pass": 45,
+          "n_fail": 0,
+          "n_censored_upper_bound": 36,
+          "n_ambiguous": 0,
+          "worst_case": {
+            "value": 0.24,
+            "at": {
+              "corner": "ss",
+              "temp_c": 125,
+              "res_section": "res_typ"
+            },
+            "n_points_at_this_value": 3
+          },
+          "verdict": "pass",
+          "conditions": "50 mA load; 1 % VOUT-loss definition; sweep floor 0.20 V (values at the floor are upper bounds)",
+          "source": {
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20260917-023832-7061e8f.csv",
+            "column": "dropout_v_50ma"
+          },
+          "note": "Values equal to the sweep floor are censored: the true dropout is <= the reported value. For a '<' target an upper bound that already satisfies the bound is sufficient; the worst case is an exact (uncensored) measurement.",
+          "censored_points_floor_v": 0.2,
+          "worst_case_is_censored": false
+        }
+      ],
+      "stretch_note": "stretch < 200 mV is NOT ratified and is not demonstrated: 9 of 45 points exceed 0.20 V; 36 points are censored at the floor so cannot demonstrate a strict '< 0.20 V'.",
+      "notes": []
+    },
+    {
+      "id": 5,
+      "parameter": "Line / load regulation",
+      "target": "< 5 mV/V; < 1% over full load, inside the accuracy window",
+      "stretch": "—",
+      "ratification": {
+        "state": "open_unratified",
+        "readme_status": "OPEN — unratified (loaded line / multi-Vin load regulation missing)",
+        "dr0007_disposition": "Open",
+        "dr0007_type": "deterministic",
+        "record": "spec/decision-records/DR-0007-target-spec-row-ratification.md"
+      },
+      "verdict": "pass_partial_coverage",
+      "evidence_state": "current",
+      "coverage": {
+        "state": "partial",
+        "gaps": [
+          "line regulation measured at no load only",
+          "load regulation measured at Vin = 3.63 V only; not at 3.30/2.97 V",
+          "'inside the accuracy window' (Vin window) not covered for either metric (#55)"
+        ]
+      },
+      "metrics": [
+        {
+          "name": "line regulation",
+          "unit": "mV/V",
+          "bound": {
+            "comparator": "lt",
+            "value": 5.0,
+            "unit": "mV/V"
+          },
+          "n_points": 45,
+          "n_pass": 45,
+          "n_fail": 0,
+          "n_censored_upper_bound": 0,
+          "n_ambiguous": 0,
+          "worst_case": {
+            "value": 0.245772727,
+            "at": {
+              "corner": "ff",
+              "temp_c": 125,
+              "res_section": "res_wcs"
+            },
+            "n_points_at_this_value": 1
+          },
+          "verdict": "pass",
+          "conditions": "no load only",
+          "source": {
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20260917-023832-7061e8f.csv",
+            "column": "line_reg_mv_per_v"
+          }
+        },
+        {
+          "name": "load regulation",
+          "unit": "%",
+          "bound": {
+            "comparator": "lt",
+            "value": 1.0,
+            "unit": "%"
+          },
+          "n_points": 45,
+          "n_pass": 45,
+          "n_fail": 0,
+          "n_censored_upper_bound": 0,
+          "n_ambiguous": 0,
+          "worst_case": {
+            "value": 0.0253767512,
+            "at": {
+              "corner": "ff",
+              "temp_c": 125,
+              "res_section": "res_wcs"
+            },
+            "n_points_at_this_value": 1
+          },
+          "verdict": "pass",
+          "conditions": "0-50 mA, Vin = 3.63 V only",
+          "source": {
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20260917-023832-7061e8f.csv",
+            "column": "load_reg_pct"
+          }
+        }
+      ],
+      "stretch_note": null,
+      "notes": []
+    },
+    {
+      "id": 6,
+      "parameter": "PSRR",
+      "target": "> 50 dB @ 1 kHz, > 20 dB @ 100 kHz",
+      "stretch": "> 60 dB @ 1 kHz",
+      "ratification": {
+        "state": "open_unratified",
+        "readme_status": "OPEN — unratified (1 mA / 1 µF only; `Cc` un-cornered)",
+        "dr0007_disposition": "Open",
+        "dr0007_type": "deterministic",
+        "record": "spec/decision-records/DR-0007-target-spec-row-ratification.md"
+      },
+      "verdict": "pass_partial_coverage",
+      "evidence_state": "current",
+      "coverage": {
+        "state": "partial",
+        "gaps": [
+          "single AC condition: Vin = 3.30 V, 1 mA, 1 uF, ESR 0 -- not 50 mA, not the Cout/ESR window",
+          "Cc is un-cornered (MoM-cap model has no corner spread; record labels PSRR insufficient-evidence)"
+        ]
+      },
+      "metrics": [
+        {
+          "name": "PSRR @ 1 kHz",
+          "unit": "dB",
+          "bound": {
+            "comparator": "gt",
+            "value": 50.0,
+            "unit": "dB"
+          },
+          "n_points": 45,
+          "n_pass": 45,
+          "n_fail": 0,
+          "n_censored_upper_bound": 0,
+          "n_ambiguous": 0,
+          "worst_case": {
+            "value": 53.6430496,
+            "at": {
+              "corner": "ss",
+              "temp_c": 125,
+              "res_section": "res_wcs"
+            },
+            "n_points_at_this_value": 1
+          },
+          "verdict": "pass",
+          "conditions": "Vin = 3.30 V, Iload = 1 mA, Cout = 1 uF, ESR = 0, ideal 0.90 V reference; Cc nominal (MoM-cap model has no corner spread at this PDK pin)",
+          "source": {
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20260917-023832-7061e8f.csv",
+            "column": "psrr_db_1khz"
+          }
+        },
+        {
+          "name": "PSRR @ 100 kHz",
+          "unit": "dB",
+          "bound": {
+            "comparator": "gt",
+            "value": 20.0,
+            "unit": "dB"
+          },
+          "n_points": 45,
+          "n_pass": 45,
+          "n_fail": 0,
+          "n_censored_upper_bound": 0,
+          "n_ambiguous": 0,
+          "worst_case": {
+            "value": 33.2347545,
+            "at": {
+              "corner": "ff",
+              "temp_c": 27,
+              "res_section": "res_bcs"
+            },
+            "n_points_at_this_value": 1
+          },
+          "verdict": "pass",
+          "conditions": "Vin = 3.30 V, Iload = 1 mA, Cout = 1 uF, ESR = 0, ideal 0.90 V reference; Cc nominal (MoM-cap model has no corner spread at this PDK pin)",
+          "source": {
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20260917-023832-7061e8f.csv",
+            "column": "psrr_db_100khz"
+          }
+        }
+      ],
+      "stretch_note": "stretch > 60 dB @ 1 kHz not met: 45 of 45 points are <= 60 dB; stretch is not ratified.",
+      "notes": [
+        "Cc value tolerance (ss/125C only, sim/ldo-cmos5l-pvt-sweep/records/20260917-023832-7061e8f.cc-tolerance.csv): all of PM, GM and PSRR rows hold for Cc in x0.647..x1.524 of nominal."
+      ]
+    },
+    {
+      "id": 7,
+      "parameter": "Iq (excluding load)",
+      "target": "< 30 µA at no load and at full load",
+      "stretch": "< 10 µA",
+      "ratification": {
+        "state": "open_unratified",
+        "readme_status": "OPEN — unratified (no current full-load record)",
+        "dr0007_disposition": "Open",
+        "dr0007_type": "deterministic",
+        "record": "spec/decision-records/DR-0007-target-spec-row-ratification.md"
+      },
+      "verdict": "pass_partial_coverage",
+      "evidence_state": "current_partial_superseded_other_half",
+      "coverage": {
+        "state": "partial",
+        "gaps": [
+          "full-load half of the row has no current-design measurement"
+        ]
+      },
+      "metrics": [
+        {
+          "name": "Iq, no load",
+          "unit": "uA",
+          "bound": {
+            "comparator": "lt",
+            "value": 30.0,
+            "unit": "uA"
+          },
+          "n_points": 45,
+          "n_pass": 45,
+          "n_fail": 0,
+          "n_censored_upper_bound": 0,
+          "n_ambiguous": 0,
+          "worst_case": {
+            "value": 24.7222854,
+            "at": {
+              "corner": "ss",
+              "temp_c": 125,
+              "res_section": "res_bcs"
+            },
+            "n_points_at_this_value": 1
+          },
+          "verdict": "pass",
+          "conditions": "no load, Vin = 3.30 V (record md: dcsweep bench)",
+          "source": {
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20260917-023832-7061e8f.csv",
+            "column": "iq_a"
+          },
+          "note": "column iq_a is in A; converted to uA (x1e6) for the row's unit"
+        },
+        {
+          "name": "Iq at full load",
+          "unit": "uA",
+          "verdict": "not_measured",
+          "reason": "The selected record reports no full-load Iq. An older record's full-load figure (23.05uA-23.08uA) is on a superseded design and is NOT used as current evidence.",
+          "source": {
+            "superseded_statement": "sim/ldo-cmos5l-pvt-sweep/README.md",
+            "describes": "Iq at full load, from the #25 record, which was run against a superseded netlist (pre-#28 behavioural divider, pre-#35 Cc). Quoted only to show a full-load number once existed; it is NOT evidence about the current design."
+          }
+        }
+      ],
+      "stretch_note": "stretch < 10 uA not met: max observed Iq 24.72 uA.",
+      "notes": []
+    },
+    {
+      "id": 8,
+      "parameter": "Current limit",
+      "target": "65–80 mA brickwall over PVT; short-survivable",
+      "stretch": "—",
+      "ratification": {
+        "state": "open_unratified",
+        "readme_status": "OPEN — unratified (not implemented; statistical)",
+        "dr0007_disposition": "Open",
+        "dr0007_type": "statistical",
+        "record": "spec/decision-records/DR-0007-target-spec-row-ratification.md"
+      },
+      "verdict": "not_implemented",
+      "evidence_state": "none",
+      "coverage": {
+        "state": "none",
+        "gaps": [
+          "no limiter exists; statistical row (DR-0007) cannot be graded until one does"
+        ]
+      },
+      "metrics": [
+        {
+          "name": "current limit window",
+          "unit": "mA",
+          "verdict": "not_implemented",
+          "reason": "No current limiter in the design; record md lists current limit as 'not implemented'.",
+          "source": {
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20260917-023832-7061e8f.md"
+          }
+        }
+      ],
+      "stretch_note": null,
+      "notes": []
+    },
+    {
+      "id": 9,
+      "parameter": "Startup",
+      "target": "monotonic, controlled ramp, inside ±2% within 3 ms of enable",
+      "stretch": "—",
+      "ratification": {
+        "state": "open_unratified",
+        "readme_status": "OPEN — unratified (not implemented)",
+        "dr0007_disposition": "Open",
+        "dr0007_type": "deterministic",
+        "record": "spec/decision-records/DR-0007-target-spec-row-ratification.md"
+      },
+      "verdict": "not_implemented",
+      "evidence_state": "none",
+      "coverage": {
+        "state": "none",
+        "gaps": [
+          "no enable input, no transient testbench"
+        ]
+      },
+      "metrics": [
+        {
+          "name": "startup",
+          "unit": "ms",
+          "verdict": "not_implemented",
+          "reason": "No enable input and no transient testbench; record md lists startup as 'not implemented'.",
+          "source": {
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20260917-023832-7061e8f.md"
+          }
+        }
+      ],
+      "stretch_note": null,
+      "notes": []
+    },
+    {
+      "id": 10,
+      "parameter": "Stability",
+      "target": "0–50 mA, C_out 0.33–4.7 µF effective, ESR 0–500 mΩ; PM ≥ 45°, GM ≥ 10 dB worst corner",
+      "stretch": "capless variant (separate fork)",
+      "ratification": {
+        "state": "open_unratified",
+        "readme_status": "OPEN — unratified (one load/C_out/ESR point only)",
+        "dr0007_disposition": "Open",
+        "dr0007_type": "deterministic",
+        "record": "spec/decision-records/DR-0007-target-spec-row-ratification.md"
+      },
+      "verdict": "ambiguous",
+      "evidence_state": "current",
+      "coverage": {
+        "state": "partial",
+        "gaps": [
+          "one (Cout, ESR, load) point only: 1 uF, 0 ohm, 1 mA -- not 0.33-4.7 uF, 0-500 mohm, 0-50 mA",
+          "Cc is un-cornered; Cc tolerance checked at ss/125C only",
+          "15 of 45 points have more than one 0 dB crossing (ambiguous scalar PM)"
+        ]
+      },
+      "metrics": [
+        {
+          "name": "phase margin (first 0 dB crossing)",
+          "unit": "deg",
+          "bound": {
+            "comparator": "ge",
+            "value": 45.0,
+            "unit": "deg"
+          },
+          "n_points": 45,
+          "n_pass": 30,
+          "n_fail": 0,
+          "n_censored_upper_bound": 0,
+          "n_ambiguous": 15,
+          "worst_case": {
+            "value": 53.8745301,
+            "at": {
+              "corner": "ss",
+              "temp_c": 125,
+              "res_section": "res_bcs"
+            },
+            "n_points_at_this_value": 1
+          },
+          "verdict": "ambiguous",
+          "conditions": "Vin = 3.30 V, Iload = 1 mA, Cout = 1 uF, ESR = 0, ideal 0.90 V reference; Cc nominal (MoM-cap model has no corner spread at this PDK pin)",
+          "source": {
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20260917-023832-7061e8f.csv",
+            "column": "phase_margin_deg"
+          },
+          "ambiguous_points": [
+            {
+              "corner": "tt",
+              "temp_c": -40,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "tt",
+              "temp_c": -40,
+              "res_section": "res_wcs"
+            },
+            {
+              "corner": "tt",
+              "temp_c": 27,
+              "res_section": "res_wcs"
+            },
+            {
+              "corner": "ss",
+              "temp_c": -40,
+              "res_section": "res_wcs"
+            },
+            {
+              "corner": "ff",
+              "temp_c": -40,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "ff",
+              "temp_c": -40,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "ff",
+              "temp_c": -40,
+              "res_section": "res_wcs"
+            },
+            {
+              "corner": "ff",
+              "temp_c": 27,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "ff",
+              "temp_c": 27,
+              "res_section": "res_wcs"
+            },
+            {
+              "corner": "sf",
+              "temp_c": -40,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "sf",
+              "temp_c": -40,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "sf",
+              "temp_c": -40,
+              "res_section": "res_wcs"
+            },
+            {
+              "corner": "sf",
+              "temp_c": 27,
+              "res_section": "res_wcs"
+            },
+            {
+              "corner": "fs",
+              "temp_c": -40,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "fs",
+              "temp_c": -40,
+              "res_section": "res_wcs"
+            }
+          ],
+          "note": "Points with more than one 0 dB crossing are not scored: the scalar PM is the first crossing only and the record's phase_margin_worst_deg is reported beside it unresolved. No scalar pass is manufactured for them.",
+          "ambiguous_first_crossing_pm_range_deg": {
+            "min": 74.3457798,
+            "max": 76.8048774
+          },
+          "ambiguous_phase_margin_worst_deg_range": {
+            "min": -166.212182,
+            "max": -158.05186
+          }
+        },
+        {
+          "name": "gain margin (first -180 deg crossing)",
+          "unit": "dB",
+          "bound": {
+            "comparator": "ge",
+            "value": 10.0,
+            "unit": "dB"
+          },
+          "n_points": 45,
+          "n_pass": 45,
+          "n_fail": 0,
+          "n_censored_upper_bound": 0,
+          "n_ambiguous": 0,
+          "worst_case": {
+            "value": 13.870091,
+            "at": {
+              "corner": "ff",
+              "temp_c": -40,
+              "res_section": "res_wcs"
+            },
+            "n_points_at_this_value": 1
+          },
+          "verdict": "pass",
+          "conditions": "Vin = 3.30 V, Iload = 1 mA, Cout = 1 uF, ESR = 0, ideal 0.90 V reference; Cc nominal (MoM-cap model has no corner spread at this PDK pin)",
+          "source": {
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20260917-023832-7061e8f.csv",
+            "column": "gain_margin_db"
+          }
+        }
+      ],
+      "stretch_note": null,
+      "notes": [
+        "Cc value tolerance (ss/125C only, sim/ldo-cmos5l-pvt-sweep/records/20260917-023832-7061e8f.cc-tolerance.csv): PM, GM and PSRR all hold for Cc in x0.647..x1.524 of nominal."
+      ]
+    }
+  ],
+  "summary": {
+    "rows_total": 10,
+    "rows_by_verdict": {
+      "ambiguous": 1,
+      "not_implemented": 2,
+      "not_measured": 1,
+      "pass_full_coverage": 1,
+      "pass_partial_coverage": 5
+    },
+    "ratified_rows": [
+      4
+    ],
+    "open_unratified_rows": [
+      1,
+      2,
+      3,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "rows_with_any_coverage_gap": [
+      1,
+      2,
+      3,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "rows_with_full_coverage_of_target_as_written": [
+      4
+    ]
+  },
+  "completeness": {
+    "status": "complete",
+    "checks": [
+      {
+        "check": "all selected records exist and match their sha256 pins",
+        "ok": true,
+        "detail": "6 pinned sources verified"
+      },
+      {
+        "check": "README target table: 10 rows, expected names and target text",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "check": "DR-0007 ratification table covers rows 1-10 exactly once and agrees with README",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "check": "PVT grid complete (5 process x 3 temperature x 3 resistor corner = 45 points, all numeric fields finite)",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "check": "every target row appears exactly once",
+        "ok": true,
+        "detail": "rows: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]"
+      },
+      {
+        "check": "every row carries an allowed verdict",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "check": "every row cites a source or an explicit unavailability reason",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "check": "selected record is current against the design netlists",
+        "ok": true,
+        "detail": "design netlist hashes match the freshness pins"
+      }
+    ],
+    "meaning": "Artifact completeness/freshness only -- NOT circuit spec compliance."
+  }
+}

@@ -9,17 +9,18 @@ the way a hand-read checklist does.
 | File | What it is |
 | --- | --- |
 | `sg13g2-ldo.json` | The **block manifest** for `klt signoff --manifest`: `block: sg13g2-ldo`, `kind: analog`, and one pinned evidence citation per T1 item this repo can honestly cite. |
-| `sg13g2-ldo.t1-report.json` | The **verdict of record**: the exact `klt signoff --manifest sg13g2-ldo.json --format json` output, committed. `t1_item_count: 11, t1_met_count: 2, tier: null` — this block is **not T1 yet**, and the report says so per item with a `reason`. |
+| `sg13g2-ldo.t1-report.json` | The **verdict of record**: the exact `klt signoff --manifest sg13g2-ldo.json --format json` output, committed. `t1_item_count: 11, t1_met_count: 3, tier: null` — this block is **not T1 yet**, and the report says so per item with a `reason`. |
 
 ## Reading the report
 
-Today's honest read is **2/11 met**:
+Today's honest read is **3/11 met**:
 
 - **met — item 3 (DRC clean)**: `layout/sg13cmos5l-ldo_core_cmos5l/drc_report.json`, `status: clean`, 0 violations, citation verified against the committed GDS (`input_verified: true`).
 - **met — item 4 (LVS clean)**: `layout/sg13cmos5l-ldo_core_cmos5l/lvs_report.json`, `status: match`, 0 errors / 0 mismatches, citation verified against the committed extracted netlist it compared.
+- **met — item 8 (characterization report)**: `sim/characterization/characterization-envelope.json`, a hand-rolled `kind: generic` envelope (the one evidence kind item 8 accepts) with `t1_item: 8`, pinned by `content_hash` to the sha256 of the committed aggregate report. **What `met` means here, and what it does not**: the envelope verdict is *artifact completeness and freshness* — every one of the ten target-spec rows appears exactly once with an explicit state, every selected source record matches its sha256 pin, the 45-point PVT grid is whole, and the record is current against the design netlists. It is **not** a claim that the circuit meets its spec: the report lists failing/ambiguous/unmeasured/unimplemented/unratified rows as such (today: 1 not measured, 5 partial-coverage passes, 1 full-coverage pass on the one ratified row, 1 ambiguous, 2 not implemented), and no post-layout performance evidence exists. `klt signoff` does **not** inspect the envelope's `source`, nor re-hash the report (`input_verified: null` for generic envelopes); the content and freshness are verified by this repo's generator and its CI `--check` gate (`python3 sim/characterization/generate.py --check`), which is what makes the pin trustworthy. Other T1 items are not touched by this citation.
 - **unmet — item 11 (power delivery, structural)**: `supply_spec_incomplete` — the `klt erc` supply run is clean on all three supply islands (VIN/VOUT/VSS, zero `erc.supply_short`), but the spec carries no `ties[]` declaration. That omission is deliberate and recorded: the current `klt erc` cannot express this PDK's well/substrate-tie convention (klayout-tools#2169, filed from this repo by #43), so this row stays `unmet` with that exact reason rather than a green row resting on an unchecked condition. The standing-in well-tie evidence is named in `layout/README.md`; a checked tie declaration (once expressible upstream) is what closes it.
 - **unmet — items 1, 2, 9, 10 (`no_evidence`)**: the grader contract is explicit that these four name no `klt` verb and cannot be graded for topical relevance, and that leaving them uncited is the honest default ([`docs/design-evidence-tiers.md`](https://github.com/2AMLogic/klayout-tools/blob/main/docs/design-evidence-tiers.md) → "Not every item has a tool behind it"). This repo follows that default deliberately: a met row here would only mean "some passing envelope was cited", not that the claim was checked.
-- **unmet — items 5, 6, 7, 8 (`no_evidence`)**: no machine evidence exists to cite yet. Item 5 needs a `klt sim` envelope against a **ratified** spec (the spec table is still draft; see `spec/`), item 6 needs `klt yield` Monte Carlo, item 7 needs `klt pex` (post-layout re-simulation), item 8 needs a characterization record (wrapped in the opt-in generic envelope). Those envelopes will be cited as they are produced — never fabricated to turn a row green.
+- **unmet — items 5, 6, 7 (`no_evidence`)**: no machine evidence exists to cite yet. Item 5 needs a `klt sim` envelope against a **ratified** spec (the spec table is still draft; see `spec/`), item 6 needs `klt yield` Monte Carlo and item 7 needs `klt pex` (post-layout re-simulation). Those envelopes will be cited as they are produced — never fabricated to turn a row green.
 
 ## Claim disclosures the grader cannot make for us
 
@@ -48,6 +49,17 @@ directory's verdict-of-record statement.
   no post-layout number to qualify.
 
 ## Regenerating
+
+Item 8 first (its envelope is an input to the manifest's `content_hash` pin;
+regenerate it whenever the selected record, `README.md`'s target table, or
+DR-0007 changes — see [`sim/characterization/README.md`](../sim/characterization/README.md)):
+
+```bash
+python3 sim/characterization/generate.py          # then update the item-8 content_hash in sg13g2-ldo.json
+python3 sim/characterization/generate.py --check  # what CI runs
+```
+
+Then the tier report:
 
 From the repo root, with the pinned grading build installed (below):
 

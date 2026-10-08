@@ -10,6 +10,10 @@
       "file": "layout/sg13cmos5l-ldo_core_cmos5l/lvs_report.json",
       "content_hash": "sha256:cd162f1ac1c2f118a9180467baac2725f5bc6779d34699e72443783e2de0e707"
     },
+    "8": {
+      "file": "sim/characterization/characterization-envelope.json",
+      "content_hash": "sha256:5c1393fa6b366186ba22b836ac5a8bb4f0e534aff47324233f6c1ddb18b70ac2"
+    },
     "11": [
       {
         "file": "layout/sg13cmos5l-ldo_core_cmos5l/erc_supply_report.json",

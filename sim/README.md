@@ -62,6 +62,12 @@ sim/
   `<bench>_<device-label>_<process>_<temp>c` (no supply-voltage component —
   see that experiment's README "Corner grid and axes swept" for why).
 
+- [`characterization/`](characterization/README.md) — not an experiment:
+  the offline **aggregate** that reads one explicitly selected, hash-pinned
+  record from the experiments above and emits the per-spec-row
+  characterization report plus the generic envelope T1 item 8 cites
+  (issue #58). It mints no `records/` entry and reruns no simulator.
+
 ## Append-only rule
 
 `records/*.md`, `records/*.csv`, `netlist-snapshots/**` and `corners/**`

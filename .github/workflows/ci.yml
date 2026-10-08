@@ -263,7 +263,7 @@ jobs:
     # ran clean and says the block is NOT yet T1 -- both are successful,
     # well-formed grading runs and neither fails this job. Anything else is
     # an error envelope and a real failure. The honest committed state today
-    # is exit 3 with t1_met_count 2/11; when this block actually reaches T1
+    # is exit 3 with t1_met_count 3/11 (items 3, 4, 8); when this block actually reaches T1
     # the job keeps passing with exit 0 and a fuller report.
     runs-on: ubuntu-latest
     steps:
@@ -321,3 +321,48 @@ jobs:
             exit 1
           fi
           echo "committed T1 report reproduces exactly (tier state is current)"
+
+  characterization-report:
+    name: sim/characterization generate.py --check (T1 item 8 aggregate, no PDK / no simulator)
+    # Offline and stdlib-only (#58): regenerates the per-spec-row
+    # characterization report, its Markdown rendering and the generic klt
+    # envelope from the COMMITTED records only, and fails on any byte of
+    # drift. That catches both report drift (someone edited or forgot to
+    # regenerate the artifact) and source-data drift (a selected record's
+    # sha256 pin, a design-freshness pin, the README target table or DR-0007
+    # moved). klt's generic grader trusts the envelope's own status and never
+    # reads the report, so THIS job is where the item-8 content is verified;
+    # the signoff-t1-report job above separately gates the manifest's
+    # content_hash pin against the envelope. A generator error or an
+    # incomplete/stale artifact fails the job -- it never leaves a passing
+    # envelope behind.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out sg13g2-ldo
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Fixture tests and negative controls
+        run: python3 -m unittest discover -s sim/characterization -p 'test_*.py' -v
+
+      - name: Regenerate and assert no drift
+        run: python3 sim/characterization/generate.py --check
+
+      - name: Manifest item-8 pin matches the committed report hash
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, sys
+          m = json.load(open("signoff/sg13g2-ldo.json"))["evidence"]["8"]
+          env = json.load(open(m["file"]))
+          rep = hashlib.sha256(open("sim/characterization/characterization-report.json", "rb").read()).hexdigest()
+          want = "sha256:" + rep
+          bad = [n for n, v in (("manifest pin", m["content_hash"]),
+                                ("envelope provenance", env["provenance"]["input"]["content_hash"]))
+                 if v != want]
+          if env["status"] != "pass" or bad:
+              sys.exit(f"item 8 inconsistent: status={env['status']} mismatched={bad} expected={want}")
+          print("item 8 manifest pin, envelope provenance and report hash agree:", want)
+          PY
