@@ -2,6 +2,11 @@
 
 Chronological record of recently merged pull requests and closed issues, maintained by the Loom Guide role.
 
+### 2026-10-08
+
+- **PR #61**: spec: DR-0007 row-by-row ratification record for the target table (#54)
+- **Issue #54** (closed): spec: ratify the target-spec table through the two-key mechanism (prerequisite for T1 items 5 and 6)
+
 ### 2026-09-22
 
 - **PR #51**: spec: record sg13g2-opamp error-amp dependency and adoption gaps in porting-plan §2.2/§4
