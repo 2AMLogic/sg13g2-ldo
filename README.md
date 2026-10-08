@@ -6,10 +6,14 @@ open PDK — designed by AI agents driving
 [klayout-tools](https://github.com/2AMLogic/klayout-tools) and the
 open-source xschem + ngspice flow.
 
-**Status: just opened.** Nothing is designed yet. The tooling path is open —
-`klt` resolves this PDK and a curated SG13G2 DRC/LVS starter deck ships with
-klayout-tools — but the deck is new and starter-grade, so expect it to have
-gaps this design will be the first to find.
+**Status: design and verification in progress.** The SG13G2 branch has a
+core schematic with a behavioral error amplifier. The SG13CMOS5L branch
+has a transistor-level amplifier, closed-loop PVT simulation records, and
+layout with committed DRC/LVS reports. The [signoff report](signoff/sg13g2-ldo.t1-report.json)
+currently grades 2 of 11 T1 evidence items as met; no T1 tier is awarded.
+See [DR-0007](spec/decision-records/DR-0007-target-spec-row-ratification.md)
+for per-row ratification and evidence gaps, and [WORK_PLAN.md](WORK_PLAN.md)
+for the current work queue.
 
 **Built agent-native.** Every specification, decision record, testbench, and
 line of documentation here is produced by AI agents working from a ratified
