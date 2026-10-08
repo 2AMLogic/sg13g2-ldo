@@ -6,10 +6,6 @@
   "source": "sim/characterization/characterization-report.md",
   "t1_item": 8,
   "verdict_semantics": "pass = the characterization artifact is complete and fresh (every target row present exactly once with an explicit state, every selected source verified against its pin, the PVT grid whole, the record current against the design netlists). It is NOT a claim that the circuit meets its spec: failing, ambiguous, unmeasured, unimplemented and unratified rows are listed as such in the report. klt does not read `source`; this repository's generator and CI verify the content.",
-  "report": {
-    "path": "sim/characterization/characterization-report.json",
-    "sha256": "5c1393fa6b366186ba22b836ac5a8bb4f0e534aff47324233f6c1ddb18b70ac2"
-  },
   "provenance": {
     "klt_version": null,
     "klayout_version": null,

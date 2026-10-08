@@ -297,6 +297,31 @@ class NegativeControls(unittest.TestCase):
         self.assertEqual(rc, 1)
         self.assertIn("grid incomplete", err)
 
+    def test_malformed_selection_missing_key_fails_and_clears_pass(self):
+        # Not a GenError path: a missing key raises KeyError inside build().
+        # The committed passing envelope must still be replaced by status:fail.
+        self.assertEqual(self.env_status(), "pass")
+        selp = self.tmp / "sim/characterization/selection.json"
+        sel = json.loads(selp.read_text())
+        del sel["circuit_record"]["design_freshness_pins"]
+        selp.write_text(json.dumps(sel))
+        rc, _, err = run_main("--root", str(self.tmp))
+        self.assertEqual(rc, 1)
+        self.assertIn("KeyError", err)
+        self.assertIn("design_freshness_pins", err)
+        env = json.loads((self.out / G.ENVELOPE_JSON).read_text())
+        self.assertEqual(env["status"], "fail")
+        self.assertIn("design_freshness_pins", env["summary"])
+        rc, _, err = run_main("--root", str(self.tmp), "--check")
+        self.assertEqual(rc, 1)
+
+    def test_malformed_selection_not_json_fails_and_clears_pass(self):
+        selp = self.tmp / "sim/characterization/selection.json"
+        selp.write_text("{ not json")
+        rc, _, err = run_main("--root", str(self.tmp))
+        self.assertEqual(rc, 1)
+        self.assertEqual(self.env_status(), "fail")
+
 
 if __name__ == "__main__":
     unittest.main()

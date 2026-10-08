@@ -42,6 +42,7 @@ import json
 import math
 import re
 import sys
+import traceback
 from pathlib import Path
 
 GENERATOR_VERSION = 1
@@ -630,6 +631,9 @@ def build(root: Path) -> tuple[dict, dict, str]:
     def chk(name, ok, detail=""):
         checks.append({"check": name, "ok": bool(ok), "detail": detail})
 
+    # The four checks hard-coded True below are enforced earlier in build(): any
+    # violation raises GenError (and main() writes a status:fail envelope) before
+    # this point, so reaching here means they held. They are listed for the record.
     chk("all selected records exist and match their sha256 pins", True,
         f"{sum(1 for s in sources if s['pinned'])} pinned sources verified")
     chk("README target table: 10 rows, expected names and target text", True)
@@ -712,7 +716,6 @@ def build(root: Path) -> tuple[dict, dict, str]:
             "that the circuit meets its spec: failing, ambiguous, unmeasured, unimplemented and "
             "unratified rows are listed as such in the report. klt does not read `source`; this "
             "repository's generator and CI verify the content."),
-        "report": {"path": f"sim/characterization/{REPORT_JSON}", "sha256": report_hash},
         "provenance": {
             "klt_version": None, "klayout_version": None, "pdk": None, "deck": None,
             "input": {"content_hash": f"sha256:{report_hash}", "role": "characterization-report"},
@@ -869,11 +872,17 @@ def main(argv=None) -> int:
     try:
         report, envelope, md = build(root)
         files = render_bytes(report, envelope, md)
-    except GenError as exc:
-        print(f"ERROR: {exc}", file=sys.stderr)
+    except Exception as exc:  # noqa: BLE001 -- any failure, not just GenError, must clear a pass
+        # GenError is the anticipated hard-error path; anything else (KeyError/TypeError
+        # from a malformed selection.json, OSError, ...) is a generator bug or bad input
+        # and must equally never leave a previously committed passing envelope behind.
+        reason = str(exc) if isinstance(exc, GenError) else f"{type(exc).__name__}: {exc}"
+        print(f"ERROR: {reason}", file=sys.stderr)
+        if not isinstance(exc, GenError):
+            traceback.print_exc(file=sys.stderr)
         if not args.check:
             out.mkdir(parents=True, exist_ok=True)
-            (out / ENVELOPE_JSON).write_bytes(failure_envelope(str(exc)))
+            (out / ENVELOPE_JSON).write_bytes(failure_envelope(reason))
             print(f"wrote a status:fail envelope to {out / ENVELOPE_JSON} "
                   "(no passing envelope is left behind)", file=sys.stderr)
         return 1
