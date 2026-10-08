@@ -27,8 +27,8 @@
 | design_netlist_freshness | `design/sg13cmos5l/netlist/ldo_core_cmos5l.spice` | `c6e630e92fe012d16adf71229c99b52d8eb6cc4b85fffbb891108930acf11041` | yes |
 | design_netlist_freshness | `design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice` | `7982d728a2db933165eedcae69feaa4985dbddf54c269fc68b82d88577c8e38c` | yes |
 | ratification_record | `spec/decision-records/DR-0007-target-spec-row-ratification.md` | `74496ee0800de6de36ff2f045796a7c2f802f6d647439255df5a8c8e69451556` | recorded |
-| superseded_evidence_statement | `sim/ldo-cmos5l-pvt-sweep/README.md` | `073e2f4ed763a1f58998a1218d5f03484b8eb1da26f6c5e9279cfea85beb079e` | recorded |
-| target_table | `README.md` | `3d8f46e23312944e6aaed467b0324fe1ed9da5306f9ef3fc57cccef3ee770f49` | recorded |
+| superseded_evidence_statement | `sim/ldo-cmos5l-pvt-sweep/README.md` | `56db1791145244ab0110b751a590435db22a80a0242e7c2d65347b3b8f91102f` | recorded |
+| target_table | `README.md` | `29c8589175bf79608d3758191b0db60dc9415cf07b1860304eb61b156dc26b8e` | recorded |
 
 ## Per-row summary
 

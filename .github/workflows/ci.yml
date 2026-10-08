@@ -351,6 +351,12 @@ jobs:
       - name: Regenerate and assert no drift
         run: python3 sim/characterization/generate.py --check
 
+      - name: Item 5 coverage inventory (fixtures, then byte-check against committed raw DC data)
+        # Offline, stdlib-only (#55): no simulator and no PDK. Not the full sweep.
+        run: |
+          python3 -m unittest discover -s sim/ldo-cmos5l-pvt-sweep -p 'test_*.py' -v
+          python3 sim/ldo-cmos5l-pvt-sweep/item5_evidence.py --check
+
       - name: Manifest item-8 pin matches the committed report hash
         run: |
           python3 - <<'PY'
