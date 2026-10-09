@@ -4,7 +4,9 @@ Chronological record of recently merged pull requests and closed issues, maintai
 
 ### 2026-10-09
 
+- **PR #83**: Declare checked well/substrate ties in the klt erc supply spec (T1 item 11)
 - **PR #78**: sim: SG13CMOS5L row-2 output-accuracy Monte Carlo campaign with klt yield evidence (item 6 left uncited)
+- **Issue #59** (closed): Power delivery: declare checked well/substrate ties (tap_boxes) in the klt erc supply spec (T1 item 11)
 - **Issue #80** (closed): Guard decision review: keep untracked-file cleanup flagged
 - **Issue #79** (closed): README understates current T1 evidence count (2 versus 3)
 
