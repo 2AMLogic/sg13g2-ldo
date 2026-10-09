@@ -140,14 +140,14 @@ already records:
 
 ```bash
 git clone https://github.com/2AMLogic/klayout-tools.git /tmp/klayout-tools
-git -C /tmp/klayout-tools checkout 3a75c3ae705b7ad3803625255de93bcd982e70c6
+git -C /tmp/klayout-tools checkout b82427b30c9604b53b2dce64850409841cc38bde
 uv venv /tmp/klt-signoff-venv
 uv pip install --python /tmp/klt-signoff-venv/bin/python /tmp/klayout-tools
 ```
 
 This is the same clean clone-checkout-path-install method as CI (`KLAYOUT_TOOLS_SIGNOFF_REF` in `.github/workflows/ci.yml`; a `pip install git+...@sha` makes the build stamp `dirty` and the report would never reproduce).
 
-**Pin bump (#60).** The pin moved from `b82427b30c96` to `3a75c3ae705b` (`0.6.0+g3a75c3ae705b`, merge of klayout-tools#2843), which adds artifact-anchored generic evidence for items 1/2/9/10; it keeps the `erc` kind and item-11 rules. Regrading changed exactly items 1, 2, 9 and 10 (`unmet` to `met`); items 3, 4, 8 and 11 stayed `met`, and the build block moved (the version stamp now reads `0.6.0+g3a75c3ae705b`; the pinned commit's own package version, not a downgrade of the rules). The root `README.md` status line (4 to 8 of 11) is a pinned item-8 source, so `generate.py` was re-run and the item-8 pin moved to `sha256:53b0a278…`. The item 3/4/11 envelopes were not regenerated.
+**No pin bump for #60.** Items 1/2/9/10 cite artifact-anchored generic evidence, which klayout-tools#2843 (merge commit `3a75c3ae705b`) added. The existing pin `b82427b30c96` (`0.7.0+gb82427b30c96`) already descends from that merge, so the tool was not changed. Regrading under the same build changed exactly items 1, 2, 9 and 10 (`unmet` to `met`); items 3, 4, 8 and 11 stayed `met`, and the build block did not move. The root `README.md` status line (4 to 8 of 11) is a pinned item-8 source, so `generate.py` was re-run and the item-8 pin moved to `sha256:53b0a278…`. The item 3/4/11 envelopes were not regenerated.
 
 Bump the pin deliberately — in the same PR as the regenerated report —
 when a `klt` release ships the item-11 grading rules; CI (the

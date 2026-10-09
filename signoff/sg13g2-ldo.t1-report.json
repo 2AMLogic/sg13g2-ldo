@@ -9,9 +9,9 @@
   "source_doc": "docs/design-evidence-tiers.md",
   "source_doc_content_hash": "sha256:4c67ffc59128482d00f7d87cf446b6a96b9ab0c41ae5234098244e3052033335",
   "build": {
-    "version": "0.6.0+g3a75c3ae705b",
-    "package_version": "0.6.0",
-    "git_commit": "3a75c3ae705b7ad3803625255de93bcd982e70c6",
+    "version": "0.7.0+gb82427b30c96",
+    "package_version": "0.7.0",
+    "git_commit": "b82427b30c9604b53b2dce64850409841cc38bde",
     "git_tag": null,
     "dirty": false,
     "is_release": false,
@@ -267,7 +267,7 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:0a8c59a34fe47ca449513583883cb1320d488ca1e8f3888f34d25a5d74210e35",
+        "content_hash": "sha256:38382e5860a79bd4417853ac2d274d568be828b619fa19496ade067b2460c30a",
         "input_verified": true,
         "exit_status": 0,
         "artifact_binding": {
@@ -276,7 +276,7 @@
             "path": "signoff/evidence/item10-repo-hygiene.inventory.json",
             "scope": "repo"
           },
-          "content_hash": "sha256:0a8c59a34fe47ca449513583883cb1320d488ca1e8f3888f34d25a5d74210e35",
+          "content_hash": "sha256:38382e5860a79bd4417853ac2d274d568be828b619fa19496ade067b2460c30a",
           "input_verified": true,
           "summary": "README, LICENSE, spec index, agent instructions and the CI workflow are committed; every constituent hash matches the inventory and the CI workflow still defines the PDK-free signoff gates. Hygiene presence/freshness only.",
           "source": "signoff/evidence/item10-repo-hygiene.inventory.json"

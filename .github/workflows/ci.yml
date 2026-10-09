@@ -99,15 +99,14 @@ env:
   # "0.7.0+gb82427b30c96"). Bumped from b15edf5e3a2e for #59: the item-11
   # tie declaration needs ties[].well_layer: null + well_boxes (#2255) and
   # ties[].well_requires_boxes (#2540), neither of which b15edf5e parses.
-  # Bumped from b82427b30c96 for #60: klayout-tools#2843 (merge commit
-  # 3a75c3ae705b) adds artifact-anchored `kind: generic` evidence for T1
-  # items 1/2/9/10 (t1_item + provenance.input.path/content_hash +
-  # artifact_binding). It is a main-branch commit that keeps the
-  # `erc` kind and the item-11 grading rules this report already depends on.
+  # Not bumped for #60: this commit already descends from klayout-tools#2843
+  # (merge commit 3a75c3ae705b), which adds the artifact-anchored
+  # `kind: generic` evidence (t1_item + provenance.input.path/content_hash +
+  # artifact_binding) that items 1/2/9/10 cite.
   # Bump deliberately, in the same PR as the
   # regenerated signoff/sg13g2-ldo.t1-report.json (the signoff-t1-report job
   # fails on any drift, including this pin moving).
-  KLAYOUT_TOOLS_SIGNOFF_REF: "3a75c3ae705b7ad3803625255de93bcd982e70c6"
+  KLAYOUT_TOOLS_SIGNOFF_REF: "b82427b30c9604b53b2dce64850409841cc38bde"
 
 jobs:
   netlist-check:
@@ -271,7 +270,7 @@ jobs:
     # ran clean and says the block is NOT yet T1 -- both are successful,
     # well-formed grading runs and neither fails this job. Anything else is
     # an error envelope and a real failure. The honest committed state today
-    # is exit 3 with t1_met_count 4/11 (items 3, 4, 8, 11); when this block actually reaches T1
+    # is exit 3 with t1_met_count 8/11 (items 1, 2, 3, 4, 8, 9, 10, 11); when this block actually reaches T1
     # the job keeps passing with exit 0 and a fuller report.
     runs-on: ubuntu-latest
     steps:
