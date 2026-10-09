@@ -95,11 +95,14 @@ env:
   # the cited input instead of trusting the envelope's say-so) all shipped
   # upstream after the v0.5.0 release, so the tier report is graded with
   # this exact post-release commit -- the same build whose stamp layout/'s
-  # committed erc_supply_report.json already records (provenance.klt_version
-  # "0.5.0+gb15edf5e3a2e"). Bump deliberately, in the same PR as the
+  # committed erc_supply_report.json records (provenance.klt_version
+  # "0.7.0+gb82427b30c96"). Bumped from b15edf5e3a2e for #59: the item-11
+  # tie declaration needs ties[].well_layer: null + well_boxes (#2255) and
+  # ties[].well_requires_boxes (#2540), neither of which b15edf5e parses.
+  # Bump deliberately, in the same PR as the
   # regenerated signoff/sg13g2-ldo.t1-report.json (the signoff-t1-report job
   # fails on any drift, including this pin moving).
-  KLAYOUT_TOOLS_SIGNOFF_REF: "b15edf5e3a2e56467a3406c98a2555eb1a5ae45c"
+  KLAYOUT_TOOLS_SIGNOFF_REF: "b82427b30c9604b53b2dce64850409841cc38bde"
 
 jobs:
   netlist-check:
@@ -263,7 +266,7 @@ jobs:
     # ran clean and says the block is NOT yet T1 -- both are successful,
     # well-formed grading runs and neither fails this job. Anything else is
     # an error envelope and a real failure. The honest committed state today
-    # is exit 3 with t1_met_count 3/11 (items 3, 4, 8); when this block actually reaches T1
+    # is exit 3 with t1_met_count 4/11 (items 3, 4, 8, 11); when this block actually reaches T1
     # the job keeps passing with exit 0 and a fuller report.
     runs-on: ubuntu-latest
     steps:
@@ -280,7 +283,7 @@ jobs:
         # version stamp is derived from, so the build block reports
         # `dirty: true` and the regenerated report byte-differs from the
         # committed one on every run. A plain clone + checkout + path
-        # install reproduces the exact `0.5.0+gb15edf5e3a2e` stamp the
+        # install reproduces the exact `0.7.0+gb82427b30c96` stamp the
         # committed evidence record carries (verified locally).
         run: |
           git clone --quiet https://github.com/2AMLogic/klayout-tools.git \

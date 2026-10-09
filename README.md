@@ -10,7 +10,7 @@ open-source xschem + ngspice flow.
 core schematic with a behavioral error amplifier. The SG13CMOS5L branch
 has a transistor-level amplifier, closed-loop PVT simulation records, and
 layout with committed DRC/LVS reports. The [signoff report](signoff/sg13g2-ldo.t1-report.json)
-currently grades 3 of 11 T1 evidence items as met; no T1 tier is awarded.
+currently grades 4 of 11 T1 evidence items as met; no T1 tier is awarded.
 See [DR-0007](spec/decision-records/DR-0007-target-spec-row-ratification.md)
 for per-row ratification and evidence gaps, and [WORK_PLAN.md](WORK_PLAN.md)
 for the current work queue.

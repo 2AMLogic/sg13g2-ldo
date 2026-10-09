@@ -18,6 +18,10 @@
 #   6. lvs           klt lvs against the generated reference netlist
 #   7. lvs-controls  two mutated references (topology + parameter) that MUST
 #                    mismatch, plus an HV-marker control on the layout side
+#   8. erc           klt erc supply spec (T1 item 11): one island per supply,
+#                    zero erc.missing_tie from CHECKED ties whose tap boxes are
+#                    derived from the generator's tap bars, plus a mutation
+#                    control that moves one tap box and MUST be flagged
 #
 # DECK SPLIT (stage 3). The PDK's own deck cannot run end to end against the
 # standalone KLayout on this host: several of its rules use a DRC-DSL
@@ -42,6 +46,9 @@ GDS="${DIR}/sg13cmos5l-${CELL}.gds"
 TOP="sg13cmos5l_ldo_core_cmos5l"
 REF="${DIR}/sg13cmos5l-${CELL}.lvs_reference.spice"
 EXTRACTED="${DIR}/sg13cmos5l-${CELL}.extracted.spice"
+TAPS="${DIR}/erc-tap-boxes.json"
+ERC_SPEC="${DIR}/erc-supply-spec.json"
+ERC_REPORT="${DIR}/erc_supply_report.json"
 WORK="$(mktemp -d)"
 trap 'rm -rf "${WORK}"' EXIT
 
@@ -89,10 +96,13 @@ if [[ "${MODE}" == "check" ]]; then
   say "check mode -- the committed artifacts must reproduce, byte for byte"
   cp "${GDS}" "${WORK}/committed.gds"
   cp "${REF}" "${WORK}/committed.ref"
+  cp "${TAPS}" "${WORK}/committed.taps"
   python3 "${DIR}/generate.py" > /dev/null
   python3 "${REPO}/layout/lvs_reference.py" --cell "${CELL}" --top "${TOP}" > /dev/null
   cmp "${WORK}/committed.gds" "${GDS}" && echo "  GDS reproduces"
   cmp "${WORK}/committed.ref" "${REF}" && echo "  reference netlist reproduces"
+  cmp "${WORK}/committed.taps" "${TAPS}" && echo "  tap-box document reproduces"
+  python3 "${HERE}/erc_ties.py" --check "${TAPS}" "${ERC_SPEC}"
   ( cd "${DIR}" && klt drc --check drc_report.json && klt lvs --check lvs_report.json )
   say "done (check)"
   exit 0
@@ -314,5 +324,45 @@ control cap-presence-control '@drop:^XCc ' "Cc deleted from the reference"
 control cap-topology-control 's/^XCc EAOUT MZ/XCc EAOUT G1/' "Cc MZ -> G1"
 control cap-parameter-control 's/^XCc \(.*\)W=170 L=30/XCc \1W=85 L=30/' \
   "Cc W 170u -> 85u"
+
+say "8. ERC -- klt erc supply spec (T1 item 11)"
+# The ties[] tap boxes come from the generator's own draw_tap_bar calls
+# (erc-tap-boxes.json), never from hand-typed coordinates; this fails if the
+# committed spec drifts from them.
+python3 "${HERE}/erc_ties.py" --check "${TAPS}" "${ERC_SPEC}"
+# Run from the repo root with repo-relative paths: the report records both.
+# Exit 4 is the antenna half (no limit table for this PDK) -- not item 11's
+# subject; the structural verdict is `erc_status`, asserted below.
+ERC_GDS_REL="layout/sg13cmos5l-${CELL}/sg13cmos5l-${CELL}.gds"
+ERC_SPEC_REL="layout/sg13cmos5l-${CELL}/erc-supply-spec.json"
+( cd "${REPO}" && klt erc "${ERC_GDS_REL}" "${ERC_SPEC_REL}" --format json \
+    > "${ERC_REPORT}" ) || test $? -eq 4
+python3 - "${ERC_REPORT}" <<'PY'
+import json, sys
+d = json.load(open(sys.argv[1]))
+cov = d["erc_coverage"]
+ties = sorted(i for i in cov["checked"] if i.startswith("erc.missing_tie:"))
+print(f"  erc_status: {d['erc_status']}  findings: {d['erc_finding_count']}")
+print(f"  ties checked: {ties}")
+print(f"  checked_by_assertion: {cov['checked_by_assertion']}")
+print(f"  skipped: {cov['skipped']}  inapplicable: {cov['inapplicable']}")
+rules = {f["rule"] for f in d["erc_findings"]}
+ok = (d["erc_status"] == "clean" and not d["erc_findings"] and len(ties) == 3
+      and not cov["skipped"] and not cov["inapplicable"]
+      and sorted(cov["checked_by_assertion"]) == ties)
+sys.exit(0 if ok else 1)
+PY
+
+say "8b. ERC negative control -- one tap box moved off its tap MUST be flagged"
+python3 "${HERE}/erc_ties.py" --mutate "${TAPS}" "${ERC_SPEC}" "${WORK}/erc-mutated-spec.json"
+( cd "${REPO}" && klt erc "${ERC_GDS_REL}" "${WORK}/erc-mutated-spec.json" --format json \
+    > "${WORK}/erc-mutated.json" ) || test $? -ne 1
+python3 - "${WORK}/erc-mutated.json" <<'PY'
+import json, sys
+d = json.load(open(sys.argv[1]))
+hits = [f for f in d["erc_findings"] if f["rule"] == "erc.missing_tie"]
+print(f"  mutated spec: erc_status={d['erc_status']}  missing_tie findings={len(hits)}")
+sys.exit(0 if hits else 1)
+PY
 
 say "done"

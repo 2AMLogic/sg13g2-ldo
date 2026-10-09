@@ -1,0 +1,30 @@
+{
+  "schema": "sg13g2-ldo.erc-tap-boxes/1",
+  "taps": [
+    {
+      "kind": "nwell",
+      "net": "VIN",
+      "tap_boxes": [
+        [-2.4, -0.38, -1.6, 119.5],
+        [43.4, 0.0, 44.2, 5.0]
+      ]
+    },
+    {
+      "kind": "nwell",
+      "net": "TAIL",
+      "tap_boxes": [
+        [91.6, 0.0, 92.4, 20.0]
+      ]
+    },
+    {
+      "kind": "psub",
+      "net": "VSS",
+      "tap_boxes": [
+        [115.0, 0.0, 115.8, 20.0]
+      ],
+      "well_boxes": [
+        [95.0, -20.0, 135.8, 40.0]
+      ]
+    }
+  ]
+}

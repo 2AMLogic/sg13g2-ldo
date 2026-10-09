@@ -207,6 +207,10 @@ class Builder:
         self.layout.dbu = dbu
         self.cell = self.layout.create_cell(top_cell)
         self._layers: dict[tuple[int, int], int] = {}
+        #: Every well/substrate tie drawn by :func:`draw_tap_bar`, in draw
+        #: order -- the single source of truth for the ``klt erc`` supply
+        #: spec's ``ties[].tap_boxes`` (see ``tap_records``).
+        self.taps: list[dict] = []
         for (layer, datatype), name in LAYER_NAMES.items():
             info = kdb.LayerInfo(layer, datatype, name)
             self._layers[(layer, datatype)] = self.layout.layer(info)
@@ -580,7 +584,8 @@ def draw_tap_bar(
       ``tap_nplus = (7, 0)``. This is what biases the well a PMOS body sits
       in; without it the PMOS body extracts onto an unbiased, anonymous net.
     """
-    b.box(L_ACTIV, x0, y0, x1, y1)
+    act = b.box(L_ACTIV, x0, y0, x1, y1)
+    b.taps.append({"kind": kind, "net": net, "activ": list(act)})
     implant = L_PSD if kind == "psub" else L_NSD
     b.box(implant, x0 - PSD_C, y0 - PSD_C, x1 + PSD_C, y1 + PSD_C)
     cont_array(b, x0 + CNT_C, y0 + CNT_C, x1 - CNT_C, y1 - CNT_C)
