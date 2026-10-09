@@ -5,6 +5,8 @@ Chronological record of recently merged pull requests and closed issues, maintai
 ### 2026-10-09
 
 - **PR #78**: sim: SG13CMOS5L row-2 output-accuracy Monte Carlo campaign with klt yield evidence (item 6 left uncited)
+- **Issue #80** (closed): Guard decision review: keep untracked-file cleanup flagged
+- **Issue #79** (closed): README understates current T1 evidence count (2 versus 3)
 
 ### 2026-10-08
 
