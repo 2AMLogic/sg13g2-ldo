@@ -2,6 +2,10 @@
 
 Chronological record of recently merged pull requests and closed issues, maintained by the Loom Guide role.
 
+### 2026-10-09
+
+- **PR #78**: sim: SG13CMOS5L row-2 output-accuracy Monte Carlo campaign with klt yield evidence (item 6 left uncited)
+
 ### 2026-10-08
 
 - **PR #76**: sim: T1 item 5 coverage inventory + informational DC evidence (partial; klt sim envelope blocked by klayout-tools#2727)

@@ -19,13 +19,13 @@ _None._
 
 Human-approved issues ready for implementation (`loom:issue`).
 
-- **#55**: Corner verification: klt sim corner-matrix envelopes against the ratified spec (T1 item 5)
+_None._
 
 ## In Progress
 
 Issues currently being built (`loom:building`).
 
-- **#56**: Monte Carlo: klt yield evidence for the statistical ratified spec rows (T1 item 6)
+_None._
 
 ## PRs Awaiting Review
 
@@ -64,8 +64,8 @@ Issues carrying `loom:curated`.
 |------|-------|
 | Operator merge-risk holds | 0 |
 | Operator priority | 0 |
-| Ready (`loom:issue`) | 1 |
-| In Progress (`loom:building`) | 1 |
+| Ready (`loom:issue`) | 0 |
+| In Progress (`loom:building`) | 0 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
 | Curated | 3 |
