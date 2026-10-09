@@ -19,13 +19,13 @@ _None._
 
 Human-approved issues ready for implementation (`loom:issue`).
 
-- **#58**: Characterization: one aggregated per-spec-row report with a generic envelope (T1 item 8)
+- **#55**: Corner verification: klt sim corner-matrix envelopes against the ratified spec (T1 item 5)
 
 ## In Progress
 
 Issues currently being built (`loom:building`).
 
-_None._
+- **#56**: Monte Carlo: klt yield evidence for the statistical ratified spec rows (T1 item 6)
 
 ## PRs Awaiting Review
 
@@ -43,8 +43,9 @@ _None._
 
 Issues carrying `loom:curated`.
 
+- **#55**: Corner verification: klt sim corner-matrix envelopes against the ratified spec (T1 item 5) *(curated)*
+- **#56**: Monte Carlo: klt yield evidence for the statistical ratified spec rows (T1 item 6) *(curated)*
 - **#57**: Post-layout: klt pex extraction of the LDO core and spec re-run on the extracted netlist (T1 item 7) *(curated)*
-- **#58**: Characterization: one aggregated per-spec-row report with a generic envelope (T1 item 8) *(curated)*
 
 ## Proposed (Architect / Hermit)
 
@@ -64,10 +65,10 @@ Issues carrying `loom:curated`.
 | Operator merge-risk holds | 0 |
 | Operator priority | 0 |
 | Ready (`loom:issue`) | 1 |
-| In Progress (`loom:building`) | 0 |
+| In Progress (`loom:building`) | 1 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
-| Curated | 2 |
+| Curated | 3 |
 | Architect / Hermit proposals | 3 |
 | Active epics | 2 |
 <!-- guide:plan-body:end -->

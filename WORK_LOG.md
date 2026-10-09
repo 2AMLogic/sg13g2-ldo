@@ -4,8 +4,11 @@ Chronological record of recently merged pull requests and closed issues, maintai
 
 ### 2026-10-08
 
+- **PR #76**: sim: T1 item 5 coverage inventory + informational DC evidence (partial; klt sim envelope blocked by klayout-tools#2727)
+- **PR #73**: sim: per-spec-row characterization report + generic envelope for T1 item 8 (#58)
 - **PR #65**: spec: ratify DR-0007 row 4 (dropout @ 50 mA) via the two-key ceremony; nine rows stay open
 - **PR #61**: spec: DR-0007 row-by-row ratification record for the target table (#54)
+- **Issue #58** (closed): Characterization: one aggregated per-spec-row report with a generic envelope (T1 item 8)
 - **Issue #54** (closed): spec: ratify the target-spec table through the two-key mechanism (prerequisite for T1 items 5 and 6)
 
 ### 2026-09-22
