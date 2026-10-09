@@ -9,17 +9,23 @@ the way a hand-read checklist does.
 | File | What it is |
 | --- | --- |
 | `sg13g2-ldo.json` | The **block manifest** for `klt signoff --manifest`: `block: sg13g2-ldo`, `kind: analog`, and one pinned evidence citation per T1 item this repo can honestly cite. |
-| `sg13g2-ldo.t1-report.json` | The **verdict of record**: the exact `klt signoff --manifest sg13g2-ldo.json --format json` output, committed. `t1_item_count: 11, t1_met_count: 4, tier: null` — this block is **not T1 yet**, and the report says so per item with a `reason`. |
+| `sg13g2-ldo.t1-report.json` | The **verdict of record**: the exact `klt signoff --manifest sg13g2-ldo.json --format json` output, committed. `t1_item_count: 11, t1_met_count: 8, tier: null` — this block is **not T1 yet**, and the report says so per item with a `reason`. |
 
 ## Reading the report
 
-Today's honest read is **4/11 met**:
+Today's honest read is **8/11 met** (items 1, 2, 3, 4, 8, 9, 10, 11):
 
 - **met — item 3 (DRC clean)**: `layout/sg13cmos5l-ldo_core_cmos5l/drc_report.json`, `status: clean`, 0 violations, citation verified against the committed GDS (`input_verified: true`).
 - **met — item 4 (LVS clean)**: `layout/sg13cmos5l-ldo_core_cmos5l/lvs_report.json`, `status: match`, 0 errors / 0 mismatches, citation verified against the committed extracted netlist it compared.
 - **met — item 8 (characterization report)**: `sim/characterization/characterization-envelope.json`, a hand-rolled `kind: generic` envelope (the one evidence kind item 8 accepts) with `t1_item: 8`, pinned by `content_hash` to the sha256 of the committed aggregate report. **What `met` means here, and what it does not**: the envelope verdict is *artifact completeness and freshness* — every one of the ten target-spec rows appears exactly once with an explicit state, every selected source record matches its sha256 pin, the 45-point PVT grid is whole, and the record is current against the design netlists. It is **not** a claim that the circuit meets its spec: the report lists failing/ambiguous/unmeasured/unimplemented/unratified rows as such (today: 1 not measured, 5 partial-coverage passes, 1 full-coverage pass on the one ratified row, 1 ambiguous, 2 not implemented), and no post-layout performance evidence exists. `klt signoff` does **not** inspect the envelope's `source`, nor re-hash the report (`input_verified: null` for generic envelopes); the content and freshness are verified by this repo's generator and its CI `--check` gate (`python3 sim/characterization/generate.py --check`), which is what makes the pin trustworthy. Other T1 items are not touched by this citation.
 - **met — item 11 (power delivery, structural)**: `layout/sg13cmos5l-ldo_core_cmos5l/erc_supply_report.json` (with item 4's LVS report as the second part), `input_verified: true`. VIN/VOUT/VSS each resolve to one island, zero `erc.supply_short`, zero `erc.missing_tie` from three **checked** ties (`nwell_tie_VIN`, `nwell_tie_TAIL`, `substrate_tie_VSS`; `erc_coverage.skipped` empty, nothing `degenerate_*`). **What `met` means here, and what it does not** (the claimant-side disclosures the grader does not enforce): every tie rests on a *caller assertion* — the report's `power_delivery` block lists all three under both `ties_checked_by_assertion` (tap boxes) and `ties_checked_by_well_assertion` (the well side: `well_requires_boxes` selects which NWell each n-tie is about, and the substrate tie sits in native substrate, so its region is asserted via `well_layer: null` + `well_boxes`). The boxes are not hand-typed: they are the generator's own `draw_tap_bar` calls (`layout/sg13cmos5l-ldo_core_cmos5l/erc-tap-boxes.json`, verified against the spec by `layout/erc_ties.py --check` in `layout/run_flow.sh`), and the n-ties are additionally layer-narrowed (`tap_requires` nSD), which this stream can express because it draws implants. The substrate tie's asserted region is the tap bar grown by 20 µm (the PDK deck's LU.b reach), so `erc_coverage.well_assertion_coverage` reports `uncovered_tap_fraction ≈ 0.977`: tap geometry elsewhere in the layout (every n+ source/drain contact is Activ too) was never examined by that tie, only the NMOS-group region was. `erc_coverage.layers_in_stream_without_declaration` is `28/0, 31/2, 44/0, 63/0, 99/39, 111/0` (marker/label layers carrying no routing). A tie-box mutation control (one tap box moved off its tap) MUST raise `erc.missing_tie`; `layout/run_flow.sh` stage 8b runs it. Connectivity of the taps beyond "a contacted tap reaches the net" is `klt lvs`'s job (item 4).
-- **unmet — items 1, 2, 9, 10 (`no_evidence`)**: the grader contract is explicit that these four name no `klt` verb and cannot be graded for topical relevance, and that leaving them uncited is the honest default ([`docs/design-evidence-tiers.md`](https://github.com/2AMLogic/klayout-tools/blob/main/docs/design-evidence-tiers.md) → "Not every item has a tool behind it"). This repo follows that default deliberately: a met row here would only mean "some passing envelope was cited", not that the claim was checked.
+- **met — items 1, 2, 9, 10 (artifact-anchored attestations, #60)**: four separate `kind: generic` envelopes under [`evidence/`](evidence/), each declaring its own `t1_item` and naming its audited artifact in `provenance.input.path` (`scope: repo`) with `provenance.input.content_hash`; the manifest cites each with the same `content_hash`, and every row renders `met` with `citation.artifact_binding.input_verified: true`. Because several files back each item, the bound artifact is a committed **inventory** (`evidence/item<N>-<slug>.inventory.json`: sorted paths + sha256) rather than a single file. **Scope: the SG13CMOS5L implementation only** (`design/sg13cmos5l/`, `layout/sg13cmos5l-ldo_core_cmos5l/`, the shipped `sim/` benches, repo-level files). Per item:
+  - **1 design sources** — SG13CMOS5L `.sch`/`.sym`, `design/netlist.py`, `xschemrc`, and the regenerated ngspice netlists. The SG13G2-branch placeholder sources are not attested.
+  - **2 layout** — the committed GDS, its generator and the shared generator module.
+  - **9 testbenches shipped** — every `tb_*.spice[.tmpl]` and `run_*.sh` under `sim/`, the Monte Carlo request documents including the negative-control request, and the experiment READMEs; the check requires each README to document its cold-start entry point. The benches are not re-run by this attestation.
+  - **10 repo hygiene** — `README.md`, `LICENSE`, `CLAUDE.md`, `spec/README.md` and the CI workflow.
+
+  **What `met` means, and what it does not.** The grader proves that the envelope is declared for this item, names exact bytes, that those bytes re-hash to the pinned value, and that nothing was edited since; the `status: pass` inside the envelope is still the author's assertion. The envelope's claim is backed by `python3 signoff/evidence_inventory.py check` (stdlib only, no PDK, run in CI before grading, with `signoff/test_evidence_inventory.py` negative controls): it re-hashes **every** constituent (a mutated, deleted or unlisted-by-glob file fails with its name), requires the completeness globs to be covered, requires envelope and manifest pins to match, and applies a few content checks beyond existence (xschem header and `.subckt` per cell, GDSII HEADER record, entry points documented, Apache-2.0 LICENSE, CI still carrying the signoff gates). Limits: it does **not** re-run xschem (netlist/schematic consistency is `design/netlist.py --check`'s job, a PDK-needing CI job), regenerate or inspect the GDS beyond its first record (DRC/LVS/ERC are items 3/4/11), execute any testbench, or judge design quality. No spec performance or whole-block T1 claim is made. The grader alone does **not** see a constituent edit: only the inventory check does, which is why it gates CI ahead of grading. Editing an inventoried file means re-running `python3 signoff/evidence_inventory.py write`.
 - **unmet — item 5 (`no_evidence`; deliberately uncited, #55)**: no `klt sim` envelope exists for the ratified deterministic row (DR-0007 row 4, dropout), so none is cited. This is a tool/host limit, not an omission: the SG13CMOS5L DC bench needs OSDI models under ngspice >= 46, `klt sim`'s batch/remote backends refuse `ihp-sg13cmos5l` (existing upstream gap [klayout-tools#2727](https://github.com/2AMLogic/klayout-tools/issues/2727)), and local multi-corner grids are not permitted on the dispatch host. Hand-wrapping the committed CSVs into a sim-shaped envelope would be a synthesized success and is refused. What exists instead is **qualified, non-gating evidence** under [`sim/ldo-cmos5l-pvt-sweep/evidence/20260917-023832-7061e8f/`](../sim/ldo-cmos5l-pvt-sweep/evidence/20260917-023832-7061e8f/): a ten-row coverage inventory (`coverage-inventory.{json,md}`) and informational DC summaries (`dc-informational-summary.csv`), regenerated and byte-checked by `python3 sim/ldo-cmos5l-pvt-sweep/item5_evidence.py --check` (CI). **If a sim envelope is cited here later, read the grade carefully:** `klt signoff` accepts any `status: pass` sim envelope for item 5 and does not know which spec rows are ratified or Open, nor the SG13G2/SG13CMOS5L branch split. A green item 5 would mean "one cited corner run passed", not that the shared spec is verified: nine of ten rows are Open (DR-0007), the dropout definition is unresolved (#70), and the SG13G2 branch has no closed-loop evidence (#71). The inventory, not the grade, is the coverage statement.
 - **unmet — item 6 (`no_evidence`), with real but deliberately uncited evidence.** See "Item 6 coverage statement" below.
 - **unmet — item 7 (`no_evidence`)**: item 7 needs `klt pex` (post-layout re-simulation, #57). That envelope will be cited when it is produced — never fabricated to turn a row green.
@@ -74,7 +80,14 @@ The envelope's `provenance.input.content_hash`, the manifest's item-8 `content_h
 
 ## Regenerating
 
-Item 8 first (its envelope is an input to the manifest's `content_hash` pin;
+Inventories first, once the edits to every inventoried file (including `README.md` and `.github/workflows/ci.yml`) are final:
+
+```bash
+python3 signoff/evidence_inventory.py write    # inventories, envelopes, manifest citations for items 1/2/9/10
+python3 signoff/evidence_inventory.py check    # what CI runs
+```
+
+Then item 8 (its envelope is an input to the manifest's `content_hash` pin;
 regenerate it whenever the selected record, `README.md`'s target table, or
 DR-0007 changes — see [`sim/characterization/README.md`](../sim/characterization/README.md)):
 
@@ -126,10 +139,15 @@ with the pinned post-release commit whose version stamp the ERC envelope
 already records:
 
 ```bash
+git clone https://github.com/2AMLogic/klayout-tools.git /tmp/klayout-tools
+git -C /tmp/klayout-tools checkout b82427b30c9604b53b2dce64850409841cc38bde
 uv venv /tmp/klt-signoff-venv
-uv pip install --python /tmp/klt-signoff-venv/bin/python \
-  "klayout-tools @ git+https://github.com/2AMLogic/klayout-tools@b82427b30c9604b53b2dce64850409841cc38bde"
+uv pip install --python /tmp/klt-signoff-venv/bin/python /tmp/klayout-tools
 ```
+
+This is the same clean clone-checkout-path-install method as CI (`KLAYOUT_TOOLS_SIGNOFF_REF` in `.github/workflows/ci.yml`; a `pip install git+...@sha` makes the build stamp `dirty` and the report would never reproduce).
+
+**No pin bump for #60.** Items 1/2/9/10 cite artifact-anchored generic evidence, which klayout-tools#2843 (merge commit `3a75c3ae705b`) added. The existing pin `b82427b30c96` (`0.7.0+gb82427b30c96`) already descends from that merge, so the tool was not changed. Regrading under the same build changed exactly items 1, 2, 9 and 10 (`unmet` to `met`); items 3, 4, 8 and 11 stayed `met`, and the build block did not move. The root `README.md` status line (4 to 8 of 11) is a pinned item-8 source, so `generate.py` was re-run and the item-8 pin moved to `sha256:53b0a278…`. The item 3/4/11 envelopes were not regenerated.
 
 Bump the pin deliberately — in the same PR as the regenerated report —
 when a `klt` release ships the item-11 grading rules; CI (the

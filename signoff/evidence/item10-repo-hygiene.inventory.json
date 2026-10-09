@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "t1_item": 10,
+  "title": "Repo hygiene",
+  "scope": "SG13CMOS5L implementation (design/sg13cmos5l, layout/sg13cmos5l-ldo_core_cmos5l). Freshness and identity of the listed files only; NOT a performance, spec-compliance or whole-block T1 claim.",
+  "files": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "sha256:bd61934a5f6e6a706a1f82eb6caad13952d390e3380b02d8bc15db5643a20d4a"
+    },
+    {
+      "path": "CLAUDE.md",
+      "sha256": "sha256:5354f51b21136db8fd7161d5e4ef214d438de5841e9956e8daf21690fb787be3"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "sha256:cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "path": "README.md",
+      "sha256": "sha256:378f8b48bc4ed7cca70a4ec79a1149e3e8d124b16a609676ed9c442674dcccc5"
+    },
+    {
+      "path": "spec/README.md",
+      "sha256": "sha256:cb721e7f7f87a5a3a9f889e65df00644bd8173bd5ac617d9e78a5531975942a1"
+    }
+  ]
+}

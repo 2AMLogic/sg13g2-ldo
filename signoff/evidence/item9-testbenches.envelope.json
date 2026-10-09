@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "kind": "generic",
+  "status": "pass",
+  "t1_item": 9,
+  "summary": "The shipped ngspice testbenches/templates, their cold-start entry points (run_*.sh) and experiment READMEs are committed; every constituent hash matches the inventory and each README names its entry point. Testbenches are NOT re-run by this attestation and no measurement result is claimed.",
+  "source": "signoff/evidence/item9-testbenches.inventory.json",
+  "verdict_semantics": "pass = every file in the bound inventory exists and hashes to the recorded sha256, the inventory covers its completeness globs, and the content checks in signoff/evidence_inventory.py hold. It is NOT a claim that the circuit meets its spec. klt does not read `source`; signoff/evidence_inventory.py check (CI) verifies the constituents.",
+  "provenance": {
+    "klt_version": null,
+    "klayout_version": null,
+    "pdk": null,
+    "deck": null,
+    "input": {
+      "path": {
+        "path": "signoff/evidence/item9-testbenches.inventory.json",
+        "scope": "repo"
+      },
+      "content_hash": "sha256:8e06c9e4082a270b8b1b973de2c6993a215f5909847c239b6402201799869e41",
+      "role": "inventory"
+    },
+    "generator": {
+      "path": "signoff/evidence_inventory.py",
+      "version": 1
+    }
+  }
+}

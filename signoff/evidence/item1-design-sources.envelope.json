@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "kind": "generic",
+  "status": "pass",
+  "t1_item": 1,
+  "summary": "SG13CMOS5L schematics/symbols, their generator and the regenerated ngspice netlists are committed; every constituent hash matches the inventory. Freshness/identity only, not a design-correctness or performance claim.",
+  "source": "signoff/evidence/item1-design-sources.inventory.json",
+  "verdict_semantics": "pass = every file in the bound inventory exists and hashes to the recorded sha256, the inventory covers its completeness globs, and the content checks in signoff/evidence_inventory.py hold. It is NOT a claim that the circuit meets its spec. klt does not read `source`; signoff/evidence_inventory.py check (CI) verifies the constituents.",
+  "provenance": {
+    "klt_version": null,
+    "klayout_version": null,
+    "pdk": null,
+    "deck": null,
+    "input": {
+      "path": {
+        "path": "signoff/evidence/item1-design-sources.inventory.json",
+        "scope": "repo"
+      },
+      "content_hash": "sha256:7f16d8d8fb0e0955f375a308758683c007e3b74a0a70538f64e63d106a8b73e9",
+      "role": "inventory"
+    },
+    "generator": {
+      "path": "signoff/evidence_inventory.py",
+      "version": 1
+    }
+  }
+}

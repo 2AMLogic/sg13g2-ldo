@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "t1_item": 2,
+  "title": "Layout",
+  "scope": "SG13CMOS5L implementation (design/sg13cmos5l, layout/sg13cmos5l-ldo_core_cmos5l). Freshness and identity of the listed files only; NOT a performance, spec-compliance or whole-block T1 claim.",
+  "files": [
+    {
+      "path": "layout/README.md",
+      "sha256": "sha256:dfdb15391ac2a792d97f4c8060f7c8412e2e52db7cb922bc8c8a768a799cdcc3"
+    },
+    {
+      "path": "layout/common_sg13cmos5l.py",
+      "sha256": "sha256:cd4d915eb54411b508fa8e8b48eb8b0ab5f2172790a567b052c0db7d2dd285cb"
+    },
+    {
+      "path": "layout/sg13cmos5l-ldo_core_cmos5l/generate.py",
+      "sha256": "sha256:3be814bf5fc76953af81fd5c9d8994bc3df6fd8201e54fc886c234751632bd78"
+    },
+    {
+      "path": "layout/sg13cmos5l-ldo_core_cmos5l/sg13cmos5l-ldo_core_cmos5l.gds",
+      "sha256": "sha256:f0f01392735616cbdb45166467972f8e4456426fd1cf794e3380d1713eabc062"
+    }
+  ]
+}

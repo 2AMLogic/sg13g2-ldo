@@ -99,6 +99,10 @@ env:
   # "0.7.0+gb82427b30c96"). Bumped from b15edf5e3a2e for #59: the item-11
   # tie declaration needs ties[].well_layer: null + well_boxes (#2255) and
   # ties[].well_requires_boxes (#2540), neither of which b15edf5e parses.
+  # Not bumped for #60: this commit already descends from klayout-tools#2843
+  # (merge commit 3a75c3ae705b), which adds the artifact-anchored
+  # `kind: generic` evidence (t1_item + provenance.input.path/content_hash +
+  # artifact_binding) that items 1/2/9/10 cite.
   # Bump deliberately, in the same PR as the
   # regenerated signoff/sg13g2-ldo.t1-report.json (the signoff-t1-report job
   # fails on any drift, including this pin moving).
@@ -266,7 +270,7 @@ jobs:
     # ran clean and says the block is NOT yet T1 -- both are successful,
     # well-formed grading runs and neither fails this job. Anything else is
     # an error envelope and a real failure. The honest committed state today
-    # is exit 3 with t1_met_count 4/11 (items 3, 4, 8, 11); when this block actually reaches T1
+    # is exit 3 with t1_met_count 8/11 (items 1, 2, 3, 4, 8, 9, 10, 11); when this block actually reaches T1
     # the job keeps passing with exit 0 and a fuller report.
     runs-on: ubuntu-latest
     steps:
@@ -291,6 +295,16 @@ jobs:
           git -C "${RUNNER_TEMP}/klayout-tools" checkout \
             "${KLAYOUT_TOOLS_SIGNOFF_REF}"
           pip install "${RUNNER_TEMP}/klayout-tools"
+
+      - name: Verify the item 1/2/9/10 evidence inventories (PDK-free, stdlib only)
+        # Items 1/2/9/10 are each backed by several files; the generic
+        # envelopes bind to a committed inventory of their sha256s. Re-hash
+        # every constituent, require the completeness globs to be covered,
+        # and require envelope + manifest pins to match -- before grading,
+        # so a stale constituent fails here with a named file (#60).
+        run: |
+          python3 signoff/evidence_inventory.py check
+          python3 -m unittest signoff.test_evidence_inventory -v
 
       - name: Regenerate the T1 report and assert no drift
         run: |
