@@ -163,7 +163,11 @@ python3 -m unittest sim/ldo-cmos5l-monte-carlo/test_build_yield_inputs.py \
 
 `analyse` alone re-derives every committed yield report, `crosscheck.json`
 and the record CSV from the committed raw reports. It is offline, with no PDK
-and no simulator.
+and no simulator. `run_campaign.sh check <record-dir>` is the stdlib-only
+subset CI runs (`monte-carlo-record` job). It re-derives the sample-set
+documents, `crosscheck.json` and the CSV, asserts the campaign invariants,
+and fails on any drift. It does not re-run `klt yield` (no native extension
+in CI, klayout-tools#2900).
 
 ## Toolchain (and its friction)
 
@@ -176,6 +180,17 @@ and no simulator.
   implements are used (`corners`, `exclude`, `supply_v`, `monte_carlo`,
   `.meas`). Model staging is done client-side. This version skew is tracked
   upstream (klayout-tools#2901, #2877, #2894, #2851; 2am#2193).
+- **Job length.** The fleet kills any job at 3600 s and discards all of
+  its completed units (klayout-tools#2833). At about 30–45 core-seconds per
+  draw, the 2000-draw main request does not fit in one job. The first
+  unsharded attempt timed out (see the record). `request-row2-mc.json`
+  therefore sets `remote.hosts: 5`, which runs five fleet jobs of 400 draws,
+  one per corner, with seeds derived client-side. The reproduction request
+  checks that those seeds match the runner's own derivation.
+- **No `models.pdk`, on purpose.** The batch/remote backends refuse
+  `ihp-sg13cmos5l` as a `models.pdk` (klayout-tools#2727). These requests
+  name none and stage their own `row2-corners.lib` closure instead, which
+  is why `klt sim`'s `family_mismatch` reads `active: null`.
 - **OSDI.** klt 0.5.0 has no `options.osdi_preload`, so `runner-preamble.cir`
   loads the image's own PSP103/r3_cmc binaries with `pre_osdi` and prints
   their sha256 into every retained log. They are compiled from the same
