@@ -1,0 +1,71 @@
+* sg13g2-ldo -- SG13CMOS5L row-2 Monte Carlo corner bundles (issue #56).
+*
+* The fleet runner's klt (0.5.0) takes ONE models.lib per request and has no
+* per-section library bundle (klayout-tools #2522 landed later), while this
+* PDK ships its corners as separate per-family files (cornerMOShv.lib /
+* cornerRES.lib). This wrapper is that single models.lib: each section below
+* is one named corner that selects one section from each family file. The
+* PDK files are NOT edited, only selected. The submitting client stages them
+* and their whole .include closure with the job (options.stage_model_inputs),
+* so the bytes that ran are pinned per file in the report's
+* environment.staged_model_inputs (sha256 of what the worker received).
+*
+* $PDK_ROOT is expanded on the SUBMITTING host (run_campaign.sh exports it);
+* the SG13CMOS5L tree's cornerMOShv.lib / cornerRES.lib are relative symlinks
+* into its sibling ihp-sg13g2 tree (sim/pdk-cmos5l.json).
+*
+* No cornerCAP.lib is loaded: the circuit's only capacitor (Cc, cap_cmomi) is
+* an open circuit at a DC operating point and has no corner or mismatch model
+* at this PDK pin; tb_row2_accuracy.spice substitutes a DC stand-in.
+*
+* Every *_mismatch section turns on the PDK's own per-instance mismatch:
+*   MOS  (sg13g2_moshv_mismatch.lib + sg13g2_moshv_mod_mismatch.lib):
+*        delvto ~ agauss(0, A_vt/sqrt(m*W*L)), factuo ~ agauss(1, A_u/sqrt(m*W*L)),
+*        w, l ~ agauss(nominal, 3 nm)   -- independent draw per instance.
+*   rhigh (resistors_mod_mismatch.lib -> r3_cmc sw_mman=1):
+*        nsmm_rsh, nsmm_w, nsmm_l ~ gauss(1, 1, 1) standard deviations of
+*        smm_rsh = 5 %um, smm_w = smm_l = 0.01 um^1.5 -- independent per instance.
+* The *_stat (global/process) sections are NOT used: process spread is covered
+* by the named corners below instead (README.md "Variation coverage").
+*
+* Campaign corners (process + resistor corner; temperature is a klt sim axis
+* and is pinned per corner through request `exclude`, see README.md):
+.lib tt
+.lib "$PDK_ROOT/ihp-sg13cmos5l/libs.tech/ngspice/models/cornerMOShv.lib" mos_tt_mismatch
+.lib "$PDK_ROOT/ihp-sg13cmos5l/libs.tech/ngspice/models/cornerRES.lib" res_typ_mismatch
+.endl tt
+.lib ss_rbcs
+.lib "$PDK_ROOT/ihp-sg13cmos5l/libs.tech/ngspice/models/cornerMOShv.lib" mos_ss_mismatch
+.lib "$PDK_ROOT/ihp-sg13cmos5l/libs.tech/ngspice/models/cornerRES.lib" res_bcs_mismatch
+.endl ss_rbcs
+.lib ff_rwcs
+.lib "$PDK_ROOT/ihp-sg13cmos5l/libs.tech/ngspice/models/cornerMOShv.lib" mos_ff_mismatch
+.lib "$PDK_ROOT/ihp-sg13cmos5l/libs.tech/ngspice/models/cornerRES.lib" res_wcs_mismatch
+.endl ff_rwcs
+.lib sf_rwcs
+.lib "$PDK_ROOT/ihp-sg13cmos5l/libs.tech/ngspice/models/cornerMOShv.lib" mos_sf_mismatch
+.lib "$PDK_ROOT/ihp-sg13cmos5l/libs.tech/ngspice/models/cornerRES.lib" res_wcs_mismatch
+.endl sf_rwcs
+.lib fs_rbcs
+.lib "$PDK_ROOT/ihp-sg13cmos5l/libs.tech/ngspice/models/cornerMOShv.lib" mos_fs_mismatch
+.lib "$PDK_ROOT/ihp-sg13cmos5l/libs.tech/ngspice/models/cornerRES.lib" res_bcs_mismatch
+.endl fs_rbcs
+*
+* Attribution / sampler-control sections (request-row2-attribution.json only):
+*   tt_nom    -- no mismatch at all: every sample must be identical (sampler
+*                negative control) and equal the committed tt/27C/res_typ
+*                corner value.
+*   tt_mosmm  -- MOS mismatch only (error-amp pair, mirrors, bias, Mpass).
+*   tt_resmm  -- rhigh mismatch only (divider ratio; Rz carries no DC current).
+.lib tt_nom
+.lib "$PDK_ROOT/ihp-sg13cmos5l/libs.tech/ngspice/models/cornerMOShv.lib" mos_tt
+.lib "$PDK_ROOT/ihp-sg13cmos5l/libs.tech/ngspice/models/cornerRES.lib" res_typ
+.endl tt_nom
+.lib tt_mosmm
+.lib "$PDK_ROOT/ihp-sg13cmos5l/libs.tech/ngspice/models/cornerMOShv.lib" mos_tt_mismatch
+.lib "$PDK_ROOT/ihp-sg13cmos5l/libs.tech/ngspice/models/cornerRES.lib" res_typ
+.endl tt_mosmm
+.lib tt_resmm
+.lib "$PDK_ROOT/ihp-sg13cmos5l/libs.tech/ngspice/models/cornerMOShv.lib" mos_tt
+.lib "$PDK_ROOT/ihp-sg13cmos5l/libs.tech/ngspice/models/cornerRES.lib" res_typ_mismatch
+.endl tt_resmm

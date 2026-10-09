@@ -1,0 +1,46 @@
+* sg13g2-ldo -- SG13CMOS5L row-2 (output accuracy) Monte Carlo bench (issue #56).
+*
+* A klt-sim CIRCUIT BODY (no analysis / .end: klt sim owns those and adds the
+* corner's .lib cards, .temp, the per-sample `.options seed=` card and the
+* analysis). The regulator under test is
+* design/sg13cmos5l/netlist/ldo_core_cmos5l.spice (it carries
+* ldo_erramp_cmos5l as a second .subckt), instantiated whole and UNCHANGED --
+* sizing is not touched to improve measured yield.
+*
+* Measurement conditions -- the ONE operating point row 2 is measured at, the
+* same one sim/ldo-cmos5l-pvt-sweep reports as `vout_no_load_v` (README.md
+* "Measurement definition"):
+*   Vin   = 3.30 V   nominal of the Input row (3.3 V +/-10 %); the DC sweep
+*                    3.29..3.31 V exists only so `.meas FIND ... AT=3.30` has
+*                    neighbouring points to interpolate between.
+*   Iload = 0        no external load (the committed corner record's
+*                    vout_no_load_v condition; load regulation is row 5's).
+*   IBIAS = 2 uA     sunk externally -- the design's documented bias point.
+*   VREF  = 0.900 V  IDEAL reference. Reference error is EXCLUDED: this bench
+*                    measures regulator-only accuracy (error-amplifier offset,
+*                    bias/mirror mismatch, divider-ratio mismatch). The
+*                    negative-control request moves this one source through
+*                    klt sim's supply_v axis (`alter vref=0.93`); nothing else
+*                    differs.
+*   Cout  = none     DC operating point; no dynamic quantity is measured.
+.include "runner-preamble.cir"
+.include "../../design/sg13cmos5l/netlist/ldo_core_cmos5l.spice"
+
+* DC-only stand-in for the PDK's cap_cmomi (the error amplifier's Miller cap
+* Cc, instance XCc in ldo_erramp_cmos5l). Its OSDI model is not in the fleet
+* runner image (only ihp-sg13g2's psp103/r3_cmc/mosvar are baked there) and
+* it has no corner or mismatch model at this PDK pin (sim/pdk-cmos5l.json
+* "mom_cap_no_corner_or_mismatch_model"). A capacitor is an open circuit in a
+* DC operating point, so for THIS measurement the substitution cannot move
+* VOUT. It is NOT valid for any AC / transient / loop-gain use. Interface
+* (pins, parameters, the none/same/double constants) mirrors cap_cmomi.lib.
+.param none=0 same=1 double=2
+.subckt cap_cmomi PLUS MINUS w=5e-6 l=5e-6 mmin=1 mmax=4 feed=double subblock=0 mm_ok=1
+Cdc PLUS MINUS 1p
+.ends cap_cmomi
+
+Vin VIN 0 dc 3.30
+Vref VREF 0 dc 0.90
+Ibias IBIAS 0 dc 2u
+
+Xtop VIN VOUT 0 VREF IBIAS ldo_core_cmos5l

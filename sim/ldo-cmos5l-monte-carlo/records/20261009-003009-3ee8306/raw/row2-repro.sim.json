@@ -1,0 +1,1957 @@
+{
+  "schema_version": 3,
+  "netlist": {
+    "path": "sim/ldo-cmos5l-monte-carlo/tb_row2_accuracy.spice",
+    "scope": "repo"
+  },
+  "status": "pass",
+  "corner_count": 50,
+  "passed": 50,
+  "failed": 0,
+  "errored": 0,
+  "inconclusive": 0,
+  "diagnostic_counts": {
+    "by_code": {
+      "singular_matrix": 13
+    },
+    "by_severity": {
+      "warning": 13
+    },
+    "corners_with_diagnostics": 13
+  },
+  "metrics": {
+    "sim__corner__count": 50,
+    "sim__corner__passed_count": 50,
+    "sim__corner__failed_count": 0,
+    "sim__corner__errored_count": 0,
+    "sim__corner__inconclusive_count": 0
+  },
+  "environment": {
+    "engine": "ngspice",
+    "engine_version": "46",
+    "ngspice_binary": "/usr/bin/ngspice",
+    "models_lib": {
+      "path": "sim/ldo-cmos5l-monte-carlo/row2-corners.lib",
+      "scope": "repo"
+    },
+    "models_lib_sha256": "a0b07d8e65c90cdb3e4659b0ae9d49fe3d41309cbe8426428ca90a1f35759383",
+    "netlist_sha256": "b994dbb053ec99fe38ae4bca7fbe9099e9fcd9f77ea2c38ddc0f4f367dadbd45",
+    "netlist_closure": [
+      {
+        "path": "sim/ldo-cmos5l-monte-carlo/tb_row2_accuracy.spice",
+        "scope": "repo",
+        "sha256": "b994dbb053ec99fe38ae4bca7fbe9099e9fcd9f77ea2c38ddc0f4f367dadbd45"
+      },
+      {
+        "path": "sim/ldo-cmos5l-monte-carlo/runner-preamble.cir",
+        "scope": "repo",
+        "sha256": "24a2581f33183c67a7cb530519c44b8637cd339e28ce753aff0e48303a53e4bf"
+      },
+      {
+        "path": "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice",
+        "scope": "repo",
+        "sha256": "c6e630e92fe012d16adf71229c99b52d8eb6cc4b85fffbb891108930acf11041"
+      }
+    ],
+    "staged_model_inputs": [
+      {
+        "name": "row2-corners.lib",
+        "field": "models.lib",
+        "kind": "library",
+        "sha256": "d4679e956e0ea035f57fd8ca4b290be6996721a6bf3752aa5013b8819538cada",
+        "rewritten": true
+      },
+      {
+        "name": "cornerMOShv.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "40c4140415a2a2e92d2f42fd64e026d1c04d800708b7a5b663ef083206ddfd62",
+        "rewritten": true
+      },
+      {
+        "name": "cornerRES.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "8c27e705a59d4221a5107b8fe95d388f3e166414d0fe214acfd2f07dcbb22b61",
+        "rewritten": true
+      },
+      {
+        "name": "sg13g2_moshv_mod.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "a2800206343e9adfb4758e9cca40d50dae05fb42a33da3cde4fca8e0780e1bf9",
+        "rewritten": true
+      },
+      {
+        "name": "sg13g2_svaricaphv_mod.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "1462f67e80da7f5fa6f6b51efb0eb0e4dc7ef2da28d8bfde95a19ce2a780580a",
+        "rewritten": false
+      },
+      {
+        "name": "sg13g2_moshv_mismatch.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "2e9612bdb8252c281f422511039dc9b3ea983892aec89f8ef3361592e68fed09",
+        "rewritten": false
+      },
+      {
+        "name": "sg13g2_moshv_mod_mismatch.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "52d45aec4c933d78bf9309a8d6ab53d16fd3ef97251a9a293f2c9764e586e54e",
+        "rewritten": true
+      },
+      {
+        "name": "sg13g2_svaricaphv_mod_mismatch.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "16da7669ee7e963645a604f64770d2f8d871fa8483c34e3dddaa9fcf01c51f50",
+        "rewritten": false
+      },
+      {
+        "name": "sg13g2_moshv_stat.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "cd30f22637e41fdbbaba506ebe0f17746b8438027e4651a7a87b241a39d68903",
+        "rewritten": false
+      },
+      {
+        "name": "resistors_mod.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "c2329110bcb66894936e942d4cb73fc5eb9188c5230e1bebf18f60d9b00c5c7f",
+        "rewritten": false
+      },
+      {
+        "name": "resistors_mod_mismatch.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "f0aa7d90b6489112ed256aaf4cb0a11b9ab17ebe0c3ce092f4f8c5ecb1fd1e15",
+        "rewritten": false
+      },
+      {
+        "name": "resistors_stat.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "183eb9192bf711db991b8df87e031bab2ca5e559c73393edc756fa02a2720d40",
+        "rewritten": false
+      },
+      {
+        "name": "sg13g2_moshv_parm.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "eea5bbed39184cb1e2654ae29425a9ed6ee2f2341d6cb76c472591c75237bd35",
+        "rewritten": false
+      }
+    ],
+    "remote": {
+      "provider": "aws-batch-fleet",
+      "job_id": "klt-sim-78e8b93544e2",
+      "bucket": "2am-batch-jobs-221082181346",
+      "region": "us-east-1",
+      "instance_id": "i-0b02d839e55593a17",
+      "instance_type": "m7i.4xlarge",
+      "availability_zone": "us-east-1f",
+      "ami_id": "ami-0e40e3245f1923ac8",
+      "lifecycle": "spot",
+      "spot": true,
+      "state": "done",
+      "exit_code": "0",
+      "concurrency": "1",
+      "physical_cores": "8",
+      "elapsed_seconds": 241,
+      "runner_klt_version": "0.5.0",
+      "client_klt_version": "0.7.0+g4cbdfa769875",
+      "runner_compatibility": "mismatch",
+      "runner_compatibility_warning": "the fleet runner ran klt 0.5.0 but the submitting client is 0.7.0+g4cbdfa769875; request options the runner does not know may have been ignored -- update the runner image or use a compatible client"
+    },
+    "monte_carlo": {
+      "n": 50,
+      "seed": 56001,
+      "vary": "mismatch",
+      "family_mismatch": [
+        {
+          "family": "capacitor",
+          "active": null,
+          "note": "PDK family could not be determined for this request (set models.pdk) -- mismatch activity for the 'capacitor' family could not be verified; treat any sampled spread for it as unconfirmed."
+        },
+        {
+          "family": "other",
+          "active": null,
+          "note": "PDK family could not be determined for this request (set models.pdk) -- mismatch activity for the 'other' family could not be verified; treat any sampled spread for it as unconfirmed."
+        }
+      ],
+      "quantiles": [
+        0.135,
+        2.275,
+        50.0,
+        97.725,
+        99.865
+      ]
+    }
+  },
+  "coverage": {
+    "corners_simulated": 50,
+    "measurements_declared": 1,
+    "measurements_with_limits": 1,
+    "unrecognized_limit_keys": [],
+    "schema_version": 1,
+    "known": true,
+    "checked": [
+      "limit:[0,\"tt/novdd/27C/mc0\",\"vout_v\",\"max\"]",
+      "limit:[0,\"tt/novdd/27C/mc0\",\"vout_v\",\"min\"]",
+      "limit:[1,\"tt/novdd/27C/mc1\",\"vout_v\",\"max\"]",
+      "limit:[1,\"tt/novdd/27C/mc1\",\"vout_v\",\"min\"]",
+      "limit:[10,\"tt/novdd/27C/mc10\",\"vout_v\",\"max\"]",
+      "limit:[10,\"tt/novdd/27C/mc10\",\"vout_v\",\"min\"]",
+      "limit:[11,\"tt/novdd/27C/mc11\",\"vout_v\",\"max\"]",
+      "limit:[11,\"tt/novdd/27C/mc11\",\"vout_v\",\"min\"]",
+      "limit:[12,\"tt/novdd/27C/mc12\",\"vout_v\",\"max\"]",
+      "limit:[12,\"tt/novdd/27C/mc12\",\"vout_v\",\"min\"]",
+      "limit:[13,\"tt/novdd/27C/mc13\",\"vout_v\",\"max\"]",
+      "limit:[13,\"tt/novdd/27C/mc13\",\"vout_v\",\"min\"]",
+      "limit:[14,\"tt/novdd/27C/mc14\",\"vout_v\",\"max\"]",
+      "limit:[14,\"tt/novdd/27C/mc14\",\"vout_v\",\"min\"]",
+      "limit:[15,\"tt/novdd/27C/mc15\",\"vout_v\",\"max\"]",
+      "limit:[15,\"tt/novdd/27C/mc15\",\"vout_v\",\"min\"]",
+      "limit:[16,\"tt/novdd/27C/mc16\",\"vout_v\",\"max\"]",
+      "limit:[16,\"tt/novdd/27C/mc16\",\"vout_v\",\"min\"]",
+      "limit:[17,\"tt/novdd/27C/mc17\",\"vout_v\",\"max\"]",
+      "limit:[17,\"tt/novdd/27C/mc17\",\"vout_v\",\"min\"]",
+      "limit:[18,\"tt/novdd/27C/mc18\",\"vout_v\",\"max\"]",
+      "limit:[18,\"tt/novdd/27C/mc18\",\"vout_v\",\"min\"]",
+      "limit:[19,\"tt/novdd/27C/mc19\",\"vout_v\",\"max\"]",
+      "limit:[19,\"tt/novdd/27C/mc19\",\"vout_v\",\"min\"]",
+      "limit:[2,\"tt/novdd/27C/mc2\",\"vout_v\",\"max\"]",
+      "limit:[2,\"tt/novdd/27C/mc2\",\"vout_v\",\"min\"]",
+      "limit:[20,\"tt/novdd/27C/mc20\",\"vout_v\",\"max\"]",
+      "limit:[20,\"tt/novdd/27C/mc20\",\"vout_v\",\"min\"]",
+      "limit:[21,\"tt/novdd/27C/mc21\",\"vout_v\",\"max\"]",
+      "limit:[21,\"tt/novdd/27C/mc21\",\"vout_v\",\"min\"]",
+      "limit:[22,\"tt/novdd/27C/mc22\",\"vout_v\",\"max\"]",
+      "limit:[22,\"tt/novdd/27C/mc22\",\"vout_v\",\"min\"]",
+      "limit:[23,\"tt/novdd/27C/mc23\",\"vout_v\",\"max\"]",
+      "limit:[23,\"tt/novdd/27C/mc23\",\"vout_v\",\"min\"]",
+      "limit:[24,\"tt/novdd/27C/mc24\",\"vout_v\",\"max\"]",
+      "limit:[24,\"tt/novdd/27C/mc24\",\"vout_v\",\"min\"]",
+      "limit:[25,\"tt/novdd/27C/mc25\",\"vout_v\",\"max\"]",
+      "limit:[25,\"tt/novdd/27C/mc25\",\"vout_v\",\"min\"]",
+      "limit:[26,\"tt/novdd/27C/mc26\",\"vout_v\",\"max\"]",
+      "limit:[26,\"tt/novdd/27C/mc26\",\"vout_v\",\"min\"]",
+      "limit:[27,\"tt/novdd/27C/mc27\",\"vout_v\",\"max\"]",
+      "limit:[27,\"tt/novdd/27C/mc27\",\"vout_v\",\"min\"]",
+      "limit:[28,\"tt/novdd/27C/mc28\",\"vout_v\",\"max\"]",
+      "limit:[28,\"tt/novdd/27C/mc28\",\"vout_v\",\"min\"]",
+      "limit:[29,\"tt/novdd/27C/mc29\",\"vout_v\",\"max\"]",
+      "limit:[29,\"tt/novdd/27C/mc29\",\"vout_v\",\"min\"]",
+      "limit:[3,\"tt/novdd/27C/mc3\",\"vout_v\",\"max\"]",
+      "limit:[3,\"tt/novdd/27C/mc3\",\"vout_v\",\"min\"]",
+      "limit:[30,\"tt/novdd/27C/mc30\",\"vout_v\",\"max\"]",
+      "limit:[30,\"tt/novdd/27C/mc30\",\"vout_v\",\"min\"]",
+      "limit:[31,\"tt/novdd/27C/mc31\",\"vout_v\",\"max\"]",
+      "limit:[31,\"tt/novdd/27C/mc31\",\"vout_v\",\"min\"]",
+      "limit:[32,\"tt/novdd/27C/mc32\",\"vout_v\",\"max\"]",
+      "limit:[32,\"tt/novdd/27C/mc32\",\"vout_v\",\"min\"]",
+      "limit:[33,\"tt/novdd/27C/mc33\",\"vout_v\",\"max\"]",
+      "limit:[33,\"tt/novdd/27C/mc33\",\"vout_v\",\"min\"]",
+      "limit:[34,\"tt/novdd/27C/mc34\",\"vout_v\",\"max\"]",
+      "limit:[34,\"tt/novdd/27C/mc34\",\"vout_v\",\"min\"]",
+      "limit:[35,\"tt/novdd/27C/mc35\",\"vout_v\",\"max\"]",
+      "limit:[35,\"tt/novdd/27C/mc35\",\"vout_v\",\"min\"]",
+      "limit:[36,\"tt/novdd/27C/mc36\",\"vout_v\",\"max\"]",
+      "limit:[36,\"tt/novdd/27C/mc36\",\"vout_v\",\"min\"]",
+      "limit:[37,\"tt/novdd/27C/mc37\",\"vout_v\",\"max\"]",
+      "limit:[37,\"tt/novdd/27C/mc37\",\"vout_v\",\"min\"]",
+      "limit:[38,\"tt/novdd/27C/mc38\",\"vout_v\",\"max\"]",
+      "limit:[38,\"tt/novdd/27C/mc38\",\"vout_v\",\"min\"]",
+      "limit:[39,\"tt/novdd/27C/mc39\",\"vout_v\",\"max\"]",
+      "limit:[39,\"tt/novdd/27C/mc39\",\"vout_v\",\"min\"]",
+      "limit:[4,\"tt/novdd/27C/mc4\",\"vout_v\",\"max\"]",
+      "limit:[4,\"tt/novdd/27C/mc4\",\"vout_v\",\"min\"]",
+      "limit:[40,\"tt/novdd/27C/mc40\",\"vout_v\",\"max\"]",
+      "limit:[40,\"tt/novdd/27C/mc40\",\"vout_v\",\"min\"]",
+      "limit:[41,\"tt/novdd/27C/mc41\",\"vout_v\",\"max\"]",
+      "limit:[41,\"tt/novdd/27C/mc41\",\"vout_v\",\"min\"]",
+      "limit:[42,\"tt/novdd/27C/mc42\",\"vout_v\",\"max\"]",
+      "limit:[42,\"tt/novdd/27C/mc42\",\"vout_v\",\"min\"]",
+      "limit:[43,\"tt/novdd/27C/mc43\",\"vout_v\",\"max\"]",
+      "limit:[43,\"tt/novdd/27C/mc43\",\"vout_v\",\"min\"]",
+      "limit:[44,\"tt/novdd/27C/mc44\",\"vout_v\",\"max\"]",
+      "limit:[44,\"tt/novdd/27C/mc44\",\"vout_v\",\"min\"]",
+      "limit:[45,\"tt/novdd/27C/mc45\",\"vout_v\",\"max\"]",
+      "limit:[45,\"tt/novdd/27C/mc45\",\"vout_v\",\"min\"]",
+      "limit:[46,\"tt/novdd/27C/mc46\",\"vout_v\",\"max\"]",
+      "limit:[46,\"tt/novdd/27C/mc46\",\"vout_v\",\"min\"]",
+      "limit:[47,\"tt/novdd/27C/mc47\",\"vout_v\",\"max\"]",
+      "limit:[47,\"tt/novdd/27C/mc47\",\"vout_v\",\"min\"]",
+      "limit:[48,\"tt/novdd/27C/mc48\",\"vout_v\",\"max\"]",
+      "limit:[48,\"tt/novdd/27C/mc48\",\"vout_v\",\"min\"]",
+      "limit:[49,\"tt/novdd/27C/mc49\",\"vout_v\",\"max\"]",
+      "limit:[49,\"tt/novdd/27C/mc49\",\"vout_v\",\"min\"]",
+      "limit:[5,\"tt/novdd/27C/mc5\",\"vout_v\",\"max\"]",
+      "limit:[5,\"tt/novdd/27C/mc5\",\"vout_v\",\"min\"]",
+      "limit:[6,\"tt/novdd/27C/mc6\",\"vout_v\",\"max\"]",
+      "limit:[6,\"tt/novdd/27C/mc6\",\"vout_v\",\"min\"]",
+      "limit:[7,\"tt/novdd/27C/mc7\",\"vout_v\",\"max\"]",
+      "limit:[7,\"tt/novdd/27C/mc7\",\"vout_v\",\"min\"]",
+      "limit:[8,\"tt/novdd/27C/mc8\",\"vout_v\",\"max\"]",
+      "limit:[8,\"tt/novdd/27C/mc8\",\"vout_v\",\"min\"]",
+      "limit:[9,\"tt/novdd/27C/mc9\",\"vout_v\",\"max\"]",
+      "limit:[9,\"tt/novdd/27C/mc9\",\"vout_v\",\"min\"]"
+    ],
+    "skipped": [],
+    "inapplicable": [],
+    "unknown": [],
+    "nothing_checked": false,
+    "nothing_checked_reasons": []
+  },
+  "provenance": {
+    "klt_version": "0.7.0+g4cbdfa769875",
+    "klayout_version": "0.30.12",
+    "pdk": null,
+    "deck": {
+      "name": "row2-corners.lib",
+      "content_hash": "sha256:a0b07d8e65c90cdb3e4659b0ae9d49fe3d41309cbe8426428ca90a1f35759383",
+      "released": false
+    },
+    "input": {
+      "content_hash": "sha256:b994dbb053ec99fe38ae4bca7fbe9099e9fcd9f77ea2c38ddc0f4f367dadbd45",
+      "role": "netlist"
+    }
+  },
+  "measurements": [
+    {
+      "name": "vout_v",
+      "unit": "V",
+      "limits": {
+        "min": 1.764,
+        "max": 1.836
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C/mc47",
+        "value": 1.829202492,
+        "margin": 0.006797508000000008
+      },
+      "monte_carlo": {
+        "n": 50,
+        "errored": 0,
+        "inconclusive": 0,
+        "mean": 1.8008481918,
+        "stddev": 0.009955970352642746,
+        "min": 1.780645031,
+        "max": 1.829202492,
+        "quantiles": {
+          "p0.135": 1.7809506477043997,
+          "p2.275": 1.7854125983545,
+          "p50": 1.801200506,
+          "p97.725": 1.824588776221,
+          "p99.865": 1.828944219909
+        },
+        "sigma_window": null,
+        "by_corner": [
+          {
+            "corner_id": "tt/novdd/27C",
+            "n": 50,
+            "errored": 0,
+            "inconclusive": 0,
+            "mean": 1.8008481918,
+            "stddev": 0.009955970352642746,
+            "min": 1.780645031,
+            "max": 1.829202492,
+            "quantiles": {
+              "p0.135": 1.7809506477043997,
+              "p2.275": 1.7854125983545,
+              "p50": 1.801200506,
+              "p97.725": 1.824588776221,
+              "p99.865": 1.828944219909
+            },
+            "sigma_window": null
+          }
+        ]
+      }
+    }
+  ],
+  "corners": [
+    {
+      "corner_id": "tt/novdd/27C/mc0",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 67.007,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.795453724,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.031453723999999905
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc0/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc0/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 0,
+        "seed": 1439333159,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1776046802
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc1",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 16.411,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.804995039,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.031004961000000053
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node n.xtop.xamp.xrz.nr1#i1"
+        }
+      ],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc1/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc1/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 1,
+        "seed": 1710950070,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1924163524
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc2",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 59.979,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.802835164,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.033164836000000086
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node n.xtop.xamp.xrz.nr1#i1"
+        }
+      ],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc2/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc2/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 2,
+        "seed": 84400047,
+        "process_seed": 1342826448,
+        "mismatch_seed": 968623388
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc3",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 40.323,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.789804539,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.025804538999999904
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc3/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc3/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 3,
+        "seed": 499437139,
+        "process_seed": 1342826448,
+        "mismatch_seed": 503761890
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc4",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 58.993,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.794178594,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.030178593999999892
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc4/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc4/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 4,
+        "seed": 241148328,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1636861242
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc5",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 52.246,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.803322785,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.03267721500000009
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node n.xtop.xamp.xrz.nr1#i1"
+        }
+      ],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc5/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc5/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 5,
+        "seed": 1279463794,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1547038652
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc6",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 58.131,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.793406596,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.029406596000000063
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node n.xtop.xamp.xrz.nr1#i1"
+        }
+      ],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc6/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc6/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 6,
+        "seed": 1049118007,
+        "process_seed": 1342826448,
+        "mismatch_seed": 209670172
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc7",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 3.736,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.80119608,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.0348039200000001
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc7/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc7/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 7,
+        "seed": 394703960,
+        "process_seed": 1342826448,
+        "mismatch_seed": 880496632
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc8",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 63.191,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.790812191,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.026812191000000096
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc8/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc8/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 8,
+        "seed": 907914304,
+        "process_seed": 1342826448,
+        "mismatch_seed": 435870831
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc9",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 4.351,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.797676727,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.03367672700000002
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc9/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc9/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 9,
+        "seed": 714244731,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1701712048
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc10",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 65.639,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.79293958,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.028939580000000076
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc10/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc10/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 10,
+        "seed": 728675863,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1877863122
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc11",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 2.747,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.794729636,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.030729636000000005
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc11/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc11/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 11,
+        "seed": 1352674713,
+        "process_seed": 1342826448,
+        "mismatch_seed": 548641206
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc12",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 2.692,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.825298152,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.01070184800000007
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc12/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc12/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 12,
+        "seed": 1420236121,
+        "process_seed": 1342826448,
+        "mismatch_seed": 807464724
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc13",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 50.288,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.789424011,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.025424010999999913
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node n.xtop.xamp.xrz.nr1#i1"
+        }
+      ],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc13/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc13/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 13,
+        "seed": 392130445,
+        "process_seed": 1342826448,
+        "mismatch_seed": 35143153
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc14",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 54.289,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.807117079,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.028882921000000117
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node n.xtop.xamp.xrz.nr1#i1"
+        }
+      ],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc14/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc14/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 14,
+        "seed": 1531180519,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1431905910
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc15",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 3.217,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.785265087,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.02126508699999996
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc15/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc15/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 15,
+        "seed": 23626459,
+        "process_seed": 1342826448,
+        "mismatch_seed": 874474459
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc16",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 3.122,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.786550589,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.022550588999999954
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc16/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc16/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 16,
+        "seed": 1820553937,
+        "process_seed": 1342826448,
+        "mismatch_seed": 365261737
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc17",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 59.275,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.806545748,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.02945425200000007
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc17/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc17/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 17,
+        "seed": 960345977,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1138986436
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc18",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 51.03,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.803171225,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.03282877500000003
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node n.xtop.xamp.xrz.nr1#i1"
+        }
+      ],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc18/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc18/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 18,
+        "seed": 1626523040,
+        "process_seed": 1342826448,
+        "mismatch_seed": 397956078
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc19",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 53.414,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.801204932,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.034795067999999985
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc19/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc19/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 19,
+        "seed": 1984104411,
+        "process_seed": 1342826448,
+        "mismatch_seed": 2037222381
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc20",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 56.812,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.806128679,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.029871321000000117
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc20/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc20/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 20,
+        "seed": 1883181271,
+        "process_seed": 1342826448,
+        "mismatch_seed": 269661018
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc21",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 58.345,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.802912641,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.03308735900000004
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc21/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc21/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 21,
+        "seed": 1468569590,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1937463552
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc22",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 58.436,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.803304175,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.03269582500000001
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc22/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc22/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 22,
+        "seed": 1280612423,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1963304376
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc23",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 60.261,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.807539889,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.02846011100000001
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc23/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc23/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 23,
+        "seed": 1697085279,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1875068591
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc24",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 58.466,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.797048492,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.03304849200000004
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node n.xtop.xamp.xrz.nr1#i1"
+        }
+      ],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc24/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc24/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 24,
+        "seed": 678316527,
+        "process_seed": 1342826448,
+        "mismatch_seed": 181205576
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc25",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 53.067,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.81081697,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.025183029999999995
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node n.xtop.xamp.xrz.nr1#i1"
+        }
+      ],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc25/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc25/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 25,
+        "seed": 506413459,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1563528182
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc26",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 65.944,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.791536504,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.02753650399999996
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc26/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc26/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 26,
+        "seed": 42615558,
+        "process_seed": 1342826448,
+        "mismatch_seed": 246523635
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc27",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 2.59,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.789143719,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.025143718999999898
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc27/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc27/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 27,
+        "seed": 1350687124,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1959268523
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc28",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 2.838,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.805224321,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.030775679
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc28/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc28/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 28,
+        "seed": 1362308933,
+        "process_seed": 1342826448,
+        "mismatch_seed": 319365421
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc29",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 66.387,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.812973271,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.023026729000000135
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc29/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc29/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 29,
+        "seed": 941036167,
+        "process_seed": 1342826448,
+        "mismatch_seed": 2016043113
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc30",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 2.842,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.791498043,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.027498043000000028
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc30/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc30/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 30,
+        "seed": 1014845138,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1736911320
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc31",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 60.779,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.780645031,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.01664503099999992
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc31/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc31/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 31,
+        "seed": 111634390,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1029858893
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc32",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 33.17,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.805488174,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.03051182600000013
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc32/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc32/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 32,
+        "seed": 1998013490,
+        "process_seed": 1342826448,
+        "mismatch_seed": 735664733
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc33",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 2.544,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.812305428,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.023694572000000136
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc33/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc33/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 33,
+        "seed": 1353342455,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1383671779
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc34",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 2.754,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.798130074,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.0341300739999999
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc34/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc34/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 34,
+        "seed": 136314953,
+        "process_seed": 1342826448,
+        "mismatch_seed": 2095618626
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc35",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 2.637,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.815608802,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.020391198
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc35/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc35/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 35,
+        "seed": 102332269,
+        "process_seed": 1342826448,
+        "mismatch_seed": 2084537849
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc36",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 61.349,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.796693989,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.03269398899999998
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc36/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc36/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 36,
+        "seed": 304073498,
+        "process_seed": 1342826448,
+        "mismatch_seed": 2134741312
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc37",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 61.827,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.790035245,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.026035245000000096
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node n.xtop.xamp.xrz.nr1#i1"
+        }
+      ],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc37/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc37/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 37,
+        "seed": 1987525925,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1070599116
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc38",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 2.732,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.819116228,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.01688377200000013
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc38/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc38/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 38,
+        "seed": 1500107473,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1643450709
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc39",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 51.906,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.795511019,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.031511019000000084
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node n.xtop.xamp.xrz.nr1#i1"
+        }
+      ],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc39/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc39/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 39,
+        "seed": 641038984,
+        "process_seed": 1342826448,
+        "mismatch_seed": 337822473
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc40",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 57.641,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.802669306,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.033330693999999994
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc40/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc40/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 40,
+        "seed": 512529726,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1975384356
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc41",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 3.793,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.806449689,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.029550311000000162
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc41/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc41/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 41,
+        "seed": 827274304,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1470554374
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc42",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 2.583,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.80477094,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.03122906000000003
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc42/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc42/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 42,
+        "seed": 659642592,
+        "process_seed": 1342826448,
+        "mismatch_seed": 402946629
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc43",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 53.67,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.794394944,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.03039494399999998
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc43/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc43/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 43,
+        "seed": 897175544,
+        "process_seed": 1342826448,
+        "mismatch_seed": 308459396
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc44",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 46.717,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.800208218,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.035791781999999994
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc44/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc44/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 44,
+        "seed": 1031665255,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1891153428
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc45",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 2.793,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.806080619,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.029919381000000023
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc45/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc45/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 45,
+        "seed": 1047673233,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1628738571
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc46",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 45.827,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.795308263,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.03130826299999989
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc46/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc46/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 46,
+        "seed": 1652805086,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1450319749
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc47",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 43.334,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.829202492,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.006797508000000008
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node n.xtop.xamp.xrz.nr1#i1"
+        }
+      ],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc47/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc47/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 47,
+        "seed": 1361279329,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1206278000
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc48",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 20.61,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.812768135,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.023231865000000074
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc48/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc48/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 48,
+        "seed": 405990587,
+        "process_seed": 1342826448,
+        "mismatch_seed": 48811731
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc49",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 19.422,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.792968812,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.02896881200000001
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node n.xtop.xamp.xrz.nr1#i1"
+        }
+      ],
+      "artifacts": {
+        "log": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc49/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/kyt56/runs/repro-artifacts/tt_novdd_27C_mc49/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 49,
+        "seed": 1263345084,
+        "process_seed": 1342826448,
+        "mismatch_seed": 513612652
+      }
+    }
+  ]
+}

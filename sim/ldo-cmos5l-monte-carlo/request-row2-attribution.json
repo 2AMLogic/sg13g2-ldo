@@ -1,0 +1,53 @@
+{
+  "netlist": "tb_row2_accuracy.spice",
+  "backend": "batch",
+  "batch": {
+    "runner_version_check": "warn",
+    "capacity_wait_s": 1800
+  },
+  "models": {
+    "lib": "row2-corners.lib"
+  },
+  "analysis": {
+    "kind": "dc",
+    "args": "Vin 3.29 3.31 0.01"
+  },
+  "measurements": [
+    {
+      "name": "vout_v",
+      "spice": ".meas dc vout_v FIND v(vout) AT=3.30",
+      "unit": "V",
+      "limits": {
+        "min": 1.764,
+        "max": 1.836
+      }
+    }
+  ],
+  "corners": {
+    "process": [
+      "tt_nom",
+      "tt_mosmm",
+      "tt_resmm"
+    ],
+    "temperature_c": [
+      27
+    ]
+  },
+  "monte_carlo": {
+    "n": 100,
+    "seed": 56002,
+    "vary": "mismatch",
+    "quantiles": [
+      0.135,
+      2.275,
+      50,
+      97.725,
+      99.865
+    ]
+  },
+  "options": {
+    "timeout_s": 120,
+    "keep_artifacts": false,
+    "stage_model_inputs": true
+  }
+}

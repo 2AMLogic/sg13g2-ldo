@@ -1,0 +1,113 @@
+{
+  "samples": "ff_rwcs_125C.samples.json",
+  "limits": null,
+  "source": {
+    "kind": "sample-set",
+    "netlist": null,
+    "monte_carlo": null,
+    "sample_count": 400
+  },
+  "schema_version": 1,
+  "confidence": 0.95,
+  "target_ci_halfwidth": 0.01,
+  "min_samples": 2,
+  "status": "pass",
+  "measurement_count": 1,
+  "measurements": [
+    {
+      "name": "vout_v",
+      "unit": "V",
+      "n": 400,
+      "errored": 0,
+      "failed_unmeasurable": 0,
+      "censored": 0,
+      "inconclusive": 0,
+      "limits": {
+        "min": 1.764,
+        "max": 1.836,
+        "target_yield": 0.99
+      },
+      "source_corners": [
+        "ff_rwcs/novdd/125C"
+      ],
+      "distribution": {
+        "model": "normal",
+        "mean": 1.80054279455,
+        "stddev": 0.010356009905859604,
+        "min": 1.770725999,
+        "max": 1.832089873,
+        "median": 1.8011027965,
+        "skewness": -0.04735801559587753,
+        "excess_kurtosis": -0.35066500413989976,
+        "normality": {
+          "test": "anderson-darling",
+          "statistic": 0.4523917679738787,
+          "critical_value": 0.787,
+          "significance": 0.05,
+          "verdict": "consistent"
+        }
+      },
+      "yield": {
+        "empirical": {
+          "method": "clopper-pearson",
+          "estimate": 1.0,
+          "confidence": 0.95,
+          "confidence_interval": {
+            "low": 0.9908201954163351,
+            "high": 1.0
+          },
+          "n": 400
+        },
+        "normal": {
+          "method": "normal-delta",
+          "estimate": 0.9994824345301854,
+          "confidence": 0.95,
+          "confidence_interval": {
+            "low": 0.9990187199812585,
+            "high": 0.9999461490791123
+          },
+          "n": 400
+        },
+        "variance_reduced": null
+      },
+      "capability": {
+        "cp": 1.158747443183712,
+        "cpk": 1.1412762821563058,
+        "cpk_confidence_interval": {
+          "low": 1.055618954545279,
+          "high": 1.2269336097673327
+        },
+        "sigma_to_spec": 3.4238288464689175,
+        "sigma_to_spec_confidence_interval": {
+          "low": 3.1668568636358367,
+          "high": 3.6808008293019983
+        },
+        "limiting_side": "upper"
+      },
+      "sample_size": {
+        "n": 400,
+        "observed_ci_halfwidth": 0.004589902291832426,
+        "target_ci_halfwidth": 0.01,
+        "required_n": 183,
+        "required_n_for_target": 368,
+        "verdict": "sufficient",
+        "method": "clopper-pearson-zero-failures",
+        "variance_reduced": null
+      },
+      "negative_control": null,
+      "analytic_cross_check": null,
+      "sampling": {
+        "strategy": "plain_random",
+        "replicates": null,
+        "effective_sample_size": null
+      },
+      "status": "pass",
+      "warnings": [
+        "measurement 'vout_v': no sample fell outside the limits, so the empirical yield is bounded only from below -- \"at least 99.0820% at 95% confidence, N = 400\" is the honest statement, not \"100% yield\""
+      ]
+    }
+  ],
+  "warnings": [
+    "no measurement declared a negative_control -- this campaign has no seeded, known-bad variant demonstrating that the statistics above can actually detect a degraded design; see docs/cli/yield.md#negative-control"
+  ]
+}
