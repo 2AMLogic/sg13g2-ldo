@@ -296,6 +296,38 @@
       ]
     }
   ],
+  "nets": [
+    {
+      "name": "VIN",
+      "matched_islands": 1,
+      "expected_islands": 1,
+      "roles": [],
+      "unlabelled_islands": null,
+      "unlabelled_area_um2": null,
+      "unlabelled_bbox": null,
+      "unlabelled_allowed_islands": null
+    },
+    {
+      "name": "VOUT",
+      "matched_islands": 1,
+      "expected_islands": 1,
+      "roles": [],
+      "unlabelled_islands": null,
+      "unlabelled_area_um2": null,
+      "unlabelled_bbox": null,
+      "unlabelled_allowed_islands": null
+    },
+    {
+      "name": "VSS",
+      "matched_islands": 1,
+      "expected_islands": 1,
+      "roles": [],
+      "unlabelled_islands": null,
+      "unlabelled_area_um2": null,
+      "unlabelled_bbox": null,
+      "unlabelled_allowed_islands": null
+    }
+  ],
   "erc_findings": [],
   "erc_finding_count": 0,
   "erc_status": "clean",
@@ -423,25 +455,50 @@
       "erc.floating_gate:[\"gate3\"]",
       "erc.floating_gate:[\"gate4\"]",
       "erc.floating_gate:[\"gate5\"]",
+      "erc.missing_tie:[\"nwell_tie_TAIL\"]",
+      "erc.missing_tie:[\"nwell_tie_VIN\"]",
+      "erc.missing_tie:[\"substrate_tie_VSS\"]",
       "erc.net_connectivity:[\"VIN\"]",
       "erc.net_connectivity:[\"VOUT\"]",
       "erc.net_connectivity:[\"VSS\"]"
     ],
     "skipped": [],
-    "inapplicable": [
-      {
-        "id": "erc.missing_tie:[]",
-        "reason": "no_ties_declared"
-      }
-    ],
+    "inapplicable": [],
     "unknown": [],
     "nothing_checked": false,
     "nothing_checked_reasons": [],
-    "checked_by_assertion": []
+    "checked_by_assertion": [
+      "erc.missing_tie:[\"nwell_tie_TAIL\"]",
+      "erc.missing_tie:[\"nwell_tie_VIN\"]",
+      "erc.missing_tie:[\"substrate_tie_VSS\"]"
+    ],
+    "checked_by_well_assertion": [
+      "erc.missing_tie:[\"nwell_tie_TAIL\"]",
+      "erc.missing_tie:[\"nwell_tie_VIN\"]",
+      "erc.missing_tie:[\"substrate_tie_VSS\"]"
+    ],
+    "layers_in_stream_without_declaration": [
+      "28/0",
+      "31/2",
+      "44/0",
+      "63/0",
+      "99/39",
+      "111/0"
+    ],
+    "well_assertion_coverage": [
+      {
+        "id": "erc.missing_tie:[\"substrate_tie_VSS\"]",
+        "tap_layer": "1/0",
+        "drawn_tap_area_um2": 3254.404,
+        "uncovered_tap_area_um2": 3178.404,
+        "uncovered_tap_fraction": 0.976647,
+        "extent_uncovered_fraction": 0.946621
+      }
+    ]
   },
   "ties_disclosure": null,
   "provenance": {
-    "klt_version": "0.5.0+gb15edf5e3a2e",
+    "klt_version": "0.7.0+gb82427b30c96",
     "klayout_version": "0.30.12",
     "pdk": null,
     "deck": null,
@@ -450,7 +507,7 @@
       "role": "layout"
     },
     "spec": {
-      "content_hash": "sha256:5f21343f91a9cf535130c1a22e44ac7ad3000237c92595f7a7d16c5f8465b62e"
+      "content_hash": "sha256:6e26f40e47523abe9bc5fe480e418851dd6c29be13ae2017097a2c8f3082b7e8"
     },
     "devices": [
       {
@@ -458,6 +515,24 @@
         "body_layer": "128/0",
         "on": "GatPoly",
         "body_area_um2": 1568.82
+      }
+    ],
+    "net_exclusions": [],
+    "label_layers": [
+      {
+        "name": "Metal1",
+        "label_layer": "8/2",
+        "label_text_count": 36
+      },
+      {
+        "name": "Metal2",
+        "label_layer": "10/2",
+        "label_text_count": 12
+      },
+      {
+        "name": "Metal3",
+        "label_layer": "30/2",
+        "label_text_count": 11
       }
     ]
   }

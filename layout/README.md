@@ -34,7 +34,7 @@ layout/
                                             MOS row, well/substrate ties, meandered
                                             rhigh, cap_cmomi, routing helpers)
   lvs_reference.py                          schematic export -> LVS reference netlist
-  run_flow.sh                               the one command (see "The seven stages")
+  run_flow.sh                               the one command (see "The seven stages"; stage 8 is the ERC supply check)
   sg13cmos5l-ldo_core_cmos5l/
     generate.py                             the floorplan: this cell's layout, as code
     sg13cmos5l-ldo_core_cmos5l.gds          the committed stream
@@ -44,7 +44,9 @@ layout/
     drc_pdk_deck_report.json                the PDK's own deck, both invocations
     extract_report.json                     `klt extract --deck sg13cmos5l`
     lvs_request.json / lvs_report.json      `klt lvs`
-    erc-supply-spec.json                    T1 item 11 supply spec (`klt erc`, #43)
+    erc-supply-spec.json                    T1 item 11 supply spec (`klt erc`, #43, ties #59)
+    erc-supply-spec.md                      its rationale (strict JSON allows no _comment)
+    erc-tap-boxes.json                      the generator's tap bars (source of ties[].tap_boxes)
     erc_supply_report.json                  the `klt erc` run against the committed GDS
 ```
 
@@ -282,6 +284,8 @@ SG13-family PDK. Two artifacts in this directory:
   `Via2`, with text labels on the `.pin` layers of all three metals.
   `VREF`/`IBIAS` are control inputs by DR-0002, not power rails, so they are
   not declared.
+- `erc-supply-spec.md` — the spec's rationale (formerly its `_comment`).
+- `erc-tap-boxes.json` — the generator's tap bars, the source of `ties[].tap_boxes`.
 - `erc_supply_report.json` — the committed run. Its `provenance.input.
   content_hash` is the committed GDS's own sha256
   (`f0f01392735616cbdb45166467972f8e4456426fd1cf794e3380d1713eabc062`,
@@ -309,25 +313,24 @@ Read the three verdicts precisely in that report:
   the carve-out actually removed geometry. `Cc` needs no declaration: its
   interdigitated plates never touch, and bridging `EAOUT`↔`MZ` would not be a
   declared-supply pair anyway.
-- **`erc.missing_tie` is NOT computed.** The spec deliberately declares no
-  `ties[]` (per this issue's curation: the ties[] reading was the
-  false-positive class of `klayout-tools`#2169 on real routed layouts, since
-  fixed upstream), so `erc.missing_tie` is never computed by this run — the
-  report's own `erc_coverage` carries that as
-  `inapplicable: erc.missing_tie / no_ties_declared`, which is an **absence of
-  evidence, not evidence of absence**. The well-tie evidence that stands in,
-  all against this same GDS: (1) the three drawn, contacted Activ tie bars —
-  the pass array's NWell tie (VIN, whose Metal1 strap also ties every row's
-  source bus into one rail), the diff pair's TAIL NWell tie, and the substrate
-  tie (VSS) — are extracted and compared by `klt lvs` (status `match`; well
-  nets named by the NWell.pin texts, tap geometry derived by the deck's
-  `tap_nplus`/`tap_pplus`, #1414), with `VIN`/`VOUT`/`VSS` all carried as
-  pins in `net_correspondence` — item 11's Analog-column requirement; (2) the
-  PDK deck's own latch-up rule (LU.b — every N+ implant within 20 µm of a
-  substrate tie) ran clean over this GDS; (3) the PG pin labels themselves sit
-  on the rails' `.pin` layers at every level they touch. Declaring a *checked*
-  tie in the spec (now that #2169's fix is upstream) is follow-up work, not a
-  silent gap.
+- **`erc.missing_tie` is computed, from three checked ties (#59).** The spec
+  declares `nwell_tie_VIN` (the pass array's NWell strap and the error-amp's
+  VIN well tie), `nwell_tie_TAIL` (the diff pair's well) and
+  `substrate_tie_VSS` (the NMOS group, native substrate). The report has zero
+  `erc.missing_tie`, `erc_coverage.skipped` and `inapplicable` empty, and all
+  three ties under `checked` (not `degenerate_tap_declaration`). The tap boxes
+  are the generator's own `draw_tap_bar` boxes (`erc-tap-boxes.json`, derived
+  into `ties[]` by `layout/erc_ties.py` and checked by `run_flow.sh`), not
+  hand-typed. **Read the strength precisely**: every tie rests on a caller
+  assertion (`checked_by_assertion`, `checked_by_well_assertion`); the n-ties
+  are also layer-narrowed by nSD; and the substrate tie's asserted region is
+  the tap bar plus 20 µm (LU.b reach), leaving ~97.7 % of the drawn Activ area
+  outside it unexamined by that tie (`well_assertion_coverage`). A mutation
+  control (a tap box moved off its tap) is flagged `erc.missing_tie`
+  (`run_flow.sh` stage 8b). Rationale for every spec choice:
+  `erc-supply-spec.md` (the spec itself is strict JSON; a klt that rejects
+  unknown keys no longer allows a `_comment`). The corroborating evidence is
+  unchanged: `klt lvs` `match` with VIN/VOUT/VSS as pins, and LU.b clean.
 
 Two contract notes for anyone re-running it:
 
@@ -337,14 +340,11 @@ Two contract notes for anyone re-running it:
   11's subject ([`klayout-tools`#1994](https://github.com/2AMLogic/klayout-tools/issues/1994)).
   The structural verdict item 11 grades is the separate `erc_status` field:
   `clean`. Gate on that, not on the exit code.
-- Released `klayout-tools` 0.5.0 — what pip/uv installs and what this host's
-  `klt` currently resolves to — predates both the `status`/`provenance`
-  envelope (#1968) and `devices[]` (#2183), so it can produce neither the
-  content-hash pin nor the carve-out. This report was made with an
-  upstream-main source build (version `0.5.0+gb15edf5e3a2e`, recorded in
-  `provenance.klt_version`); the one-line command in the spec's `_comment`
-  reproduces it verbatim once a klayout-tools release carrying those changes
-  is installed:
+- Released `klayout-tools` 0.5.0 — what pip/uv installs — predates the
+  `status`/`provenance` envelope (#1968), `devices[]` (#2183) and the tie
+  forms this spec uses (#2255, #2540). This report was made with an
+  upstream-main build (`0.7.0+gb82427b30c96`, recorded in
+  `provenance.klt_version`, and the CI signoff pin); run from the repo root:
 
 ```
 klt erc layout/sg13cmos5l-ldo_core_cmos5l/sg13cmos5l-ldo_core_cmos5l.gds \

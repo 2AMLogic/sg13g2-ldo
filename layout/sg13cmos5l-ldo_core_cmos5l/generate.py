@@ -54,7 +54,9 @@ WHAT THE LVS FLOW NEEDS FROM THIS FILE
 
 from __future__ import annotations
 
+import json
 import pathlib
+import re
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
@@ -330,10 +332,50 @@ def assert_manhattan(b: c.Builder) -> int:
     return count
 
 
+#: Latch-up reach of a substrate tie (PDK deck rule ``LU.b``: every N+ implant
+#: within 20 um of a substrate tie). The asserted native-substrate region of
+#: the substrate tie is that tie's own Activ box grown by exactly this reach.
+SUBSTRATE_TIE_REACH_UM = 20.0
+
+OUT_TAPS = OUT_GDS.with_name("erc-tap-boxes.json")
+
+
+def tap_boxes_document(b: c.Builder) -> dict:
+    """The ``klt erc`` ``ties[]`` geometry, derived from the tap bars that
+    :func:`common_sg13cmos5l.draw_tap_bar` actually drew -- never hand-typed.
+
+    One group per (kind, net). ``tap_boxes`` are the tap bars' own ``Activ``
+    boxes; for the substrate tie, ``well_boxes`` is each such box grown by
+    ``SUBSTRATE_TIE_REACH_UM`` (a native-substrate region has no drawn well
+    layer to name, so the region is asserted -- see erc-supply-spec.json).
+    """
+    groups: dict[tuple[str, str], list[list[float]]] = {}
+    for t in b.taps:
+        groups.setdefault((t["kind"], t["net"]), []).append(
+            [round(v, 3) for v in t["activ"]]
+        )
+    out = []
+    for (kind, net), boxes in groups.items():
+        entry = {"kind": kind, "net": net, "tap_boxes": boxes}
+        if kind == "psub":
+            r = SUBSTRATE_TIE_REACH_UM
+            entry["well_boxes"] = [
+                [round(x0 - r, 3), round(y0 - r, 3), round(x1 + r, 3), round(y1 + r, 3)]
+                for x0, y0, x1, y1 in boxes
+            ]
+        out.append(entry)
+    return {"schema": "sg13g2-ldo.erc-tap-boxes/1", "taps": out}
+
+
 def main() -> None:
     b = build()
     shapes = assert_manhattan(b)
     b.write(str(OUT_GDS))
+    text = json.dumps(tap_boxes_document(b), indent=2)
+    # One box per line: collapse each innermost numeric array.
+    text = re.sub(r"\[\s+(-?[\d.]+(?:,\s+-?[\d.]+)+)\s+\]",
+                  lambda m: "[" + re.sub(r"\s+", " ", m.group(1)) + "]", text)
+    OUT_TAPS.write_text(text + "\n")
     x0, y0, x1, y1 = b.bbox_um()
     print(f"wrote {OUT_GDS.name}")
     print(f"  top cell   : {TOP_CELL}")
