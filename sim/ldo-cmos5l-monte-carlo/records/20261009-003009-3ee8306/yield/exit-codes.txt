@@ -1,0 +1,6 @@
+ff_rwcs_125C: klt yield exit 0
+fs_rbcs_-40C: klt yield exit 0
+sf_rwcs_125C: klt yield exit 0
+ss_rbcs_-40C: klt yield exit 0
+tt_27C: klt yield exit 0
+tt_27C_vref0.93V.negctl: klt yield exit 3

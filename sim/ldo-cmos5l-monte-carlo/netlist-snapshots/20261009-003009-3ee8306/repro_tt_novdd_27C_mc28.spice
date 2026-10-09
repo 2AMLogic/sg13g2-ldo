@@ -1,0 +1,14 @@
+* klt sim -- generated corner deck, do not edit
+.options seed=1362308933
+.param mc_sample_index=28
+.param mc_process_seed=1342826448
+.param mc_mismatch_seed=319365421
+.lib /var/tmp/eda-job-klt-sim-78e8b93544e2/inputs/row2-corners.lib tt
+.include /var/tmp/eda-job-klt-sim-78e8b93544e2/inputs/netlist.cir
+.temp 27
+.meas dc vout_v FIND v(vout) AT=3.30
+.control
+dc Vin 3.29 3.31 0.01
+quit
+.endc
+.end

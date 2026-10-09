@@ -1,0 +1,11 @@
+* klt sim -- generated corner deck, do not edit
+.lib /var/tmp/eda-job-klt-sim-d7b880fa21e3/inputs/row2-corners.lib tt_nom
+.include /var/tmp/eda-job-klt-sim-d7b880fa21e3/inputs/netlist.cir
+.temp 27
+.meas dc vout_v FIND v(vout) AT=3.30
+.control
+alter vref=0.9
+dc Vin 3.29 3.31 0.01
+quit
+.endc
+.end

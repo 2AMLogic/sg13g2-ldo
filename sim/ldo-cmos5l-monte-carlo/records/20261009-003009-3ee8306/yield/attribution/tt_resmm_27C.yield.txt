@@ -1,0 +1,19 @@
+samples: tt_resmm_27C.samples.json
+source: sample-set  samples_analyzed: 100
+confidence: 0.95  target_ci_halfwidth: 0.01
+status: reported  measurements: 1
+
+vout_v [V]  status: reported  N: 100
+  limits: min(>=)=1.764 max(<=)=1.836 target_yield=-
+  fit (normal): mean=1.8006 stddev=0.00453994 normality=consistent
+  yield (empirical, clopper-pearson): 1.000000 [0.963783, 1.000000] at 95%, N=100
+  yield (normal, normal-delta): 1.000000 [1.000000, 1.000000] at 95%, N=100
+  capability: cp=2.6432 cpk=2.5995 [2.2316, 2.9674] sigma_to_spec=7.7985 limiting=upper
+  sample size: insufficient (N=100, required>=183, observed +/-0.018108 vs target +/-0.01)
+  negative control: none declared
+  warning: measurement 'vout_v': no sample fell outside the limits, so the empirical yield is bounded only from below -- "at least 96.3783% at 95% confidence, N = 100" is the honest statement, not "100% yield"
+  warning: measurement 'vout_v': N = 100 resolves the yield only to +/-0.0181 at 95% confidence; 183 samples are needed for the requested +/-0.01
+
+warnings:
+  no measurement declared a target_yield, so no yield claim was checked -- the estimates below are reported, never failed
+  no measurement declared a negative_control -- this campaign has no seeded, known-bad variant demonstrating that the statistics above can actually detect a degraded design; see docs/cli/yield.md#negative-control

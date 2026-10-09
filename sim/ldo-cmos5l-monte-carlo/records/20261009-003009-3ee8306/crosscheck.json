@@ -1,0 +1,647 @@
+{
+ "record": "20261009-003009-3ee8306",
+ "accounting": [
+  {
+   "request": "probe",
+   "status": "fail",
+   "corner_count": 2,
+   "corner_status_counts": {
+    "pass": 1,
+    "fail": 1
+   },
+   "diagnostic_counts": {},
+   "populations": {},
+   "monte_carlo": null,
+   "jobs": [
+    {
+     "job_id": "klt-sim-d7b880fa21e3",
+     "state": "failed",
+     "exit_code": "3",
+     "instance_type": "m7i.4xlarge",
+     "physical_cores": "8",
+     "elapsed_seconds": 5,
+     "runner_klt_version": "0.5.0",
+     "client_klt_version": "0.7.0+g4cbdfa769875",
+     "runner_compatibility": "mismatch"
+    }
+   ],
+   "engine_version": "46"
+  },
+  {
+   "request": "mc",
+   "status": "pass",
+   "corner_count": 2000,
+   "corner_status_counts": {
+    "pass": 2000
+   },
+   "diagnostic_counts": {
+    "warning:singular_matrix": 482
+   },
+   "populations": {
+    "tt/novdd/27C": {
+     "draws": 400,
+     "usable": 400,
+     "null": 0,
+     "inconclusive": 0
+    },
+    "ss_rbcs/novdd/-40C": {
+     "draws": 400,
+     "usable": 400,
+     "null": 0,
+     "inconclusive": 0
+    },
+    "ff_rwcs/novdd/125C": {
+     "draws": 400,
+     "usable": 400,
+     "null": 0,
+     "inconclusive": 0
+    },
+    "sf_rwcs/novdd/125C": {
+     "draws": 400,
+     "usable": 400,
+     "null": 0,
+     "inconclusive": 0
+    },
+    "fs_rbcs/novdd/-40C": {
+     "draws": 400,
+     "usable": 400,
+     "null": 0,
+     "inconclusive": 0
+    }
+   },
+   "monte_carlo": {
+    "n": 400,
+    "seed": 56001,
+    "vary": "mismatch",
+    "family_mismatch": [
+     {
+      "family": "capacitor",
+      "active": null,
+      "note": "PDK family could not be determined for this request (set models.pdk) -- mismatch activity for the 'capacitor' family could not be verified; treat any sampled spread for it as unconfirmed."
+     },
+     {
+      "family": "other",
+      "active": null,
+      "note": "PDK family could not be determined for this request (set models.pdk) -- mismatch activity for the 'other' family could not be verified; treat any sampled spread for it as unconfirmed."
+     }
+    ],
+    "quantiles": [
+     0.135,
+     2.275,
+     50.0,
+     97.725,
+     99.865
+    ]
+   },
+   "jobs": [
+    {
+     "job_id": "klt-sim-607f96ef24c3",
+     "state": "done",
+     "exit_code": "0",
+     "instance_type": "c7i.4xlarge",
+     "physical_cores": "8",
+     "elapsed_seconds": 2002,
+     "runner_klt_version": "0.5.0",
+     "client_klt_version": "0.7.0+g4cbdfa769875",
+     "runner_compatibility": "mismatch"
+    },
+    {
+     "job_id": "klt-sim-f63fc248aac0",
+     "state": "done",
+     "exit_code": "0",
+     "instance_type": "c7i.4xlarge",
+     "physical_cores": "8",
+     "elapsed_seconds": 2699,
+     "runner_klt_version": "0.5.0",
+     "client_klt_version": "0.7.0+g4cbdfa769875",
+     "runner_compatibility": "mismatch"
+    },
+    {
+     "job_id": "klt-sim-038a3f013b03",
+     "state": "done",
+     "exit_code": "0",
+     "instance_type": "m7i.4xlarge",
+     "physical_cores": "8",
+     "elapsed_seconds": 625,
+     "runner_klt_version": "0.5.0",
+     "client_klt_version": "0.7.0+g4cbdfa769875",
+     "runner_compatibility": "mismatch"
+    },
+    {
+     "job_id": "klt-sim-65fc98931398",
+     "state": "done",
+     "exit_code": "0",
+     "instance_type": "c7i.4xlarge",
+     "physical_cores": "8",
+     "elapsed_seconds": 716,
+     "runner_klt_version": "0.5.0",
+     "client_klt_version": "0.7.0+g4cbdfa769875",
+     "runner_compatibility": "mismatch"
+    },
+    {
+     "job_id": "klt-sim-dfb2f36dacce",
+     "state": "done",
+     "exit_code": "0",
+     "instance_type": "c7i.4xlarge",
+     "physical_cores": "8",
+     "elapsed_seconds": 2650,
+     "runner_klt_version": "0.5.0",
+     "client_klt_version": "0.7.0+g4cbdfa769875",
+     "runner_compatibility": "mismatch"
+    }
+   ],
+   "engine_version": "46"
+  },
+  {
+   "request": "attribution",
+   "status": "pass",
+   "corner_count": 300,
+   "corner_status_counts": {
+    "pass": 300
+   },
+   "diagnostic_counts": {
+    "warning:singular_matrix": 42
+   },
+   "populations": {
+    "tt_nom/novdd/27C": {
+     "draws": 100,
+     "usable": 100,
+     "null": 0,
+     "inconclusive": 0
+    },
+    "tt_mosmm/novdd/27C": {
+     "draws": 100,
+     "usable": 100,
+     "null": 0,
+     "inconclusive": 0
+    },
+    "tt_resmm/novdd/27C": {
+     "draws": 100,
+     "usable": 100,
+     "null": 0,
+     "inconclusive": 0
+    }
+   },
+   "monte_carlo": {
+    "n": 100,
+    "seed": 56002,
+    "vary": "mismatch",
+    "family_mismatch": [
+     {
+      "family": "capacitor",
+      "active": null,
+      "note": "PDK family could not be determined for this request (set models.pdk) -- mismatch activity for the 'capacitor' family could not be verified; treat any sampled spread for it as unconfirmed."
+     },
+     {
+      "family": "other",
+      "active": null,
+      "note": "PDK family could not be determined for this request (set models.pdk) -- mismatch activity for the 'other' family could not be verified; treat any sampled spread for it as unconfirmed."
+     }
+    ],
+    "quantiles": [
+     0.135,
+     2.275,
+     50.0,
+     97.725,
+     99.865
+    ]
+   },
+   "jobs": [
+    {
+     "job_id": "klt-sim-47e3cdd03a4e",
+     "state": "done",
+     "exit_code": "0",
+     "instance_type": "c7i.8xlarge",
+     "physical_cores": "16",
+     "elapsed_seconds": 569,
+     "runner_klt_version": "0.5.0",
+     "client_klt_version": "0.7.0+g4cbdfa769875",
+     "runner_compatibility": "mismatch"
+    }
+   ],
+   "engine_version": "46"
+  },
+  {
+   "request": "negctl",
+   "status": "fail",
+   "corner_count": 400,
+   "corner_status_counts": {
+    "fail": 397,
+    "pass": 3
+   },
+   "diagnostic_counts": {
+    "warning:singular_matrix": 97
+   },
+   "populations": {
+    "tt/0.930V/27C": {
+     "draws": 400,
+     "usable": 400,
+     "null": 0,
+     "inconclusive": 0
+    }
+   },
+   "monte_carlo": {
+    "n": 400,
+    "seed": 56001,
+    "vary": "mismatch",
+    "family_mismatch": [
+     {
+      "family": "capacitor",
+      "active": null,
+      "note": "PDK family could not be determined for this request (set models.pdk) -- mismatch activity for the 'capacitor' family could not be verified; treat any sampled spread for it as unconfirmed."
+     },
+     {
+      "family": "other",
+      "active": null,
+      "note": "PDK family could not be determined for this request (set models.pdk) -- mismatch activity for the 'other' family could not be verified; treat any sampled spread for it as unconfirmed."
+     }
+    ],
+    "quantiles": [
+     0.135,
+     2.275,
+     50.0,
+     97.725,
+     99.865
+    ]
+   },
+   "jobs": [
+    {
+     "job_id": "klt-sim-23dbd4c87edc",
+     "state": "failed",
+     "exit_code": "3",
+     "instance_type": "m7i.4xlarge",
+     "physical_cores": "8",
+     "elapsed_seconds": 2276,
+     "runner_klt_version": "0.5.0",
+     "client_klt_version": "0.7.0+g4cbdfa769875",
+     "runner_compatibility": "mismatch"
+    }
+   ],
+   "engine_version": "46"
+  },
+  {
+   "request": "repro",
+   "status": "pass",
+   "corner_count": 50,
+   "corner_status_counts": {
+    "pass": 50
+   },
+   "diagnostic_counts": {
+    "warning:singular_matrix": 13
+   },
+   "populations": {
+    "tt/novdd/27C": {
+     "draws": 50,
+     "usable": 50,
+     "null": 0,
+     "inconclusive": 0
+    }
+   },
+   "monte_carlo": {
+    "n": 50,
+    "seed": 56001,
+    "vary": "mismatch",
+    "family_mismatch": [
+     {
+      "family": "capacitor",
+      "active": null,
+      "note": "PDK family could not be determined for this request (set models.pdk) -- mismatch activity for the 'capacitor' family could not be verified; treat any sampled spread for it as unconfirmed."
+     },
+     {
+      "family": "other",
+      "active": null,
+      "note": "PDK family could not be determined for this request (set models.pdk) -- mismatch activity for the 'other' family could not be verified; treat any sampled spread for it as unconfirmed."
+     }
+    ],
+    "quantiles": [
+     0.135,
+     2.275,
+     50.0,
+     97.725,
+     99.865
+    ]
+   },
+   "jobs": [
+    {
+     "job_id": "klt-sim-78e8b93544e2",
+     "state": "done",
+     "exit_code": "0",
+     "instance_type": "m7i.4xlarge",
+     "physical_cores": "8",
+     "elapsed_seconds": 241,
+     "runner_klt_version": "0.5.0",
+     "client_klt_version": "0.7.0+g4cbdfa769875",
+     "runner_compatibility": "mismatch"
+    }
+   ],
+   "engine_version": "46"
+  }
+ ],
+ "seeds": {
+  "mc": {
+   "draws": 2000,
+   "distinct": 2000,
+   "ok": true
+  },
+  "attribution": {
+   "draws": 300,
+   "distinct": 300,
+   "ok": true
+  },
+  "negctl": {
+   "draws": 400,
+   "distinct": 400,
+   "ok": true
+  },
+  "repro": {
+   "draws": 50,
+   "distinct": 50,
+   "ok": true
+  }
+ },
+ "reproduction": {
+  "compared": 50,
+  "seed_mismatches": 0,
+  "value_presence_mismatches": 0,
+  "max_abs_diff_v": 0.0,
+  "tolerance_v": 1e-06,
+  "ok": true
+ },
+ "negctl_pairs": {
+  "pairs": 400,
+  "seed_mismatches": 0,
+  "delta_mean_v": 0.0600128835875,
+  "delta_stdev_v": 0.00015177075827683083,
+  "delta_min_v": 0.05953197600000015,
+  "delta_max_v": 0.06048337300000006,
+  "nominal_population_stdev_v": 0.010662034591903242
+ },
+ "attribution": {
+  "tt_nom/novdd/27C": {
+   "n": 100,
+   "mean_v": 1.800306041,
+   "stdev_v": 0.0,
+   "min_v": 1.800306041,
+   "max_v": 1.800306041
+  },
+  "tt_mosmm/novdd/27C": {
+   "n": 100,
+   "mean_v": 1.79972951332,
+   "stdev_v": 0.00990793580211803,
+   "min_v": 1.772539056,
+   "max_v": 1.823201315
+  },
+  "tt_resmm/novdd/27C": {
+   "n": 100,
+   "mean_v": 1.8005952440300002,
+   "stdev_v": 0.004539938751716888,
+   "min_v": 1.790354794,
+   "max_v": 1.813390221
+  },
+  "full_mismatch_tt/novdd/27C": {
+   "n": 400,
+   "mean_v": 1.8011513648275,
+   "stdev_v": 0.010662034591903242,
+   "min_v": 1.767789088,
+   "max_v": 1.829936506
+  },
+  "checks": {
+   "no_mismatch_zero_spread": true,
+   "no_mismatch_matches_committed_corner": true,
+   "committed_corner_v": 1.80030601,
+   "rss_partial_stdev_v": 0.010898542825911772,
+   "rss_over_full_ratio": 1.0221822797487576,
+   "mos_variance_share": 0.8264745747150245
+  }
+ },
+ "probe": [
+  {
+   "corner_id": "tt_nom/0.900V/27C",
+   "status": "pass",
+   "vout_v": 1.800306041
+  },
+  {
+   "corner_id": "tt_nom/0.930V/27C",
+   "status": "fail",
+   "vout_v": 1.860305266
+  }
+ ],
+ "yield": {
+  "yield/attribution/tt_mosmm_27C.yield.json": {
+   "status": "reported",
+   "n": 100,
+   "errored": 0,
+   "failed_unmeasurable": 0,
+   "inconclusive": 0,
+   "mean_v": 1.7997295133199998,
+   "stdev_v": 0.009907935802118033,
+   "normality": "consistent",
+   "empirical": {
+    "method": "clopper-pearson",
+    "estimate": 1.0,
+    "confidence": 0.95,
+    "confidence_interval": {
+     "low": 0.9637833073548243,
+     "high": 1.0
+    },
+    "n": 100
+   },
+   "cpk": 1.2020503575313097,
+   "sigma_to_spec": 3.606151072593929,
+   "sample_size_verdict": "insufficient",
+   "negative_control_verdict": null
+  },
+  "yield/attribution/tt_nom_27C.yield.json": {
+   "status": "reported",
+   "n": 100,
+   "errored": 0,
+   "failed_unmeasurable": 0,
+   "inconclusive": 0,
+   "mean_v": 1.8003060409999991,
+   "stdev_v": 8.926528984957934e-16,
+   "normality": "rejected",
+   "empirical": {
+    "method": "clopper-pearson",
+    "estimate": 1.0,
+    "confidence": 0.95,
+    "confidence_interval": {
+     "low": 0.9637833073548243,
+     "high": 1.0
+    },
+    "n": 100
+   },
+   "cpk": 13328793704006.232,
+   "sigma_to_spec": 39986381112018.695,
+   "sample_size_verdict": "insufficient",
+   "negative_control_verdict": null
+  },
+  "yield/attribution/tt_resmm_27C.yield.json": {
+   "status": "reported",
+   "n": 100,
+   "errored": 0,
+   "failed_unmeasurable": 0,
+   "inconclusive": 0,
+   "mean_v": 1.8005952440299993,
+   "stdev_v": 0.004539938751716888,
+   "normality": "consistent",
+   "empirical": {
+    "method": "clopper-pearson",
+    "estimate": 1.0,
+    "confidence": 0.95,
+    "confidence_interval": {
+     "low": 0.9637833073548243,
+     "high": 1.0
+    },
+    "n": 100
+   },
+   "cpk": 2.5995032022999314,
+   "sigma_to_spec": 7.798509606899794,
+   "sample_size_verdict": "insufficient",
+   "negative_control_verdict": null
+  },
+  "yield/ff_rwcs_125C.yield.json": {
+   "status": "pass",
+   "n": 400,
+   "errored": 0,
+   "failed_unmeasurable": 0,
+   "inconclusive": 0,
+   "mean_v": 1.80054279455,
+   "stdev_v": 0.010356009905859604,
+   "normality": "consistent",
+   "empirical": {
+    "method": "clopper-pearson",
+    "estimate": 1.0,
+    "confidence": 0.95,
+    "confidence_interval": {
+     "low": 0.9908201954163351,
+     "high": 1.0
+    },
+    "n": 400
+   },
+   "cpk": 1.1412762821563058,
+   "sigma_to_spec": 3.4238288464689175,
+   "sample_size_verdict": "sufficient",
+   "negative_control_verdict": null
+  },
+  "yield/fs_rbcs_-40C.yield.json": {
+   "status": "pass",
+   "n": 400,
+   "errored": 0,
+   "failed_unmeasurable": 0,
+   "inconclusive": 0,
+   "mean_v": 1.799760598912501,
+   "stdev_v": 0.009763406919396589,
+   "normality": "consistent",
+   "empirical": {
+    "method": "clopper-pearson",
+    "estimate": 1.0,
+    "confidence": 0.95,
+    "confidence_interval": {
+     "low": 0.9908201954163351,
+     "high": 1.0
+    },
+    "n": 400
+   },
+   "cpk": 1.220905748977737,
+   "sigma_to_spec": 3.6627172469332114,
+   "sample_size_verdict": "sufficient",
+   "negative_control_verdict": null
+  },
+  "yield/sf_rwcs_125C.yield.json": {
+   "status": "pass",
+   "n": 400,
+   "errored": 0,
+   "failed_unmeasurable": 0,
+   "inconclusive": 0,
+   "mean_v": 1.8009875736900003,
+   "stdev_v": 0.009638411622420037,
+   "normality": "consistent",
+   "empirical": {
+    "method": "clopper-pearson",
+    "estimate": 1.0,
+    "confidence": 0.95,
+    "confidence_interval": {
+     "low": 0.9908201954163351,
+     "high": 1.0
+    },
+    "n": 400
+   },
+   "cpk": 1.2108643236248915,
+   "sigma_to_spec": 3.6325929708746747,
+   "sample_size_verdict": "sufficient",
+   "negative_control_verdict": null
+  },
+  "yield/ss_rbcs_-40C.yield.json": {
+   "status": "pass",
+   "n": 400,
+   "errored": 0,
+   "failed_unmeasurable": 0,
+   "inconclusive": 0,
+   "mean_v": 1.8006127939175005,
+   "stdev_v": 0.009357032746431243,
+   "normality": "consistent",
+   "empirical": {
+    "method": "clopper-pearson",
+    "estimate": 1.0,
+    "confidence": 0.95,
+    "confidence_interval": {
+     "low": 0.9908201954163351,
+     "high": 1.0
+    },
+    "n": 400
+   },
+   "cpk": 1.2606277738348264,
+   "sigma_to_spec": 3.781883321504479,
+   "sample_size_verdict": "sufficient",
+   "negative_control_verdict": null
+  },
+  "yield/tt_27C.yield.json": {
+   "status": "pass",
+   "n": 400,
+   "errored": 0,
+   "failed_unmeasurable": 0,
+   "inconclusive": 0,
+   "mean_v": 1.8011513648275002,
+   "stdev_v": 0.010662034591903244,
+   "normality": "consistent",
+   "empirical": {
+    "method": "clopper-pearson",
+    "estimate": 1.0,
+    "confidence": 0.95,
+    "confidence_interval": {
+     "low": 0.9908201954163351,
+     "high": 1.0
+    },
+    "n": 400
+   },
+   "cpk": 1.089492969098787,
+   "sigma_to_spec": 3.2684789072963607,
+   "sample_size_verdict": "sufficient",
+   "negative_control_verdict": "detected"
+  },
+  "yield/tt_27C_vref0.93V.negctl.yield.json": {
+   "status": "fail",
+   "n": 400,
+   "errored": 0,
+   "failed_unmeasurable": 0,
+   "inconclusive": 0,
+   "mean_v": 1.861164248414999,
+   "stdev_v": 0.010715530778273811,
+   "normality": "consistent",
+   "empirical": {
+    "method": "clopper-pearson",
+    "estimate": 0.0075,
+    "confidence": 0.95,
+    "confidence_interval": {
+     "low": 0.0015493589499056483,
+     "high": 0.021760668514416104
+    },
+    "n": 400
+   },
+   "cpk": -0.7827967628077602,
+   "sigma_to_spec": -2.3483902884232806,
+   "sample_size_verdict": "insufficient",
+   "negative_control_verdict": null
+  }
+ }
+}

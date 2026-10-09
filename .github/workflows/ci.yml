@@ -372,3 +372,33 @@ jobs:
               sys.exit(f"item 8 inconsistent: status={env['status']} mismatched={bad} expected={want}")
           print("item 8 manifest pin, envelope provenance and report hash agree:", want)
           PY
+
+  monte-carlo-record:
+    name: sim/ldo-cmos5l-monte-carlo record check (row-2 MC evidence, no PDK / no simulator)
+    # Offline and stdlib-only (#56): re-derives the per-population klt yield
+    # sample-set documents, crosscheck.json and the per-draw CSV from the
+    # COMMITTED raw klt sim reports and fails on any byte of drift, plus the
+    # campaign invariants (reproduction, distinct seeds, zero-spread sampler
+    # control, negative-control seed pairing, draw accounting). The klt
+    # yield reports themselves need the klt_yield_native extension, which
+    # klayout-tools[yield] cannot install from PyPI (klayout-tools#2900), so
+    # their verdicts are not re-run here; the unit tests' klt-yield contract
+    # cases skip with that reason. No simulation runs in CI.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out sg13g2-ldo
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Unit tests (split, null/inconclusive accounting, cross-checks)
+        run: python3 -m unittest discover -s sim/ldo-cmos5l-monte-carlo -p 'test_*.py' -v
+
+      - name: Every committed record reproduces from its raw reports
+        run: |
+          set -e
+          for rec in sim/ldo-cmos5l-monte-carlo/records/*/; do
+            sim/ldo-cmos5l-monte-carlo/run_campaign.sh check "${rec%/}"
+          done

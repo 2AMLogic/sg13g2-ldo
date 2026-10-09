@@ -150,3 +150,13 @@ the actual evidence.
   that experiment's README for the loop-gain measurement method, the
   spec-table verdicts, and why several rows fail against the schematic's
   current (explicitly provisional, unratified) sizing.
+- [`ldo-cmos5l-monte-carlo/`](ldo-cmos5l-monte-carlo/README.md) -- the
+  bounded **row-2 (output accuracy) Monte Carlo campaign** on the same
+  SG13CMOS5L regulator (issue #56): PDK per-instance MOS + `rhigh` mismatch
+  sampled at five process/temperature corners (N = 400 each, fixed seeds),
+  graded per population with `klt yield` against the *proposed* 1.764–1.836 V
+  window. It includes a deterministic VREF negative control, a sampler
+  control (mismatch off), MOS-vs-resistor attribution and an independent
+  reproduction job. All simulation runs as `klt sim` requests on the batch
+  fleet. Row 2 stays Open and row 8 is deferred (#63), so this does not
+  discharge T1 item 6 (see that README and `signoff/README.md`).
