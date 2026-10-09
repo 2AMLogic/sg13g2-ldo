@@ -2,6 +2,14 @@
   "block": "sg13g2-ldo",
   "kind": "analog",
   "evidence": {
+    "1": {
+      "file": "signoff/evidence/item1-design-sources.envelope.json",
+      "content_hash": "sha256:7f16d8d8fb0e0955f375a308758683c007e3b74a0a70538f64e63d106a8b73e9"
+    },
+    "2": {
+      "file": "signoff/evidence/item2-layout.envelope.json",
+      "content_hash": "sha256:eb6f0e74ee953ab7bac73b204b8c210b622529f7b5b7ef192a7584212138fc03"
+    },
     "3": {
       "file": "layout/sg13cmos5l-ldo_core_cmos5l/drc_report.json",
       "content_hash": "sha256:f0f01392735616cbdb45166467972f8e4456426fd1cf794e3380d1713eabc062"
@@ -12,7 +20,15 @@
     },
     "8": {
       "file": "sim/characterization/characterization-envelope.json",
-      "content_hash": "sha256:0593923a153cb0852ba33becb394bd2688a3c70d6729a4d7654e19bc2b27fa35"
+      "content_hash": "sha256:53b0a278b2d9f8aaf8f7cf51dd7bec3e395b4874083dcd02b32e91747e09b168"
+    },
+    "9": {
+      "file": "signoff/evidence/item9-testbenches.envelope.json",
+      "content_hash": "sha256:8e06c9e4082a270b8b1b973de2c6993a215f5909847c239b6402201799869e41"
+    },
+    "10": {
+      "file": "signoff/evidence/item10-repo-hygiene.envelope.json",
+      "content_hash": "sha256:0a8c59a34fe47ca449513583883cb1320d488ca1e8f3888f34d25a5d74210e35"
     },
     "11": [
       {

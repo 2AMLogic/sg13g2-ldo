@@ -99,10 +99,15 @@ env:
   # "0.7.0+gb82427b30c96"). Bumped from b15edf5e3a2e for #59: the item-11
   # tie declaration needs ties[].well_layer: null + well_boxes (#2255) and
   # ties[].well_requires_boxes (#2540), neither of which b15edf5e parses.
+  # Bumped from b82427b30c96 for #60: klayout-tools#2843 (merge commit
+  # 3a75c3ae705b) adds artifact-anchored `kind: generic` evidence for T1
+  # items 1/2/9/10 (t1_item + provenance.input.path/content_hash +
+  # artifact_binding). It is a main-branch commit that keeps the
+  # `erc` kind and the item-11 grading rules this report already depends on.
   # Bump deliberately, in the same PR as the
   # regenerated signoff/sg13g2-ldo.t1-report.json (the signoff-t1-report job
   # fails on any drift, including this pin moving).
-  KLAYOUT_TOOLS_SIGNOFF_REF: "b82427b30c9604b53b2dce64850409841cc38bde"
+  KLAYOUT_TOOLS_SIGNOFF_REF: "3a75c3ae705b7ad3803625255de93bcd982e70c6"
 
 jobs:
   netlist-check:
@@ -291,6 +296,16 @@ jobs:
           git -C "${RUNNER_TEMP}/klayout-tools" checkout \
             "${KLAYOUT_TOOLS_SIGNOFF_REF}"
           pip install "${RUNNER_TEMP}/klayout-tools"
+
+      - name: Verify the item 1/2/9/10 evidence inventories (PDK-free, stdlib only)
+        # Items 1/2/9/10 are each backed by several files; the generic
+        # envelopes bind to a committed inventory of their sha256s. Re-hash
+        # every constituent, require the completeness globs to be covered,
+        # and require envelope + manifest pins to match -- before grading,
+        # so a stale constituent fails here with a named file (#60).
+        run: |
+          python3 signoff/evidence_inventory.py check
+          python3 -m unittest signoff.test_evidence_inventory -v
 
       - name: Regenerate the T1 report and assert no drift
         run: |

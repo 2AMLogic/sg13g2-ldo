@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "t1_item": 1,
+  "title": "Design sources",
+  "scope": "SG13CMOS5L implementation (design/sg13cmos5l, layout/sg13cmos5l-ldo_core_cmos5l). Freshness and identity of the listed files only; NOT a performance, spec-compliance or whole-block T1 claim.",
+  "files": [
+    {
+      "path": "design/README.md",
+      "sha256": "sha256:40f747c7678e1b8a0c824cea2ec610f82f366cba6e1e2690ce7e126d6bfac151"
+    },
+    {
+      "path": "design/netlist.py",
+      "sha256": "sha256:508c511572d4883b5ffab9a7c0235db69d95ebcd3ec067d88610aaa1787c7f7e"
+    },
+    {
+      "path": "design/sg13cmos5l/ldo_core_cmos5l.sch",
+      "sha256": "sha256:af07e0fd6b05bc97276e97c3783d1542c983ac82df2faabf63e645281464101a"
+    },
+    {
+      "path": "design/sg13cmos5l/ldo_core_cmos5l.sym",
+      "sha256": "sha256:30a42d14f3e1783c11c744d158bbff8e1bebe4fd821e1ef76ced1c217596c845"
+    },
+    {
+      "path": "design/sg13cmos5l/ldo_erramp_cmos5l.sch",
+      "sha256": "sha256:7cad79349ad20e74f2741432504c266a92c149c89ff45efbda80841f06fe029f"
+    },
+    {
+      "path": "design/sg13cmos5l/ldo_erramp_cmos5l.sym",
+      "sha256": "sha256:2858185d0bb4eba033f80993bd291ba377a3e2ae845d2fbd87dfd9205a4619c6"
+    },
+    {
+      "path": "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice",
+      "sha256": "sha256:c6e630e92fe012d16adf71229c99b52d8eb6cc4b85fffbb891108930acf11041"
+    },
+    {
+      "path": "design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice",
+      "sha256": "sha256:7982d728a2db933165eedcae69feaa4985dbddf54c269fc68b82d88577c8e38c"
+    },
+    {
+      "path": "design/xschemrc",
+      "sha256": "sha256:c8a9b5673ac045073a88fb97a405d9e5e3fe0edf729edadeb1b4eb856d6366f1"
+    }
+  ]
+}

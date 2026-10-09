@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "kind": "generic",
+  "status": "pass",
+  "t1_item": 10,
+  "summary": "README, LICENSE, spec index, agent instructions and the CI workflow are committed; every constituent hash matches the inventory and the CI workflow still defines the PDK-free signoff gates. Hygiene presence/freshness only.",
+  "source": "signoff/evidence/item10-repo-hygiene.inventory.json",
+  "verdict_semantics": "pass = every file in the bound inventory exists and hashes to the recorded sha256, the inventory covers its completeness globs, and the content checks in signoff/evidence_inventory.py hold. It is NOT a claim that the circuit meets its spec. klt does not read `source`; signoff/evidence_inventory.py check (CI) verifies the constituents.",
+  "provenance": {
+    "klt_version": null,
+    "klayout_version": null,
+    "pdk": null,
+    "deck": null,
+    "input": {
+      "path": {
+        "path": "signoff/evidence/item10-repo-hygiene.inventory.json",
+        "scope": "repo"
+      },
+      "content_hash": "sha256:0a8c59a34fe47ca449513583883cb1320d488ca1e8f3888f34d25a5d74210e35",
+      "role": "inventory"
+    },
+    "generator": {
+      "path": "signoff/evidence_inventory.py",
+      "version": 1
+    }
+  }
+}
