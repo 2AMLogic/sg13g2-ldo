@@ -26,9 +26,9 @@
 | circuit_record_md | `sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.md` | `89239ec65964818a9678ba92d9a13f353be38540d73006a24e2fd0ff04d44f22` | yes |
 | design_netlist_freshness | `design/sg13cmos5l/netlist/ldo_core_cmos5l.spice` | `7953b25be4cb00053f8df5f283bee0500f60a826b7a2d6519b88a8578d222cc1` | yes |
 | design_netlist_freshness | `design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice` | `7982d728a2db933165eedcae69feaa4985dbddf54c269fc68b82d88577c8e38c` | yes |
-| ratification_record | `spec/decision-records/DR-0007-target-spec-row-ratification.md` | `74496ee0800de6de36ff2f045796a7c2f802f6d647439255df5a8c8e69451556` | recorded |
+| ratification_record | `spec/decision-records/DR-0007-target-spec-row-ratification.md` | `04983cdf2c8e7819d0f68d4dfbcda4ce575b4502ed88c062bb467eeec7927847` | recorded |
 | superseded_evidence_statement | `sim/ldo-cmos5l-pvt-sweep/README.md` | `d290e6470053f56bff033e2f2eb006f4425ed77cde2a449008f45c0e5df2b3f4` | recorded |
-| target_table | `README.md` | `378f8b48bc4ed7cca70a4ec79a1149e3e8d124b16a609676ed9c442674dcccc5` | recorded |
+| target_table | `README.md` | `340b92176ef3b4bc39958e6c8be9a2d621a71304dfc458251d9af607fd211aa9` | recorded |
 
 ## Per-row summary
 
@@ -103,7 +103,7 @@ Verdict key: `pass_*` = measured metrics meet the bound at the stated conditions
 ### 4. Dropout @ 50 mA -- pass_full_coverage
 
 - Target: < 300 mV worst corner; stretch: < 200 mV
-- Ratification: ratified (README: RATIFIED (stretch not ratified); DR-0007: Ratified as written, deterministic)
+- Ratification: ratified (README: RATIFIED as a shared target (stretch not ratified); branch compliance differs — see the row 4 branch note below; DR-0007: Ratified as written, deterministic)
 - Stretch: stretch < 200 mV is NOT ratified and is not demonstrated: 9 of 45 points exceed 0.20 V; 36 points are censored at the floor so cannot demonstrate a strict '< 0.20 V'.
 
 - **dropout at 50 mA** (V): pass; bound lt 0.3 V; 45/45 pass, 0 fail, 0 ambiguous, 36 censored upper bound

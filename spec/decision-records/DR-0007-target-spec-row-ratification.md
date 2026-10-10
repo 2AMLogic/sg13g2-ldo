@@ -220,6 +220,15 @@ merged with: all nine stay **Open**. No target value changed, no row was
 revised, and no evidence was added, so the relax-after-measured-FAIL checks
 still do not trigger.
 
+## Branch-difference note (2026-10-10)
+
+Snapshot: `origin/main` `028a3f8`. This note clarifies, and does not change, the ratification above; the verdict, the `< 300 mV` target and all evidence/provenance caveats stand.
+
+- **Target ratification is separate from branch compliance.** PR #65's engineering-key review ruled that row 4's *target* applies to both PDK branches (same HV PMOS model; the SG13CMOS5L corner library links into the SG13G2 tree). It also ruled that the row is met only by the SG13CMOS5L branch.
+- **Implementation difference.** The SG13CMOS5L branch (`design/sg13cmos5l/netlist/ldo_core_cmos5l.spice`) uses a `w=2800u` pass device and a transistor-level error amplifier; its closed-loop sweep is the ratifying evidence. The SG13G2 branch (`design/netlist/ldo_core.spice`) still uses `w=300u` behind a behavioural VCVS error amplifier and has no closed-loop row evidence.
+- **SG13G2 status: not evidenced; predicted to miss.** From the committed bare-device screen, the PR #65 review derived about 47 ohm for the 300 µm device (about 2.35 V at 50 mA) and an implied width of 2169–2351 µm. These are screening-derived predictions, not an SG13G2 closed-loop measurement, and the SG13CMOS5L result is not claimed as SG13G2-branch evidence.
+- **Not done here.** No target, disposition, netlist or sim record changed. Resizing, a transistor-level SG13G2 amplifier and a closed-loop dropout bench with PVT evidence need their own decision and issue.
+
 ## References
 
 - Issue #54; downstream #55 (deterministic corner verification), #56

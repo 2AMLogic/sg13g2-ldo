@@ -63,13 +63,20 @@ changed by the record.
 | Input | 3.3 V ±10% — confirm against SG13G2 device flavors | — | OPEN — unratified (current-limit \|Vsg\| gate from DR-0001) |
 | Output | 1.8 V ±2% (fixed) | programmable variants deferred | OPEN — unratified (statistical; Monte Carlo missing) |
 | Load | 0–50 mA (no external preload assumed) | 100 mA | OPEN — unratified (no 0 mA dynamic evidence) |
-| Dropout @ 50 mA | < 300 mV worst corner | < 200 mV | RATIFIED (stretch not ratified) |
+| Dropout @ 50 mA | < 300 mV worst corner | < 200 mV | RATIFIED as a shared target (stretch not ratified); branch compliance differs — see the row 4 branch note below |
 | Line / load regulation | < 5 mV/V; < 1% over full load, inside the accuracy window | — | OPEN — unratified (loaded line / multi-Vin load regulation missing) |
 | PSRR | > 50 dB @ 1 kHz, > 20 dB @ 100 kHz | > 60 dB @ 1 kHz | OPEN — unratified (1 mA / 1 µF only; `Cc` un-cornered) |
 | Iq (excluding load) | < 30 µA at no load and at full load | < 10 µA | OPEN — unratified (no current full-load record) |
 | Current limit | 65–80 mA brickwall over PVT; short-survivable | — | OPEN — unratified (not implemented; statistical) |
 | Startup | monotonic, controlled ramp, inside ±2% within 3 ms of enable | — | OPEN — unratified (not implemented) |
 | Stability | 0–50 mA, C_out 0.33–4.7 µF effective, ESR 0–500 mΩ; PM ≥ 45°, GM ≥ 10 dB worst corner | capless variant (separate fork) | OPEN — unratified (one load/C_out/ESR point only) |
+
+**Row 4 branch note (snapshot: `origin/main` `028a3f8`, 2026-10-10).** "Ratified" means the `< 300 mV` *target* is ratified for the shared table; it is not a statement that both implementation branches meet it. The two branches differ:
+
+- **SG13CMOS5L: meets the target at schematic level.** `design/sg13cmos5l/netlist/ldo_core_cmos5l.spice` has a `w=2800u` pass device behind a transistor-level error amplifier, and its closed-loop PVT sweep ratified the row.
+- **SG13G2: not evidenced; predicted to miss with the committed provisional sizing.** `design/netlist/ldo_core.spice` still has `w=300u` behind a behavioural VCVS amplifier, and the ratifying sweep is not SG13G2 evidence. PR #65's engineering-key review derived, from the committed bare-device screen, about 47 ohm (about 2.35 V at 50 mA) and an implied width of 2169–2351 µm. That is a screening-derived prediction, **not** a closed-loop SG13G2 measurement. Resizing the pass device, a transistor-level amplifier and a closed-loop dropout bench are future work and are not part of this correction.
+
+The target value and row disposition are unchanged.
 
 Maturity ladder: spec ratified → schematic simulated across PVT → layout
 DRC/LVS-clean → post-layout re-verification → shuttle seat → measured
