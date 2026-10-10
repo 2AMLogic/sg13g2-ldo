@@ -1,0 +1,44 @@
+{
+ "netlist": "tb.spice",
+ "backend": "batch",
+ "batch": {
+  "runner_version_check": "warn",
+  "capacity_wait_s": 3600
+ },
+ "models": {
+  "lib": "corners.lib"
+ },
+ "analysis": {
+  "kind": "dc",
+  "args": "Vin 2.00 3.63 0.01 Iload 0 0.05 0.0125"
+ },
+ "measurements": [
+  {
+   "name": "liveness_vout",
+   "spice": ".meas dc liveness_vout FIND v(vout) AT=3.3",
+   "unit": "V"
+  }
+ ],
+ "corners": {
+  "process": [
+   "mos_ss__res_bcs__cap_typ"
+  ],
+  "temperature_c": [
+   125
+  ]
+ },
+ "options": {
+  "timeout_s": 1800,
+  "keep_artifacts": true,
+  "waveforms": true,
+  "stage_model_inputs": true,
+  "osdi_preload": [
+   "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/psp103.osdi",
+   "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/psp103_nqs.osdi",
+   "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/mosvar.osdi",
+   "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/r3_cmc.osdi",
+   "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/cap_cmomi.osdi",
+   "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/cap_cmomf.osdi"
+  ]
+ }
+}

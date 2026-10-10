@@ -158,3 +158,32 @@ a PVT sweep and do not supersede `sim/ldo-cmos5l-pvt-sweep` records.
   keeps the single `FB -> FBAMP` break, and ships `--check-topology-guard`
   negative controls for an omitted or miswired enable device.
 - Historical records under `sim/` are unchanged.
+
+## Addendum: enabled-state 45-point grid (PR #87 review follow-up)
+
+The Judge's review of PR #87 asked for the stale characterization evidence to
+be replaced inside the PR. The sections above are left as written. This
+addendum supersedes two of their bullets: "stale against the design" and
+"single corner only", but only for the enabled state.
+
+- **Record.** `sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81`
+  covers the full process x temperature x resistor grid on the EN design
+  (core sha256 `7953b25b...222cc1`), with `EN` tied to `VIN`: 214/214
+  points, run with `run_sweep.sh --batch` on the EDA batch fleet. Unlike the
+  smoke decks above, the AC benches use the real `cap_cmomi` model. Its OSDI
+  binary is staged with each job, so the absolute phase margin and
+  unity-gain frequency are comparable with the earlier pvt-sweep records.
+- **No regression.** Against the pre-EN record `20260917-023832-7061e8f`,
+  same point by point, the largest changes are: phase margin -0.015 deg,
+  gain margin -0.023 dB, PSRR at most -0.001 dB, Iq -0.43 nA and no-load
+  VOUT -0.46 uV. Dropout, line regulation and load regulation are unchanged.
+  The binding corners have not moved.
+- **Re-selected evidence.** The item-8 characterization report and the
+  item-5 coverage inventory now cite this record and are current against
+  the design again. This is a statement about artifact freshness, not spec
+  compliance. Row 4 is still the only ratified row, and row 9 stays Open.
+- **Still not claimed.** The disabled state is covered only at the single
+  smoke corner above. There is still no layout, DRC, LVS or extraction for
+  the EN-bearing design (#68), and the item 3/4/11 citations stay historical
+  for the old GDS. The Monte Carlo bench migration is #88, and the floating
+  `Mn3` gate behind the disabled supply current is #89.

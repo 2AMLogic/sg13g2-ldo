@@ -155,7 +155,10 @@ class GeneratedReportTests(unittest.TestCase):
     def test_iq_unit_conversion_and_missing_full_load(self):
         m = self.rows[7]["metrics"][0]
         self.assertEqual(m["unit"], "uA")
-        self.assertAlmostEqual(m["worst_case"]["value"], 24.7222854, places=6)
+        # Selected record 20261010-025634-60a3e81 (EN design, PR #87):
+        # iq_a 2.47221613e-05 A at ss/125C/res_bcs. The pre-EN record
+        # 20260917-023832-7061e8f had 2.47222854e-05 A at the same point.
+        self.assertAlmostEqual(m["worst_case"]["value"], 24.7221613, places=6)
         self.assertEqual(self.rows[7]["metrics"][1]["verdict"], "not_measured")
         self.assertIn("superseded", self.rows[7]["metrics"][1]["reason"])
 

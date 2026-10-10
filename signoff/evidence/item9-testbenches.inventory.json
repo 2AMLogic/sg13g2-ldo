@@ -170,11 +170,15 @@
     },
     {
       "path": "sim/ldo-cmos5l-pvt-sweep/README.md",
-      "sha256": "sha256:56db1791145244ab0110b751a590435db22a80a0242e7c2d65347b3b8f91102f"
+      "sha256": "sha256:60413edf26ef9bb7c090b14c625f5d2bbea85eaa0fb4ececa947bc7f788ca4e8"
+    },
+    {
+      "path": "sim/ldo-cmos5l-pvt-sweep/batch_backend.py",
+      "sha256": "sha256:f052158f9654a4d7b1e721885783862cc5bec29a35217c61880c515b90954e26"
     },
     {
       "path": "sim/ldo-cmos5l-pvt-sweep/run_sweep.sh",
-      "sha256": "sha256:b0b46da5e2ac95d60ff8f1a871eb85964e4e0aada2c8e1c653ce728e5798d3ee"
+      "sha256": "sha256:92b08ead39844b41a16525b8bf401963ad31c595e7d085f7aeea169cd4c88660"
     },
     {
       "path": "sim/ldo-cmos5l-pvt-sweep/testbench/tb_dcsweep_cmos5l.spice.tmpl",

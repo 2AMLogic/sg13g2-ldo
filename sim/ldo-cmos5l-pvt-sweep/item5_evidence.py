@@ -41,7 +41,7 @@ REPO = os.path.abspath(os.path.join(HERE, "..", ".."))
 sys.path.insert(0, HERE)
 import dc_metrics as dcm  # noqa: E402
 
-RECORD_ID = "20260917-023832-7061e8f"
+RECORD_ID = "20261010-025634-60a3e81"
 RECORD_CSV = f"sim/ldo-cmos5l-pvt-sweep/records/{RECORD_ID}.csv"
 RECORD_MD = f"sim/ldo-cmos5l-pvt-sweep/records/{RECORD_ID}.md"
 CORNERS_DIR = f"sim/ldo-cmos5l-pvt-sweep/corners/{RECORD_ID}"
@@ -50,12 +50,15 @@ DESIGN_NETLISTS = [
     "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice",
     "design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice",
 ]
-# Hashes the record was judged current against (DR-0007 "The evidence base").
+# Hashes the record ran against (its own record md lists them). Before #67
+# this pinned record 20260917-023832-7061e8f to the pre-EN netlist hashes
+# DR-0007 judged it current against; that record's evidence directory is
+# kept unchanged as history.
 DESIGN_PINS = {
-    DESIGN_NETLISTS[0]: "c6e630e92fe012d16adf71229c99b52d8eb6cc4b85fffbb891108930acf11041",
+    DESIGN_NETLISTS[0]: "7953b25be4cb00053f8df5f283bee0500f60a826b7a2d6519b88a8578d222cc1",
     DESIGN_NETLISTS[1]: "7982d728a2db933165eedcae69feaa4985dbddf54c269fc68b82d88577c8e38c",
 }
-RECORD_CSV_PIN = "cc90f70546403389093f3cc0927a7af06eb04febc9ce378a26be3fdf71c77c8d"
+RECORD_CSV_PIN = "d0c1e057c8cbbf0aaaab3df57b753fcca8557375372ee8bf6f6103a0b946c981"
 OUT_DIR = f"sim/ldo-cmos5l-pvt-sweep/evidence/{RECORD_ID}"
 
 CORNERS = ["tt", "ff", "ss", "sf", "fs"]
@@ -494,8 +497,9 @@ def main():
             "raw_dc_grids": raw_hashes,
         },
         "provenance_caveats": [
-            "The record's git sha 7061e8f does not resolve (squash-merged). Its netlist snapshots .include the design by an absolute worktree path (issue-35), so they do not embed the netlist; the current netlist hashes equal the hashes DR-0007 judged the record current against, and the record's own Cc nominal (170e-6) equals the current erramp netlist. Netlist-freshness is therefore inferred, not recorded.",
-            "The record states ngspice-46 and PDK commit 607e18d (sim/pdk-cmos5l.json). This host has ngspice-42 on PATH and no r3_cmc.osdi in the SG13CMOS5L PDK tree, so the DC bench could not be re-run here.",
+            "Record 20261010-025634-60a3e81 was made by run_sweep.sh --batch at branch commit 60a3e81 (PR #87), which may not resolve after a squash merge. Its netlist snapshots .include the design by an absolute worktree path, but the record md states the sha256 of both design netlists it ran against, and those equal the pins here, so netlist freshness is recorded rather than inferred.",
+            "Every point ran on the EDA batch fleet (runner klt 0.5.0, ngspice-46) at PDK commit 607e18d (sim/pdk-cmos5l.json). The six OSDI binaries, including cap_cmomi, were staged from the submitting host's build, and their sha256 appears in every per-point log. The rawfile-to-wrdata reduction reproduced six points of the local ngspice-46 record 20260917-023832-7061e8f byte-for-byte (sim/ldo-cmos5l-pvt-sweep/backend-validation/20261010-025044/).",
+            "The design under test carries the #67 EN interface (DR-0008), with EN tied to VIN in every bench. The disabled state is not part of this grid.",
             "Cap model: cornerCAP.lib maps every section to one nominal cap_cmomi, so Cc has no process-corner spread; this affects the AC rows (6, 10) not the DC grid used here.",
             "Reference is an ideal 0.90 V source; supply is swept 2.00-3.63 V; Ibias is an ideal 2 uA sink; loads are ideal DC current sources; Cout = 1 uF is irrelevant at DC.",
         ],
@@ -505,11 +509,12 @@ def main():
                  "reproduces_record_csv": True},
         "klt_sim_envelope": {
             "produced": False,
-            "reason": ("The ratified dropout measurement needs the SG13CMOS5L OSDI models (PSP103, r3_cmc, cap_cmomi) under ngspice >= 46. "
-                       "On this dispatch host KLT_SIM_BACKEND=batch and klt sim's batch/remote backends refuse ihp-sg13cmos5l "
-                       "(klayout-tools#2727); local grids are not permitted, local ngspice is 42 (OSDI ABI v0.4 unsupported) and the "
-                       "PDK tree lacks r3_cmc.osdi. A success envelope is never synthesized or hand-wrapped from the CSVs."),
-            "tool_gap_issue": "2AMLogic/klayout-tools#2727",
+            "reason": ("The raw grid now comes from 22 klt sim batch requests (reports under corners/<record>/_batch/). Those requests declare no limits, "
+                       "and the metrics are reduced from rawfiles outside klt, so they are measurement runs, not a corner-matrix envelope graded against the "
+                       "ratified spec. klt sim's batch backend still refuses models.pdk=ihp-sg13cmos5l (klayout-tools#2727), and the runner's klt 0.5.0 "
+                       "ignores options.osdi_preload (klayout-tools#2901), so the runs depend on staged libraries and a body-level pre_osdi preamble. "
+                       "A success envelope is never synthesized or hand-wrapped from the CSVs."),
+            "tool_gap_issue": "2AMLogic/klayout-tools#2727; 2AMLogic/klayout-tools#2901",
             "signoff_item_5": "uncited / unmet; signoff/sg13g2-ldo.json is unchanged",
         },
         "rows": inv_rows,

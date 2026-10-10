@@ -5,7 +5,7 @@
   "tier": null,
   "t1_item_count": 11,
   "build_t1_item_count": 11,
-  "t1_met_count": 7,
+  "t1_met_count": 8,
   "source_doc": "docs/design-evidence-tiers.md",
   "source_doc_content_hash": "sha256:4c67ffc59128482d00f7d87cf446b6a96b9ab0c41ae5234098244e3052033335",
   "build": {
@@ -208,10 +208,18 @@
       "partition": null,
       "text": "one aggregated, current artifact summarizing per-spec-row performance across conditions, with the evidence record each verdict rests on (#309 tracks the aggregation tool). For a digital or mixed-signal digital partition this includes Fmax, area, and power across the corner set, not just functional pass/fail. Unlike every other T1 item, this one names no specific `klt` verb \u2014 there is no dedicated aggregation command, and its evidence may be a hand-assembled record (e.g. a committed Markdown characterization report) rather than one `klt` verb's own JSON output. `klt signoff --manifest` grades it via an opt-in **generic evidence envelope** (`\"kind\": \"generic\"`, issue #1152) \u2014 a minimal, hand-rolled JSON wrapper asserting `status: \"pass\"|\"fail\"` for whatever record backs it. Item 8 is the only T1 item that accepts a *bare* generic envelope. Items 1, 2, 9 and 10 accept only the artifact-anchored form (issue #2718), and items 3\u20137 and 11 reject the generic kind entirely: see `docs/cli/signoff.md`'s \"Generic evidence (opt-in, non-`klt`-native)\" section for the envelope shape. The full opt-in kind -> item mapping (including kinds whose scope is currently empty) is published by `klt signoff --describe-grader` and the `klt signoff --help` epilog.",
       "notes": [],
-      "status": "unmet",
-      "reason": "check_failed",
+      "status": "met",
+      "reason": null,
       "graded_by_build": true,
-      "citation": null
+      "citation": {
+        "file": "sim/characterization/characterization-envelope.json",
+        "command": null,
+        "kind": "generic",
+        "check_status": "pass",
+        "content_hash": "sha256:21a6368a17321cc8a4bb40528dc282c7ef66c5f99bfa7e1adc4088212b21137f",
+        "input_verified": null,
+        "exit_status": 0
+      }
     },
     {
       "tier": "T1",
@@ -228,7 +236,7 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:e31de1a7a8a024d10d4da6fd0b4bf7b73ee47ef35c95fd4249f252482867a1b8",
+        "content_hash": "sha256:9cd19ddf41be439da6d6360e712a653eea1a52e1d53cf7512b9be8ab47f22b98",
         "input_verified": true,
         "exit_status": 0,
         "artifact_binding": {
@@ -237,7 +245,7 @@
             "path": "signoff/evidence/item9-testbenches.inventory.json",
             "scope": "repo"
           },
-          "content_hash": "sha256:e31de1a7a8a024d10d4da6fd0b4bf7b73ee47ef35c95fd4249f252482867a1b8",
+          "content_hash": "sha256:9cd19ddf41be439da6d6360e712a653eea1a52e1d53cf7512b9be8ab47f22b98",
           "input_verified": true,
           "summary": "The shipped ngspice testbenches/templates, their cold-start entry points (run_*.sh) and experiment READMEs are committed; every constituent hash matches the inventory and each README names its entry point. Testbenches are NOT re-run by this attestation and no measurement result is claimed.",
           "source": "signoff/evidence/item9-testbenches.inventory.json"
