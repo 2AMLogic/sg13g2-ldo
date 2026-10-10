@@ -92,7 +92,10 @@ exactly these six classes:
 
 `evidence/` is protected, not freely mutable derived output. The checker
 fails closed (exit 2) when the base or head cannot be resolved or diffed, or
-when the allowlist is invalid. Run it locally with
+when the allowlist is invalid. The allowlist is read from the committed blob at
+the evaluated `--head` commit, never from the working tree; the
+`--allowlist FILE` override is for local debugging only and is refused under
+`GITHUB_ACTIONS`. Run it locally with
 `python3 sim/tools/check_append_only.py --base origin/main`.
 
 ### Exact-path exceptions
@@ -109,7 +112,8 @@ same PR:
 ```
 
 Each entry names one exact protected file path and a non-empty rationale.
-Wildcards, directories, blank rationales, unprotected paths, duplicates and
+Wildcards, directories (including nested ones without a trailing slash: a path
+that is a tree at the merge base or at head is rejected), blank rationales, unprotected paths, duplicates and
 extra keys make the check fail. An entry permits only that path (for a
 rename, both sides must be listed). There is no blanket exception for any
 class; the historical `coverage-inventory.*` edits in `434c822` are not

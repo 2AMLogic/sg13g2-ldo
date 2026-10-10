@@ -18,14 +18,22 @@ are judged: the old path of a rename is a removal; an existing protected
 destination is a replacement. A rename that git reports as delete+add is
 rejected through the delete.
 
-Exceptions live in sim/tools/append_only_allowlist.json (read from HEAD):
+Exceptions live in sim/tools/append_only_allowlist.json, read from the blob
+at the evaluated --head commit (never the working tree, so an untracked or
+locally edited file cannot change the verdict):
     {"exceptions": [{"path": "<exact repo-relative path>",
                      "rationale": "<non-empty reason>"}]}
-Only exact protected file paths are accepted: no wildcards, no directories,
-no blank rationale. Normal corrections mint a new record ID instead.
+Only exact protected file paths are accepted: no wildcards, no directories
+(trailing-slash or not: a path that is a tree at the merge base or at head is
+rejected), no blank rationale. Normal corrections mint a new record ID instead.
+
+--allowlist FILE is a local-debugging override that reads FILE from disk
+instead of the committed policy. It is announced in the output and refused
+(exit 2) when GITHUB_ACTIONS is set, so CI always judges the committed policy.
 """
 import argparse
 import json
+import os
 import pathlib
 import subprocess
 import sys
@@ -86,15 +94,37 @@ def resolve(repo, rev, what):
         )
 
 
-def load_allowlist(path):
+def read_committed_allowlist(repo, head_c, relpath):
+    """Return the allowlist text at head_c, or None when the file is absent."""
+    ls = git(repo, "ls-tree", "-z", head_c, "--", relpath)
+    if not ls:
+        return None
+    meta = ls.split(b"\t", 1)[0].split()
+    if len(meta) != 3 or meta[1] != b"blob":
+        raise CheckError(f"allowlist {relpath} at {head_c[:12]} is not a "
+                         "regular file")
+    try:
+        return git(repo, "cat-file", "blob", f"{head_c}:{relpath}").decode()
+    except UnicodeDecodeError as e:
+        raise CheckError(f"allowlist {relpath} at {head_c[:12]} unreadable: {e}")
+
+
+def read_override_allowlist(path):
+    try:
+        return pathlib.Path(path).read_text()
+    except OSError as e:
+        raise CheckError(f"--allowlist {path} unreadable: {e}")
+
+
+def parse_allowlist(text, label):
     """Return {exact path: rationale}; raise CheckError if invalid."""
-    p = pathlib.Path(path)
-    if not p.exists():
+    if text is None:
         return {}
     try:
-        doc = json.loads(p.read_text())
-    except (OSError, ValueError) as e:
-        raise CheckError(f"allowlist {p} unreadable/invalid JSON: {e}")
+        doc = json.loads(text)
+    except ValueError as e:
+        raise CheckError(f"allowlist {label} unreadable/invalid JSON: {e}")
+    p = label
     if (not isinstance(doc, dict) or set(doc) != {"exceptions"}
             or not isinstance(doc["exceptions"], list)):
         raise CheckError(
@@ -122,6 +152,18 @@ def load_allowlist(path):
             raise CheckError(f"{where}: duplicate path {path!r}")
         out[path] = why.strip()
     return out
+
+
+def reject_tree_entries(repo, revs, allow):
+    """Fail closed when an exception names a directory in any given commit."""
+    for path in allow:
+        for rev in revs:
+            r = subprocess.run(["git", "-C", str(repo), "cat-file", "-t",
+                                f"{rev}:{path}"], capture_output=True)
+            if r.returncode == 0 and r.stdout.strip() == b"tree":
+                raise CheckError(
+                    f"allowlist entry {path!r} is a directory at {rev[:12]}; "
+                    "list exact file paths (directories are not allowed)")
 
 
 def diff_entries(repo, mb, head):
@@ -180,7 +222,19 @@ def run(repo, base, head, allowlist_path):
     mb = git(repo, "merge-base", base_c, head_c).decode().strip()
     if not mb:
         raise CheckError(f"no merge base between {base} and {head}")
-    allow = load_allowlist(allowlist_path)
+    if allowlist_path is None:
+        text = read_committed_allowlist(repo, head_c, DEFAULT_ALLOWLIST)
+        label = f"{DEFAULT_ALLOWLIST}@{head_c[:12]}"
+    else:
+        if os.environ.get("GITHUB_ACTIONS"):
+            raise CheckError("--allowlist override is refused in CI; the "
+                             "committed policy at --head is authoritative")
+        print(f"append-only check: NOTE using allowlist override "
+              f"{allowlist_path} (not the committed policy)", file=sys.stderr)
+        text = read_override_allowlist(allowlist_path)
+        label = str(allowlist_path)
+    allow = parse_allowlist(text, label)
+    reject_tree_entries(repo, (mb, head_c), allow)
     return mb, find_violations(repo, mb, head_c, allow), allow
 
 
@@ -191,11 +245,11 @@ def main(argv=None):
     ap.add_argument("--head", default="HEAD")
     ap.add_argument("--repo", default=".")
     ap.add_argument("--allowlist", default=None,
-                    help=f"default: <repo>/{DEFAULT_ALLOWLIST}")
+                    help=f"local-debug override file; default: the committed "
+                         f"{DEFAULT_ALLOWLIST} at --head (refused in CI)")
     a = ap.parse_args(argv)
-    allowlist = a.allowlist or str(pathlib.Path(a.repo) / DEFAULT_ALLOWLIST)
     try:
-        mb, bad, allow = run(a.repo, a.base, a.head, allowlist)
+        mb, bad, allow = run(a.repo, a.base, a.head, a.allowlist)
     except CheckError as e:
         print(f"append-only check: ERROR (fail closed): {e}", file=sys.stderr)
         return 2

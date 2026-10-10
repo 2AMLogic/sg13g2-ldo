@@ -4,6 +4,7 @@ Builds temporary git repositories and drives the real CLI. Run:
     python3 -m unittest discover -s sim/tools -p 'test_*.py' -v
 """
 import json
+import os
 import pathlib
 import subprocess
 import sys
@@ -48,10 +49,12 @@ class Repo(unittest.TestCase):
         self.g("branch", "base")
         self.g("checkout", "-q", "-b", "pr")
 
-    def run_check(self, base="base", *extra):
+    def run_check(self, base="base", *extra, env=None):
+        e = {k: v for k, v in os.environ.items() if k != "GITHUB_ACTIONS"}
+        e.update(env or {})
         r = subprocess.run([sys.executable, str(CHECKER), "--repo",
                             str(self.root), "--base", base, *extra],
-                           capture_output=True, text=True)
+                           capture_output=True, text=True, env=e)
         return r.returncode, r.stdout + r.stderr
 
 
@@ -190,6 +193,8 @@ class Cases(Repo):
             "globstar": [{"path": "sim/*/evidence/**", "rationale": "r"}],
             "directory": [{"path": "sim/exp/records/rec1/", "rationale": "r"}],
             "directory no slash": [{"path": "sim/exp/records", "rationale": "r"}],
+            "nested directory no slash": [{"path": "sim/exp/records/rec1",
+                                           "rationale": "r"}],
             "unprotected path": [{"path": "sim/exp/README.md", "rationale": "r"}],
             "extra key": [{"path": "sim/exp/records/rec1/file.txt",
                            "rationale": "r", "glob": "x"}],
@@ -205,6 +210,87 @@ class Cases(Repo):
                 self.commit(name)
                 rc, out = self.run_check()
                 self.assertEqual(rc, 2, out)
+
+    ENTRY = [{"path": "sim/exp/records/rec1/file.txt", "rationale": "r"}]
+
+    def test_untracked_allowlist_cannot_waive_committed_mutation(self):
+        self.seed()
+        self.write("sim/exp/records/rec1/file.txt", "changed\n")
+        self.commit()
+        self.write_allow(self.ENTRY)  # untracked: never committed
+        rc, out = self.run_check()
+        self.assertEqual(rc, 1, out)
+
+    def test_modified_worktree_allowlist_is_ignored(self):
+        self.seed()
+        self.write("sim/exp/records/rec1/file.txt", "changed\n")
+        self.write_allow([{"path": "sim/exp/corners/rec1/file.txt",
+                           "rationale": "r"}])
+        self.commit()
+        self.write_allow(self.ENTRY + [{"path": "sim/exp/corners/rec1/file.txt",
+                                        "rationale": "r"}])  # uncommitted edit
+        rc, out = self.run_check()
+        self.assertEqual(rc, 1, out)
+        self.assertIn("sim/exp/records/rec1/file.txt", out)
+
+    def test_policy_comes_from_head_not_checkout(self):
+        self.seed()
+        self.write("sim/exp/records/rec1/file.txt", "changed\n")
+        self.write_allow(self.ENTRY)
+        self.commit("pr with exception")
+        self.g("branch", "waived")
+        self.g("checkout", "-q", "-B", "pr", "base")
+        self.write("sim/exp/records/rec1/file.txt", "changed\n")
+        self.commit("pr without exception")
+        # Checkout is "pr" (no policy); evaluate the commit that has one.
+        rc, out = self.run_check("base", "--head", "waived")
+        self.assertEqual(rc, 0, out)
+        # Checkout is "waived" (has policy); evaluate the one that lacks it.
+        self.g("checkout", "-q", "waived")
+        rc, out = self.run_check("base", "--head", "pr")
+        self.assertEqual(rc, 1, out)
+
+    def test_allowlist_that_is_a_directory_fails_closed(self):
+        self.seed()
+        self.write("sim/exp/records/rec1/file.txt", "changed\n")
+        self.write(ALLOW + "/inner.json", "{}")
+        self.commit()
+        rc, out = self.run_check()
+        self.assertEqual(rc, 2, out)
+
+    def test_deleted_file_exception_is_accepted(self):
+        self.seed()
+        self.g("rm", "-q", "sim/exp/records/rec1/file.txt")
+        self.write_allow(self.ENTRY)
+        self.commit()
+        rc, out = self.run_check()
+        self.assertEqual(rc, 0, out)
+
+    def test_nested_directory_entry_rejected_even_if_deleted_tree(self):
+        self.seed()
+        self.g("rm", "-q", "-r", "sim/exp/records/rec1")
+        self.write_allow([{"path": "sim/exp/records/rec1", "rationale": "r"}])
+        self.commit()
+        rc, out = self.run_check()
+        self.assertEqual(rc, 2, out)
+        self.assertIn("directory", out)
+
+    def test_override_reads_disk_locally_and_is_refused_in_ci(self):
+        self.seed()
+        self.write("sim/exp/records/rec1/file.txt", "changed\n")
+        self.commit()
+        override = self.root / "override.json"
+        override.write_text(json.dumps({"exceptions": self.ENTRY}))
+        rc, out = self.run_check("base", "--allowlist", str(override))
+        self.assertEqual(rc, 0, out)
+        self.assertIn("override", out)
+        rc, out = self.run_check("base", "--allowlist", str(override),
+                                 env={"GITHUB_ACTIONS": "true"})
+        self.assertEqual(rc, 2, out)
+        self.assertIn("refused in CI", out)
+        rc, out = self.run_check("base", "--allowlist",
+                                 str(self.root / "missing.json"))
+        self.assertEqual(rc, 2, out)
 
     def test_malformed_allowlist_json_fails_closed(self):
         self.mutate()
