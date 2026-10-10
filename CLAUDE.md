@@ -27,7 +27,14 @@ a 130 nm SiGe BiCMOS open PDK, designed and verified by AI agents.
   is scoped to the tool, so keep design-specific detail out of it and describe
   the gap, not the design.
 - **Verification is the product**: no claim without a testbench. PVT corners
-  on every recorded result; `sim/` results are append-only evidence.
+  on every recorded result; `sim/` results are append-only evidence. Before
+  requesting review, once every source edit is final, follow
+  [`signoff/README.md#regenerating`](signoff/README.md#regenerating): hash-pinned
+  inputs (including `CLAUDE.md`, `README.md` and `.github/workflows/ci.yml`)
+  need their inventories, characterization envelope and T1 report refreshed
+  with the pinned grader, and the committed output must reproduce. Never
+  loosen a gate, threshold, record or verdict; exit 3 stays an honest non-T1
+  result.
 - Spec changes go through `spec/` with a decision record; agents do not relax
   the ratified spec to make results pass.
 
