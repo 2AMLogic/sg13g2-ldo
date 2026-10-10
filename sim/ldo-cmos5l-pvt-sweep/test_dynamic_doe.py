@@ -273,11 +273,25 @@ class Summary(unittest.TestCase):
         self.assertTrue(e["gain_margin_db"]["meets_target"])
         self.assertEqual(len(d.target_failures(rows)), 2)
 
-    def test_failed_rows_excluded_from_extrema(self):
-        bad = mkrow(0, 330, 0, phase_margin_deg=1.0)
-        bad["status"] = "failed"
-        e = d.extrema([bad, mkrow(1000, 1000, 0)])
+    def test_failed_rows_contribute_only_measured_metrics(self):
+        # missing/truncated output: no metrics at all -> nothing contributed
+        gone = {"corner": "ss", "temp_c": 125, "res_section": "res_bcs",
+                "load_ua": 0, "cout_nf": 330, "esr_mohm": 0,
+                "status": "failed", "failures": "loopgain: missing"}
+        e = d.extrema([gone, mkrow(1000, 1000, 0)])
         self.assertEqual(e["phase_margin_deg"]["value"], 60.0)
+        self.assertEqual(e["phase_margin_deg"]["n"], 1)
+        # GM unmeasured (no -180 crossing): PM and PSRR still count
+        part = mkrow(0, 330, 0, phase_margin_deg=12.0)
+        del part["gain_margin_db"]
+        part["status"] = "failed"
+        e = d.extrema([part, mkrow(1000, 1000, 0)])
+        self.assertEqual(e["phase_margin_deg"]["value"], 12.0)
+        self.assertEqual(e["gain_margin_db"]["n"], 1)
+        self.assertIn((part, "phase_margin_deg"), d.target_failures([part]))
+        # non-finite values never count
+        nan = mkrow(0, 330, 0, phase_margin_deg=float("nan"))
+        self.assertIsNone(d.metric_val(nan, "phase_margin_deg"))
 
     def test_legacy_tolerance(self):
         rows = []
@@ -343,6 +357,16 @@ class Refinement(unittest.TestCase):
                 mkrow(1000, 1000, 2, phase_margin_deg=60)]
         r, _ = d.refinement_requests(rows)
         self.assertTrue(any(x.get("unrefinable") for x in r))
+
+    def test_partial_row_still_in_slices_of_measured_metrics(self):
+        rows = self.slice_rows([70, 60, 50, 65])
+        rows[2]["status"] = "failed"          # e.g. GM unmeasured there
+        del rows[2]["gain_margin_db"]
+        r, ev = self.reqs(rows)
+        self.assertEqual(sorted(x["cout_nf"] for x in r), [1600, 3450])
+        gm = [e for e in ev if e["metric"] == "gain_margin_db"
+              and e["axis"] == "cout_nf"][0]
+        self.assertEqual(gm["slices"], 1)     # 3-point GM slice, still there
 
     def test_only_extra_plan_skips_base_points(self):
         extra = [{"corner": "ss", "temp_c": 125, "res": "bcs", "op": op(500),

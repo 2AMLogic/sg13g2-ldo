@@ -248,7 +248,8 @@ def parse_point(corners_dir, p):
             return {}, "unparseable AC data"
         out = {k: m.get(k) for k in ("phase_margin_deg", "gain_margin_db",
                                      "unity_gain_freq_hz", "dc_gain_db",
-                                     "n_0db_crossings")}
+                                     "n_0db_crossings",
+                                     "phase_margin_worst_deg")}
         if m.get("phase_margin_deg") is None:
             return out, "no unity-gain crossover"
         if m.get("gain_margin_db") is None:
@@ -267,7 +268,8 @@ def parse_point(corners_dir, p):
 
 ROW_FIELDS = ["corner", "temp_c", "res_section", "load_ua", "cout_nf",
               "esr_mohm", "origin", "source", "phase_margin_deg", "gain_margin_db",
-              "unity_gain_freq_hz", "n_0db_crossings", "psrr_db_1khz",
+              "unity_gain_freq_hz", "n_0db_crossings", "phase_margin_worst_deg",
+              "psrr_db_1khz",
               "psrr_db_100khz", "status", "failures"]
 
 
@@ -300,6 +302,22 @@ def row_ok(r):
     return r["status"] == "ok"
 
 
+def metric_val(r, m):
+    """The row's value for metric m if it was measured and is finite, else
+    None. A row whose status is `failed` still contributes the metrics it
+    did measure: a loop-gain trace with no -180 degree crossing in band has
+    no gain margin but a valid phase margin, and its PSRR is unaffected.
+    Missing/truncated output yields no metrics at all."""
+    v = r.get(m)
+    if v is None or v == "":
+        return None
+    try:
+        v = float(v)
+    except (TypeError, ValueError):
+        return None
+    return v if math.isfinite(v) else None
+
+
 # ---- completeness, extrema, targets ------------------------------------
 def completeness(rows, pts):
     expected = len({(p["corner"], p["temp_c"], p["res"]) + op_key(p["op"])
@@ -320,19 +338,21 @@ def coord_str(r):
 def extrema(rows):
     out = {}
     for m in METRICS:
-        have = [r for r in rows if row_ok(r) and r.get(m) is not None]
+        have = [r for r in rows if metric_val(r, m) is not None]
         if not have:
             out[m] = None
             continue
-        w = min(have, key=lambda r: r[m])
-        out[m] = {"value": w[m], "coord": coord_str(w),
-                  "target": TARGETS[m][0], "meets_target": TARGETS[m][1](w[m])}
+        w = min(have, key=lambda r: metric_val(r, m))
+        v = metric_val(w, m)
+        out[m] = {"value": v, "coord": coord_str(w), "n": len(have),
+                  "target": TARGETS[m][0], "meets_target": TARGETS[m][1](v)}
     return out
 
 
 def target_failures(rows):
-    return [(r, m) for r in rows if row_ok(r) for m in METRICS
-            if r.get(m) is not None and not TARGETS[m][1](r[m])]
+    return [(r, m) for r in rows for m in METRICS
+            if metric_val(r, m) is not None
+            and not TARGETS[m][1](metric_val(r, m))]
 
 
 # ---- legacy regression -------------------------------------------------
@@ -385,16 +405,17 @@ def midpoint(a, b):
 
 def slices(rows, corner, metric, axis):
     """Yield (fixed-coordinate dict, ordered [(level, value)]) for each 1-D
-    slice of ok rows at one corner, for one axis."""
+    slice at one corner, for one axis, over the rows that measured the
+    metric (see metric_val)."""
     others = [x for x in AXES if x != axis]
     groups = {}
     for r in rows:
-        if not row_ok(r) or (r["corner"], r["temp_c"], r["res_section"]) != corner:
+        if (r["corner"], r["temp_c"], r["res_section"]) != corner:
             continue
-        if r.get(metric) is None:
+        if metric_val(r, metric) is None:
             continue
         groups.setdefault(tuple(r[o] for o in others), []).append(
-            (r[axis], r[metric]))
+            (r[axis], metric_val(r, metric)))
     for fixed, pts in sorted(groups.items()):
         pts.sort()
         yield dict(zip(others, fixed)), pts
@@ -431,7 +452,7 @@ def refinement_requests(rows):
                      "reason": reason}
 
     corners = sorted({(r["corner"], r["temp_c"], r["res_section"])
-                      for r in rows if row_ok(r)})
+                      for r in rows})
     for corner in corners:
         for metric in METRICS:
             for axis in AXES:
@@ -506,14 +527,34 @@ def write_report(prefix, rows, pts, legacy, reqs, evidence):
         for k, v in comp.items():
             f.write(f"- {k}: {v}\n")
         f.write("\n## Extrema vs DR-0007 targets (informational)\n\n")
-        f.write("| metric | worst value | target | meets | coordinate |\n|---|---|---|---|---|\n")
+        f.write("Over every row that measured the metric, including rows whose "
+                "status is `failed` for another metric (see `metric_val`). "
+                "`phase_margin_deg` is the parser's first-0-dB-crossing phase "
+                "margin. Where a trace has two 0 dB crossings, the CSV's "
+                "`phase_margin_worst_deg` column also gives the worst one.\n\n")
+        f.write("| metric | worst value | target | meets | points measured | coordinate |\n"
+                "|---|---|---|---|---|---|\n")
         for m in METRICS:
             e = ext[m]
             if e is None:
-                f.write(f"| {m} | n/a | {TARGETS[m][0]} | n/a | no valid data |\n")
+                f.write(f"| {m} | n/a | {TARGETS[m][0]} | n/a | 0 | no valid data |\n")
             else:
                 f.write(f"| {m} | {e['value']:.2f} | {e['target']} | "
-                        f"{e['meets_target']} | {e['coord']} |\n")
+                        f"{e['meets_target']} | {e['n']} | {e['coord']} |\n")
+        f.write("\n## Target misses per corner (informational)\n\n"
+                "Count of sampled operating points that miss each target, out of "
+                "the points at that corner that measured the metric.\n\n"
+                "| corner | " + " | ".join(METRICS) + " |\n|---|" + "---|" * len(METRICS) + "\n")
+        fails = target_failures(rows)
+        for c in sorted({(r["corner"], r["temp_c"], r["res_section"]) for r in rows}):
+            cells = []
+            for m in METRICS:
+                meas = [r for r in rows if (r["corner"], r["temp_c"], r["res_section"]) == c
+                        and metric_val(r, m) is not None]
+                miss = [r for r, mm in fails if mm == m and
+                        (r["corner"], r["temp_c"], r["res_section"]) == c]
+                cells.append(f"{len(miss)}/{len(meas)}")
+            f.write(f"| {'/'.join(map(str, c))} | " + " | ".join(cells) + " |\n")
         f.write("\n## Failed / missing points\n\n")
         bad = [r for r in rows if not row_ok(r)]
         f.write("none\n" if not bad else "")
