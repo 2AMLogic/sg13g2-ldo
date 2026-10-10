@@ -1,0 +1,12 @@
+* klt sim -- generated corner deck, do not edit
+.lib /var/tmp/eda-job-klt-sim-4742f4a08f98/inputs/corners.lib mos_ff__res_wcs__cap_typ__vcfa32c6f91f4
+.include /var/tmp/eda-job-klt-sim-4742f4a08f98/inputs/netlist.cir
+.temp -40
+.meas ac liveness_vout FIND vm(vout) AT=1
+.control
+set filetype=ascii
+ac dec 20 1 100meg
+write /var/tmp/eda-job-klt-sim-4742f4a08f98/outputs/artifacts/mos_ff__res_wcs__cap_typ__vcfa32c6f91f4_novdd_n40C/waveform.raw
+quit
+.endc
+.end

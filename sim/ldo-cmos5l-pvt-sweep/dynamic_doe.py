@@ -7,9 +7,13 @@ PVT corners, or ratifies any DR-0007 row.
 
 Subcommands (see sim/ldo-cmos5l-pvt-sweep/README.md "Dynamic DoE"):
 
-    plan     [--extra FILE]            TSV of every point to simulate
-    analyse  CORNERS_DIR [--extra FILE] [--legacy-record CSV] [--out-prefix P]
-    refine   CORNERS_DIR [--extra FILE] [--out FILE]   midpoint requests
+    plan     [--extra FILE] [--only-extra]   TSV of every point to simulate
+    analyse  CORNERS_DIR... [--extra FILE] [--legacy-record CSV]... --out-prefix P
+    refine   CORNERS_DIR... [--extra FILE] [--out FILE]   midpoint requests
+
+Several CORNERS_DIRs may be given (a refinement record plus the base
+record it refines); each point is read from the first one that has it, and
+the row's `source` column names that directory.
 
 Operating-point values are held as exact integers in base units (load in
 uA, Cout in nF, ESR in mohm) so decimal formatting cannot collide IDs.
@@ -165,18 +169,24 @@ def load_extra(path):
     return out
 
 
-def plan(extra=()):
+def plan(extra=(), only_extra=False):
     """Every point to simulate: list of dicts with bench, point_id, corner
-    fields, op. Raises on ID collision (two distinct points, same ID)."""
+    fields, op. Raises on ID collision (two distinct points, same ID).
+    only_extra: just the extra points that are not already base points
+    (a refinement run whose base matrix was simulated earlier)."""
     pts, seen = [], {}
     combos = [(c[0], c[1], c[2], op, "base") for c in CORNERS
               for op in base_ops()]
+    base_coords = set()
+    if only_extra:
+        base_coords = {(c, t, r) + op_key(o) for c, t, r, o, _ in combos}
+        combos = []
     combos += [(e["corner"], e["temp_c"], e["res"], e["op"],
                 "refine: " + e["reason"]) for e in extra]
     done = set()
     for corner, temp, rlabel, op, origin in combos:
         coord = (corner, temp, rlabel) + op_key(op)
-        if coord in done:
+        if coord in done or coord in base_coords:
             continue
         done.add(coord)
         for bench in BENCHES:
@@ -211,8 +221,21 @@ def count_rows(path):
         return None
 
 
+def locate(corners_dirs, p):
+    """First directory holding this point's AC output (or its log), else
+    the first directory (so a missing point reports as missing there)."""
+    if isinstance(corners_dirs, str):
+        corners_dirs = [corners_dirs]
+    for d in corners_dirs:
+        if os.path.exists(os.path.join(d, p["point_id"] + "_ac.csv")) or \
+                os.path.exists(os.path.join(d, p["point_id"] + ".log")):
+            return d
+    return corners_dirs[0]
+
+
 def parse_point(corners_dir, p):
     """-> (metrics dict, failure-reason or None) for one bench point."""
+    corners_dir = locate(corners_dir, p)
     path = os.path.join(corners_dir, p["point_id"] + "_ac.csv")
     n = count_rows(path)
     if n is None or n == 0:
@@ -225,7 +248,8 @@ def parse_point(corners_dir, p):
             return {}, "unparseable AC data"
         out = {k: m.get(k) for k in ("phase_margin_deg", "gain_margin_db",
                                      "unity_gain_freq_hz", "dc_gain_db",
-                                     "n_0db_crossings")}
+                                     "n_0db_crossings",
+                                     "phase_margin_worst_deg")}
         if m.get("phase_margin_deg") is None:
             return out, "no unity-gain crossover"
         if m.get("gain_margin_db") is None:
@@ -243,8 +267,9 @@ def parse_point(corners_dir, p):
 
 
 ROW_FIELDS = ["corner", "temp_c", "res_section", "load_ua", "cout_nf",
-              "esr_mohm", "origin", "phase_margin_deg", "gain_margin_db",
-              "unity_gain_freq_hz", "n_0db_crossings", "psrr_db_1khz",
+              "esr_mohm", "origin", "source", "phase_margin_deg", "gain_margin_db",
+              "unity_gain_freq_hz", "n_0db_crossings", "phase_margin_worst_deg",
+              "psrr_db_1khz",
               "psrr_db_100khz", "status", "failures"]
 
 
@@ -257,7 +282,8 @@ def build_rows(corners_dir, pts):
         r = rows.setdefault(key, {
             "corner": p["corner"], "temp_c": p["temp_c"],
             "res_section": f"res_{p['res']}", **p["op"],
-            "origin": p["origin"], "_fail": []})
+            "origin": p["origin"], "_fail": [], "_src": set()})
+        r["_src"].add(os.path.basename(os.path.normpath(locate(corners_dir, p))))
         m, why = parse_point(corners_dir, p)
         r.update({k: v for k, v in m.items() if v is not None})
         if why:
@@ -267,12 +293,29 @@ def build_rows(corners_dir, pts):
         r = rows[key]
         r["status"] = "ok" if not r["_fail"] else "failed"
         r["failures"] = "; ".join(r.pop("_fail"))
+        r["source"] = "+".join(sorted(r.pop("_src")))
         out.append(r)
     return out
 
 
 def row_ok(r):
     return r["status"] == "ok"
+
+
+def metric_val(r, m):
+    """The row's value for metric m if it was measured and is finite, else
+    None. A row whose status is `failed` still contributes the metrics it
+    did measure: a loop-gain trace with no -180 degree crossing in band has
+    no gain margin but a valid phase margin, and its PSRR is unaffected.
+    Missing/truncated output yields no metrics at all."""
+    v = r.get(m)
+    if v is None or v == "":
+        return None
+    try:
+        v = float(v)
+    except (TypeError, ValueError):
+        return None
+    return v if math.isfinite(v) else None
 
 
 # ---- completeness, extrema, targets ------------------------------------
@@ -295,19 +338,21 @@ def coord_str(r):
 def extrema(rows):
     out = {}
     for m in METRICS:
-        have = [r for r in rows if row_ok(r) and r.get(m) is not None]
+        have = [r for r in rows if metric_val(r, m) is not None]
         if not have:
             out[m] = None
             continue
-        w = min(have, key=lambda r: r[m])
-        out[m] = {"value": w[m], "coord": coord_str(w),
-                  "target": TARGETS[m][0], "meets_target": TARGETS[m][1](w[m])}
+        w = min(have, key=lambda r: metric_val(r, m))
+        v = metric_val(w, m)
+        out[m] = {"value": v, "coord": coord_str(w), "n": len(have),
+                  "target": TARGETS[m][0], "meets_target": TARGETS[m][1](v)}
     return out
 
 
 def target_failures(rows):
-    return [(r, m) for r in rows if row_ok(r) for m in METRICS
-            if r.get(m) is not None and not TARGETS[m][1](r[m])]
+    return [(r, m) for r in rows for m in METRICS
+            if metric_val(r, m) is not None
+            and not TARGETS[m][1](metric_val(r, m))]
 
 
 # ---- legacy regression -------------------------------------------------
@@ -360,16 +405,17 @@ def midpoint(a, b):
 
 def slices(rows, corner, metric, axis):
     """Yield (fixed-coordinate dict, ordered [(level, value)]) for each 1-D
-    slice of ok rows at one corner, for one axis."""
+    slice at one corner, for one axis, over the rows that measured the
+    metric (see metric_val)."""
     others = [x for x in AXES if x != axis]
     groups = {}
     for r in rows:
-        if not row_ok(r) or (r["corner"], r["temp_c"], r["res_section"]) != corner:
+        if (r["corner"], r["temp_c"], r["res_section"]) != corner:
             continue
-        if r.get(metric) is None:
+        if metric_val(r, metric) is None:
             continue
         groups.setdefault(tuple(r[o] for o in others), []).append(
-            (r[axis], r[metric]))
+            (r[axis], metric_val(r, metric)))
     for fixed, pts in sorted(groups.items()):
         pts.sort()
         yield dict(zip(others, fixed)), pts
@@ -406,7 +452,7 @@ def refinement_requests(rows):
                      "reason": reason}
 
     corners = sorted({(r["corner"], r["temp_c"], r["res_section"])
-                      for r in rows if row_ok(r)})
+                      for r in rows})
     for corner in corners:
         for metric in METRICS:
             for axis in AXES:
@@ -481,26 +527,59 @@ def write_report(prefix, rows, pts, legacy, reqs, evidence):
         for k, v in comp.items():
             f.write(f"- {k}: {v}\n")
         f.write("\n## Extrema vs DR-0007 targets (informational)\n\n")
-        f.write("| metric | worst value | target | meets | coordinate |\n|---|---|---|---|---|\n")
+        f.write("Over every row that measured the metric, including rows whose "
+                "status is `failed` for another metric (see `metric_val`). "
+                "`phase_margin_deg` is the parser's first-0-dB-crossing phase "
+                "margin. Where a trace has two 0 dB crossings, the CSV's "
+                "`phase_margin_worst_deg` column also gives the worst one.\n\n")
+        f.write("| metric | worst value | target | meets | points measured | coordinate |\n"
+                "|---|---|---|---|---|---|\n")
         for m in METRICS:
             e = ext[m]
             if e is None:
-                f.write(f"| {m} | n/a | {TARGETS[m][0]} | n/a | no valid data |\n")
+                f.write(f"| {m} | n/a | {TARGETS[m][0]} | n/a | 0 | no valid data |\n")
             else:
                 f.write(f"| {m} | {e['value']:.2f} | {e['target']} | "
-                        f"{e['meets_target']} | {e['coord']} |\n")
+                        f"{e['meets_target']} | {e['n']} | {e['coord']} |\n")
+        f.write("\n## Target misses per corner (informational)\n\n"
+                "Count of sampled operating points that miss each target, out of "
+                "the points at that corner that measured the metric.\n\n"
+                "| corner | " + " | ".join(METRICS) + " |\n|---|" + "---|" * len(METRICS) + "\n")
+        fails = target_failures(rows)
+        for c in sorted({(r["corner"], r["temp_c"], r["res_section"]) for r in rows}):
+            cells = []
+            for m in METRICS:
+                meas = [r for r in rows if (r["corner"], r["temp_c"], r["res_section"]) == c
+                        and metric_val(r, m) is not None]
+                miss = [r for r, mm in fails if mm == m and
+                        (r["corner"], r["temp_c"], r["res_section"]) == c]
+                cells.append(f"{len(miss)}/{len(meas)}")
+            f.write(f"| {'/'.join(map(str, c))} | " + " | ".join(cells) + " |\n")
         f.write("\n## Failed / missing points\n\n")
         bad = [r for r in rows if not row_ok(r)]
         f.write("none\n" if not bad else "")
         for r in bad:
             f.write(f"- {coord_str(r)}: {r['failures']}\n")
-        if legacy is not None:
+        for name, res in legacy or []:
             f.write(f"\n## Legacy 1 mA / 1 uF / 0 ohm vs committed record "
-                    f"(tol {LEGACY_TOL})\n\n")
-            for e in legacy:
-                f.write(f"- {e['corner']}: {'OK' if e['ok'] else 'MISS'} "
-                        f"{json.dumps(e['diffs'])} {e['note']}\n")
+                    f"`{name}` (tol {LEGACY_TOL})\n\n")
+            f.write("| corner | result | |dPM| deg | |dGM| dB | |dPSRR@1k| dB "
+                    "| |dPSRR@100k| dB | note |\n|---|---|---|---|---|---|---|\n")
+            for e in res:
+                cells = " | ".join("n/a" if e["diffs"].get(m) is None
+                                   else f"{e['diffs'][m]:.4f}" for m in METRICS)
+                f.write(f"| {e['corner']} | {'OK' if e['ok'] else 'MISS'} | "
+                        f"{cells} | {e['note']} |\n")
         f.write("\n## Refinement\n\n")
+        extra = [p for p in pts if p["origin"] != "base"]
+        if extra:
+            f.write(f"This analysis includes {len({(p['corner'], p['temp_c'], p['res']) + op_key(p['op']) for p in extra})} "
+                    "refinement operating point(s) (`origin` column); the "
+                    "requests below are re-derived over base + refinement "
+                    "rows, and any that are not yet simulated are listed as "
+                    "PENDING.\n\n")
+        pend = {(r["corner"], r["temp_c"], r["res"]) + op_key(r)
+                for r in pending_requests(reqs, pts)}
         if not reqs:
             f.write(f"No trigger fired across {sum(e['slices'] for e in evidence)} "
                     "slices (per-slice evidence below).\n")
@@ -508,7 +587,8 @@ def write_report(prefix, rows, pts, legacy, reqs, evidence):
             f.write(f"{len(real)} midpoint request(s), {len(unref)} unrefinable "
                     f"interval(s); {fired} slice-metric triggers.\n\n")
             for r in real:
-                f.write(f"- {r['corner']}/{r['temp_c']}C/res_{r['res']} "
+                tag = "PENDING " if (r["corner"], r["temp_c"], r["res"]) + op_key(r) in pend else ""
+                f.write(f"- {tag}{r['corner']}/{r['temp_c']}C/res_{r['res']} "
                         f"load_ua={r['load_ua']} cout_nf={r['cout_nf']} "
                         f"esr_mohm={r['esr_mohm']}: {r['reason']}\n")
             for r in unref:
@@ -521,36 +601,46 @@ def write_report(prefix, rows, pts, legacy, reqs, evidence):
     return comp
 
 
+def pending_requests(reqs, pts):
+    """Midpoint requests that are not already planned points."""
+    have = {(p["corner"], p["temp_c"], p["res"]) + op_key(p["op"]) for p in pts}
+    return [r for r in reqs if not r.get("unrefinable") and
+            (r["corner"], r["temp_c"], r["res"]) + op_key(r) not in have]
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = ap.add_subparsers(dest="cmd", required=True)
     for name in ("plan", "analyse", "refine"):
         sp = sub.add_parser(name)
         if name != "plan":
-            sp.add_argument("corners_dir")
+            sp.add_argument("corners_dir", nargs="+")
         sp.add_argument("--extra")
+        if name == "plan":
+            sp.add_argument("--only-extra", action="store_true",
+                            help="only the --extra points not in the base matrix")
         if name == "analyse":
-            sp.add_argument("--legacy-record")
+            sp.add_argument("--legacy-record", action="append", default=[])
             sp.add_argument("--out-prefix", required=True)
         if name == "refine":
             sp.add_argument("--out")
     a = ap.parse_args(argv)
-    pts = plan(load_extra(a.extra))
     if a.cmd == "plan":
-        sys.stdout.write(plan_tsv(pts))
+        sys.stdout.write(plan_tsv(plan(load_extra(a.extra),
+                                       only_extra=a.only_extra)))
         return 0
+    pts = plan(load_extra(a.extra))
     rows = build_rows(a.corners_dir, pts)
     reqs, evidence = refinement_requests(rows)
     if a.cmd == "refine":
-        text = json.dumps([r for r in reqs if not r.get("unrefinable")], indent=1)
+        text = json.dumps(pending_requests(reqs, pts), indent=1)
         if a.out:
             open(a.out, "w").write(text + "\n")
         else:
             print(text)
         return 0
-    legacy = None
-    if a.legacy_record:
-        legacy = compare_legacy(rows, read_record_csv(a.legacy_record))
+    legacy = [(os.path.basename(path), compare_legacy(rows, read_record_csv(path)))
+              for path in a.legacy_record]
     comp = write_report(a.out_prefix, rows, pts, legacy, reqs, evidence)
     print(json.dumps(comp))
     return 0 if comp["complete"] else 1

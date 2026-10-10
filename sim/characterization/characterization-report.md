@@ -27,7 +27,7 @@
 | design_netlist_freshness | `design/sg13cmos5l/netlist/ldo_core_cmos5l.spice` | `7953b25be4cb00053f8df5f283bee0500f60a826b7a2d6519b88a8578d222cc1` | yes |
 | design_netlist_freshness | `design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice` | `7982d728a2db933165eedcae69feaa4985dbddf54c269fc68b82d88577c8e38c` | yes |
 | ratification_record | `spec/decision-records/DR-0007-target-spec-row-ratification.md` | `74496ee0800de6de36ff2f045796a7c2f802f6d647439255df5a8c8e69451556` | recorded |
-| superseded_evidence_statement | `sim/ldo-cmos5l-pvt-sweep/README.md` | `e8a68c64b0f609c5fa3290c7b30a6b55840615e98a20507e5bbc65f6145036dd` | recorded |
+| superseded_evidence_statement | `sim/ldo-cmos5l-pvt-sweep/README.md` | `c24c86c232ed916b23dc5afb0764990ca2137ec488800a4ca3b0b6a5a04c97d4` | recorded |
 | target_table | `README.md` | `378f8b48bc4ed7cca70a4ec79a1149e3e8d124b16a609676ed9c442674dcccc5` | recorded |
 
 ## Per-row summary

@@ -328,6 +328,16 @@ request (214 points in 22 requests).
   the pre-#67 templates and netlist. They reproduced the local ngspice-46
   files of record `20260917-023832-7061e8f` exactly. See
   [`backend-validation/20261010-025044/`](backend-validation/20261010-025044/README.md).
+- **Sparse corner sets and per-point lines (issue #64).** A request's
+  (section, temperature) pairs no longer have to form a cross product. The
+  pairs nobody asked for go into klt's `exclude` list, which the 0.5.0
+  runner honours. `--variant-lines REGEX` moves matching body lines
+  (the DoE's `Iload`/`Cout`/`Resr`) verbatim into each point's own
+  `corners.lib` section, so decks that differ only in those lines share one
+  request. Only the `--doe-generate --batch` path passes it. The main grid's
+  plan is unchanged: 214 points in 22 requests, none of them excluded. The
+  results were cross-checked byte for byte on the fleet; see
+  [`backend-validation/20261010-variant-lines/`](backend-validation/20261010-variant-lines/README.md).
 - A failed submission is reported, and its points are screened as FAILED.
   The backend never falls back to a local ngspice run.
 - Provenance for each record is in `corners/<id>/_batch/`: one directory per
@@ -839,12 +849,20 @@ Requires `ngspice >= 46` (OSDI ABI v0.4, see `sim/README.md`) and both
 
 ## Dynamic DoE: load x Cout x ESR (issue #64)
 
-**Status: tooling and one-point probe only. The 384-run campaign has NOT been
-run.** `klt sim`'s batch/remote backends refuse `ihp-sg13cmos5l`
-([klayout-tools#2727](https://github.com/2AMLogic/klayout-tools/issues/2727),
-see "Not a `klt sim` envelope" above) and hand-launched local grids are not
-permitted on the dispatch host, so no records for the grid exist. Nothing in
-this section ratifies or changes DR-0007 rows 3, 6 or 10.
+**Status: the 384-run matrix and one round of midpoint refinement (688
+more runs) have been run on the EDA batch fleet. This is exploratory
+evidence. It does not ratify or change DR-0007 rows 3, 6 or 10, and it makes
+no monotonicity or continuous-window claim.** The records are
+`20261010-091123-a31c626` (base matrix) and `20261010-101245-6df50fd`
+(refinement, analysed together with the base). See "What was actually run
+for #64" below for the results, the failures and the limits.
+
+The runs go through `run_sweep.sh --doe-generate --batch`, which uses the
+same staged-model-input batch path as the main grid (see "Batch backend"
+above). `klt sim` still refuses `models.pdk: ihp-sg13cmos5l` on its batch
+backend
+([klayout-tools#2727](https://github.com/2AMLogic/klayout-tools/issues/2727)).
+That route is not needed here.
 
 ### What this is (and is not)
 
@@ -905,43 +923,83 @@ The AC parsers were extracted verbatim from this script into `ac_metrics.py`
 ### Reproduction
 
 ```
-sim/ldo-cmos5l-pvt-sweep/run_sweep.sh --check-env     # benches still parse
-sim/ldo-cmos5l-pvt-sweep/run_sweep.sh --doe-generate  # 384 netlists + provenance manifest, NO simulation
+# base matrix: 384 netlists, 2 klt sim batch requests (one per bench), then analyse + refine
+sim/ldo-cmos5l-pvt-sweep/run_sweep.sh --doe-generate --batch
+# one refinement round: only the requested midpoints, analysed with the base record
+SWEEP_BATCH_MAX_POINTS=115 SWEEP_BATCH_CONCURRENCY=3 \
+  sim/ldo-cmos5l-pvt-sweep/run_sweep.sh --doe-generate --batch \
+    --doe-extra=$PWD/sim/ldo-cmos5l-pvt-sweep/records/<base>.dynamic-doe.refine.json \
+    --doe-only-extra --doe-base=<base>
+sim/ldo-cmos5l-pvt-sweep/run_sweep.sh --doe-generate  # generate-only: netlists + manifest, NO simulation
 python3 sim/ldo-cmos5l-pvt-sweep/dynamic_doe.py plan  # bench, id, mos, res, temp, load, cout, esr
 ```
 
-`--doe-generate` writes `netlist-snapshots/<record>/*.spice` through the same
-`gen_netlist` as the main grid and `records/<record>.dynamic-doe.manifest.tsv`
-(per point: netlist path and sha256, the `ngspice -b` invocation, repo git sha,
-PDK, ngspice version). `--doe-extra=FILE` appends refinement points.
+`--doe-generate` renders `netlist-snapshots/<record>/*.spice` through the
+same `gen_netlist` as the main grid. It writes
+`records/<record>.dynamic-doe.manifest.tsv`, with one row per point: netlist
+path and sha256, the invocation, repo git sha, PDK and ngspice version. With
+`--batch`, the invocation names the `klt sim` request that ran the point,
+`corners/<record>/_batch/<group>/request.json`.
+`corners/<record>/_batch/points.tsv` maps each point to its request and its
+klt process/temperature corner, and `_batch/backend.json` holds the job ids.
+Without `--batch` the command stops after generation and never launches
+ngspice.
 
-The 384 simulations must be submitted to the batch fleet, not run locally.
-That requires `klt sim` batch support for `ihp-sg13cmos5l` (#2727) or another
-sanctioned batch path; if a submit fails, record the error here, do not fall
-back to a local grid. (PR #87 added one such path for the main grid,
-`run_sweep.sh --batch`; see "Batch backend" above. `--doe-generate` does not
-route through it yet.) After the AC CSVs are in `corners/<record>/`:
+Under `--batch`, `batch_backend.py` gets `--variant-lines
+'^(Iload|Cout|Resr) '`. The DoE decks differ only in those lines, so they
+move into each point's own `corners.lib` section and every bench runs as
+one request. The other route was one request per operating point, which on
+the shared fleet cost about 12 min of instance overhead for about 25 s of
+simulation. The cross-check is in
+[`backend-validation/20261010-variant-lines/`](backend-validation/20261010-variant-lines/README.md).
+`SWEEP_BATCH_MAX_POINTS` caps the points per request, and
+`SWEEP_BATCH_CONCURRENCY` caps the requests in flight (default 2). A request
+the fleet's concurrency cap refuses is re-submitted to the fleet for up to
+an hour, because klt's own `capacity_wait_s` does not cover that refusal
+(klayout-tools#2917). Nothing falls back to a local run.
+
+After the batch run, `run_sweep.sh` runs:
 
 ```
-python3 sim/ldo-cmos5l-pvt-sweep/dynamic_doe.py analyse corners/<record> \
+python3 sim/ldo-cmos5l-pvt-sweep/dynamic_doe.py analyse corners/<record> [corners/<base>] \
+  [--extra refine.json] \
   --legacy-record records/20260917-023832-7061e8f.csv \
+  --legacy-record records/20261010-025634-60a3e81.csv \
   --out-prefix records/<record>.dynamic-doe
-python3 sim/ldo-cmos5l-pvt-sweep/dynamic_doe.py refine corners/<record> --out refine.json
+python3 sim/ldo-cmos5l-pvt-sweep/dynamic_doe.py refine corners/<record> [corners/<base>] \
+  [--extra refine.json] --out records/<record>.dynamic-doe.refine.json
 ```
 
-`analyse` writes `<prefix>.csv` (one row per corner x load x Cout x ESR, with
-status and failure reasons) and `<prefix>.md` (completeness, extrema with full
-coordinates versus the targets, legacy comparison, refinement requests and the
-per-slice trigger table); it exits non-zero unless the matrix is complete.
-Failures are: missing or truncated AC output (not 161 rows), no unity-gain
-crossover, no -180 degree crossing (gain margin unmeasured), non-finite values.
+`analyse` writes two files and exits non-zero unless the matrix is complete:
+
+- `<prefix>.csv`: one row per corner x load x Cout x ESR, with status,
+  failure reasons, `origin` (base or refine, with the reason) and `source`
+  (the corners directory the row was read from).
+- `<prefix>.md`: completeness, extrema with full coordinates versus the
+  targets, target misses per corner, the legacy comparison, refinement
+  requests and the per-slice trigger table.
+
+Failures are missing or truncated AC output (not 161 rows), no unity-gain
+crossover, no -180 degree crossing (gain margin unmeasured) and non-finite
+values. A failed row still contributes the metrics it did measure to the
+extrema and to refinement. For example, a trace with no -180 degree crossing
+keeps its phase margin and PSRR.
 
 ### Legacy regression
 
-The 1 mA / 1 uF / 0 ohm point is compared with the committed record
-`20260917-023832-7061e8f.csv` on parsed metrics: |delta| <= 0.10 deg (PM) and
-<= 0.10 dB (GM, PSRR @ 1 kHz, PSRR @ 100 kHz). A miss is reported and explained,
-never overwritten.
+The 1 mA / 1 uF / 0 ohm point is compared on parsed metrics with the committed
+record `20260917-023832-7061e8f.csv` (#35, pre-EN netlist) and with the
+current main-grid record `20261010-025634-60a3e81.csv` (#67, EN design, batch
+fleet). The tolerance is |delta| <= 0.10 deg for PM and <= 0.10 dB for GM,
+PSRR @ 1 kHz and PSRR @ 100 kHz. A miss is reported and explained, never
+overwritten.
+
+**Result (record `20261010-091123-a31c626`): all four corners are within
+tolerance against both records.** Against `7061e8f` the largest differences
+are |dPM| 0.0149 deg (ff/-40C/res_wcs), |dGM| 0.0223 dB (ss/125C/res_bcs) and
+|dPSRR| 0.0007 dB. These are the EN interface's own effect, which #67 reported
+as "numerically unchanged". Against `60a3e81` every difference is 0.0000:
+same design, same fleet ngspice-46, same reduction.
 
 ### Refinement rule
 
@@ -950,17 +1008,130 @@ when a selected point fails a target, or a metric is non-monotonic along a
 one-dimensional slice, or the slice's worst point is interior (strictly below
 both endpoints). `refine` emits those requests (intervals with no integral
 midpoint are listed as unrefinable, not dropped); re-run `--doe-generate
---doe-extra=` for them. A run that fires no trigger must say so with the
-per-slice table; no endpoint-only or monotonicity claim without that support.
+--batch --doe-extra=FILE --doe-only-extra --doe-base=<base>` for them. A run
+that fires no trigger must say so with the per-slice table; no endpoint-only
+or monotonicity claim without that support.
+
+The rule has no stopping condition. Every round adds levels, and those
+levels can fire new triggers. One round was run for #64. The second-round
+requests it produced are recorded, not run (see below).
 
 ### What was actually run for #64
 
-One debug probe, local, two ngspice runs: the legacy operating point at
-`ss`/125 C/`res_bcs` through the parameterised templates (record
-`20261010-032206-4d45f5d`: netlists in `netlist-snapshots/`, AC CSVs and logs
-in `corners/`). Parsed metrics are identical to the committed
-`20260917-023832-7061e8f` row (PM 53.8745 deg, GM 29.8944 dB, PSRR 53.6506 /
-34.4470 dB, differences 0.00), so the parameterisation does not move the
-legacy point at that corner. The other three legacy corners were not run.
-Fixture tests (`test_dynamic_doe.py`) cover generation, validation, parsing,
-completeness, extrema, tolerance and refinement logic with synthetic data.
+Every simulation ran on the EDA batch fleet: `klt sim --backend batch`,
+runner klt 0.5.0, ngspice-46, Spot `c6i`/`c7i`/`m7i` instances. Job ids are
+in each record's `corners/<record>/_batch/backend.json`. No local ngspice
+grid was run.
+
+| record | what | sims | klt requests | screening |
+|---|---|---|---|---|
+| `20261010-091123-a31c626` | base matrix: 4 corners x 48 points x 2 benches | 384 | 2 (`klt-sim-90c2614832a7`, `klt-sim-4742f4a08f98`) | 384/384 passed |
+| `20261010-101245-6df50fd` | refinement round 1: 344 midpoints x 2 benches | 688 | 6 | 688/688 passed |
+
+The recorded run count is 384 + 688 = 1072. That equals the generated
+matrix plus the documented refinement points (`expected_simulations` in
+`20261010-101245-6df50fd.dynamic-doe.md`).
+
+**Completeness: not a complete pass.** In the combined analysis (536
+operating points) every simulation completed, but **46 rows are `failed`**:
+their loop-gain trace has **no -180 degree phase crossing between 1 Hz and
+100 MHz**, so gain margin is unmeasured. The base matrix had 14 of these
+(`20261010-091123-a31c626.dynamic-doe.md` lists them). All 46 are at loads
+of 1 mA or less (29 at 0 mA, 10 at 0.5 mA, 7 at 1 mA) and all have
+ESR > 0. These rows keep their phase margin and PSRR in the extrema and in
+refinement. They are not reported as passes.
+
+**Extrema (combined, informational, discrete points only):**
+
+| metric | worst sampled value | target | coordinate |
+|---|---|---|---|
+| PM | -52.70 deg | >= 45 deg | ff/-40C/res_wcs, 50 mA, 0.33 uF, 0 mohm |
+| GM | -9.20 dB | >= 10 dB | ff/-40C/res_wcs, 50 mA, 0.33 uF, 0 mohm |
+| PSRR @ 1 kHz | 43.55 dB | > 50 dB | ss/125C/res_wcs, 0 mA, 3.45 uF (refinement midpoint), 0 mohm |
+| PSRR @ 100 kHz | 24.78 dB | > 20 dB | ss/125C/res_bcs, 50 mA, 1 uF, 0 mohm |
+
+**Target misses (sampled points, combined)**, as misses / points measured:
+
+| corner | PM | GM | PSRR @ 1 kHz | PSRR @ 100 kHz |
+|---|---|---|---|---|
+| ff/-40C/res_wcs | 77/148 | 63/139 | 0/148 | 0/148 |
+| ff/27C/res_bcs | 41/129 | 10/117 | 0/129 | 0/129 |
+| ss/125C/res_bcs | 49/130 | 2/116 | 8/130 | 0/130 |
+| ss/125C/res_wcs | 43/129 | 15/118 | 16/129 | 0/129 |
+
+Observations at the sampled points. None of these is a claim about the
+points in between.
+
+- **Zero load.** All 116 sampled 0 mA points have PM < 45 deg, at every
+  corner and every Cout/ESR level (base matrix: 9.1 to 26.9 deg). GM there is
+  large (45 dB or more where measured).
+- **Heavy load, small Cout, ff/-40C/res_wcs.** At 25 and 50 mA with 0.33 uF
+  or 1 uF, PM and GM go to or below zero (PM -52.7 deg, GM -9.2 dB at
+  50 mA / 0.33 uF / 0 mohm). At these sampled points the loop has no
+  margin. ESR moves PM a lot in this region (50 mA / 0.33 uF: -52.7, -7.5 and
+  3.4 deg at 0, 250 and 500 mohm).
+- **PSRR @ 1 kHz** misses only at ss/125C, 0 mA, Cout >= 1.6 uF. The worst
+  sampled point (43.55 dB at 3.45 uF) is a refinement midpoint, worse than
+  both neighbouring base levels (47.34 dB at 2.2 uF, 46.11 dB at 4.7 uF). The
+  base matrix alone would have under-reported the miss.
+- **PSRR @ 100 kHz** meets its target at every sampled point.
+- At ff/-40C/res_wcs every trace has two 0 dB crossings. `phase_margin_deg`
+  is the established parser's first-crossing value. The CSV's
+  `phase_margin_worst_deg` also gives the worst crossing, and the legacy
+  `tt`/-40C rows show the same two-crossing shape.
+
+These are measured misses at a PVT corner that binds, not the result of
+the parameterisation. The legacy point reproduces both records exactly or
+within tolerance. Whether the window, the spec or the compensation should
+change is a DR-0007 question for a separate ratification review. This PR
+changes neither.
+
+**Refinement.** The base matrix fired 286 slice-metric triggers across 640
+one-dimensional slices (470 monotone). That produced 344 midpoint requests,
+all of them run (record `20261010-101245-6df50fd`, `origin` column = the
+trigger reasons). Re-deriving over base + refinement fires 644 triggers over
+1527 slices. That gives **678 second-round midpoint requests, recorded as
+PENDING and not run**
+(`records/20261010-101245-6df50fd.dynamic-doe.refine.json`), plus 248
+intervals with no integral midpoint, which are listed as unrefinable. With
+no stopping condition the request count roughly doubles each round, so a
+second round should wait for a stopping rule (for example a minimum interval
+width, or refining only target-failure brackets). That rule is a scope
+decision for the issue.
+
+**Attempts that did not produce records** (no records, corners or snapshots
+were committed for them):
+
+1. One request per operating point (96 requests): stopped after 4 had
+   returned, at about 12 min of fleet overhead per 25 s job. This led to
+   `--variant-lines`. The 4 returned jobs are reference data in
+   `backend-validation/20261010-variant-lines/per-deck/`.
+2. Merged requests, first try: the loop-gain job `klt-sim-b6817c79a312` was
+   Spot-reclaimed 47 s after it started. Its `status.json` read
+   `"state": "interrupted", "detail": "spot reclamation notice received; job did not complete — re-run it"`.
+   Nothing re-launched it in the next 80 minutes, and the client polled
+   silently the whole time (klayout-tools#2992). The run was stopped and
+   resubmitted as a whole.
+3. Refinement, first try: 7 of 8 requests were refused at launch with
+   `batch-fleet-provision.sh launch failed (exit 1): error: 8 instance(s) already running + 1 requested exceeds BATCH_MAX_CONCURRENT_INSTANCES=8`.
+   That refusal is not covered by `capacity_wait_s` (klayout-tools#2917).
+   The run was stopped and resubmitted with `batch_backend.py`'s cap retry.
+
+**Earlier probe** (PR #90): record `20261010-032206-4d45f5d`, one local
+debug probe of the legacy point at `ss`/125 C/`res_bcs`. It matched
+`7061e8f` exactly.
+
+Fixture tests (`test_dynamic_doe.py`, `test_batch_backend.py`) cover:
+
+- generation, validation and parsing;
+- completeness, extrema (including partial rows), tolerance and refinement;
+- refinement-only plans and multi-record analysis;
+- `exclude`/`--variant-lines` request grouping, request chunking and the cap
+  retry.
+
+They use synthetic data. Routine CI runs no campaign.
+
+**Not established:** behaviour between sampled levels, at unsampled PVT
+corners (only four were run), or below 1 Hz and above 100 MHz. Monotonicity
+along any axis is not established. Transient load or line steps are not
+covered either. DR-0007 rows 3, 6 and 10 stay Open.
