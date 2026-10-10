@@ -1309,9 +1309,9 @@ python3 startup_campaign.py plan --stage halfstep --rid $RID --binding records/$
 # then submit + collect ext and halfstep
 ```
 
-## Row-4 dropout under DR-0009 (issue #70, PROPOSED)
+## Row-4 dropout under DR-0012 (issue #70, PROPOSED)
 
-[`DR-0009`](../../spec/decision-records/DR-0009-row4-dropout-measurement.md)
+[`DR-0012`](../../spec/decision-records/DR-0012-row4-dropout-measurement.md)
 (`proposed`, not ratified; the `< 300 mV` target is unchanged) defines a second,
 distinctly named quantity, `dropout_1pct_vin_minus_vout_v`: the interpolated
 `Vin*` at which `VOUT` falls to 0.99 x `VOUT(Vin = 3.30 V, 50 mA)`, minus that
@@ -1337,3 +1337,11 @@ and `records/<id>.dropout.{csv,json,md}` (input hashes, klt/ngspice versions,
 fleet job ids, completeness accounting). Any failed, truncated, floor-limited
 or out-of-regulation point blocks a definitive worst-corner claim. Tests:
 `python3 -m unittest sim/ldo-cmos5l-pvt-sweep/test_dropout_dr0009.py`.
+
+Naming: this record was drafted as "DR-0009" and renumbered to DR-0012. The
+dropout artifacts in this directory that say `DR-0009` keep that legacy label:
+`testbench/tb_dropout_cmos5l.spice.tmpl`, `netlist-snapshots/20261010-111618-19e8e39/`,
+`records/20261010-111618-19e8e39.dropout.*`, `test_dropout_dr0009.py`,
+`dropout_metrics.py` and `dropout_campaign.py`. They are append-only evidence or
+hash-pinned. They belong to DR-0012, not to DR-0009 (the startup measurement
+methodology, see "Startup campaign" above).
