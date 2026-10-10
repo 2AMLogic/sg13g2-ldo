@@ -1,0 +1,43 @@
+{
+ "rid": "20261010-104827-91e92aa",
+ "stage": "nominal",
+ "requested": 1,
+ "rows": 1,
+ "evaluated": 1,
+ "insufficient": 0,
+ "pass": 0,
+ "fail": 1,
+ "engines": [
+  "ngspice-46"
+ ],
+ "runner_klt": [
+  "0.5.0"
+ ],
+ "client_klt": "klt 0.7.0+g8eec069c7576",
+ "jobs": [
+  {
+   "group": "g000_tt_rtyp_i1ma_c1000nf_e0mohm_t1000ns_v3300mv_T27",
+   "job_id": "klt-sim-ba1d47e74e8f",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot"
+  }
+ ],
+ "osdi_sha256": {
+  "cap_cmomf.osdi": "006ebb9bb05729e408966da04b3c02391ef3e460666e3a59ec2900c8089ea6cc",
+  "cap_cmomi.osdi": "9e16967935d9a69f5a18629f83be8bbd7d3d50ac6dae230f8e00b369ba969b04",
+  "mosvar.osdi": "25e64a374ab523dbfeb7ffed75dcb8b086ee10f06120a9074bd68b92d7b0fb41",
+  "psp103.osdi": "2e4299c4683997e26469410dc1ab36b02ced924b1ac0972d6c4eae360e1fc796",
+  "psp103_nqs.osdi": "839b164483205601c09032951f6c41d3580f15e506dc40a7202950d3afbdfc7d",
+  "r3_cmc.osdi": "4fead17bc2e9cbfe3df6f106e9dbd6f2cdcd48c002af9c56c2ca0b0712fce350"
+ },
+ "pdk_pinned_commit": "607e18d4bd9214a52575c194b4181ef449f9252f",
+ "pdk_installed_commit": "607e18d4bd9214a52575c194b4181ef449f9252f",
+ "source_sha256": {
+  "sim/ldo-cmos5l-pvt-sweep/testbench/tb_startup_cmos5l.spice.tmpl": "ad9e077575a7b7db5ccc928a17f68d04b4372e1815cfc363c55a3ec062458cde",
+  "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice": "7953b25be4cb00053f8df5f283bee0500f60a826b7a2d6519b88a8578d222cc1",
+  "sim/ldo-cmos5l-pvt-sweep/startup_eval.py": "db64505547fccf6a6dfbe68320ebdc08ffda79e1b025282d371c67a698c1b811",
+  "sim/ldo-cmos5l-pvt-sweep/startup_campaign.py": "fe2b908faf95d41109524608ace411250de2847febb64e40f4438b1472df1e73"
+ },
+ "csv": "sim/ldo-cmos5l-pvt-sweep/records/20261010-104827-91e92aa-startup-nominal.csv"
+}

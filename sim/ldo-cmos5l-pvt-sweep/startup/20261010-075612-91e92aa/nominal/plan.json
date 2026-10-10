@@ -1,0 +1,24 @@
+{
+ "rid": "20261010-075612-91e92aa",
+ "stage": "nominal",
+ "requested": 1,
+ "tran_stop": "15m",
+ "groups": [
+  {
+   "group": "g000_v3300mv_i1ma_c1000nf_e0mohm_t1000ns",
+   "points": [
+    {
+     "mos": "tt",
+     "temp": 27,
+     "res": "typ",
+     "vin": 3.3,
+     "load_ma": "1",
+     "cout_nf": 1000,
+     "esr_mohm": 0,
+     "tmax_ns": 1000,
+     "id": "st_tt_27c_rtyp_v3300mv_i1ma_c1000nf_e0mohm_t1000ns"
+    }
+   ]
+  }
+ ]
+}
