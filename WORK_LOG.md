@@ -4,6 +4,8 @@ Chronological record of recently merged pull requests and closed issues, maintai
 
 ### 2026-10-10
 
+- **PR #108**: spec+sim: propose DR-0012 row-4 dropout measurement and re-score on a 5 mV batch campaign (#70)
+- **Issue #70** (closed): spec: define how dropout is measured for row 4 (worst corner is 0.255 V at 1 % loss, a 45 mV margin)
 - **PR #105**: SG13CMOS5L startup measurements: transient bench, evaluator and bounded PVT campaign (#69)
 - **PR #104**: ci: gate design/netlist.py --check for the SG13CMOS5L design
 - **PR #100**: sim: run the #64 dynamic DoE (384 + 688 refinement AC runs) on the batch fleet
