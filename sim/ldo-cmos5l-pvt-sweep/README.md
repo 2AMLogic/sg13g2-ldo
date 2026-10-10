@@ -1308,3 +1308,40 @@ python3 startup_campaign.py plan --stage ext --rid $RID --binding records/$RID-s
 python3 startup_campaign.py plan --stage halfstep --rid $RID --binding records/$RID-startup-grid.csv
 # then submit + collect ext and halfstep
 ```
+
+## Row-4 dropout under DR-0012 (issue #70, PROPOSED)
+
+[`DR-0012`](../../spec/decision-records/DR-0012-row4-dropout-measurement.md)
+(`proposed`, not ratified; the `< 300 mV` target is unchanged) defines a second,
+distinctly named quantity, `dropout_1pct_vin_minus_vout_v`: the interpolated
+`Vin*` at which `VOUT` falls to 0.99 x `VOUT(Vin = 3.30 V, 50 mA)`, minus that
+threshold (so `VIN - VOUT(actual)`, not `VIN - 1.8 V`), scanning down from
+3.30 V on a 5 mV grid from 1.700 V. Each value carries its grid bracket
+(`_lower_v`/`_upper_v`); the worst corner is taken on the upper bound.
+
+The legacy `dropout_v_50ma` (lowest regulating 10 mV-grid Vin minus 1.8 V,
+floor 2.00 V) and the item-5 `dropout_vin_minus_vout_candidate_v` column are
+unchanged historical quantities and are never called "dropout" without the
+qualifier. `dropout_metrics.py` holds the new reducer next to `dc_metrics.py`
+(not inside it: `item5_evidence.py` pins both files' sha256 in the committed
+evidence inventories, which must stay byte-identical).
+
+Reproduce (45-point SPICE grid, so it goes to the EDA batch fleet through
+`batch_backend.py` / `klt sim --backend batch`; there is no local fallback):
+
+    python3 sim/ldo-cmos5l-pvt-sweep/dropout_campaign.py run
+    python3 sim/ldo-cmos5l-pvt-sweep/dropout_campaign.py reduce <record-id> [--check]
+
+`run` mints a new `<id>` and writes `corners/<id>/`, `netlist-snapshots/<id>/`
+and `records/<id>.dropout.{csv,json,md}` (input hashes, klt/ngspice versions,
+fleet job ids, completeness accounting). Any failed, truncated, floor-limited
+or out-of-regulation point blocks a definitive worst-corner claim. Tests:
+`python3 -m unittest sim/ldo-cmos5l-pvt-sweep/test_dropout_dr0009.py`.
+
+Naming: this record was drafted as "DR-0009" and renumbered to DR-0012. The
+dropout artifacts in this directory that say `DR-0009` keep that legacy label:
+`testbench/tb_dropout_cmos5l.spice.tmpl`, `netlist-snapshots/20261010-111618-19e8e39/`,
+`records/20261010-111618-19e8e39.dropout.*`, `test_dropout_dr0009.py`,
+`dropout_metrics.py` and `dropout_campaign.py`. They are append-only evidence or
+hash-pinned. They belong to DR-0012, not to DR-0009 (the startup measurement
+methodology, see "Startup campaign" above).

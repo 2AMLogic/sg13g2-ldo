@@ -13,6 +13,10 @@
   "no soft start, no discharge" statement),
   [`DR-0002`](DR-0002-sg13cmos5l-device-topology.md) (3.3 V VGS reference).
   Evidence: `sim/ldo-cmos5l-pvt-sweep/records/20261010-104827-91e92aa-startup-*`.
+- **Not this record**: the row-4 dropout artifacts under
+  `sim/ldo-cmos5l-pvt-sweep/` labelled `DR-0009` (`tb_dropout_cmos5l.spice.tmpl`,
+  `test_dropout_dr0009.py`, run `20261010-111618-19e8e39`) belong to
+  [`DR-0012`](DR-0012-row4-dropout-measurement.md), which was drafted as DR-0009.
 
 ## Decision (methodology, for review)
 

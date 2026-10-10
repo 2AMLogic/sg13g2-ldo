@@ -109,6 +109,10 @@ ITEMS = {
             f"{_SIM}/testbench/tb_startup_cmos5l.spice.tmpl",
             f"{_SIM}/startup_campaign.py",
             f"{_SIM}/startup_eval.py",
+            # issue #70: row-4 dropout bench (DR-0012), its batch driver and reducer
+            f"{_SIM}/testbench/tb_dropout_cmos5l.spice.tmpl",
+            f"{_SIM}/dropout_campaign.py",
+            f"{_SIM}/dropout_metrics.py",
             f"{_MC}/README.md",
             f"{_MC}/run_campaign.sh",
             f"{_MC}/runner-preamble.cir",
