@@ -1,0 +1,56 @@
+{
+ "rid": "20261010-104827-91e92aa",
+ "stage": "halfstep",
+ "requested": 3,
+ "tran_stop": "15m",
+ "groups": [
+  {
+   "group": "g000_ff_rtyp_i1ma_c1000nf_e0mohm_t500ns_v3630mv_T27",
+   "points": [
+    {
+     "mos": "ff",
+     "temp": 27,
+     "res": "typ",
+     "vin": 3.63,
+     "load_ma": "1",
+     "cout_nf": 1000,
+     "esr_mohm": 0,
+     "tmax_ns": 500,
+     "id": "st_ff_27c_rtyp_v3630mv_i1ma_c1000nf_e0mohm_t500ns"
+    }
+   ]
+  },
+  {
+   "group": "g001_ff_rwcs_i1ma_c1000nf_e0mohm_t500ns_v3630mv_T125",
+   "points": [
+    {
+     "mos": "ff",
+     "temp": 125,
+     "res": "wcs",
+     "vin": 3.63,
+     "load_ma": "1",
+     "cout_nf": 1000,
+     "esr_mohm": 0,
+     "tmax_ns": 500,
+     "id": "st_ff_125c_rwcs_v3630mv_i1ma_c1000nf_e0mohm_t500ns"
+    }
+   ]
+  },
+  {
+   "group": "g002_ss_rtyp_i1ma_c1000nf_e0mohm_t500ns_v3630mv_T-40",
+   "points": [
+    {
+     "mos": "ss",
+     "temp": -40,
+     "res": "typ",
+     "vin": 3.63,
+     "load_ma": "1",
+     "cout_nf": 1000,
+     "esr_mohm": 0,
+     "tmax_ns": 500,
+     "id": "st_ss_-40c_rtyp_v3630mv_i1ma_c1000nf_e0mohm_t500ns"
+    }
+   ]
+  }
+ ]
+}

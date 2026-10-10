@@ -1,0 +1,204 @@
+{
+ "rid": "20261010-104827-91e92aa",
+ "stage": "ext",
+ "requested": 24,
+ "rows": 24,
+ "evaluated": 24,
+ "insufficient": 0,
+ "pass": 4,
+ "fail": 20,
+ "engines": [
+  "ngspice-46"
+ ],
+ "runner_klt": [
+  "0.5.0"
+ ],
+ "client_klt": "klt 0.7.0+g8eec069c7576",
+ "jobs": [
+  {
+   "group": "g000_ff_rtyp_i0ma_c330nf_e0mohm_t1000ns_v3630mv_T27",
+   "job_id": "klt-sim-98d760220579",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot"
+  },
+  {
+   "group": "g001_ff_rtyp_i0ma_c330nf_e500mohm_t1000ns_v3630mv_T27",
+   "job_id": "klt-sim-24250027ccf0",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot"
+  },
+  {
+   "group": "g002_ff_rtyp_i0ma_c4700nf_e0mohm_t1000ns_v3630mv_T27",
+   "job_id": "klt-sim-b95e0d5e5876",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot"
+  },
+  {
+   "group": "g003_ff_rtyp_i0ma_c4700nf_e500mohm_t1000ns_v3630mv_T27",
+   "job_id": "klt-sim-1e270981ffb3",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot"
+  },
+  {
+   "group": "g004_ff_rtyp_i50ma_c330nf_e0mohm_t1000ns_v3630mv_T27",
+   "job_id": "klt-sim-b919d55654cf",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot"
+  },
+  {
+   "group": "g005_ff_rtyp_i50ma_c330nf_e500mohm_t1000ns_v3630mv_T27",
+   "job_id": "klt-sim-db6d5f9a727f",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot"
+  },
+  {
+   "group": "g006_ff_rtyp_i50ma_c4700nf_e0mohm_t1000ns_v3630mv_T27",
+   "job_id": "klt-sim-ea92ea0156da",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot"
+  },
+  {
+   "group": "g007_ff_rtyp_i50ma_c4700nf_e500mohm_t1000ns_v3630mv_T27",
+   "job_id": "klt-sim-7a6187ec6bd5",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot"
+  },
+  {
+   "group": "g008_ff_rwcs_i0ma_c330nf_e0mohm_t1000ns_v3630mv_T125",
+   "job_id": "klt-sim-00e6d925ea41",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot"
+  },
+  {
+   "group": "g009_ff_rwcs_i0ma_c330nf_e500mohm_t1000ns_v3630mv_T125",
+   "job_id": "klt-sim-d2afa042db46",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot"
+  },
+  {
+   "group": "g010_ff_rwcs_i0ma_c4700nf_e0mohm_t1000ns_v3630mv_T125",
+   "job_id": "klt-sim-3ed30ad37a76",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot"
+  },
+  {
+   "group": "g011_ff_rwcs_i0ma_c4700nf_e500mohm_t1000ns_v3630mv_T125",
+   "job_id": "klt-sim-fc0103c59c8e",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot"
+  },
+  {
+   "group": "g012_ff_rwcs_i50ma_c330nf_e0mohm_t1000ns_v3630mv_T125",
+   "job_id": "klt-sim-030a987e24f8",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot"
+  },
+  {
+   "group": "g013_ff_rwcs_i50ma_c330nf_e500mohm_t1000ns_v3630mv_T125",
+   "job_id": "klt-sim-a2a15c9c879b",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot"
+  },
+  {
+   "group": "g014_ff_rwcs_i50ma_c4700nf_e0mohm_t1000ns_v3630mv_T125",
+   "job_id": "klt-sim-94fd5df57c2a",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot"
+  },
+  {
+   "group": "g015_ff_rwcs_i50ma_c4700nf_e500mohm_t1000ns_v3630mv_T125",
+   "job_id": "klt-sim-ff69cbd8f995",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot"
+  },
+  {
+   "group": "g016_ss_rtyp_i0ma_c330nf_e0mohm_t1000ns_v3630mv_T-40",
+   "job_id": "klt-sim-f1dd05f8d64b",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot"
+  },
+  {
+   "group": "g017_ss_rtyp_i0ma_c330nf_e500mohm_t1000ns_v3630mv_T-40",
+   "job_id": "klt-sim-7272d0808790",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot"
+  },
+  {
+   "group": "g018_ss_rtyp_i0ma_c4700nf_e0mohm_t1000ns_v3630mv_T-40",
+   "job_id": "klt-sim-102409095503",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot"
+  },
+  {
+   "group": "g019_ss_rtyp_i0ma_c4700nf_e500mohm_t1000ns_v3630mv_T-40",
+   "job_id": "klt-sim-38114ef531c8",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot"
+  },
+  {
+   "group": "g020_ss_rtyp_i50ma_c330nf_e0mohm_t1000ns_v3630mv_T-40",
+   "job_id": "klt-sim-fec7f29d6270",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot"
+  },
+  {
+   "group": "g021_ss_rtyp_i50ma_c330nf_e500mohm_t1000ns_v3630mv_T-40",
+   "job_id": "klt-sim-a4ee4063cb14",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot"
+  },
+  {
+   "group": "g022_ss_rtyp_i50ma_c4700nf_e0mohm_t1000ns_v3630mv_T-40",
+   "job_id": "klt-sim-9fab365386dc",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot"
+  },
+  {
+   "group": "g023_ss_rtyp_i50ma_c4700nf_e500mohm_t1000ns_v3630mv_T-40",
+   "job_id": "klt-sim-5d862a989cab",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot"
+  }
+ ],
+ "osdi_sha256": {
+  "cap_cmomf.osdi": "006ebb9bb05729e408966da04b3c02391ef3e460666e3a59ec2900c8089ea6cc",
+  "cap_cmomi.osdi": "9e16967935d9a69f5a18629f83be8bbd7d3d50ac6dae230f8e00b369ba969b04",
+  "mosvar.osdi": "25e64a374ab523dbfeb7ffed75dcb8b086ee10f06120a9074bd68b92d7b0fb41",
+  "psp103.osdi": "2e4299c4683997e26469410dc1ab36b02ced924b1ac0972d6c4eae360e1fc796",
+  "psp103_nqs.osdi": "839b164483205601c09032951f6c41d3580f15e506dc40a7202950d3afbdfc7d",
+  "r3_cmc.osdi": "4fead17bc2e9cbfe3df6f106e9dbd6f2cdcd48c002af9c56c2ca0b0712fce350"
+ },
+ "pdk_pinned_commit": "607e18d4bd9214a52575c194b4181ef449f9252f",
+ "pdk_installed_commit": "607e18d4bd9214a52575c194b4181ef449f9252f",
+ "source_sha256": {
+  "sim/ldo-cmos5l-pvt-sweep/testbench/tb_startup_cmos5l.spice.tmpl": "ad9e077575a7b7db5ccc928a17f68d04b4372e1815cfc363c55a3ec062458cde",
+  "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice": "7953b25be4cb00053f8df5f283bee0500f60a826b7a2d6519b88a8578d222cc1",
+  "sim/ldo-cmos5l-pvt-sweep/startup_eval.py": "db64505547fccf6a6dfbe68320ebdc08ffda79e1b025282d371c67a698c1b811",
+  "sim/ldo-cmos5l-pvt-sweep/startup_campaign.py": "fe2b908faf95d41109524608ace411250de2847febb64e40f4438b1472df1e73"
+ },
+ "csv": "sim/ldo-cmos5l-pvt-sweep/records/20261010-104827-91e92aa-startup-ext.csv"
+}

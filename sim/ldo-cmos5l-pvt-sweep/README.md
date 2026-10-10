@@ -964,3 +964,176 @@ in `corners/`). Parsed metrics are identical to the committed
 legacy point at that corner. The other three legacy corners were not run.
 Fixture tests (`test_dynamic_doe.py`) cover generation, validation, parsing,
 completeness, extrema, tolerance and refinement logic with synthetic data.
+
+## Startup campaign (issue #69)
+
+Startup measurements for the EN-bearing core (`DR-0008`), child of #62.
+**Proposed methodology, not ratified targets.** `DR-0007` row 9 stays
+**Open**; the review keys that would close it are not supplied here. Evidence
+is schematic-level: no layout, extraction or post-layout claim. The methodology
+decisions are written up in
+[`DR-0009`](../../spec/decision-records/DR-0009-sg13cmos5l-startup-measurement-methodology.md).
+
+### Files
+
+| File | Role |
+|---|---|
+| `testbench/tb_startup_cmos5l.spice.tmpl` | Startup bench (klt circuit body). |
+| `startup_eval.py` | Deterministic evaluator (stdlib). Fails closed. |
+| `test_startup_eval.py`, `test_startup_campaign.py` | Fixture tests (no simulator). |
+| `startup_campaign.py` | `plan` / `submit` / `collect` / `binding`. Every simulation is a `klt sim --backend batch` request; nothing runs locally and nothing falls back to local. |
+| `startup/<run>/<stage>/<request>/` | Request artifacts: `request.json`, `tb.spice`, `corners.lib`, klt `report.json` (per-corner artifacts, about 2 MB rawfiles each, are git-ignored; their sha256 is in the record CSV). |
+| `records/<run>-startup-<stage>.{md,csv,manifest.json}` and `.traces/` | Append-only records: coverage, per-point metrics, trace files with sha256, source/tool/PDK hashes. |
+
+Run `20261010-104827-91e92aa` is the record set. `startup/20261010-075612-91e92aa/`
+and the `records/20261010-075612-91e92aa-startup-nominal.*` files are the
+earlier diagnostic run (first nominal, two lost grid attempts, probe requests);
+they are kept as evidence and are superseded by the later run.
+
+### Contract (as implemented)
+
+- **Bench.** `EN = VIN * CTL` (B-source), so `EN` swings exactly `0 <-> VIN` at
+  whatever supply value klt alters `Vin` to. `CTL` is a PWL: 0 until 1 ms,
+  1 us edge up, high to 7 ms, 1 us edge down, low to 9 ms, 1 us edge up, high
+  to 15 ms. One run therefore contains the cold start, a disable and a
+  re-enable. The DC operating point is solved with `EN = 0`; **no UIC**, and
+  `VOUT` is not forced to 0.
+- **Time zero** of each case is the `EN = VIN/2` crossing (linear
+  interpolation). Observation is at least 5 ms (6 ms provided) per case; a
+  shorter window is `insufficient`.
+- **Load.** Resistive, 1 mA at 1.8 V = 1.8 kohm (50 mA = 36 ohm; load 0 = no
+  resistor, output open). A current sink would drag a disabled `VOUT` to an
+  unphysical negative value, so none is used. Cout is `cap_typ`-corner ideal
+  C, ESR a series resistor (never a 0 ohm element).
+- **Band and settling.** Band 1.764-1.836 V. *First band entry* and
+  *settling* are reported separately; settling is the last re-entry after
+  which the trace stays in band to the end of the window. Unsettled is a
+  failure. Row 9 timing: settle <= 3 ms.
+- **Monotonic.** Largest downward excursion from the running maximum, from
+  time zero until settling (whole window if unsettled). Proposed tolerance
+  1 mV; the raw excursion and reversal counts at 0.1 / 1 / 10 mV are reported
+  so the tolerance cannot hide a reversal. Overshoot recovering from a peak
+  counts as a reversal by this definition; overshoot is also reported
+  separately (peak above 1.836 V fails the +/-2 % reading, which is recorded
+  for review, not asserted as the meaning of "controlled ramp").
+- **Off state (cold start).** Max `|VOUT|` before the first edge must stay
+  <= 50 mV (a proposed bound, not a spec); off-state `VOUT` and supply current
+  are published. The disable/re-enable case publishes `VOUT` at the start and
+  end of the disabled interval and gets the same startup metrics; **instant
+  discharge is not required** (no discharge feature exists).
+- **Stress.** Max Vsg, Vgd, Vds of `Mpass`, Vsg of `Men`, peak supply current;
+  flagged informationally against the `DR-0002` 3.3 V VGS reference. They are
+  not a verdict term.
+- **Fail closed.** Missing columns, non-finite or non-increasing samples,
+  a sample gap above the 1 us timestep cap, a window shorter than 5 ms, a
+  missing EN edge, a missing corner/rawfile or a non-converged run all give
+  `insufficient`, which is never a pass. Re-enable failures do not change
+  `start_pass` but do make the overall verdict not pass.
+- **Timestep.** Transient max step 1 us (the EN edge is 1 us); binding points
+  rerun at 0.5 us.
+
+### Grid and coverage
+
+| Stage | Requested | Completed | Notes |
+|---|---|---|---|
+| nominal | 1 | 1 | tt / 27 C / res_typ / 3.30 V / 1 mA / 1 uF / 0 ohm |
+| grid | 135 | 135 | MOS {tt,ff,ss,fs,sf} x T {-40,27,125} x res {typ,bcs,wcs} x Vin {2.97,3.30,3.63}; cap_typ; 15 requests (one per MOS/res section, 9 corners each) |
+| halfstep | 3 | 3 | binding points at a 0.5 us step cap |
+| ext | 24 | 24 | load {0, 50 mA} x Cout {0.33, 4.7 uF} x ESR {0, 0.5 ohm} at each of 3 binding points |
+
+Binding points are chosen by `startup_campaign.py binding` from the grid CSV:
+worst start overshoot / settle time / downward excursion / re-enable
+overshoot (one point, `ff` 27 C `res_typ` 3.63 V), worst off-state `VOUT`
+(`ff` 125 C `res_wcs` 3.63 V), worst pass-gate Vsg (`ss` -40 C `res_typ`
+3.63 V). The rule is a heuristic for choosing where to extend, not a proof
+that these bound the design.
+
+### Results (all schematic-level; see the `.md` records for the numbers)
+
+- **No point of the 135 passes.** Every point fails on **overshoot** (start
+  peak 1.868-2.339 V, i.e. 0.068-0.539 V above 1.8 V, against a +36 mV band
+  edge) and on the 1 mV monotonic check (the downward excursion is the
+  recovery from that overshoot). Re-enable behaves the same way. The nominal
+  point: peak 2.056 V, overshoot 0.256 V, 10-90 % rise 3.1 us.
+- The row 9 **timing** part is met everywhere: every start and re-enable
+  settles inside the band, in 37-440 us (limit 3 ms). The failure is the
+  "controlled ramp" part: with no soft start (DR-0008), the amplifier drives
+  `Mpass` fully on when `EN` rises and `VOUT` slams up in about 2-5 us with a
+  supply inrush of 0.28-0.77 A.
+- **Off state is clean at the 1 mA load:** max `|VOUT|` 0.12 nV - 0.56 mV
+  (limit 50 mV); off supply current 1.6 uA - 354 uA across corners (the
+  upper end is the floating amplifier node DR-0008 describes, not a
+  characterized shutdown current).
+- **Stress.** `Vsg(Men)` reaches `VIN` (3.63 V) with `EN = 0` and `Vsg(Mpass)`
+  up to 3.627 V during the rise; 45 of 135 points exceed the 3.3 V VGS
+  reference of DR-0002 (the 3.63 V supply). Recorded, not judged here.
+- **Timestep sensitivity.** Overshoot magnitude is **not step-converged**: at
+  the three binding points the 0.5 us run moves overshoot by -0.108, +0.043
+  and +0.025 V and the settle time by tens of microseconds. The *verdict*
+  (fail) is unchanged at all three and the smallest overshoot margin
+  (0.032 V above the band edge) is of the same order as the shifts, so the
+  grid's overshoot numbers are indicative magnitudes, not converged values,
+  and a point near the band edge could flip with a finer step. A step well
+  below the 1 us edge was not run.
+- **Load / Cout / ESR extension (24 points):** only 4 pass, all Cout 4.7 uF
+  with ESR 0.5 ohm (`ff` 27 C and `ss` -40 C, load 0 and 50 mA). The `ff`
+  125 C `res_wcs` point fails at every load/Cout/ESR combination. Cout 0.33 uF
+  fails everywhere with 0.41-0.94 V overshoot. At `ff` 27 C, 50 mA, 0.33 uF
+  the output **does not settle**: it rings at about +/-32 mV around 1.8 V
+  through the observation window. With
+  **no load** the overshoot cannot discharge (no sink, high-resistance
+  divider): VOUT stays above the band at the end of the window (for example
+  2.66 V from a 2.74 V peak) and the point is `unsettled`. At the `ff` 125 C
+  `res_wcs` binding point the no-load off-state `VOUT` is 0.19 V, above the
+  proposed 50 mV bound (leakage into an open output).
+- The bounded set does **not** prove every interior point.
+
+### Limits and unresolved coverage
+
+- **Resistive loads only** (see above); a constant-current load model is not
+  measured. Cc tolerance is **unverified**; no Cc axis was added.
+- Cap corner is `cap_typ` only; the `cap_typ` section controls the MoM Cc.
+- Overshoot values are not step-converged (above); no finer step, no
+  `reltol` sensitivity was run.
+- The extension covers three binding points chosen from the 1 mA / 1 uF / 0
+  ohm grid; other PVT/supply points at other loads were not run.
+- The tolerance (1 mV), off-state bound (50 mV) and the +/-2 % overshoot
+  reading are proposals for review. No row is ratified.
+- Models: the OSDI binaries (including `cap_cmomi`, absent from the runner
+  image) are staged from the local build; their sha256 and the PDK pin
+  (`sim/pdk-cmos5l.json`, `607e18d4...`, matches the installed checkout) are in
+  each manifest. Runner klt 0.5.0 vs client 0.7.0 (version mismatch warning).
+
+### Tool friction found while doing this
+
+- **Parallel transient corners stall** (the run was affected before the
+  workaround): with several corners in one batch request every ngspice worker
+  stalled to the per-corner timeout (8 of 9 corners; 15 of 15; one 45-corner
+  request lost whole to the job timeout). Cause: OpenMP thread oversubscription
+  between concurrent ngspice workers on the runner. `set num_threads=1` in the
+  body `.control` block (the OSDI preamble) makes the same request run in
+  about 2 s per corner. Reported with the evidence as a comment on
+  `2AMLogic/klayout-tools#2970`.
+- The fleet's concurrent-instance cap refuses submits immediately
+  (`BATCH_MAX_CONCURRENT_INSTANCES`) instead of queueing; the driver retries
+  on the batch backend after a wait (already tracked as
+  `2AMLogic/klayout-tools#2917`).
+- The runner's klt 0.5.0 ignores `options.osdi_preload` (known, #2901): the
+  OSDI binaries are loaded by the preamble from the staged `inputs/`.
+
+### Reproducing
+
+```bash
+PDK=ihp-sg13cmos5l source sim/env.sh
+cd sim/ldo-cmos5l-pvt-sweep
+python3 -m unittest test_startup_eval test_startup_campaign
+RID=$(date +%Y%m%d-%H%M%S)-$(git rev-parse --short HEAD)
+for s in nominal grid; do
+  python3 startup_campaign.py plan --stage $s --rid $RID
+  python3 startup_campaign.py submit --stage $s --rid $RID --concurrency 3
+  python3 startup_campaign.py collect --stage $s --rid $RID
+done
+python3 startup_campaign.py plan --stage ext --rid $RID --binding records/$RID-startup-grid.csv
+python3 startup_campaign.py plan --stage halfstep --rid $RID --binding records/$RID-startup-grid.csv
+# then submit + collect ext and halfstep
+```

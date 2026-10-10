@@ -1,0 +1,61 @@
+{
+ "netlist": "tb.spice",
+ "backend": "batch",
+ "batch": {
+  "runner_version_check": "warn",
+  "capacity_wait_s": 3600
+ },
+ "models": {
+  "lib": "corners.lib"
+ },
+ "analysis": {
+  "kind": "tran",
+  "args": "1000n 15m 0 1000n"
+ },
+ "measurements": [
+  {
+   "name": "liveness_vout",
+   "spice": ".meas tran liveness_vout FIND v(vout) AT=14m",
+   "unit": "V"
+  }
+ ],
+ "corners": {
+  "process": [
+   "mos_ff__res_bcs__cap_typ",
+   "mos_ff__res_typ__cap_typ",
+   "mos_ff__res_wcs__cap_typ",
+   "mos_fs__res_bcs__cap_typ",
+   "mos_fs__res_typ__cap_typ",
+   "mos_fs__res_wcs__cap_typ",
+   "mos_sf__res_bcs__cap_typ",
+   "mos_sf__res_typ__cap_typ",
+   "mos_sf__res_wcs__cap_typ",
+   "mos_ss__res_bcs__cap_typ",
+   "mos_ss__res_typ__cap_typ",
+   "mos_ss__res_wcs__cap_typ",
+   "mos_tt__res_bcs__cap_typ",
+   "mos_tt__res_typ__cap_typ",
+   "mos_tt__res_wcs__cap_typ"
+  ],
+  "temperature_c": [
+   -40,
+   27,
+   125
+  ]
+ },
+ "options": {
+  "timeout_s": 3600,
+  "keep_artifacts": true,
+  "waveforms": true,
+  "save_mode": "netlist",
+  "stage_model_inputs": true,
+  "osdi_preload": [
+   "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/psp103.osdi",
+   "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/psp103_nqs.osdi",
+   "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/mosvar.osdi",
+   "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/r3_cmc.osdi",
+   "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/cap_cmomi.osdi",
+   "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/cap_cmomf.osdi"
+  ]
+ }
+}
