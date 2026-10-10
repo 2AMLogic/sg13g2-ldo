@@ -1,0 +1,47 @@
+* sg13g2-ldo -- SG13CMOS5L row-4 dropout bench (issue #70, DR-0009 PROPOSED).
+* Generated from sim/ldo-cmos5l-pvt-sweep/testbench/tb_dropout_cmos5l.spice.tmpl
+* by sim/ldo-cmos5l-pvt-sweep/run_dropout_campaign.sh -- edit the template,
+* not a generated netlist-snapshots/ file.
+*
+* Same circuit, rails, VREF, IBIAS, Cout and EN tie as tb_dcsweep_cmos5l, but
+* ONLY the 50 mA load block, on a finer and lower Vin axis:
+*   Vin 1.700 .. 3.630 V, step 5 mV (387 rows), Iload = 50 mA fixed.
+* The lower bound is below any possible crossing by construction: the 1 %
+* crossing has VOUT >= 0.99 * ~1.8 V = ~1.78 V and VOUT <= VIN, so no
+* crossing can sit below 1.70 V.  The reference supply (3.30 V) is a grid
+* point of this axis.  DR-0009 defines the reduction (dc_metrics.dropout_1pct).
+*
+* Generated for: corner=mos_fs temp=-40C
+* PDK: ihp-sg13cmos5l /home/ubuntu/share/pdk
+* OSDI models: /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi
+* Design netlist under test: /home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-70/design/sg13cmos5l/netlist/ldo_core_cmos5l.spice
+
+.lib "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/models/cornerMOShv.lib" mos_fs
+.lib "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/models/cornerRES.lib" res_wcs
+.lib "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/models/cornerCAP.lib" cap_typ
+
+.options temp=-40 tnom=27
+
+.include "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-70/design/sg13cmos5l/netlist/ldo_core_cmos5l.spice"
+
+Vin VIN 0 dc 3.30
+Vref VREF 0 dc 0.90
+Ibias IBIAS 0 dc 2u
+Iload VOUT 0 dc 0.05
+Cout VOUT 0 1u
+
+* EN tied to VIN (enabled; tracks the swept supply).
+Xtop VIN VOUT 0 VREF IBIAS VIN ldo_core_cmos5l
+
+.control
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/psp103.osdi
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/psp103_nqs.osdi
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/mosvar.osdi
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/r3_cmc.osdi
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/cap_cmomi.osdi
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/cap_cmomf.osdi
+
+dc Vin 1.70 3.63 0.005
+wrdata /home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-70/sim/ldo-cmos5l-pvt-sweep/corners/20261010-111618-19e8e39/dcsweep_fs_-40c_rwcs_dc.csv v(vin) v(vout) i(vin)
+.endc
+.end

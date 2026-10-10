@@ -1,0 +1,128 @@
+# DR-0009: Row 4 dropout measurement definition (1 % VOUT-loss, `VIN - VOUT(actual)`)
+
+- **Status**: **Proposed.** Nothing in this record is ratified. It becomes
+  effective only after both non-author review keys (`RATIFY-KEY: ee` and
+  `RATIFY-KEY: market`) release it with any request-changes or escalate
+  verdict resolved. Until then [`DR-0007`](DR-0007-target-spec-row-ratification.md)
+  and the root `README.md` keep their current (qualified) row-4 wording
+  unchanged; this record does not edit them.
+- **Date**: 2026-10-10
+- **Scope**: *How* row 4 (dropout @ 50 mA) is measured. It **preserves the
+  ratified `< 300 mV` worst-corner target exactly** (no relaxation) and does
+  not resize either branch, resolve SG13G2-branch issue #71, or touch the
+  dynamic load/Cout/ESR campaign of #64. Issue #70.
+- **Related**: `DR-0007` (row 4 ratified as written), issue #55 (consumes
+  this definition for row-4 evidence; its signoff-envelope scope is separate).
+  Evidence: `sim/ldo-cmos5l-pvt-sweep/records/<id>.dropout.*` (see below).
+
+## Problem
+
+Two quantities were both informally called "dropout":
+
+1. **legacy** (`dropout_v_50ma`, record CSVs): the lowest 10 mV-grid `Vin`
+   that still regulates, minus the **fixed 1.8 V target**. The sweep floor
+   was 2.00 V, so 36/45 points were floor-limited upper bounds.
+2. **candidate** (`dropout_vin_minus_vout_candidate_v`, item 5 evidence):
+   `Vin - VOUT` at the last in-regulation grid point; informational, resolved
+   for only 9/45 points.
+
+Neither fixes the loss reference, crossing rule, resolution or sweep bounds.
+
+## Decision
+
+The row-4 quantity is named **`dropout_1pct_vin_minus_vout_v`** ("DR-0009
+dropout"). The word "dropout" without that qualification must not be used in
+row-4 evidence once this record is released; the legacy quantity is always
+written "legacy dropout (`dropout_v_50ma`)".
+
+1. **Load.** `Iload = 50 mA` (DC, ideal sink), `EN = VIN`, `VREF = 0.9 V`,
+   `IBIAS = 2 uA`, `Cout = 1 uF` (irrelevant to DC).
+2. **Loss reference.** Relative to the corner's **own regulated output**:
+   `V_reg = VOUT(Vin = 3.30 V, 50 mA)` at the same MOS x temperature x
+   resistor coordinate (3.30 V is the nominal Input row). It is *not* the
+   fixed 1.8 V, so the divider's resistor-corner offsets and load regulation
+   do not count as dropout. A coordinate whose `V_reg` is not within 1 % of
+   1.8 V is `reference_out_of_regulation` (no value).
+3. **Threshold.** `V_thr = 0.99 * V_reg` (1 % loss).
+4. **Scan direction.** Downward from `Vin = 3.30 V`. The crossing is the
+   first adjacent grid pair `(Vin_hi, Vin_lo)` with
+   `VOUT(Vin_hi) >= V_thr > VOUT(Vin_lo)`. A grid point exactly at `V_thr`
+   counts as still regulating, so an exact-threshold point is the crossing.
+5. **Crossing / interpolation.** Linear interpolation of `Vin` at
+   `VOUT = V_thr` inside that pair gives `Vin*`.
+6. **Formula.** `dropout_1pct_vin_minus_vout_v = Vin* - V_thr`, i.e.
+   `VIN - VOUT(actual)` at the crossing, **not** `VIN - 1.8 V`.
+7. **Sweep bounds and resolution.** `Vin = 1.700 .. 3.630 V`, step 5 mV
+   (387 rows, one 50 mA block per coordinate). The lower bound is below any
+   possible crossing by construction: at a crossing `VOUT >= V_thr ~ 1.78 V`
+   and `VOUT <= VIN`, so `Vin* > 1.78 V > 1.70 V`; no crossing can be
+   floor-limited unless the circuit is broken.
+8. **Uncertainty.** The true crossing lies in the 5 mV bracket
+   `[Vin_lo, Vin_hi]`. Every value carries
+   `dropout_1pct_lower_v = Vin_lo - V_thr` and `dropout_1pct_upper_v =
+   Vin_hi - V_thr`. **Verdict-grade statements use the upper bound**
+   (conservative); the interpolated value is reported alongside it.
+9. **Crossing outside the sweep.** If no point down to 1.700 V is below
+   `V_thr`, status `floor_limited_upper_bound` (value absent, only an upper
+   bound). A missing, truncated, multi-block, duplicate-`Vin` or non-finite
+   grid is `malformed`. Neither is ever dropped from the 45-point
+   accounting, and **any such point forbids a definitive worst-corner claim**.
+10. **Aggregation.** All 45 coordinates (`{tt,ff,ss,sf,fs}` x `{-40,27,125}`
+    C x `{res_typ,res_bcs,res_wcs}`, each exactly once) are evaluated
+    independently; the row-4 value is the **maximum of the 45 upper bounds**
+    (worst corner). Resistor, process and temperature are not correlated or
+    averaged. The row passes only if that maximum is `< 300 mV`.
+11. **Margin.** `margin = 300 mV - worst upper bound`. Its series-resistance
+    equivalent is `margin / 50 mA` (ohm), derived from the measured margin,
+    before any parasitic extraction.
+12. **Legacy metric.** Kept as a distinct, historically readable quantity;
+    existing records, corner directories, snapshots and evidence stay
+    byte-unchanged. It is not re-labelled.
+
+## Implementation
+
+`sim/ldo-cmos5l-pvt-sweep/dc_metrics.py` (`dropout_1pct`, `dropout_1pct_file`),
+`dropout_campaign.py` (45-point batch campaign + reduction),
+`testbench/tb_dropout_cmos5l.spice.tmpl`, tests in
+`test_dropout_dr0009.py`. The 45-point SPICE grid runs on the EDA batch fleet
+(`klt sim --backend batch` through `batch_backend.py`), never as a local grid.
+
+## Evidence (generated; see the record for exact values)
+
+Record `sim/ldo-cmos5l-pvt-sweep/records/20261010-111618-19e8e39.dropout.{md,csv,json}`
+(raw grids in `corners/20261010-111618-19e8e39/`): 45/45 coordinates present
+exactly once and **45/45 resolved**; none is floor-limited, missing or an upper
+bound. One `klt sim --backend batch` request (job `klt-sim-2e1c76f1111e`,
+runner klt 0.5.0, ngspice-46), SG13CMOS5L PDK pin `sim/pdk-cmos5l.json`,
+design netlists identical to the pins of record `20261010-025634-60a3e81`.
+
+| Quantity | Value |
+|---|---|
+| Worst coordinate | `ss` / 125 C / `res_typ` (`res_bcs` and `res_wcs` within 0.01 mV) |
+| `dropout_1pct_vin_minus_vout_v` (interpolated) | 255.03 mV |
+| 5 mV bracket (lower, upper) | 252.83 mV, 257.83 mV |
+| Margin to 300 mV on the **upper bound** | 42.17 mV = 42.17 mV / 50 mA = **0.843 ohm** series resistance |
+| Margin to 300 mV on the interpolated value | 44.97 mV = 0.899 ohm |
+| Lowest crossing `Vin` over all 45 | 1.9241 V (sweep lower bound 1.700 V) |
+
+So the earlier "45 mV, about 0.9 ohm" figure is the interpolated margin; the
+verdict-grade margin under item 8 above is **42 mV (0.84 ohm)**, before any
+parasitic extraction. The worst legacy-metric value (0.24 V, floor-limited
+upper bound) and the informational candidate (0.2546 V) are superseded for
+row-4 evidence only after release; they stay as historical quantities.
+
+Provenance note: the record was minted before the reducer was moved from
+`dc_metrics.py` to `dropout_metrics.py` (moved verbatim, so that the
+committed `item5_evidence` inventories, which pin `dc_metrics.py`'s sha256,
+stay byte-identical). The record's `input_sha256` therefore lists the original
+`dc_metrics.py` and no `dropout_metrics.py`; `dropout_campaign.py reduce
+<id> --check` reproduces the CSV/JSON/MD from the committed raw grids with the
+final code. Scope caveats: schematic-level, SG13CMOS5L only; nothing transfers
+to the SG13G2 branch (#71).
+
+## After release (not done by this record)
+
+On release by both keys, a follow-up edit will make `DR-0007`, `spec/README.md`
+index text, the root `README.md` and signoff text cite this record, and
+distinguish the superseded legacy metric. If the keys do not release it, the
+current unresolved qualification of row 4 remains.

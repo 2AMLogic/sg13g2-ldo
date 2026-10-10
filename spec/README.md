@@ -16,6 +16,12 @@ being present; ratification state is stated per row.
   any request-changes/escalate verdict is resolved; until then rows are
   *proposed* or *Open*. Current state: row 4 (dropout @ 50 mA) is ratified,
   by the two key reviews on pull request #65; the other nine rows are Open.
+- [`DR-0009`](decision-records/DR-0009-row4-dropout-measurement.md)
+  (**proposed**, not ratified) defines how row 4 (dropout @ 50 mA) is
+  measured: 1 % loss against the corner's own regulated output, interpolated
+  crossing, `VIN - VOUT(actual)`, 5 mV grid down to 1.70 V. It keeps the
+  `< 300 mV` target unchanged and does not alter `DR-0007`; the row-4 wording
+  there stays as is until both review keys release the proposal.
 - [`porting-plan.md`](porting-plan.md) — informational port plan from the
   gf180/sky130 siblings; not a spec and not a decision record.
 
