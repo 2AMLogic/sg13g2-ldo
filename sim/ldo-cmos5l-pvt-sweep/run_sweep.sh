@@ -86,10 +86,18 @@ set -euo pipefail
 
 CHECK_ENV=0
 CHECK_GUARD=0
+# --batch (PR #87): run every point on the EDA batch fleet through
+# `klt sim --backend batch` (batch_backend.py) instead of a local
+# `ngspice -b` per point. Dispatch hosts must not run SPICE grids locally.
+# The per-point decks, the screening and the post-processing are the same
+# in both modes; only the step that runs the simulator changes. See
+# batch_backend.py's docstring and README.md "Batch backend".
+BATCH=0
 for arg in "$@"; do
   case "${arg}" in
     --check-env) CHECK_ENV=1 ;;
     --check-topology-guard) CHECK_GUARD=1 ;;
+    --batch) BATCH=1 ;;
     -h|--help) sed -n '2,40p' "${BASH_SOURCE[0]}"; exit 0 ;;
     *) echo "run_sweep.sh: unknown argument '${arg}'" >&2; exit 2 ;;
   esac
@@ -226,16 +234,31 @@ if [[ -z "${PDK_ROOT:-}" || ! -d "${PDK_ROOT}/${PDK}/libs.tech/ngspice" ]]; then
   exit 3
 fi
 
-if ! "${SIM_DIR}/tools/build-osdi.sh" --check >/dev/null 2>&1; then
-  echo "run_sweep.sh: OSDI models missing/unloadable -- run PDK=${PDK} sim/tools/build-osdi.sh first:" >&2
-  "${SIM_DIR}/tools/build-osdi.sh" --check || true
-  exit 3
-fi
-
-command -v ngspice >/dev/null 2>&1 || { echo "run_sweep.sh: ngspice not on PATH." >&2; exit 3; }
-NGSPICE_VERSION="$(ngspice -v 2>&1 | sed -n '2p')"
-
 OSDI_DIR="${SG13G2_OSDI_DIR}"
+
+if [[ ${BATCH} -eq 1 && ${CHECK_ENV} -eq 0 ]]; then
+  # Batch mode: the OSDI binaries are staged to the fleet and loaded by the
+  # runner's ngspice 46. They do not need to load in this host's ngspice
+  # (the host may have none, or an older one that rejects OSDI ABI v0.4).
+  # They only need to exist here.
+  for m in psp103 psp103_nqs mosvar r3_cmc cap_cmomi cap_cmomf; do
+    [[ -f "${OSDI_DIR}/${m}.osdi" ]] || {
+      echo "run_sweep.sh: --batch: ${OSDI_DIR}/${m}.osdi missing -- run PDK=${PDK} sim/tools/build-osdi.sh first." >&2
+      exit 3
+    }
+  done
+  command -v klt >/dev/null 2>&1 || { echo "run_sweep.sh: --batch: klt not on PATH." >&2; exit 3; }
+  NGSPICE_VERSION="(set from the batch runner after submission)"
+else
+  if ! "${SIM_DIR}/tools/build-osdi.sh" --check >/dev/null 2>&1; then
+    echo "run_sweep.sh: OSDI models missing/unloadable -- run PDK=${PDK} sim/tools/build-osdi.sh first:" >&2
+    "${SIM_DIR}/tools/build-osdi.sh" --check || true
+    exit 3
+  fi
+
+  command -v ngspice >/dev/null 2>&1 || { echo "run_sweep.sh: ngspice not on PATH." >&2; exit 3; }
+  NGSPICE_VERSION="$(ngspice -v 2>&1 | sed -n '2p')"
+fi
 
 if [[ ! -f "${DESIGN_NETLIST}" ]]; then
   echo "run_sweep.sh: ${DESIGN_NETLIST} not found -- regenerate it first:" >&2
@@ -314,7 +337,14 @@ RES_LABELS=(typ bcs wcs)
 # baseline issue #35 names. Comparing against it makes the before/after a
 # like-for-like, same-section comparison at every point rather than a
 # same-corner-different-section one.
-BASELINE_CSV="${RECORDS_DIR}/20260916-210331-9d3ace1.csv"
+#
+# RE-BASELINED BY #67 (PR #87), from the #31 record to the #35 one
+# (20260917-023832-7061e8f). That is the last record before the EN
+# interface (DR-0008), run against the pre-#67 netlist (sha256 c6e630e9...).
+# It uses the same benches (EN tied to VIN reproduces the pre-#67
+# connectivity) and the same full 45-point grid, so the delta table isolates
+# what the enable devices change.
+BASELINE_CSV="${RECORDS_DIR}/20260917-023832-7061e8f.csv"
 
 total=0
 passed=0
@@ -357,15 +387,37 @@ EXPECT_ROWS_AC=161
 
 recoverable_warning_points=()
 
+if [[ ${BATCH} -eq 1 ]]; then
+  # Scratch space for the requests and the returned rawfiles (~1 MB per
+  # corner). Only the reduced *_dc/_ac.csv files, the logs and the request
+  # and report provenance are copied into corners/<id>/.
+  BATCH_WORK="$(mktemp -d "${TMPDIR:-/tmp}/ldo-cmos5l-pvt-batch.XXXXXX")"
+  BATCH_QUEUE="${BATCH_WORK}/queue.tsv"
+  : > "${BATCH_QUEUE}"
+fi
+
 run_ngspice() {
   local point_id="$1" netlist="$2"
+  local rc=0
+  if [[ ${BATCH} -eq 1 ]]; then
+    # Deferred: batch_backend.py runs every queued point on the fleet, then
+    # screen_point screens each one exactly as below (see the --batch block
+    # after the loops).
+    printf '%s\t%s\n' "${point_id}" "${netlist}" >> "${BATCH_QUEUE}"
+    return 0
+  fi
+  ngspice -b "${netlist}" > "${CORNERS_OUT}/${point_id}.log" 2>&1 || rc=$?
+  screen_point "${point_id}" "${rc}"
+}
+
+screen_point() {
+  local point_id="$1" rc="$2"
   local log="${CORNERS_OUT}/${point_id}.log"
-  local rc=0 out_csv expect_rows got_rows
+  local out_csv expect_rows got_rows
   case "${point_id}" in
     dcsweep_*) out_csv="${CORNERS_OUT}/${point_id}_dc.csv"; expect_rows=${EXPECT_ROWS_DC} ;;
     *)         out_csv="${CORNERS_OUT}/${point_id}_ac.csv"; expect_rows=${EXPECT_ROWS_AC} ;;
   esac
-  ngspice -b "${netlist}" > "${log}" 2>&1 || rc=$?
   total=$((total + 1))
 
   # Fatal-error screen. `singular matrix` is deliberately matched only when
@@ -548,6 +600,30 @@ for corner in "${CORNERS[@]}"; do
     done
   done
 done
+
+if [[ ${BATCH} -eq 1 ]]; then
+  # Run every queued point on the fleet. batch_backend.py writes the same
+  # <point_id>.log and *_dc/_ac.csv files the local loop writes. A failed
+  # submission leaves its points without output, and screen_point then
+  # fails them. Nothing here ever falls back to a local ngspice run.
+  batch_rc=0
+  python3 "${SCRIPT_DIR}/batch_backend.py" run \
+    --queue "${BATCH_QUEUE}" --corners-out "${CORNERS_OUT}" \
+    --work "${BATCH_WORK}" --osdi-dir "${OSDI_DIR}" || batch_rc=$?
+  if [[ ${batch_rc} -ne 0 ]]; then
+    echo "run_sweep.sh: batch_backend.py exited ${batch_rc}; the affected points are screened as FAILED below." >&2
+  fi
+  if [[ -f "${CORNERS_OUT}/_batch/backend.env" ]]; then
+    # shellcheck source=/dev/null
+    source "${CORNERS_OUT}/_batch/backend.env"
+    NGSPICE_VERSION="${BATCH_NGSPICE_VERSION} (EDA batch fleet runner, klt ${BATCH_RUNNER_KLT})"
+  fi
+  while IFS=$'\t' read -r point_id _netlist; do
+    rc=0
+    [[ -f "${CORNERS_OUT}/${point_id}.log" ]] || rc=1
+    screen_point "${point_id}" "${rc}" || true
+  done < "${BATCH_QUEUE}"
+fi
 
 if [[ ${passed} -eq 0 ]]; then
   echo "run_sweep.sh: no points passed -- refusing to write a summary." >&2
@@ -1065,13 +1141,29 @@ done
   echo "  feedback divider that #28 substituted for the pre-#28 behavioural"
   echo "  300k \`res.sym\` pair, and the first to cross the resistor corner"
   echo "  across the whole grid), or #35 (the \`Cc\` re-compensation that"
-  echo "  closes the res_bcs/125C phase-margin gap #31 found)."
+  echo "  closes the res_bcs/125C phase-margin gap #31 found), or #67 (the"
+  echo "  active-high \`EN\` interface, DR-0008, run with EN tied to VIN)."
   echo "- **PDK**: \`${PDK}\` at \`${PDK_ROOT}\` -- pinned revision: see"
   echo "  \`sim/pdk-cmos5l.json\` (commit \`607e18d\`, re-verified against the"
   echo "  installed checkout)."
   echo "- **OSDI models**: \`${OSDI_DIR}\` -- built by"
   echo "  \`PDK=${PDK} sim/tools/build-osdi.sh\`."
   echo "- **ngspice**: \`${NGSPICE_VERSION}\`"
+  if [[ ${BATCH} -eq 1 ]]; then
+    echo "- **Backend**: \`run_sweep.sh --batch\`. Every point ran on the EDA batch"
+    echo "  fleet through \`klt sim --backend batch\` (\`batch_backend.py\`), not on"
+    echo "  the submitting host: ${BATCH_JOB_COUNT:-?} klt sim requests (job ids,"
+    echo "  requests, generated decks and klt reports under"
+    echo "  \`corners/${RECORD_ID}/_batch/\`). The OSDI binaries listed above were"
+    echo "  staged byte-for-byte with each job and loaded from the job's \`inputs/\`."
+    echo "  Their sha256 is printed in every per-point log and listed in"
+    echo "  \`corners/${RECORD_ID}/_batch/backend.json\`. The model libraries were"
+    echo "  staged from the PDK install above. Reduction from the runner's ASCII"
+    echo "  rawfile to the \`wrdata\` CSV layout was validated byte-for-byte against"
+    echo "  local ngspice-46 output (README.md \"Batch backend\")."
+  fi
+  echo "- **Design netlist sha256**: \`ldo_core_cmos5l.spice\` $(sha256sum "${DESIGN_NETLIST}" | cut -c1-64),"
+  echo "  \`ldo_erramp_cmos5l.spice\` $(sha256sum "${REPO_ROOT}/design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice" | cut -c1-64)."
   echo "- **Design netlist under test**: \`design/sg13cmos5l/netlist/ldo_core_cmos5l.spice\`"
   echo "  at this repo's git sha \`${REPO_GIT_SHA}\`."
   echo "- **Corner matrix run**: process {${CORNERS[*]}} (cornerMOShv.lib) x"
