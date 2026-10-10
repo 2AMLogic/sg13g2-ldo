@@ -81,7 +81,7 @@ written "legacy dropout (`dropout_v_50ma`)".
 
 ## Implementation
 
-`sim/ldo-cmos5l-pvt-sweep/dc_metrics.py` (`dropout_1pct`, `dropout_1pct_file`),
+`sim/ldo-cmos5l-pvt-sweep/dropout_metrics.py` (`dropout_1pct`, `dropout_1pct_file`),
 `dropout_campaign.py` (45-point batch campaign + reduction),
 `testbench/tb_dropout_cmos5l.spice.tmpl`, tests in
 `test_dropout_dr0009.py`. The 45-point SPICE grid runs on the EDA batch fleet
@@ -98,24 +98,31 @@ design netlists identical to the pins of record `20261010-025634-60a3e81`.
 
 | Quantity | Value |
 |---|---|
-| Worst coordinate | `ss` / 125 C / `res_typ` (`res_bcs` and `res_wcs` within 0.01 mV) |
-| `dropout_1pct_vin_minus_vout_v` (interpolated) | 255.03 mV |
+| Worst coordinate (by upper bound) | `ss` / 125 C / `res_typ` (upper bound tied with `res_bcs`; `res_wcs` within 0.01 mV) |
+| `dropout_1pct_vin_minus_vout_v` (interpolated) at that coordinate | 255.034 mV |
 | 5 mV bracket (lower, upper) | 252.83 mV, 257.83 mV |
 | Margin to 300 mV on the **upper bound** | 42.17 mV = 42.17 mV / 50 mA = **0.843 ohm** series resistance |
-| Margin to 300 mV on the interpolated value | 44.97 mV = 0.899 ohm |
+| Margin to 300 mV on the interpolated value at that coordinate | 44.97 mV (300 - 255.034) = 0.899 ohm |
+| Maximum interpolated value over all 45 | 255.040 mV at `ss` / 125 C / `res_bcs` (a different coordinate; margin 44.96 mV = 0.899 ohm) |
 | Lowest crossing `Vin` over all 45 | 1.9241 V (sweep lower bound 1.700 V) |
 
-So the earlier "45 mV, about 0.9 ohm" figure is the interpolated margin; the
+The 44.97 mV interpolated margin belongs to the worst-by-upper-bound
+coordinate (`ss`/125 C/`res_typ`, 255.034 mV); it is not 300 mV minus the
+maximum interpolated value, which is 255.040 mV at `ss`/125 C/`res_bcs`
+(44.96 mV). The difference is rounding-level. So the earlier "45 mV, about
+0.9 ohm" figure is the interpolated margin; the
 verdict-grade margin under item 8 above is **42 mV (0.84 ohm)**, before any
 parasitic extraction. The worst legacy-metric value (0.24 V, floor-limited
 upper bound) and the informational candidate (0.2546 V) are superseded for
 row-4 evidence only after release; they stay as historical quantities.
 
-Provenance note: the record was minted before the reducer was moved from
-`dc_metrics.py` to `dropout_metrics.py` (moved verbatim, so that the
-committed `item5_evidence` inventories, which pin `dc_metrics.py`'s sha256,
-stay byte-identical). The record's `input_sha256` therefore lists the original
-`dc_metrics.py` and no `dropout_metrics.py`; `dropout_campaign.py reduce
+Provenance note: the campaign ran, and the record was minted, before the
+reducer was moved from `dc_metrics.py` to `dropout_metrics.py` (moved
+verbatim, so that the committed `item5_evidence` inventories, which pin
+`dc_metrics.py`'s sha256, stay byte-identical). The record's `input_sha256`
+therefore lists the pre-move `dc_metrics.py` (the reducer as it was at run
+time) and omits `dropout_metrics.py`; the record is left as written (append-only).
+Instead, `dropout_campaign.py reduce
 <id> --check` reproduces the CSV/JSON/MD from the committed raw grids with the
 final code. Scope caveats: schematic-level, SG13CMOS5L only; nothing transfers
 to the SG13G2 branch (#71).

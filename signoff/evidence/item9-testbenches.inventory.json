@@ -174,7 +174,7 @@
     },
     {
       "path": "sim/ldo-cmos5l-pvt-sweep/README.md",
-      "sha256": "sha256:c24c86c232ed916b23dc5afb0764990ca2137ec488800a4ca3b0b6a5a04c97d4"
+      "sha256": "sha256:f00e4662c37bbdc83420c31c606fcec7617158366e260b3b04558bfbdd28ca6e"
     },
     {
       "path": "sim/ldo-cmos5l-pvt-sweep/batch_backend.py",
@@ -183,6 +183,14 @@
     {
       "path": "sim/ldo-cmos5l-pvt-sweep/run_sweep.sh",
       "sha256": "sha256:cc3bc20b3547b5b7ec829a2c8fd5a3fc842d35f6401546f21ccb21238a946e37"
+    },
+    {
+      "path": "sim/ldo-cmos5l-pvt-sweep/startup_campaign.py",
+      "sha256": "sha256:fe2b908faf95d41109524608ace411250de2847febb64e40f4438b1472df1e73"
+    },
+    {
+      "path": "sim/ldo-cmos5l-pvt-sweep/startup_eval.py",
+      "sha256": "sha256:db64505547fccf6a6dfbe68320ebdc08ffda79e1b025282d371c67a698c1b811"
     },
     {
       "path": "sim/ldo-cmos5l-pvt-sweep/testbench/tb_dcsweep_cmos5l.spice.tmpl",
@@ -195,6 +203,10 @@
     {
       "path": "sim/ldo-cmos5l-pvt-sweep/testbench/tb_psrr_cmos5l.spice.tmpl",
       "sha256": "sha256:fc3762d4b8feb011d78b62451e76ef7d5a074833a2e956e04741d2e0a79c177f"
+    },
+    {
+      "path": "sim/ldo-cmos5l-pvt-sweep/testbench/tb_startup_cmos5l.spice.tmpl",
+      "sha256": "sha256:ad9e077575a7b7db5ccc928a17f68d04b4372e1815cfc363c55a3ec062458cde"
     },
     {
       "path": "sim/pass-device-screening/README.md",

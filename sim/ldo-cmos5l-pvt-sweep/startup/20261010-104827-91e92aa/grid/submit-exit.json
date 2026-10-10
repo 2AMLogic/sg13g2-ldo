@@ -1,0 +1,17 @@
+{
+ "g001_ff_rtyp_i1ma_c1000nf_e0mohm_t1000ns": 0,
+ "g002_ff_rwcs_i1ma_c1000nf_e0mohm_t1000ns": 0,
+ "g000_ff_rbcs_i1ma_c1000nf_e0mohm_t1000ns": 0,
+ "g003_fs_rbcs_i1ma_c1000nf_e0mohm_t1000ns": 0,
+ "g005_fs_rwcs_i1ma_c1000nf_e0mohm_t1000ns": 0,
+ "g004_fs_rtyp_i1ma_c1000nf_e0mohm_t1000ns": 0,
+ "g007_sf_rtyp_i1ma_c1000nf_e0mohm_t1000ns": 0,
+ "g006_sf_rbcs_i1ma_c1000nf_e0mohm_t1000ns": 0,
+ "g008_sf_rwcs_i1ma_c1000nf_e0mohm_t1000ns": 0,
+ "g010_ss_rtyp_i1ma_c1000nf_e0mohm_t1000ns": 0,
+ "g009_ss_rbcs_i1ma_c1000nf_e0mohm_t1000ns": 0,
+ "g011_ss_rwcs_i1ma_c1000nf_e0mohm_t1000ns": 0,
+ "g012_tt_rbcs_i1ma_c1000nf_e0mohm_t1000ns": 0,
+ "g014_tt_rwcs_i1ma_c1000nf_e0mohm_t1000ns": 0,
+ "g013_tt_rtyp_i1ma_c1000nf_e0mohm_t1000ns": 0
+}

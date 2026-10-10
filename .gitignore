@@ -9,6 +9,9 @@ __pycache__/
 # (append-only record trail), so they escape the *.log rule.
 !sim/*/corners/**/*.log
 sim/build/
+# startup campaign (issue #69): klt per-corner artifacts (rawfiles ~2 MB each) are
+# not committed; their sha256 and the reduced traces are in records/.
+sim/*/startup/**/artifacts/
 # synthesis / P&R scratch
 flow/build/
 # local klt install, created by the setup script

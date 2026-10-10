@@ -105,6 +105,10 @@ ITEMS = {
             f"{_SIM}/testbench/tb_dcsweep_cmos5l.spice.tmpl",
             f"{_SIM}/testbench/tb_loopgain_cmos5l.spice.tmpl",
             f"{_SIM}/testbench/tb_psrr_cmos5l.spice.tmpl",
+            # issue #69: startup bench, its batch driver and evaluator
+            f"{_SIM}/testbench/tb_startup_cmos5l.spice.tmpl",
+            f"{_SIM}/startup_campaign.py",
+            f"{_SIM}/startup_eval.py",
             f"{_MC}/README.md",
             f"{_MC}/run_campaign.sh",
             f"{_MC}/runner-preamble.cir",

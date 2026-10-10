@@ -1,0 +1,33 @@
+{
+ "rid": "20261010-075612-91e92aa",
+ "stage": "nominal",
+ "requested": 1,
+ "rows": 1,
+ "evaluated": 1,
+ "insufficient": 0,
+ "pass": 0,
+ "fail": 1,
+ "engines": [
+  "ngspice-46"
+ ],
+ "runner_klt": [
+  "0.5.0"
+ ],
+ "client_klt": "klt 0.7.0+g8eec069c7576",
+ "jobs": [
+  {
+   "group": "g000_v3300mv_i1ma_c1000nf_e0mohm_t1000ns",
+   "job_id": "klt-sim-3cdb1082dbc9",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot"
+  }
+ ],
+ "source_sha256": {
+  "sim/ldo-cmos5l-pvt-sweep/testbench/tb_startup_cmos5l.spice.tmpl": "5a768becf815f520ebe7d81f5b1bc3f41fc2ed22cd8b1f0970f4c7558ccab0e6",
+  "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice": "7953b25be4cb00053f8df5f283bee0500f60a826b7a2d6519b88a8578d222cc1",
+  "sim/ldo-cmos5l-pvt-sweep/startup_eval.py": "db64505547fccf6a6dfbe68320ebdc08ffda79e1b025282d371c67a698c1b811",
+  "sim/ldo-cmos5l-pvt-sweep/startup_campaign.py": "169eeb8685e39366627d70b81d33ec557ef64fe27454293c5824dea31a7f6b54"
+ },
+ "csv": "sim/ldo-cmos5l-pvt-sweep/records/20261010-075612-91e92aa-startup-nominal.csv"
+}
