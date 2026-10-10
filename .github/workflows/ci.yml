@@ -25,6 +25,13 @@ name: CI
 #                                 No PDK, no simulator.
 #   enable-record                 sim/ldo-cmos5l-enable records reproduce
 #                                 from their raw reports. No PDK, no simulator.
+#   layout-check                  layout/run_flow.sh --check: the committed
+#                                 GDS, LVS reference and tap-box document
+#                                 reproduce byte-for-byte from generate.py /
+#                                 common_sg13cmos5l.py, and the committed
+#                                 drc/extract/lvs reports still hash-match
+#                                 them (#101). klt + KLayout Python module
+#                                 only; no PDK, no standalone klayout.
 #
 # So, unlike 2AMLogic/gf180-ldo's ci.yml -- which splits a PDK-free
 # `harness-selftest` job from a PDK-backed `pvt-smoke` job gated to schedule/
@@ -34,7 +41,7 @@ name: CI
 # xschem export and diffs the result), and gating it would mean CI checks
 # nothing on an ordinary PR (a schematic edit that forgets to re-run the
 # export, or that breaks ERC, should fail loudly on the PR that introduces
-# it, not wait for a nightly job). The PDK-free tier is the last four jobs
+# it, not wait for a nightly job). The PDK-free tier is the last five jobs
 # above. The IHP-Open-PDK fetch (~350 MB, pinned to v0.3.0,
 # checksum-verified by 2AMLogic/klayout-tools' own fetch script) is cached
 # across runs via actions/cache to keep the steady-state cost low.
@@ -135,6 +142,23 @@ env:
   # regenerated signoff/sg13g2-ldo.t1-report.json (the signoff-t1-report job
   # fails on any drift, including this pin moving).
   KLAYOUT_TOOLS_SIGNOFF_REF: "b82427b30c9604b53b2dce64850409841cc38bde"
+  # Pin the klt build that layout-check verifies the committed layout
+  # reports with (#101). This is NOT the signoff pin above, on purpose:
+  # `klt drc --check` / `klt extract --check` re-hash the curated deck the
+  # committed report recorded against the deck of the klt running the check,
+  # and layout/'s drc/extract/lvs reports were produced on 0.5.0+gb15edf5e3a2e
+  # (layout/README.md, "#68 ... regenerated every artifact"; the erc report
+  # alone is on the signoff pin). The curated sg13cmos5l deck changed between
+  # the two builds, so checking under the signoff pin reports
+  # `[DRIFTED] provenance.deck.content_hash` on an untouched tree. Bump this
+  # only in the same PR that re-runs layout/run_flow.sh (full mode) on the
+  # new build and commits every refreshed report.
+  KLAYOUT_TOOLS_LAYOUT_REF: "b15edf5e3a2e56467a3406c98a2555eb1a5ae45c"
+  # The KLayout Python module generate.py draws with. klt only floors it
+  # (klayout>=0.30), and the committed GDS / reports were produced with
+  # 0.30.12 (their provenance.klayout_version), so pin it exactly: a
+  # byte-for-byte GDS comparison must not float with PyPI.
+  KLAYOUT_PY_VERSION: "0.30.12"
 
 jobs:
   netlist-check:
@@ -489,3 +513,54 @@ jobs:
           for rec in sim/ldo-cmos5l-enable/records/*/; do
             sim/ldo-cmos5l-enable/check.sh "${rec%/}"
           done
+
+  layout-check:
+    name: layout/run_flow.sh --check (committed GDS + DRC/extract/LVS reports reproduce, no PDK)
+    # The signoff-t1-report job re-grades items 3/4/11 from content hashes
+    # of the committed layout artifacts, but nothing there proves those
+    # artifacts still come out of their generator: generate.py or
+    # common_sg13cmos5l.py could change while the committed GDS and reports
+    # stay stale and keep hash-matching the manifest (#101). This job runs
+    # the flow's own check mode, which
+    #   - re-runs generate.py and lvs_reference.py and fails, naming the
+    #     file, unless the committed GDS, LVS reference netlist and
+    #     erc-tap-boxes.json reproduce byte for byte;
+    #   - runs erc_ties.py --check (spec ties[] == the generator's tap bars);
+    #   - runs `klt drc|extract|lvs --check` (cheap mode) on the committed
+    #     reports, which re-hash the inputs each report recorded and fail
+    #     naming the drifted field.
+    # It needs klt and the KLayout Python module only: the curated
+    # sg13cmos5l deck ships inside klt, and check mode never runs the PDK's
+    # own deck, the standalone klayout binary or a simulator. It does not
+    # re-run DRC/extract/LVS/ERC (that is layout/run_flow.sh full mode,
+    # which needs the PDK). The erc_supply_report.json input/spec hashes are
+    # re-verified by the signoff-t1-report job's grader, not here.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out sg13g2-ldo
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Clone and install klayout-tools at the pinned layout ref
+        # Same clone + checkout + path install as signoff-t1-report (a
+        # direct-URL pip install loses the clean version stamp), at the
+        # build the committed layout reports were produced with.
+        run: |
+          git clone --quiet https://github.com/2AMLogic/klayout-tools.git \
+            "${RUNNER_TEMP}/klayout-tools"
+          git -C "${RUNNER_TEMP}/klayout-tools" checkout \
+            "${KLAYOUT_TOOLS_LAYOUT_REF}"
+          pip install "${RUNNER_TEMP}/klayout-tools" "klayout==${KLAYOUT_PY_VERSION}"
+          klt --version
+          python3 -c "import klayout.db as k; print('klayout', k.__version__)"
+
+      - name: layout/run_flow.sh --check
+        run: layout/run_flow.sh --check
+
+      - name: Check mode left the tree untouched
+        # Belt and braces: check mode regenerates in place, so any artifact
+        # it rewrote differently would already have failed the step above.
+        run: git diff --exit-code
