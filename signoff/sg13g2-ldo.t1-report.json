@@ -267,7 +267,7 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:a68f0c741529334b9b43f3d24fec9581f6777ba28df5ffe4a52065116034f88d",
+        "content_hash": "sha256:16c6efaf5ccd5786ba5ac121c9053d90b698f754b2ab8687b398dc0f3f98bb23",
         "input_verified": true,
         "exit_status": 0,
         "artifact_binding": {
@@ -276,7 +276,7 @@
             "path": "signoff/evidence/item10-repo-hygiene.inventory.json",
             "scope": "repo"
           },
-          "content_hash": "sha256:a68f0c741529334b9b43f3d24fec9581f6777ba28df5ffe4a52065116034f88d",
+          "content_hash": "sha256:16c6efaf5ccd5786ba5ac121c9053d90b698f754b2ab8687b398dc0f3f98bb23",
           "input_verified": true,
           "summary": "README, LICENSE, spec index, agent instructions and the CI workflow are committed; every constituent hash matches the inventory and the CI workflow still defines the PDK-free signoff gates. Hygiene presence/freshness only.",
           "source": "signoff/evidence/item10-repo-hygiene.inventory.json"
