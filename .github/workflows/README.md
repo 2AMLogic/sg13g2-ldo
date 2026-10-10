@@ -55,8 +55,11 @@ it's a reproducibility + ERC check against the actual PDK. The workflow:
 3. Caches the fetched PDK (`actions/cache`, keyed on the pinned version) so
    the ~350 MB download only happens once per cache generation, not on
    every run.
-4. Runs `python3 design/netlist.py --check -v` with `PDK_ROOT`/`PDK`
-   pointed at the fetched install.
+4. Fetches the `ihp-sg13cmos5l` PDK (pinned commit, checksum-verified,
+   installed as a sibling of `ihp-sg13g2` because its symbols are relative
+   symlinks into it), then runs `python3 design/netlist.py --check -v` and
+   `python3 design/netlist.py --design sg13cmos5l --check -v` with
+   `PDK_ROOT` pointed at the fetched install.
 
 Runnable locally the same way, once you have `xschem` and an `ihp-sg13g2`
 PDK installed (see `design/README.md` → "Exporting the netlist" for local
