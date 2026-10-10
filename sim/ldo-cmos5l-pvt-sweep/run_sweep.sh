@@ -609,7 +609,13 @@ if [[ ${BATCH} -eq 1 ]]; then
   batch_rc=0
   python3 "${SCRIPT_DIR}/batch_backend.py" run \
     --queue "${BATCH_QUEUE}" --corners-out "${CORNERS_OUT}" \
-    --work "${BATCH_WORK}" --osdi-dir "${OSDI_DIR}" || batch_rc=$?
+    --work "${BATCH_WORK}" --osdi-dir "${OSDI_DIR}" \
+    ${SWEEP_BATCH_PLAN_ONLY:+--plan-only} || batch_rc=$?
+  if [[ -n "${SWEEP_BATCH_PLAN_ONLY:-}" ]]; then
+    echo "run_sweep.sh: SWEEP_BATCH_PLAN_ONLY set -- plan printed, nothing submitted;" >&2
+    echo "run_sweep.sh: delete ${SNAPSHOTS_OUT} and ${CORNERS_OUT} by hand." >&2
+    exit "${batch_rc}"
+  fi
   if [[ ${batch_rc} -ne 0 ]]; then
     echo "run_sweep.sh: batch_backend.py exited ${batch_rc}; the affected points are screened as FAILED below." >&2
   fi

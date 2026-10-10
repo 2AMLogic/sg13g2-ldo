@@ -286,18 +286,29 @@ def plan_groups(points):
                p["analysis"], tuple(p["wrdata"]), tuple(p["lets"]))
         by_key.setdefault(key, []).append((pid, p))
     groups = []
-    for key, members in by_key.items():
-        procs = sorted({section_name(p["sections"]) for _, p in members})
-        temps = sorted({p["temp"] for _, p in members})
-        pairs = {(section_name(p["sections"]), p["temp"]) for _, p in members}
-        if len(pairs) != len(members):
-            raise BackendError(f"duplicate (section, temp) inside one group: {[m[0] for m in members]}")
-        if pairs == {(a, b) for a in procs for b in temps}:
-            splits = [members]
-        else:
-            splits = [[m for m in members if m[1]["temp"] == t] for t in temps]
-        for sub in splits:
-            groups.append({"bench": key[0], "members": sub})
+    for key, all_members in by_key.items():
+        # Points that are deliberately the same simulation (the ressens
+        # points repeat the main grid's tt/27C slice as a cross-check) go
+        # into separate layers, so each one is still simulated on its own.
+        layers = []
+        for m in all_members:
+            pair = (section_name(m[1]["sections"]), m[1]["temp"])
+            for layer in layers:
+                if pair not in layer:
+                    layer[pair] = m
+                    break
+            else:
+                layers.append({pair: m})
+        for layer in layers:
+            members = list(layer.values())
+            procs = sorted({a for a, _ in layer})
+            temps = sorted({b for _, b in layer})
+            if set(layer) == {(a, b) for a in procs for b in temps}:
+                splits = [members]
+            else:
+                splits = [[m for m in members if m[1]["temp"] == t] for t in temps]
+            for sub in splits:
+                groups.append({"bench": key[0], "members": sub})
     for n, g in enumerate(groups):
         first = g["members"][0][0]
         g["name"] = f"g{n:02d}_{first}"
@@ -435,6 +446,12 @@ def cmd_run(a):
             points.append((pid, parse_deck(path)))
     groups = plan_groups(points)
     print(f"batch_backend: {len(points)} points in {len(groups)} klt sim requests", file=sys.stderr)
+    if a.plan_only:
+        for g in groups:
+            procs = sorted({section_name(p["sections"]) for _, p in g["members"]})
+            temps = sorted({p["temp"] for _, p in g["members"]})
+            print(f"  {g['name']}: {len(g['members'])} points, {len(procs)} sections x temps {temps}")
+        return 0
     gdirs = {g["name"]: write_group(g, work, a.osdi_dir, preamble) for g in groups}
 
     rcs = {}
@@ -495,6 +512,8 @@ def main():
     r.add_argument("--work", required=True)
     r.add_argument("--osdi-dir", required=True)
     r.add_argument("--submit-concurrency", type=int, default=2)
+    r.add_argument("--plan-only", action="store_true",
+                   help="parse and group the queue, print the plan, submit nothing")
     a = ap.parse_args()
     try:
         return cmd_run(a)
