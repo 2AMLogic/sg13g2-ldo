@@ -365,6 +365,9 @@ jobs:
       - name: Fixture tests and negative controls
         run: python3 -m unittest discover -s sim/characterization -p 'test_*.py' -v
 
+      - name: Preflight output-validation tests (--check-env gate, stub simulator, no PDK)
+        run: python3 -m unittest discover -s sim/tools -p 'test_*.py' -v
+
       - name: Regenerate and assert no drift
         run: python3 sim/characterization/generate.py --check
 
