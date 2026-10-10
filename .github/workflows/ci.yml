@@ -430,3 +430,23 @@ jobs:
           for rec in sim/ldo-cmos5l-monte-carlo/records/*/; do
             sim/ldo-cmos5l-monte-carlo/run_campaign.sh check "${rec%/}"
           done
+
+  enable-record:
+    name: sim/ldo-cmos5l-enable record check (derived files reproduce from raw, no PDK / no simulator)
+    # Offline and stdlib-only (#96): regenerates derived.txt and summary.csv
+    # from the COMMITTED raw klt sim reports and fails on any byte of drift.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out sg13g2-ldo
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Every committed record reproduces from its raw reports
+        run: |
+          set -e
+          for rec in sim/ldo-cmos5l-enable/records/*/; do
+            sim/ldo-cmos5l-enable/check.sh "${rec%/}"
+          done
