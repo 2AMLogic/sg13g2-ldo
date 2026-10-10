@@ -368,6 +368,14 @@ jobs:
       - name: Preflight output-validation tests (--check-env gate, stub simulator, no PDK)
         run: python3 -m unittest discover -s sim/tools -p 'test_*.py' -v
 
+      - name: SG13CMOS5L loop-gain topology guard (offline; positive check + negative controls)
+        # Offline shell-only check (#94): --check-topology-guard exits before
+        # PDK/ngspice setup. It asserts the flattened loop-gain template
+        # matches the exported ldo_core_cmos5l (including XMen/XMbdis) and
+        # that every built-in mutation is rejected. It writes no records and
+        # makes no PVT or spec-passing claim.
+        run: sim/ldo-cmos5l-pvt-sweep/run_sweep.sh --check-topology-guard
+
       - name: Regenerate and assert no drift
         run: python3 sim/characterization/generate.py --check
 
