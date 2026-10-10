@@ -25,6 +25,10 @@ name: CI
 #                                 No PDK, no simulator.
 #   enable-record                 sim/ldo-cmos5l-enable records reproduce
 #                                 from their raw reports. No PDK, no simulator.
+#   sim-append-only               sim/tools/check_append_only.py: a PR may add
+#                                 but never modify/delete/rename landed sim/
+#                                 evidence (six protected classes; #102).
+#                                 Pull requests only. No PDK, no simulator.
 #   layout-check                  layout/run_flow.sh --check: the committed
 #                                 GDS, LVS reference and tap-box document
 #                                 reproduce byte-for-byte from generate.py /
@@ -401,6 +405,36 @@ jobs:
             exit 1
           fi
           echo "committed T1 report reproduces exactly (tier state is current)"
+
+  sim-append-only:
+    name: sim/ evidence is append-only (PR vs merge base, no PDK / no simulator)
+    # Stdlib-only (#102). Diffs the PR head against its merge base with the
+    # base branch and fails if any already-landed path under sim/*/{records,
+    # corners,netlist-snapshots,evidence,backend-validation,startup}/ was
+    # modified, deleted or renamed. Fails closed if the base cannot be
+    # resolved, hence the full-history checkout.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out sg13g2-ldo (full history for the merge base)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Append-only checker tests (temporary git repos, real CLI)
+        run: python3 -m unittest discover -s sim/tools -p 'test_*.py' -v
+
+      - name: Landed sim/ evidence is unmodified
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          git fetch --no-tags origin "+refs/heads/${BASE_REF}:refs/remotes/origin/${BASE_REF}"
+          python3 sim/tools/check_append_only.py \
+            --base "origin/${BASE_REF}" --head "${{ github.event.pull_request.head.sha }}"
 
   characterization-report:
     name: sim/characterization generate.py --check (T1 item 8 aggregate, no PDK / no simulator)
