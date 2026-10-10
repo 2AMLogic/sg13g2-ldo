@@ -110,7 +110,9 @@ class SpecTableTests(unittest.TestCase):
             G.parse_readme(bad)
 
     def test_unknown_status_is_refused(self):
-        bad = self.readme.replace("RATIFIED (stretch not ratified)", "DRAFT")
+        target = "RATIFIED as a shared target (stretch not ratified)"
+        self.assertIn(target, self.readme)  # guard: the mutation must actually apply
+        bad = self.readme.replace(target, "DRAFT")
         with self.assertRaises(G.GenError):
             G.parse_readme(bad)
 
@@ -272,7 +274,10 @@ class NegativeControls(unittest.TestCase):
 
     def test_readme_dr_ratification_disagreement_is_error(self):
         rd = self.tmp / "README.md"
-        rd.write_text(rd.read_text().replace("RATIFIED (stretch not ratified)", "OPEN — unratified (x)", 1))
+        target = "RATIFIED as a shared target (stretch not ratified)"
+        text = rd.read_text()
+        self.assertIn(target, text)  # guard: the mutation must actually apply
+        rd.write_text(text.replace(target, "OPEN — unratified (x)", 1))
         rc, _, err = run_main("--root", str(self.tmp))
         self.assertEqual(rc, 1)
         self.assertIn("DR-0007 disposition", err)

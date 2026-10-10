@@ -61,7 +61,7 @@
     {
       "role": "ratification_record",
       "path": "spec/decision-records/DR-0007-target-spec-row-ratification.md",
-      "sha256": "74496ee0800de6de36ff2f045796a7c2f802f6d647439255df5a8c8e69451556",
+      "sha256": "04983cdf2c8e7819d0f68d4dfbcda4ce575b4502ed88c062bb467eeec7927847",
       "pinned": false
     },
     {
@@ -73,7 +73,7 @@
     {
       "role": "target_table",
       "path": "README.md",
-      "sha256": "378f8b48bc4ed7cca70a4ec79a1149e3e8d124b16a609676ed9c442674dcccc5",
+      "sha256": "340b92176ef3b4bc39958e6c8be9a2d621a71304dfc458251d9af607fd211aa9",
       "pinned": false
     }
   ],
@@ -355,7 +355,7 @@
       "stretch": "< 200 mV",
       "ratification": {
         "state": "ratified",
-        "readme_status": "RATIFIED (stretch not ratified)",
+        "readme_status": "RATIFIED as a shared target (stretch not ratified); branch compliance differs — see the row 4 branch note below",
         "dr0007_disposition": "Ratified as written",
         "dr0007_type": "deterministic",
         "record": "spec/decision-records/DR-0007-target-spec-row-ratification.md"
