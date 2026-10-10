@@ -26,7 +26,7 @@ _None._
 Issues currently being built (`loom:building`).
 
 - **#64**: sim: parameterise loop-gain/PSRR benches over load, Cout and ESR for rows 3, 6, 10 dynamic coverage
-- **#69**: SG13CMOS5L startup measurements: transient bench and bounded corner campaign
+- **#70**: spec: define how dropout is measured for row 4 (worst corner is 0.255 V at 1 % loss, a 45 mV margin)
 
 ## PRs Awaiting Review
 
@@ -49,12 +49,14 @@ Issues carrying `loom:curated`.
 - **#57**: Post-layout: klt pex extraction of the LDO core and spec re-run on the extracted netlist (T1 item 7) *(curated)*
 - **#63**: SG13CMOS5L current limiter: topology and sizing design plan for row 8 *(curated)*
 - **#64**: sim: parameterise loop-gain/PSRR benches over load, Cout and ESR for rows 3, 6, 10 dynamic coverage *(curated)*
-- **#69**: SG13CMOS5L startup measurements: transient bench and bounded corner campaign *(curated)*
+- **#70**: spec: define how dropout is measured for row 4 (worst corner is 0.255 V at 1 % loss, a 45 mV margin) *(curated)*
 
 ## Proposed (Architect / Hermit)
 
 - **#62**: SG13CMOS5L startup: add enable input and transient testbench for spec row 9 *(architect)*
 - **#63**: SG13CMOS5L current limiter: topology and sizing design plan for row 8 *(architect)*
+- **#101**: CI: run layout/run_flow.sh --check so committed layout reports cannot go stale *(architect)*
+- **#102**: CI: enforce the append-only rule for sim/ evidence records *(architect)*
 
 ## Epics
 
@@ -72,6 +74,6 @@ Issues carrying `loom:curated`.
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
 | Curated | 6 |
-| Architect / Hermit proposals | 2 |
+| Architect / Hermit proposals | 4 |
 | Active epics | 2 |
 <!-- guide:plan-body:end -->

@@ -4,6 +4,12 @@ Chronological record of recently merged pull requests and closed issues, maintai
 
 ### 2026-10-10
 
+- **PR #105**: SG13CMOS5L startup measurements: transient bench, evaluator and bounded PVT campaign (#69)
+- **PR #104**: ci: gate design/netlist.py --check for the SG13CMOS5L design
+- **PR #100**: sim: run the #64 dynamic DoE (384 + 688 refinement AC runs) on the batch fleet
+- **Issue #69** (closed): SG13CMOS5L startup measurements: transient bench and bounded corner campaign
+- **Issue #103** (closed): CI: gate design/netlist.py --check for the SG13CMOS5L design
+
 - **PR #98**: CI: gate that the enable-smoke record reproduces from its raw reports
 - **Issue #96** (closed): CI: gate that the enable-smoke record reproduces from its raw reports
 - **PR #95**: CI: run the SG13CMOS5L topology guard on pull requests
