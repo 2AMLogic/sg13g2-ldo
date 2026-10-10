@@ -806,6 +806,18 @@ experiment (like `--check` for the SG13CMOS5L schematic branch generally)
 is a local/manual step, verified by this PR's author before submission
 (see "Reproducing" below).
 
+The separate, offline loop-gain topology guard **is** a CI gate (issue #94):
+the `characterization-report` job runs
+`sim/ldo-cmos5l-pvt-sweep/run_sweep.sh --check-topology-guard` on every
+push/PR/manual run, with no `continue-on-error`. It exits before PDK and
+ngspice setup, so it needs neither. It checks that the flattened core mirrored
+in `testbench/tb_loopgain_cmos5l.spice.tmpl` (including `XMen`/`XMbdis`) still
+matches the exported `ldo_core_cmos5l` netlist, then that each built-in
+negative control mutation is rejected, so both connectivity drift and a
+weakened guard fail CI. It writes no records, changes no signoff verdict, and
+makes no PVT or spec-passing claim. It does not replace the missing PDK-backed
+`--check-env` preflight described above, which remains local/manual.
+
 ## Reproducing
 
 ```bash
