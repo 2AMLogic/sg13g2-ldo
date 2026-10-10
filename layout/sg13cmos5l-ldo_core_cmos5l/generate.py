@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Draw ``sg13cmos5l_ldo_core_cmos5l`` -- the full 13-device LDO core of
+"""Draw ``sg13cmos5l_ldo_core_cmos5l`` -- the full 15-device LDO core of
 ``design/sg13cmos5l/netlist/ldo_core_cmos5l.spice`` -- as one flat cell.
 
     python3 layout/sg13cmos5l-ldo_core_cmos5l/generate.py
@@ -45,7 +45,7 @@ THE TWO DEVICES THAT SET THE FLOORPLAN
 WHAT THE LVS FLOW NEEDS FROM THIS FILE
 
 * every net that must be compared carries a drawn label on its own level's
-  ``.pin`` layer (``run_flow.sh`` then promotes only the five real ports);
+  ``.pin`` layer (``run_flow.sh`` then promotes only the six real ports);
 * the pass array and the two ``m>1`` error-amp devices are drawn as parallel
   fingers, which is why ``klt lvs`` runs with ``options.combine_devices``;
 * nothing that must stay a resistor is covered by ``ThickGateOx`` (both decks
@@ -82,14 +82,15 @@ MPASS_ROW_PITCH = 31.0
 # --------------------------------------------------------------------------- #
 NET_TRACKS = [
     "VOUT", "VIN", "VSS", "EAOUT", "IBIAS", "TAIL", "G1", "N1", "FB", "MZ", "VREF",
+    "EN",
 ]
 TRACK_Y0 = -52.0
 TRACK_PITCH = 1.2
 TRACK_W = 0.5
 RISER_W = 0.4
 
-#: The five ports of `.subckt ldo_core_cmos5l`, in the schematic's own order.
-PORTS = ["VIN", "VOUT", "VSS", "VREF", "IBIAS"]
+#: The six ports of `.subckt ldo_core_cmos5l`, in the schematic's own order.
+PORTS = ["VIN", "VOUT", "VSS", "VREF", "IBIAS", "EN"]
 
 track_y = {net: TRACK_Y0 - i * TRACK_PITCH for i, net in enumerate(NET_TRACKS)}
 taps: dict[str, list[float]] = {net: [] for net in NET_TRACKS}
@@ -280,6 +281,39 @@ def build() -> c.Builder:
     c.draw_cap_cmomi(b, "Cc", CC_W_UM, 30.0, 130.0, 0.0, "EAOUT", "MZ")
     riser(b, "EAOUT", 130.3, 2.0, 1)
     riser(b, "MZ", 159.7, 2.0, 1)
+
+    # ---------------------------------------------------------------- #
+    # 3b. Enable devices (#62/#68), right of Cc where the active band is free.
+    #     XMen   sg13_hv_pmos w=40u l=0.5u  drain EAOUT, gate EN, S/B VIN
+    #            -> 2 fingers x 20 um (shared S-D-S diffusion)
+    #     XMbdis sg13_hv_pmos w=5u  l=0.5u  drain IBIAS, gate EN, S/B VIN
+    #            -> 1 finger x 5 um
+    #    Both sit in one NWell tied to VIN by its own tap bar (body = source,
+    #    as for Mpass). The two gates are joined on the EN track only.
+    # ---------------------------------------------------------------- #
+    en_spec = [
+        ("Men", "pmos", 2, 20.0, 0.5, 178.0, "EN", "VIN", "EAOUT"),
+        ("Mbdis", "pmos", 1, 5.0, 0.5, 187.0, "EN", "VIN", "IBIAS"),
+    ]
+    en = {}
+    for name, flavour, nf, w_f, l_g, x0, g, s, d in en_spec:
+        en[name] = c.draw_mos_row(
+            b, name, flavour, nf, w_f, l_g, x0, 0.0, g, s, d, draw_well=False
+        )
+    well3 = (170.0, -1.6, en["Mbdis"]["activ"][2] + 1.6, 20.0 + c.NW_C1)
+    b.box(c.L_NWELL, *well3)
+    b.well_label("VIN", well3[0] + 0.4, well3[3] - 0.4)
+    c.draw_tap_bar(b, "nwell", 171.4, 0.0, 172.2, 20.0, "VIN")
+    riser(b, "VIN", 171.8, 18.0, 1)
+    for name, flavour, nf, w_f, l_g, x0, g, s, d in en_spec:
+        dev = en[name]
+        pitch = c.SD_W_UM + l_g
+        sb, db, gb = dev["source_bus"], dev["drain_bus"], dev["gate_bus"]
+        riser(b, s, x0 + c.SD_W_UM / 2, (sb[1] + sb[3]) / 2, 1)
+        riser(b, d, x0 + pitch + c.SD_W_UM / 2, (db[1] + db[3]) / 2, 2)
+        gx = dev["activ"][2] + 0.75
+        b.box(c.L_METAL1, gb[2], gb[1], gx + 0.35, gb[3])
+        riser(b, g, gx, (gb[1] + gb[3]) / 2, 1)
 
     # ---------------------------------------------------------------- #
     # 4. The three rhigh meanders, in the passive band below the channel.

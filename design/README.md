@@ -273,10 +273,12 @@ below.
 | `IBIAS` | inout | External bias-current input — **new on this branch**, see below |
 | `EN`    | in    | Active-high enable, **added by issue #67** (DR-0008): `EN` = `VIN` regulates, `EN` low holds the pass device off |
 
-`EN` drives only `Men`, an `sg13_hv_pmos` pull-up from `EAOUT` to `VIN`
-(DR-0008). The list is now six wide; the SG13G2 branch keeps its four-port
-invariant. The EN-bearing design has **schematic-level evidence only** — its
-layout/DRC/LVS belongs to #68, and the older reports are for the older hash.
+`EN` drives `Men`, an `sg13_hv_pmos` pull-up from `EAOUT` to `VIN`, and
+`Mbdis`, a 5 µm pull-up on `IBIAS` (DR-0008). The list is now six wide; the
+SG13G2 branch keeps its four-port invariant. #68 drew both devices and the
+`EN` port in the SG13CMOS5L layout and refreshed its DRC/LVS/ERC reports
+against the six-port design; the pre-EN five-port layout reports are
+superseded. Post-layout (PEX) performance is still unclaimed.
 
 `ldo_erramp_cmos5l` pinout: `INP INN OUT VDD VSS IBIAS`. `VDD` and `IBIAS`
 are the two pins the SG13G2 branch's ideal-VCVS placeholder did not need

@@ -33,7 +33,8 @@ What this spec asserts, and why each piece is shaped this way:
 - Metal1 carries `label_layer` 8/2 because that is where every device's
   source escape, every well/substrate tie bar's strap, and every rhigh
   contact head carries its net text: VIN labels the Mpass source buses,
-  the pass-array NWell tie strap and the error-amp's VIN well tie; VSS
+  the pass-array NWell tie strap, the error-amp's VIN well tie and the
+  enable-device (XMen/XMbdis) VIN well tie; VSS
   labels the NMOS source buses and the substrate tie; VOUT labels Rtop's
   upper (divider) head.
 - Metal2 carries `label_layer` 10/2 because that is where every drain
@@ -69,9 +70,9 @@ What this spec asserts, and why each piece is shaped this way:
   AND on more than one (the rail is split into pieces that never touch) --
   so ZERO findings of that rule is exactly the 'one island per supply'
   verdict, not merely an absence. VREF (external reference input) and
-  IBIAS (bias-mirror node at Mb0's gate/drain) are control signals by
-  the ratified topology decision (DR-0002), not power rails, so they are
-  not declared.
+  IBIAS (bias-mirror node at Mb0's gate/drain) and EN (enable input,
+  gates of XMen/XMbdis) are control signals by the ratified topology
+  decision (DR-0002), not power rails, so they are not declared.
 
 - `devices[]`: the three rhigh resistor bodies are drawn on GatPoly
   (5/0), so the wire-connectivity model reads each meander as a wire
@@ -104,7 +105,8 @@ What this spec asserts, and why each piece is shaped this way:
     narrowed by `tap_requires` nSD (7/0) -- layer-derived, because this
     stream draws implants (inside an NWell, nSD-covered Activ is a tap and
     PMOS source/drain Activ, pSD-covered, is not) -- and by `tap_boxes` (the
-    pass-array tie strap and the error-amp's VIN well tie). The earlier
+    pass-array tie strap, the error-amp's VIN well tie and the enable
+    devices' VIN well tie, added for #68; XMen/XMbdis bodies are VIN-tied). The earlier
     rationale for omitting `ties[]` (klayout-tools#2169, a declared tie
     collapsing a routed layout into one island) no longer applies: the fix is
     upstream, and `erc_status` stays `clean` with ties declared.

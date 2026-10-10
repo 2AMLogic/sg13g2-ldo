@@ -212,7 +212,7 @@ say "5. extract"
 # Same relative-path discipline as stage 2 -- the extract report names both
 # its input GDS and its output netlist, and both belong to this directory.
 ( cd "${DIR}" && klt extract --deck sg13cmos5l --top "${TOP}" \
-    --pins VIN,VOUT,VSS,VREF,IBIAS \
+    --pins VIN,VOUT,VSS,VREF,IBIAS,EN \
     -o "sg13cmos5l-${CELL}.extracted.spice" --format json \
     "sg13cmos5l-${CELL}.gds" > extract_report.json )
 python3 - "${DIR}/extract_report.json" <<'PY'
@@ -220,7 +220,7 @@ import json, sys
 d = json.load(open(sys.argv[1]))
 print(f"  devices: {d['device_counts']}")
 print(f"  nets:    {[n['name'] for n in d['nets']]}")
-expected = {"pfet": 124, "nfet": 3, "rhigh": 3, "cap_cmomi": 1}
+expected = {"pfet": 127, "nfet": 3, "rhigh": 3, "cap_cmomi": 1}
 sys.exit(0 if d['device_counts'] == expected else 1)
 PY
 
