@@ -1,46 +1,68 @@
 name: CI
 
-# Runs the one self-check that exists in this repo today:
+# Jobs, all run on every push to main and every pull request (none gated
+# behind a schedule or label):
 #
-#   python3 design/netlist.py --check
+#   netlist-check                 design/netlist.py --check, for BOTH designs:
+#                                 the default SG13G2 placeholder and
+#                                 `--design sg13cmos5l`, the implementation
+#                                 every T1 evidence item attests (signoff/
+#                                 README.md). Verifies the committed
+#                                 netlists reproduce byte-for-byte from the
+#                                 .sch sources, xschem's ERC is clean, and
+#                                 the pinout invariants hold. Needs xschem
+#                                 plus the ihp-sg13g2 AND ihp-sg13cmos5l PDKs.
+#   pass-device-screening-check   sim/pass-device-screening run_sweep.sh
+#                                 --check-env (ngspice + ihp-sg13g2 PDK).
+#   signoff-t1-report             re-grades signoff/sg13g2-ldo.json with a
+#                                 pinned klt and fails on T1 report drift.
+#                                 No PDK, no simulator.
+#   characterization-report       sim/characterization generate.py --check
+#                                 plus the offline unit tests and topology
+#                                 guard. No PDK, no simulator.
+#   monte-carlo-record            sim/ldo-cmos5l-monte-carlo records
+#                                 reproduce from their raw reports.
+#                                 No PDK, no simulator.
+#   enable-record                 sim/ldo-cmos5l-enable records reproduce
+#                                 from their raw reports. No PDK, no simulator.
 #
-# (design/netlist.py's own module docstring documents exactly what this
-# verifies: the committed design/netlist/*.spice reproduce byte-for-byte
-# from design/*.sch, xschem's own ERC is clean, and the ldo_core pinout /
-# symbol-vs-schematic invariants hold.)
+# So, unlike 2AMLogic/gf180-ldo's ci.yml -- which splits a PDK-free
+# `harness-selftest` job from a PDK-backed `pvt-smoke` job gated to schedule/
+# workflow_dispatch/an opt-in PR label -- the PDK-backed jobs here (netlist-
+# check, pass-device-screening-check) are NOT gated: `design/netlist.py
+# --check` inherently needs xschem plus a real PDK install (it re-runs the
+# xschem export and diffs the result), and gating it would mean CI checks
+# nothing on an ordinary PR (a schematic edit that forgets to re-run the
+# export, or that breaks ERC, should fail loudly on the PR that introduces
+# it, not wait for a nightly job). The PDK-free tier is the last four jobs
+# above. The IHP-Open-PDK fetch (~350 MB, pinned to v0.3.0,
+# checksum-verified by 2AMLogic/klayout-tools' own fetch script) is cached
+# across runs via actions/cache to keep the steady-state cost low.
 #
-# Unlike 2AMLogic/gf180-ldo's ci.yml -- which splits a PDK-free
-# `harness-selftest` job (runs on every push/PR) from a PDK-backed
-# `pvt-smoke` job (gated to schedule/workflow_dispatch/an opt-in PR label,
-# see 2AMLogic/gf180-ldo's own ci.yml) -- this repo has no PDK-free tier to
-# split off: `design/netlist.py --check` inherently needs xschem plus a real
-# ihp-sg13g2 install to do anything at all (it re-runs the xschem export and
-# diffs the result), and no sim/ harness exists yet (sim/ is still an empty
-# placeholder -- see sim/README.md). So the check below runs on every push
-# to main and every pull request, not gated: gating it would mean CI checks
-# nothing on an ordinary PR, which defeats this issue's whole point (a
-# schematic edit that forgets to re-run the export, or that breaks ERC,
-# should fail loudly on the PR that introduces it, not wait for a nightly
-# job). The IHP-Open-PDK fetch (~350 MB, pinned to v0.3.0, checksum-verified
-# by 2AMLogic/klayout-tools' own fetch script) is cached across runs via
-# actions/cache to keep the steady-state cost low.
+# The ihp-sg13cmos5l PDK (a separate upstream repo, pinned to a commit and
+# checksum-verified by klayout-tools' fetch-ihp-sg13cmos5l.sh, which
+# exists from klayout-tools v0.6.0) is fetched only by netlist-check. Its
+# xschem MOS symbols and HV model cards are relative symlinks into the
+# sibling ihp-sg13g2 install, so both must sit under the same PDK_ROOT;
+# the fetch script refuses to run without the sibling. ihp-sg13g2 alone does
+# not suffice: `--design sg13cmos5l` resolves its symbols against
+# ihp-sg13cmos5l (design/netlist.py's DESIGNS table).
 #
-# sim/ now has one landed deck (sim/pass-device-screening/, issue #13): the
-# `pass-device-screening-check` job below runs its `run_sweep.sh --check-env`
-# mode -- a syntax check of one generated netlist per bench via `ngspice -b`,
-# NOT the full 120-point corner sweep. Per sim/README.md "CI: syntax/
-# --check-env only, never a records/ entry": CI checks that the deck still
-# parses; it never mints append-only evidence. That stays a human/agent
-# action run locally against a real PDK + OSDI install (sim/pass-device-
-# screening/README.md "Cold-start reproduction").
+# sim/ pass-device-screening (issue #13): CI runs only its
+# `run_sweep.sh --check-env` mode -- a syntax check of one generated netlist
+# per bench via `ngspice -b`, NOT the full 120-point corner sweep. Per
+# sim/README.md "CI: syntax/--check-env only, never a records/ entry": CI
+# checks that the deck still parses; it never mints append-only evidence.
+# Corner/Monte Carlo sweeps are run locally or on the batch fleet against a
+# real PDK + OSDI install, and their committed records are re-verified
+# offline by the PDK-free jobs above.
 #
-# signoff/ now carries this block's klt signoff manifest and its committed
-# T1 tier report (issue #44): the `signoff-t1-report` job below re-grades
-# that report from the manifest with a pinned `klt` build and fails on any
-# drift -- the anti-rot gate that keeps the manifest's pinned content-hash
-# citations honest as the evidence under layout/ moves. See signoff/README.md
-# for the full contract (exit-code semantics, pinned-build pinning, the claim
-# disclosures the grader cannot make on our behalf).
+# signoff/ carries this block's klt signoff manifest and its committed T1
+# tier report (issue #44): the `signoff-t1-report` job is the anti-rot gate
+# that keeps the manifest's pinned content-hash citations honest as the
+# evidence under layout/ moves. See signoff/README.md for the full contract
+# (exit-code semantics, pinned-build pinning, the claim disclosures the
+# grader cannot make on our behalf).
 #
 # Explicitly excluded from CI (not "checks" yet, so nothing to wire up):
 #   - No linter/formatter is configured for this repo yet (package.json's
@@ -88,7 +110,13 @@ env:
   # from, so a future klayout-tools change can't silently alter this repo's
   # CI. Bump deliberately, alongside IHP_OPEN_PDK_VERSION above if the two
   # move together.
-  KLAYOUT_TOOLS_REF: "v0.3.0"
+  KLAYOUT_TOOLS_REF: "v0.7.0"
+  # ihp-sg13cmos5l commit that scripts/fetch-ihp-sg13cmos5l.sh (klayout-tools
+  # v0.7.0) pins; only used in netlist-check's cache key. Keep in sync with
+  # that script's IHP_SG13CMOS5L_COMMIT (and the PDK recorded in
+  # sim/ldo-cmos5l-monte-carlo records). v0.7.0's ihp-sg13g2 fetch script
+  # differs from v0.3.0's only in comments (same 0.3.0 tarball + checksum).
+  IHP_SG13CMOS5L_COMMIT: "607e18d4bd9214a52575c194b4181ef449f9252f"
   # Pin the klt build that grades signoff/sg13g2-ldo.json (#44). The
   # item-11 (power delivery) grading rules, the "erc" evidence kind, and
   # input-artifact verification (citation `input_verified`, which re-hashes
@@ -110,7 +138,7 @@ env:
 
 jobs:
   netlist-check:
-    name: design/netlist.py --check (xschem + ihp-sg13g2 PDK)
+    name: design/netlist.py --check (xschem + ihp-sg13g2 + ihp-sg13cmos5l PDKs)
     runs-on: ubuntu-latest
     steps:
       - name: Check out sg13g2-ldo
@@ -151,16 +179,27 @@ jobs:
         uses: actions/cache@v4
         with:
           path: klayout-tools/pdks/ihp-open-pdk
-          key: ihp-open-pdk-v${{ env.IHP_OPEN_PDK_VERSION }}
+          key: ihp-open-pdk-v${{ env.IHP_OPEN_PDK_VERSION }}-cmos5l-${{ env.IHP_SG13CMOS5L_COMMIT }}
 
       - name: Fetch ihp-sg13g2 PDK (IHP-Open-PDK, pinned + checksum-verified)
         run: klayout-tools/scripts/fetch-ihp-sg13g2.sh
 
-      - name: design/netlist.py --check
+      - name: Fetch ihp-sg13cmos5l PDK (pinned commit + checksum-verified; needs the ihp-sg13g2 sibling above)
+        run: klayout-tools/scripts/fetch-ihp-sg13cmos5l.sh
+
+      - name: design/netlist.py --check (default SG13G2 design)
         env:
           PDK_ROOT: ${{ github.workspace }}/klayout-tools/pdks/ihp-open-pdk
           PDK: ihp-sg13g2
         run: python3 design/netlist.py --check -v
+
+      - name: design/netlist.py --design sg13cmos5l --check (the design T1 evidence attests)
+        # The design is selected by --design; its variant (ihp-sg13cmos5l)
+        # is authoritative over PDK, which is set only for symmetry.
+        env:
+          PDK_ROOT: ${{ github.workspace }}/klayout-tools/pdks/ihp-open-pdk
+          PDK: ihp-sg13cmos5l
+        run: python3 design/netlist.py --design sg13cmos5l --check -v
 
   pass-device-screening-check:
     name: sim/pass-device-screening run_sweep.sh --check-env (ngspice + ihp-sg13g2 PDK)
