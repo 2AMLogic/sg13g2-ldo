@@ -271,6 +271,12 @@ below.
 | `VSS`   | inout | Ground |
 | `VREF`  | in    | External reference input — no on-chip bandgap (DR-0002) |
 | `IBIAS` | inout | External bias-current input — **new on this branch**, see below |
+| `EN`    | in    | Active-high enable, **added by issue #67** (DR-0008): `EN` = `VIN` regulates, `EN` low holds the pass device off |
+
+`EN` drives only `Men`, an `sg13_hv_pmos` pull-up from `EAOUT` to `VIN`
+(DR-0008). The list is now six wide; the SG13G2 branch keeps its four-port
+invariant. The EN-bearing design has **schematic-level evidence only** — its
+layout/DRC/LVS belongs to #68, and the older reports are for the older hash.
 
 `ldo_erramp_cmos5l` pinout: `INP INN OUT VDD VSS IBIAS`. `VDD` and `IBIAS`
 are the two pins the SG13G2 branch's ideal-VCVS placeholder did not need
@@ -753,8 +759,10 @@ five wide, not four:
 
 ```spice
 .include design/sg13cmos5l/netlist/ldo_core_cmos5l.spice
-Xdut VIN VOUT VSS VREF IBIAS ldo_core_cmos5l
+Xdut VIN VOUT VSS VREF IBIAS EN ldo_core_cmos5l
 ```
+
+(six ports since issue #67; tie `EN` to `VIN` for normal regulation.)
 
 A testbench for that branch must also sink a bias current out of `IBIAS`
 (see ["Error amplifier"](#error-amplifier-1) under "SG13CMOS5L branch") —

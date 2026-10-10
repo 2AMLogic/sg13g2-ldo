@@ -1,0 +1,26 @@
+* sg13g2-ldo -- SG13CMOS5L enable-interface smoke deck (issue #67, DR-0008).
+* A klt-sim CIRCUIT BODY (klt sim adds the corner .lib, .temp and the analysis).
+* SCHEMATIC-LEVEL evidence only: no layout/DRC/LVS exists for the EN-bearing
+* design (that is #68). Single corner tt / 27 C; not a PVT sweep.
+.include "runner-preamble.cir"
+.include "../../design/sg13cmos5l/netlist/ldo_core_cmos5l.spice"
+
+* AC stand-in for cap_cmomi: the OSDI model is not in the fleet runner image
+* (and the local ngspice 42 cannot load this PDK's v0.4 OSDI at all), so Cc
+* is replaced by a LINEAR 5.47 pF capacitor -- the low-frequency value the
+* design's own header gives for w=170u l=30u (cap_cmomi.va, ~5.47 pF). The
+* SAME stand-in is used for the pre-#67 baseline and the EN design, so the
+* new-vs-baseline DELTA is like-for-like; the absolute numbers are NOT
+* comparable to sim/ldo-cmos5l-pvt-sweep records (which use the real model).
+.param none=0 same=1 double=2
+.subckt cap_cmomi PLUS MINUS w=5e-6 l=5e-6 mmin=1 mmax=4 feed=double subblock=0 mm_ok=1
+Cdc PLUS MINUS 5.47p
+.ends cap_cmomi
+
+Vin VIN 0 dc 3.30 ac 1
+Vref VREF 0 dc 0.90 ac 0
+Ibias IBIAS 0 dc 2u
+Iload VOUT 0 dc 0.001
+Cout VOUT 0 1u
+Een EN 0 VIN 0 1
+Xtop VIN VOUT 0 VREF IBIAS EN ldo_core_cmos5l

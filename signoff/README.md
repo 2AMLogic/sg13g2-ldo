@@ -9,11 +9,15 @@ the way a hand-read checklist does.
 | File | What it is |
 | --- | --- |
 | `sg13g2-ldo.json` | The **block manifest** for `klt signoff --manifest`: `block: sg13g2-ldo`, `kind: analog`, and one pinned evidence citation per T1 item this repo can honestly cite. |
-| `sg13g2-ldo.t1-report.json` | The **verdict of record**: the exact `klt signoff --manifest sg13g2-ldo.json --format json` output, committed. `t1_item_count: 11, t1_met_count: 8, tier: null` — this block is **not T1 yet**, and the report says so per item with a `reason`. |
+| `sg13g2-ldo.t1-report.json` | The **verdict of record**: the exact `klt signoff --manifest sg13g2-ldo.json --format json` output, committed. `t1_item_count: 11, t1_met_count: 7, tier: null` — this block is **not T1 yet**, and the report says so per item with a `reason`. |
 
 ## Reading the report
 
-Today's honest read is **8/11 met** (items 1, 2, 3, 4, 8, 9, 10, 11):
+Today's honest read is **7/11 met** (items 1, 2, 3, 4, 9, 10, 11). **Item 8 went from `met` to `unmet` (`check_failed`) in issue #67**: that change appended an `EN` port and two devices to `design/sg13cmos5l/netlist/ldo_core_cmos5l.spice`, so the selected PVT record is no longer current against the design and the characterization envelope correctly reports `fail` (`stale_against_design`) until a new full-grid record is selected. The 45-point sweep was **not** re-run for the EN-bearing design; only a one-corner smoke check exists (`sim/ldo-cmos5l-enable/`, DR-0008).
+
+**Items 3, 4 and 11 are historical for the EN change.** The DRC/LVS/ERC reports still pin the committed GDS and the netlist extracted from it, both unchanged, so they still grade `met` for *those* hashes. They say nothing about the EN-bearing schematic: the layout has no `EN` pin or enable devices (that is #68), and no current-design claim or fresh signoff citation is made from them. Item 1 and 9 attest source/testbench freshness only (see below).
+
+Previous read, before #67: 8/11 met (items 1, 2, 3, 4, 8, 9, 10, 11):
 
 - **met — item 3 (DRC clean)**: `layout/sg13cmos5l-ldo_core_cmos5l/drc_report.json`, `status: clean`, 0 violations, citation verified against the committed GDS (`input_verified: true`).
 - **met — item 4 (LVS clean)**: `layout/sg13cmos5l-ldo_core_cmos5l/lvs_report.json`, `status: match`, 0 errors / 0 mismatches, citation verified against the committed extracted netlist it compared.

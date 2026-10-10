@@ -13,6 +13,122 @@
       "sha256": "sha256:9d0143947c289cf364d295a3681752f406e1fe13f7c16cbc5a1f87a332aef472"
     },
     {
+      "path": "sim/ldo-cmos5l-enable/README.md",
+      "sha256": "sha256:dd3d2329d52e1cd2f77c7d44a3ce6aeb49ccd5271031d43013db8bf2baa2073b"
+    },
+    {
+      "path": "sim/ldo-cmos5l-enable/baseline/ldo_core_cmos5l.pre-67.spice",
+      "sha256": "sha256:c6e630e92fe012d16adf71229c99b52d8eb6cc4b85fffbb891108930acf11041"
+    },
+    {
+      "path": "sim/ldo-cmos5l-enable/derive.py",
+      "sha256": "sha256:b84c85b334f211a03d582170dc05f6a431ddf9b4e1c787c8cef2d0c8e3c45969"
+    },
+    {
+      "path": "sim/ldo-cmos5l-enable/enable-corners.lib",
+      "sha256": "sha256:b44965af00a30c57f35ec5ef3f7cab867381aa989ebe85a83d1aad9b6e05db00"
+    },
+    {
+      "path": "sim/ldo-cmos5l-enable/request-baseline-loopgain.json",
+      "sha256": "sha256:9f9fc5fa34ee3e92b5e6fed01de260344d621cd7a3657069dee61c8dbd8c209f"
+    },
+    {
+      "path": "sim/ldo-cmos5l-enable/request-baseline-psrr.json",
+      "sha256": "sha256:7b9ddfdd2bc5ed5ad9908eaa2c3050f6b4db1a193e8450949ec14b014bda1f36"
+    },
+    {
+      "path": "sim/ldo-cmos5l-enable/request-baseline-reg.json",
+      "sha256": "sha256:72e684a4817df0ddfeb100dd99939ce9ad390063661121933cce5e7c004acf23"
+    },
+    {
+      "path": "sim/ldo-cmos5l-enable/request-disabled-reg.json",
+      "sha256": "sha256:c24b551eac629bda9dc77bcfd53329a1bf097e03fc947106029d62338b1b9fba"
+    },
+    {
+      "path": "sim/ldo-cmos5l-enable/request-disabled-rload.json",
+      "sha256": "sha256:136ecd68153a80f8cd1f3af11bd0296299432b19cf6b4fb4e4e638f22f962383"
+    },
+    {
+      "path": "sim/ldo-cmos5l-enable/request-enable-ensweep.json",
+      "sha256": "sha256:2e87c24007be13cced81054bdb92cd9d5a6fd0edadec7a9dbf77f08c0c48f35e"
+    },
+    {
+      "path": "sim/ldo-cmos5l-enable/request-enable-leak.json",
+      "sha256": "sha256:55441fd6f51511dca1d7c6ddbaf41a48ac1c066874cae7694e3f18c36c74dbee"
+    },
+    {
+      "path": "sim/ldo-cmos5l-enable/request-enable-loopgain.json",
+      "sha256": "sha256:baefae7e5f50fe5cbc16f8e6985866bdb0fd7c888b61c71a50f55b92642e2299"
+    },
+    {
+      "path": "sim/ldo-cmos5l-enable/request-enable-psrr.json",
+      "sha256": "sha256:2e2729d3bbf2f25f1c65453a298d570bae7114aa5042262fbb34c73fefcb3683"
+    },
+    {
+      "path": "sim/ldo-cmos5l-enable/request-enable-reg.json",
+      "sha256": "sha256:0fedbd2e4afc43be3619af93cfc936549575b76000af65a2988b576121107d54"
+    },
+    {
+      "path": "sim/ldo-cmos5l-enable/request-enable-rload.json",
+      "sha256": "sha256:a848aaec59aca7cf8f212bbb02bc68ee6b368a110e1025396a3d54f1fce15b5e"
+    },
+    {
+      "path": "sim/ldo-cmos5l-enable/run_smoke.sh",
+      "sha256": "sha256:5fd2b7a3cb16c9db47cc11d108e334e60d6d6653ae1747dec45cfce54bfae18f"
+    },
+    {
+      "path": "sim/ldo-cmos5l-enable/runner-preamble.cir",
+      "sha256": "sha256:24a2581f33183c67a7cb530519c44b8637cd339e28ce753aff0e48303a53e4bf"
+    },
+    {
+      "path": "sim/ldo-cmos5l-enable/summarize.py",
+      "sha256": "sha256:0c98716c1978b3ec78e0dc63b464e411ee3922f92f7ef5687b4083946a44b1ce"
+    },
+    {
+      "path": "sim/ldo-cmos5l-enable/tb_baseline_reg.spice",
+      "sha256": "sha256:9145aed8d123877f3ebabee58b294b9f9fc8927b8441317ebc4030c9a829fc5b"
+    },
+    {
+      "path": "sim/ldo-cmos5l-enable/tb_disabled_leak.spice",
+      "sha256": "sha256:b369e275b31f1afe220f8da4aafe714d732f39dc49e8b0656c740be75710e90a"
+    },
+    {
+      "path": "sim/ldo-cmos5l-enable/tb_disabled_reg.spice",
+      "sha256": "sha256:d8f39930330e642b45c96f740505411a526d3819ac79a918bcf515f00dded4ef"
+    },
+    {
+      "path": "sim/ldo-cmos5l-enable/tb_disabled_rload.spice",
+      "sha256": "sha256:74c849f22087205b6de25690225c338a097b8ad7d46515f6d697864347cbb867"
+    },
+    {
+      "path": "sim/ldo-cmos5l-enable/tb_enable_ensweep.spice",
+      "sha256": "sha256:74c849f22087205b6de25690225c338a097b8ad7d46515f6d697864347cbb867"
+    },
+    {
+      "path": "sim/ldo-cmos5l-enable/tb_enable_reg.spice",
+      "sha256": "sha256:87008702fe516790fefb78b9ef3395e7e151c9d7259e25a67ca21e39c8eb411f"
+    },
+    {
+      "path": "sim/ldo-cmos5l-enable/tb_enable_rload.spice",
+      "sha256": "sha256:0261dd7fcf7975ce78561902846d78b3db5909fd9db75bb7486c14c38d37ae0e"
+    },
+    {
+      "path": "sim/ldo-cmos5l-enable/tb_loopgain_baseline.spice",
+      "sha256": "sha256:2ee7dacdcea08992e1d3b5c46088ec50e0a649e79b34e71875efbda8208915b8"
+    },
+    {
+      "path": "sim/ldo-cmos5l-enable/tb_loopgain_en.spice",
+      "sha256": "sha256:84a0bf9d23e9080094506a198b0e5e3ac37427efaa5e02db7e0ad9ba6e2e99dc"
+    },
+    {
+      "path": "sim/ldo-cmos5l-enable/tb_psrr_baseline.spice",
+      "sha256": "sha256:3bd7fbc3dd1a97e7cb9a5fba89b33b5dae288cbc030c965edb499361d2138ae6"
+    },
+    {
+      "path": "sim/ldo-cmos5l-enable/tb_psrr_en.spice",
+      "sha256": "sha256:6a3ac3c82cd16b6143eb411e51774aebf9932d601402531eedd8141ea89db211"
+    },
+    {
       "path": "sim/ldo-cmos5l-monte-carlo/README.md",
       "sha256": "sha256:3b44a57319e69055a4d9683a70be54205c5bae9f18f4ba5aa6ca7ae9c95c9e28"
     },
@@ -58,19 +174,19 @@
     },
     {
       "path": "sim/ldo-cmos5l-pvt-sweep/run_sweep.sh",
-      "sha256": "sha256:28da570feabf8e6cd9af2241272e2150a071ffced7b731e65c31572dc1d47317"
+      "sha256": "sha256:b0b46da5e2ac95d60ff8f1a871eb85964e4e0aada2c8e1c653ce728e5798d3ee"
     },
     {
       "path": "sim/ldo-cmos5l-pvt-sweep/testbench/tb_dcsweep_cmos5l.spice.tmpl",
-      "sha256": "sha256:cf29db82d315bc79989f252bca398e986312208f082e3f1a4e1035f91b0d3a45"
+      "sha256": "sha256:a6aea39e08bcc42a10f9b6db53e844fdf26063e3370dc8c006f8ad35754aae7c"
     },
     {
       "path": "sim/ldo-cmos5l-pvt-sweep/testbench/tb_loopgain_cmos5l.spice.tmpl",
-      "sha256": "sha256:c810e65fc7a758ac18760a157d9eda0938171497a8df0cfec275ec6a4478fc15"
+      "sha256": "sha256:98f7286b26af72cb6e031c65b8929325ea24c6a1d37fb94043b3ec7cf47e3b3d"
     },
     {
       "path": "sim/ldo-cmos5l-pvt-sweep/testbench/tb_psrr_cmos5l.spice.tmpl",
-      "sha256": "sha256:4d621e0d769d4b5b0dff212886d44e32205b2936c8f42de60603efe3d8a92025"
+      "sha256": "sha256:95612a8df6d4f59f30b21dce89fab43aa0322f78a08a27b321df0d942041d9eb"
     },
     {
       "path": "sim/pass-device-screening/README.md",

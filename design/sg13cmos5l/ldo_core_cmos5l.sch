@@ -200,14 +200,32 @@ v {xschem version=3.4.7 file_version=1.3
 * an on-block bias device. #20 owns that interface change"). The choice of
 * an external current input over a voltage bias or an on-block self-bias
 * is this phase's judgement call and is argued in ldo_erramp_cmos5l.sch's
-* header. Port order is VIN VOUT VSS VREF IBIAS -- the SG13G2 list with
-* IBIAS appended, so the shared four keep their positions.
+* header. Port order is VIN VOUT VSS VREF IBIAS EN -- the SG13G2 list with
+* IBIAS (and, since #67, EN) appended, so the shared four keep their positions.
 *
-* NO EN, NO CURRENT LIMIT, NO SOFT START, NO OUTPUT CAP, NO LOAD. Same
-* scope boundary as the SG13G2 branch; nothing in this increment is
-* simulated. xschem's own ERC (design/netlist.py --design sg13cmos5l
-* --check) is the only verification performed here. PVT verification is
-* phase 3 (#21); layout/DRC/LVS is phase 4 (#22).
+* EN (issue #67, spec/decision-records/DR-0008-sg13cmos5l-enable-interface.md).
+* EN is a sixth, active-high port appended after IBIAS (VIN VOUT VSS VREF
+* IBIAS EN). Two sg13_hv_pmos devices, both source/body VIN and gate EN, so
+* both are OFF when EN = VIN (regulating) and ON when EN is low:
+*   Men   (drain EAOUT) -- holds Mpass's gate at VIN, i.e. Vsg(Mpass) ~ 0,
+*         independent of whatever the error amplifier is driving;
+*   Mbdis (drain IBIAS) -- pulls the amplifier's bias-mirror node to VIN,
+*         which turns off every mirror PMOS (tail, second-stage load) so the
+*         amplifier stops conducting and cannot fight Men.
+* Both are needed: with Men alone the loop (VOUT = 0 -> FB < VREF) drives
+* EAOUT low through Mn3 and the pull-up sinks that current (measured ~1.1 mA
+* of supply current while disabled, see DR-0008); with the bias cut alone
+* EAOUT floats. Disabling the OTA alone is NOT relied on to turn the pass
+* device off. EN swings 0..VIN only (VIN-domain; a 1.2 V EN needs a level
+* shifter that is not part of this change). The external IBIAS sink is still
+* serviced while disabled (through Mbdis, ~IBIAS from VIN). No output
+* discharge and no soft start are included. Valid levels, bias handling,
+* stress and the off-state leakage measurement conditions: DR-0008.
+*
+* NO CURRENT LIMIT, NO SOFT START, NO OUTPUT CAP, NO LOAD. Same scope
+* boundary as the SG13G2 branch. Verification of the EN change is
+* schematic-level only (see DR-0008); no layout/DRC/LVS exists for it
+* (#68). PVT verification is phase 3 (#21); layout/DRC/LVS is phase 4 (#22).
 *
 * MoM-CAP CAVEAT INHERITED FROM THE AMPLIFIER: the compensation cap inside
 * Xamp is a MoM cap (this PDK forbids MIM), and MoM caps are not validated
@@ -256,3 +274,22 @@ C {iopin.sym} -200 200 0 0 {name=p2 lab=VOUT}
 C {iopin.sym} -200 300 0 0 {name=p3 lab=VSS}
 C {ipin.sym} -200 400 0 0 {name=p4 lab=VREF}
 C {iopin.sym} -200 500 0 0 {name=p5 lab=IBIAS}
+C {ipin.sym} -200 600 0 0 {name=p6 lab=EN}
+C {sg13cmos5l_pr/sg13_hv_pmos.sym} 650 200 0 0 {name=Men model=sg13_hv_pmos w=40u l=0.5u ng=1 m=1}
+N 670 170 670 110 {}
+C {lab_pin.sym} 670 110 0 0 {name=l15 lab=VIN}
+N 670 230 670 290 {}
+C {lab_pin.sym} 670 290 0 0 {name=l16 lab=EAOUT}
+N 630 200 570 200 {}
+C {lab_pin.sym} 570 200 0 0 {name=l17 lab=EN}
+N 670 200 740 200 {}
+C {lab_pin.sym} 740 200 0 0 {name=l18 lab=VIN}
+C {sg13cmos5l_pr/sg13_hv_pmos.sym} 650 450 0 0 {name=Mbdis model=sg13_hv_pmos w=5u l=0.5u ng=1 m=1}
+N 670 420 670 360 {}
+C {lab_pin.sym} 670 360 0 0 {name=l19 lab=VIN}
+N 670 480 670 540 {}
+C {lab_pin.sym} 670 540 0 0 {name=l20 lab=IBIAS}
+N 630 450 570 450 {}
+C {lab_pin.sym} 570 450 0 0 {name=l21 lab=EN}
+N 670 450 740 450 {}
+C {lab_pin.sym} 740 450 0 0 {name=l22 lab=VIN}

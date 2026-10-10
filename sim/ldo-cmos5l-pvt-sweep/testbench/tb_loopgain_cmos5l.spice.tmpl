@@ -20,8 +20,8 @@
 * feedback-divider node that drives the amplifier's INP pin (a MOSFET gate:
 * zero DC/AC current draw both before and after the break, so the break
 * does not perturb the original DC operating point -- see README.md for
-* the full derivation of why this is valid here). The XMpass/XRtop/XRbot/Xamp
-* instantiation lines below are reproduced VERBATIM from
+* the full derivation of why this is valid here). The XMpass/XRtop/XRbot/Xamp/XMen/XMbdis
+* (XMen, XMbdis: enable pull-ups, issue #67) instantiation lines below are reproduced VERBATIM from
 * design/sg13cmos5l/netlist/ldo_core_cmos5l.spice's ldo_core_cmos5l subckt
 * body (only FB -> FBAMP on Xamp's first pin, plus the inserted Vbreak,
 * differ) -- run_sweep.sh asserts this file's copy still matches the
@@ -45,6 +45,12 @@
 * DC, rolling toward -180 degrees at the unity-gain crossover -- the
 * standard Bode-plot convention phase margin = 180 + phase(L) at the
 * frequency where |L|=1 (0dB) is stated against).
+
+* ENABLE (issue #67, DR-0008): ldo_core_cmos5l has a sixth, active-high EN port.
+* This bench ties EN to VIN (enabled), so it measures the regulating
+* state. Numerical identity with pre-#67 records is NOT promised (Men adds
+* a device); schematic-level evidence only -- no layout/LVS exists for the
+* EN-bearing design until #68.
 
 .lib "@@PDK_ROOT@@/@@PDK@@/libs.tech/ngspice/models/cornerMOShv.lib" @@MOS_SECTION@@
 .lib "@@PDK_ROOT@@/@@PDK@@/libs.tech/ngspice/models/cornerRES.lib" @@RES_SECTION@@
@@ -72,6 +78,11 @@ XRtop VOUT FB VSS rhigh w=1e-6 l=25.43e-6 m=1 b=7
 XRbot FB VSS VSS rhigh w=1e-6 l=25.43e-6 m=1 b=7
 Vbreak FB FBAMP 0 ac 1
 Xamp FBAMP VREF EAOUT VIN VSS IBIAS ldo_erramp_cmos5l
+XMen EAOUT EN VIN VIN sg13_hv_pmos w=40u l=0.5u ng=1 m=1
+XMbdis IBIAS EN VIN VIN sg13_hv_pmos w=5u l=0.5u ng=1 m=1
+* EN tied to VIN (enabled): Men's and Mbdis's gates sit at VIN, so both are
+* off and contribute only drain junction/overlap loading (EAOUT, IBIAS).
+Ven EN VIN dc 0
 
 .control
 pre_osdi @@OSDI_DIR@@/psp103.osdi

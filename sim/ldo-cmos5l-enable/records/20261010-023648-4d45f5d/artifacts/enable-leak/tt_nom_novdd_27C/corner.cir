@@ -1,0 +1,24 @@
+* klt sim -- generated corner deck, do not edit
+.lib /var/tmp/eda-job-klt-sim-b6aeb9f71746/inputs/enable-corners.lib tt_nom
+.include /var/tmp/eda-job-klt-sim-b6aeb9f71746/inputs/netlist.cir
+.temp 27
+.meas dc ileak_pass_2p97 FIND par('i(vclamp)') AT=2.97
+.meas dc isup_2p97 FIND par('-i(vin)') AT=2.97
+.meas dc eaout_2p97 FIND v(xtop.eaout) AT=2.97
+.meas dc vsg_pass_2p97 FIND par('v(vin)-v(xtop.eaout)') AT=2.97
+.meas dc vsg_men_2p97 FIND par('v(vin)-v(en)') AT=2.97
+.meas dc ileak_pass_3p30 FIND par('i(vclamp)') AT=3.3
+.meas dc isup_3p30 FIND par('-i(vin)') AT=3.3
+.meas dc eaout_3p30 FIND v(xtop.eaout) AT=3.3
+.meas dc vsg_pass_3p30 FIND par('v(vin)-v(xtop.eaout)') AT=3.3
+.meas dc vsg_men_3p30 FIND par('v(vin)-v(en)') AT=3.3
+.meas dc ileak_pass_3p63 FIND par('i(vclamp)') AT=3.63
+.meas dc isup_3p63 FIND par('-i(vin)') AT=3.63
+.meas dc eaout_3p63 FIND v(xtop.eaout) AT=3.63
+.meas dc vsg_pass_3p63 FIND par('v(vin)-v(xtop.eaout)') AT=3.63
+.meas dc vsg_men_3p63 FIND par('v(vin)-v(en)') AT=3.63
+.control
+dc Vin 2.00 3.64 0.01
+quit
+.endc
+.end

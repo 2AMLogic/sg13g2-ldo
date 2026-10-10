@@ -24,6 +24,12 @@
 * "Judgement calls" section 1 assumes (tail=2x, second stage=4x that
 * reference).
 *
+* ENABLE (issue #67, DR-0008): ldo_core_cmos5l has a sixth, active-high EN port.
+* This bench ties EN to VIN (enabled), so it measures the regulating
+* state. Numerical identity with pre-#67 records is NOT promised (Men adds
+* a device); schematic-level evidence only -- no layout/LVS exists for the
+* EN-bearing design until #68.
+*
 * Nested DC sweep: Vin (fast/inner variable, 2.00V..3.63V step 10mV) x
 * Iload (slow/outer variable, 0/12.5m/25m/37.5m/50m A, 5 evenly-spaced
 * points spanning the spec's 0-50mA window -- ngspice's nested .dc does not
@@ -69,7 +75,8 @@ Ibias IBIAS 0 dc 2u
 Iload VOUT 0 dc 0
 Cout VOUT 0 1u
 
-Xtop VIN VOUT 0 VREF IBIAS ldo_core_cmos5l
+* EN tied to VIN (enabled; tracks the swept supply).
+Xtop VIN VOUT 0 VREF IBIAS VIN ldo_core_cmos5l
 
 * --- Feedback-divider standing-current probe (issue #31). ---
 * The divider inside Xtop is now two PDK rhigh instances (issue #28), so

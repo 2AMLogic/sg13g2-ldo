@@ -19,6 +19,12 @@
 * positive rejection number (higher = better), the sign convention
 * README.md's "Target specification" table's PSRR row assumes.
 
+* ENABLE (issue #67, DR-0008): ldo_core_cmos5l has a sixth, active-high EN port.
+* This bench ties EN to VIN (enabled), so it measures the regulating
+* state. Numerical identity with pre-#67 records is NOT promised (Men adds
+* a device); schematic-level evidence only -- no layout/LVS exists for the
+* EN-bearing design until #68.
+
 .lib "@@PDK_ROOT@@/@@PDK@@/libs.tech/ngspice/models/cornerMOShv.lib" @@MOS_SECTION@@
 .lib "@@PDK_ROOT@@/@@PDK@@/libs.tech/ngspice/models/cornerRES.lib" @@RES_SECTION@@
 .lib "@@PDK_ROOT@@/@@PDK@@/libs.tech/ngspice/models/cornerCAP.lib" @@CAP_SECTION@@
@@ -33,7 +39,8 @@ Ibias IBIAS 0 dc 2u
 Iload VOUT 0 dc 0.001
 Cout VOUT 0 1u
 
-Xtop VIN VOUT 0 VREF IBIAS ldo_core_cmos5l
+* EN tied to VIN (enabled).
+Xtop VIN VOUT 0 VREF IBIAS VIN ldo_core_cmos5l
 
 .control
 pre_osdi @@OSDI_DIR@@/psp103.osdi

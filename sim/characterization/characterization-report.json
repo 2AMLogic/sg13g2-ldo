@@ -49,7 +49,7 @@
     {
       "role": "design_netlist_freshness",
       "path": "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice",
-      "sha256": "c6e630e92fe012d16adf71229c99b52d8eb6cc4b85fffbb891108930acf11041",
+      "sha256": "7953b25be4cb00053f8df5f283bee0500f60a826b7a2d6519b88a8578d222cc1",
       "pinned": true
     },
     {
@@ -78,14 +78,14 @@
     }
   ],
   "design_freshness": {
-    "state": "current",
+    "state": "stale_against_design",
     "basis": "DR-0007 'The evidence base': these are the design netlist hashes the selected record was judged current against (the netlist last changed at commit 1a20b30, DR-0005; the record's own git sha does not resolve in this clone and its snapshots .include the design by absolute worktree path, so freshness is established by these pins, not by the record). If either netlist changes, the evidence is classified stale against the design and the envelope verdict becomes fail until a new record is selected.",
     "pins": [
       {
         "path": "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice",
         "pinned_sha256": "c6e630e92fe012d16adf71229c99b52d8eb6cc4b85fffbb891108930acf11041",
-        "actual_sha256": "c6e630e92fe012d16adf71229c99b52d8eb6cc4b85fffbb891108930acf11041",
-        "matches": true
+        "actual_sha256": "7953b25be4cb00053f8df5f283bee0500f60a826b7a2d6519b88a8578d222cc1",
+        "matches": false
       },
       {
         "path": "design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice",
@@ -181,7 +181,7 @@
         "record": "spec/decision-records/DR-0007-target-spec-row-ratification.md"
       },
       "verdict": "pass_partial_coverage",
-      "evidence_state": "current",
+      "evidence_state": "stale_against_design",
       "coverage": {
         "state": "partial",
         "gaps": [
@@ -269,7 +269,7 @@
         "record": "spec/decision-records/DR-0007-target-spec-row-ratification.md"
       },
       "verdict": "pass_partial_coverage",
-      "evidence_state": "current",
+      "evidence_state": "stale_against_design",
       "coverage": {
         "state": "partial",
         "gaps": [
@@ -361,7 +361,7 @@
         "record": "spec/decision-records/DR-0007-target-spec-row-ratification.md"
       },
       "verdict": "pass_full_coverage",
-      "evidence_state": "current",
+      "evidence_state": "stale_against_design",
       "coverage": {
         "state": "full",
         "gaps": []
@@ -416,7 +416,7 @@
         "record": "spec/decision-records/DR-0007-target-spec-row-ratification.md"
       },
       "verdict": "pass_partial_coverage",
-      "evidence_state": "current",
+      "evidence_state": "stale_against_design",
       "coverage": {
         "state": "partial",
         "gaps": [
@@ -501,7 +501,7 @@
         "record": "spec/decision-records/DR-0007-target-spec-row-ratification.md"
       },
       "verdict": "pass_partial_coverage",
-      "evidence_state": "current",
+      "evidence_state": "stale_against_design",
       "coverage": {
         "state": "partial",
         "gaps": [
@@ -587,7 +587,7 @@
         "record": "spec/decision-records/DR-0007-target-spec-row-ratification.md"
       },
       "verdict": "pass_partial_coverage",
-      "evidence_state": "current_partial_superseded_other_half",
+      "evidence_state": "stale_against_design",
       "coverage": {
         "state": "partial",
         "gaps": [
@@ -720,7 +720,7 @@
         "record": "spec/decision-records/DR-0007-target-spec-row-ratification.md"
       },
       "verdict": "ambiguous",
-      "evidence_state": "current",
+      "evidence_state": "stale_against_design",
       "coverage": {
         "state": "partial",
         "gaps": [
@@ -920,7 +920,7 @@
     ]
   },
   "completeness": {
-    "status": "complete",
+    "status": "incomplete",
     "checks": [
       {
         "check": "all selected records exist and match their sha256 pins",
@@ -959,8 +959,8 @@
       },
       {
         "check": "selected record is current against the design netlists",
-        "ok": true,
-        "detail": "design netlist hashes match the freshness pins"
+        "ok": false,
+        "detail": "design netlist changed since the selected record: select a newer record"
       }
     ],
     "meaning": "Artifact completeness/freshness only -- NOT circuit spec compliance."

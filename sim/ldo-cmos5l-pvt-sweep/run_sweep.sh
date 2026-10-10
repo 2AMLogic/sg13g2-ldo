@@ -85,9 +85,11 @@
 set -euo pipefail
 
 CHECK_ENV=0
+CHECK_GUARD=0
 for arg in "$@"; do
   case "${arg}" in
     --check-env) CHECK_ENV=1 ;;
+    --check-topology-guard) CHECK_GUARD=1 ;;
     -h|--help) sed -n '2,40p' "${BASH_SOURCE[0]}"; exit 0 ;;
     *) echo "run_sweep.sh: unknown argument '${arg}'" >&2; exit 2 ;;
   esac
@@ -96,6 +98,124 @@ done
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SIM_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 REPO_ROOT="$(cd "${SIM_DIR}/.." && pwd)"
+
+DESIGN_NETLIST="${REPO_ROOT}/design/sg13cmos5l/netlist/ldo_core_cmos5l.spice"
+
+# --- Sync-check: tb_loopgain_cmos5l.spice.tmpl flattens ldo_core_cmos5l one
+# level (to insert the loop-gain break at FB, a high-impedance node -- see
+# that template's header for the full derivation) by hand-mirroring its
+# XMpass/XRtop/XRbot/Xamp/XMen/XMbdis instantiation lines (XMen, XMbdis:
+# the enable pull-ups, issue #67). If a future schematic edit changes that connectivity,
+# this bench would silently go stale -- so BOTH (a) the generated netlist
+# and (b) the template's own mirrored copy are compared against the
+# expected body baked in below, every run. (a) catches a schematic edit
+# that this script was not updated for; (b) catches a template that was not
+# migrated (an omitted or miswired enable device). The one intentional
+# difference -- FB -> FBAMP on Xamp's first pin, behind Vbreak -- is
+# normalised before (b) compares, and Vbreak's own connectivity is
+# asserted separately, so the loop break cannot silently move or vanish.
+# This block deliberately needs neither a PDK nor ngspice, so
+# --check-topology-guard (the negative controls) runs anywhere. ---
+LOOPGAIN_MIRRORED_RE='^(XMpass|XRtop|XRbot|Xamp|XMen|XMbdis) '
+LOOPGAIN_EXPECTED_BODY='XMpass VOUT EAOUT VIN VIN sg13_hv_pmos w=2800u l=0.5u ng=1 m=1
+XRtop VOUT FB VSS rhigh w=1e-6 l=25.43e-6 m=1 b=7
+XRbot FB VSS VSS rhigh w=1e-6 l=25.43e-6 m=1 b=7
+Xamp FB VREF EAOUT VIN VSS IBIAS ldo_erramp_cmos5l
+XMen EAOUT EN VIN VIN sg13_hv_pmos w=40u l=0.5u ng=1 m=1
+XMbdis IBIAS EN VIN VIN sg13_hv_pmos w=5u l=0.5u ng=1 m=1'
+
+# topology_sync_problem <netlist> <template>: prints a diagnostic and returns
+# 1 on any mismatch, 0 when every comparison agrees.
+topology_sync_problem() {
+  local netlist="$1" template="$2" body mirrored breaks
+  body="$(awk '/^\.subckt ldo_core_cmos5l /,/^\.ends/' "${netlist}" | grep -E "${LOOPGAIN_MIRRORED_RE}" || true)"
+  if [[ "${body}" != "${LOOPGAIN_EXPECTED_BODY}" ]]; then
+    echo "run_sweep.sh: generated netlist ${netlist}: ldo_core_cmos5l's top-level instantiation lines differ from the expected body." >&2
+    diff <(echo "${LOOPGAIN_EXPECTED_BODY}") <(echo "${body}") >&2 || true
+    return 1
+  fi
+  # The enable port must also be in the subckt header, last.
+  if ! grep -qE '^\.subckt ldo_core_cmos5l VIN VOUT VSS VREF IBIAS EN$' "${netlist}"; then
+    echo "run_sweep.sh: generated netlist ${netlist}: .subckt ldo_core_cmos5l header is not 'VIN VOUT VSS VREF IBIAS EN'." >&2
+    return 1
+  fi
+  mirrored="$(grep -E "${LOOPGAIN_MIRRORED_RE}" "${template}" | sed -E 's/^(Xamp) FBAMP /\1 FB /' || true)"
+  if [[ "${mirrored}" != "${LOOPGAIN_EXPECTED_BODY}" ]]; then
+    echo "run_sweep.sh: ${template}: flattened copy differs from the exported core (after undoing the FB->FBAMP break)." >&2
+    diff <(echo "${LOOPGAIN_EXPECTED_BODY}") <(echo "${mirrored}") >&2 || true
+    return 1
+  fi
+  if ! grep -qE '^Xamp FBAMP ' "${template}"; then
+    echo "run_sweep.sh: ${template}: Xamp is not driven from FBAMP (loop break missing)." >&2
+    return 1
+  fi
+  breaks="$(grep -cE '^Vbreak FB FBAMP 0 ac 1$' "${template}" || true)"
+  if [[ "${breaks}" != "1" ]]; then
+    echo "run_sweep.sh: ${template}: expected exactly one 'Vbreak FB FBAMP 0 ac 1' loop break, found ${breaks}." >&2
+    return 1
+  fi
+  return 0
+}
+
+assert_loopgain_topology_sync() {
+  if ! topology_sync_problem "${DESIGN_NETLIST}" "${SCRIPT_DIR}/testbench/tb_loopgain_cmos5l.spice.tmpl"; then
+    echo "run_sweep.sh: FATAL -- loop-gain bench topology is out of sync with ldo_core_cmos5l." >&2
+    echo "run_sweep.sh: update tb_loopgain_cmos5l.spice.tmpl's flattened copy (and LOOPGAIN_EXPECTED_BODY) to match, then re-run." >&2
+    exit 4
+  fi
+}
+
+# Negative controls for the guard above: each mutation of the real netlist or
+# template MUST be rejected. Run with --check-topology-guard.
+check_topology_guard() {
+  local tmp rc=0
+  tmp="$(mktemp -d)"
+  local tmpl="${SCRIPT_DIR}/testbench/tb_loopgain_cmos5l.spice.tmpl"
+  if ! topology_sync_problem "${DESIGN_NETLIST}" "${tmpl}" 2>"${tmp}/base.err"; then
+    echo "run_sweep.sh: --check-topology-guard: the UNMUTATED pair is already rejected:" >&2
+    cat "${tmp}/base.err" >&2
+    rm -rf "${tmp}"
+    return 1
+  fi
+  echo "run_sweep.sh: guard accepts the real netlist/template pair."
+  neg() { # name sed-expr target(netlist|template)
+    local name="$1" expr="$2" target="$3" n="${tmp}/ldo.spice" t="${tmp}/tb.tmpl"
+    cp "${DESIGN_NETLIST}" "${n}"
+    cp "${tmpl}" "${t}"
+    if [[ "${target}" == netlist ]]; then sed -i -E "${expr}" "${n}"; else sed -i -E "${expr}" "${t}"; fi
+    if cmp -s "${n}" "${DESIGN_NETLIST}" && cmp -s "${t}" "${tmpl}"; then
+      echo "run_sweep.sh: NEGATIVE CONTROL INEFFECTIVE (mutation changed nothing): ${name}" >&2
+      rc=1
+    elif topology_sync_problem "${n}" "${t}" 2>/dev/null; then
+      echo "run_sweep.sh: NEGATIVE CONTROL NOT REJECTED: ${name}" >&2
+      rc=1
+    else
+      echo "run_sweep.sh: rejected (as required): ${name}"
+    fi
+  }
+  neg "template omits XMen"                 '/^XMen /d'                                template
+  neg "template XMen gate (EN) tied to VSS" 's/^XMen EAOUT EN /XMen EAOUT VSS /'       template
+  neg "template XMen drain moved to FB"     's/^XMen EAOUT /XMen FB /'                 template
+  neg "template XMen body moved to VSS"     's/^(XMen EAOUT EN VIN) VIN /\1 VSS /'     template
+  neg "template XMen width changed"         's/^(XMen .* w=)40u/\130u/'                template
+  neg "template omits XMbdis"               '/^XMbdis /d'                              template
+  neg "template XMbdis drain moved to FB"   's/^XMbdis IBIAS /XMbdis FB /'             template
+  neg "template XMbdis gate (EN) tied to VIN" 's/^XMbdis IBIAS EN /XMbdis IBIAS VIN /' template
+  neg "netlist omits XMbdis"                '/^XMbdis /d'                              netlist
+  neg "template Xamp loop break removed"    's/^Xamp FBAMP /Xamp FB /'                 template
+  neg "template Vbreak removed"             '/^Vbreak /d'                              template
+  neg "netlist omits XMen"                  '/^XMen /d'                                netlist
+  neg "netlist XMen gate moved to VIN"      's/^XMen EAOUT EN /XMen EAOUT VIN /'       netlist
+  neg "netlist EN port dropped from header" 's/^(\.subckt ldo_core_cmos5l .*) EN$/\1/' netlist
+  rm -rf "${tmp}"
+  return ${rc}
+}
+
+if [[ ${CHECK_GUARD} -eq 1 ]]; then
+  check_topology_guard
+  exit $?
+fi
+
 
 export PDK=ihp-sg13cmos5l
 # shellcheck source=/dev/null
@@ -116,7 +236,6 @@ command -v ngspice >/dev/null 2>&1 || { echo "run_sweep.sh: ngspice not on PATH.
 NGSPICE_VERSION="$(ngspice -v 2>&1 | sed -n '2p')"
 
 OSDI_DIR="${SG13G2_OSDI_DIR}"
-DESIGN_NETLIST="${REPO_ROOT}/design/sg13cmos5l/netlist/ldo_core_cmos5l.spice"
 
 if [[ ! -f "${DESIGN_NETLIST}" ]]; then
   echo "run_sweep.sh: ${DESIGN_NETLIST} not found -- regenerate it first:" >&2
@@ -124,36 +243,6 @@ if [[ ! -f "${DESIGN_NETLIST}" ]]; then
   exit 3
 fi
 
-# --- Sync-check: tb_loopgain_cmos5l.spice.tmpl flattens ldo_core_cmos5l one
-# level (to insert the loop-gain break at FB, a high-impedance node -- see
-# that template's header for the full derivation) by hand-mirroring its
-# XMpass/XRtop/XRbot/Xamp instantiation lines. If a future schematic edit
-# changes that connectivity, this bench would silently go stale -- so
-# diff the mirrored lines against the actual generated netlist every run,
-# not just at authoring time. ---
-assert_loopgain_topology_sync() {
-  local body expected
-  body="$(awk '/^\.subckt ldo_core_cmos5l /,/^\.ends/' "${DESIGN_NETLIST}" | grep -E '^(XMpass|XRtop|XRbot|Xamp) ')"
-  expected="$(cat <<'EOF'
-XMpass VOUT EAOUT VIN VIN sg13_hv_pmos w=2800u l=0.5u ng=1 m=1
-XRtop VOUT FB VSS rhigh w=1e-6 l=25.43e-6 m=1 b=7
-XRbot FB VSS VSS rhigh w=1e-6 l=25.43e-6 m=1 b=7
-Xamp FB VREF EAOUT VIN VSS IBIAS ldo_erramp_cmos5l
-EOF
-)"
-  if [[ "${body}" != "${expected}" ]]; then
-    echo "run_sweep.sh: FATAL -- ldo_core_cmos5l's top-level instantiation lines" >&2
-    echo "run_sweep.sh: in ${DESIGN_NETLIST} no longer match what" >&2
-    echo "run_sweep.sh: tb_loopgain_cmos5l.spice.tmpl hand-mirrors (loop-break bench)." >&2
-    echo "run_sweep.sh: --- expected (baked into this script) ---" >&2
-    echo "${expected}" >&2
-    echo "run_sweep.sh: --- actual (from the generated netlist) ---" >&2
-    echo "${body}" >&2
-    echo "run_sweep.sh: update tb_loopgain_cmos5l.spice.tmpl's flattened copy" >&2
-    echo "run_sweep.sh: (and this function's 'expected' text) to match, then re-run." >&2
-    exit 4
-  fi
-}
 assert_loopgain_topology_sync
 
 if [[ ${CHECK_ENV} -eq 1 ]]; then
