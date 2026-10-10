@@ -1,7 +1,8 @@
 # layout/ — GDS, DRC and LVS
 
 Physical verification for this repo. Today it holds **one real layout**: the
-full 13-device SG13CMOS5L LDO core, `sg13cmos5l_ldo_core_cmos5l`, drawn from
+full 15-device SG13CMOS5L LDO core (six ports: `VIN VOUT VSS VREF IBIAS EN`, including the
+`XMen`/`XMbdis` enable devices added by #67 and drawn by #68), `sg13cmos5l_ldo_core_cmos5l`, drawn from
 `design/sg13cmos5l/netlist/ldo_core_cmos5l.spice`, DRC-clean against both the
 curated `klt` deck and the PDK's own deck, and LVS-matching against a reference
 netlist mechanically derived from the schematic export.
@@ -14,12 +15,12 @@ layout/run_flow.sh --check    # verify the committed artifacts reproduce, byte f
 A full run takes about 15 seconds and prints one block per stage:
 
 ```
-=== 1. generate            11856 shapes, 163.10 x 281.18 um
+=== 1. generate            12251 shapes, 193.10 x 281.18 um
 === 2. DRC -- klt's curated sg13cmos5l deck      clean, 0 violations
 === 3. DRC -- the PDK's own ihp-sg13cmos5l deck  222 rules, 0 violations
 === 4. DRC negative control                      both decks flag a planted defect
-=== 5. extract                                   pfet 124, nfet 3, rhigh 3, cap_cmomi 1
-=== 5b. HV-flavour control                       127 bind sg13_hv_*, 127 bind sg13_lv_* without ThickGateOx
+=== 5. extract                                   pfet 127, nfet 3, rhigh 3, cap_cmomi 1
+=== 5b. HV-flavour control                       130 bind sg13_hv_*, 130 bind sg13_lv_* without ThickGateOx
 === 6. LVS                                       match
 === 7. LVS negative controls                     5 mutations, 5 mismatches
 ```
@@ -91,6 +92,21 @@ reproduce byte for byte before it will re-verify the reports.
 > expect in a diff of the artifacts: 0.4.0 writes a `metrics` block into
 > the DRC/extract reports that 0.5.0 did not, and it emits `L=`/`W=` on
 > extracted `rhigh` cards. Re-running on a 0.5.0 host will move them back.
+>
+> **#68 (sixth port `EN`, devices `XMen`/`XMbdis`) regenerated every artifact
+> in this directory.** The old five-port reports are superseded, not retained:
+> no claim in this repository rests on the previous layout. The flow was run
+> with `klt` pinned per stage family, because the host `klt` (0.7.0
+> `g8eec069c757`) extracts `rhigh`/`cap_cmomi` cards in a different form the
+> reference cannot match: `drc`/`extract`/`lvs` on `klt 0.5.0+gb15edf5e3a2e`
+> (as #44 above) and `erc` on `0.7.0+gb82427b30c96` (the signoff pin; the
+> older build does not parse `ties[].well_layer: null`). **Enable-device
+> supply audit:** `XMen` and `XMbdis` bodies are VIN (as is `Mpass`); they sit
+> in their own NWell with a VIN tap bar (`nwell_tie_VIN` gained a third tap
+> box, derived from the generator's tap bars). The ERC report still has three
+> checked ties, all resting on caller assertions as before -- no new check
+> kind is claimed; ERC antenna remains `not_checked`. `EN` is a control
+> input, not a declared supply.
 >
 > **#44 then moved the three signoff-cited envelopes (`drc`,
 > `extract`(`.spice`), `lvs`) forward to one uniform pinned build** --
@@ -235,19 +251,24 @@ contacts at 0.16 µm, min *and* max). Both decks must flag them, and do. A deck
 that registers no rules against a layout's actual layers produces an empty
 report indistinguishable from a clean one; this is what rules that out.
 
-**5. Extract — `klt extract --deck sg13cmos5l`.** 131 raw devices: `pfet` 124,
-`nfet` 3, `rhigh` 3, `cap_cmomi` 1. The 124 is the finger count, not the
-schematic count — 112 pass-array fingers plus 12 error-amp PMOS fingers.
+**5. Extract — `klt extract --deck sg13cmos5l`.** 134 raw devices: `pfet` 127,
+`nfet` 3, `rhigh` 3, `cap_cmomi` 1. The 127 is the finger count, not the
+schematic count — 112 pass-array fingers, 12 error-amp PMOS fingers and 3
+enable fingers (`XMen` 2 x 20 µm, `XMbdis` 1 x 5 µm). The extracted port list
+is now six wide (`EN` included); the extraction pin list in `run_flow.sh` is
+`VIN,VOUT,VSS,VREF,IBIAS,EN` and the confirmed counts were read from the
+regenerated `extract_report.json`, not inferred from the schematic.
 
 **5b. HV-flavour control.** Every MOS in this design is the thick-oxide HV
 flavour (DR-0002), and the thing that makes it so is the drawn `ThickGateOx`
 (44/0). Extracting the same layout twice — once as drawn, once with that layer
-cleared — flips all 127 MOS bindings from `sg13_hv_*` to `sg13_lv_*`. That is
+cleared — flips all 130 MOS bindings from `sg13_hv_*` to `sg13_lv_*`. That is
 direct evidence the HV flavour is *drawn and recognised*, not assumed. (The
 curated deck grew HV MOS recognition in `klayout-tools#1416`; before that a
 thick-oxide device silently extracted as its LV counterpart.)
 
-**6. LVS — `klt lvs`.** **Match.** 12 devices, 11 nets, 5 pins.
+**6. LVS — `klt lvs`.** **Match.** 14 compared devices, 12 nets, 6 pins (`EN` mapped in both the
+reference and the extraction).
 
 **7. LVS negative controls.** Five mutations of the reference, every one of
 which must mismatch:
@@ -288,7 +309,7 @@ SG13-family PDK. Two artifacts in this directory:
 - `erc-tap-boxes.json` — the generator's tap bars, the source of `ties[].tap_boxes`.
 - `erc_supply_report.json` — the committed run. Its `provenance.input.
   content_hash` is the committed GDS's own sha256
-  (`f0f01392735616cbdb45166467972f8e4456426fd1cf794e3380d1713eabc062`,
+  (`7fdbe0e9ab0e812d348b432a72c18b31f5ecef592bfac5d7a93658c69827ee27`,
   byte-verified), and its `provenance.spec.content_hash` pins the spec the
   verdict was graded against.
 
@@ -330,7 +351,7 @@ Read the three verdicts precisely in that report:
   (`run_flow.sh` stage 8b). Rationale for every spec choice:
   `erc-supply-spec.md` (the spec itself is strict JSON; a klt that rejects
   unknown keys no longer allows a `_comment`). The corroborating evidence is
-  unchanged: `klt lvs` `match` with VIN/VOUT/VSS as pins, and LU.b clean.
+  unchanged: `klt lvs` `match` with VIN/VOUT/VSS (and `EN`) as pins, and LU.b clean.
 
 Two contract notes for anyone re-running it:
 
@@ -413,7 +434,7 @@ What stays unrun, and why each is not load-bearing here:
 
 ### LVS: what is compared at device level, and what is not
 
-The report says 12 devices on each side. The cell has **13**. The missing one
+The report says 14 devices on each side. The cell has **15**. The missing one
 is `Cc`, and it is missing for a tooling reason, not a drawing one.
 
 `klt extract` recognises `cap_cmomi` as its own device class

@@ -168,8 +168,8 @@
     "nothing_checked_reasons": []
   },
   "provenance": {
-    "klt_version": "0.5.0+gb15edf5e3a2e",
-    "klayout_version": "0.30.10",
+    "klt_version": "0.5.0+gb15edf5e3a2e.dirty",
+    "klayout_version": "0.30.12",
     "pdk": null,
     "deck": {
       "name": "sg13cmos5l",
@@ -177,9 +177,9 @@
       "released": false
     },
     "input": {
-      "content_hash": "sha256:f0f01392735616cbdb45166467972f8e4456426fd1cf794e3380d1713eabc062",
+      "content_hash": "sha256:7fdbe0e9ab0e812d348b432a72c18b31f5ecef592bfac5d7a93658c69827ee27",
       "role": "layout"
     },
-    "klayout_version_mismatch": false
+    "klayout_version_mismatch": true
   }
 }

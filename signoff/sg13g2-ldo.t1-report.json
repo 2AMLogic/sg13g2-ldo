@@ -33,7 +33,7 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:534b788b414cfea4418bb56fdfb67137b88ab18004d2babaf3d473eaa5c9aa4d",
+        "content_hash": "sha256:76873bc2d111eeec30d04b6a24b7714d679199c519198f60d923363b73e92f7b",
         "input_verified": true,
         "exit_status": 0,
         "artifact_binding": {
@@ -42,7 +42,7 @@
             "path": "signoff/evidence/item1-design-sources.inventory.json",
             "scope": "repo"
           },
-          "content_hash": "sha256:534b788b414cfea4418bb56fdfb67137b88ab18004d2babaf3d473eaa5c9aa4d",
+          "content_hash": "sha256:76873bc2d111eeec30d04b6a24b7714d679199c519198f60d923363b73e92f7b",
           "input_verified": true,
           "summary": "SG13CMOS5L schematics/symbols, their generator and the regenerated ngspice netlists are committed; every constituent hash matches the inventory. Freshness/identity only, not a design-correctness or performance claim.",
           "source": "signoff/evidence/item1-design-sources.inventory.json"
@@ -64,7 +64,7 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:eb6f0e74ee953ab7bac73b204b8c210b622529f7b5b7ef192a7584212138fc03",
+        "content_hash": "sha256:745a644201a4d90204bda573ec415540236bb902e46528b8557cd2c90828eeca",
         "input_verified": true,
         "exit_status": 0,
         "artifact_binding": {
@@ -73,7 +73,7 @@
             "path": "signoff/evidence/item2-layout.inventory.json",
             "scope": "repo"
           },
-          "content_hash": "sha256:eb6f0e74ee953ab7bac73b204b8c210b622529f7b5b7ef192a7584212138fc03",
+          "content_hash": "sha256:745a644201a4d90204bda573ec415540236bb902e46528b8557cd2c90828eeca",
           "input_verified": true,
           "summary": "The SG13CMOS5L layout GDS stream and its generator are committed; every constituent hash matches the inventory. Freshness/identity only: DRC/LVS/ERC are the separate item 3/4/11 citations.",
           "source": "signoff/evidence/item2-layout.inventory.json"
@@ -95,7 +95,7 @@
         "command": null,
         "kind": "drc",
         "check_status": "clean",
-        "content_hash": "sha256:f0f01392735616cbdb45166467972f8e4456426fd1cf794e3380d1713eabc062",
+        "content_hash": "sha256:7fdbe0e9ab0e812d348b432a72c18b31f5ecef592bfac5d7a93658c69827ee27",
         "input_verified": true,
         "exit_status": 0,
         "coverage": {
@@ -156,7 +156,7 @@
         "command": null,
         "kind": "lvs",
         "check_status": "match",
-        "content_hash": "sha256:cd162f1ac1c2f118a9180467baac2725f5bc6779d34699e72443783e2de0e707",
+        "content_hash": "sha256:72d952c209c13c9b2d5d91038514a11e9a302569c1cf47f097c6429e692ace55",
         "input_verified": true,
         "exit_status": 0
       }
@@ -300,7 +300,7 @@
         "command": null,
         "kind": "erc",
         "check_status": "not_checked",
-        "content_hash": "sha256:f0f01392735616cbdb45166467972f8e4456426fd1cf794e3380d1713eabc062",
+        "content_hash": "sha256:7fdbe0e9ab0e812d348b432a72c18b31f5ecef592bfac5d7a93658c69827ee27",
         "input_verified": true,
         "exit_status": 0,
         "parts": [
@@ -309,7 +309,7 @@
             "command": null,
             "kind": "erc",
             "check_status": "not_checked",
-            "content_hash": "sha256:f0f01392735616cbdb45166467972f8e4456426fd1cf794e3380d1713eabc062",
+            "content_hash": "sha256:7fdbe0e9ab0e812d348b432a72c18b31f5ecef592bfac5d7a93658c69827ee27",
             "input_verified": true,
             "exit_status": 0
           },
@@ -318,7 +318,7 @@
             "command": null,
             "kind": "lvs",
             "check_status": "match",
-            "content_hash": "sha256:cd162f1ac1c2f118a9180467baac2725f5bc6779d34699e72443783e2de0e707",
+            "content_hash": "sha256:72d952c209c13c9b2d5d91038514a11e9a302569c1cf47f097c6429e692ace55",
             "input_verified": true,
             "exit_status": 0
           }

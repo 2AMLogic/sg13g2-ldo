@@ -51,39 +51,39 @@
   "category_error_counts": {},
   "counts": {
     "nets": {
-      "layout": 11,
-      "reference": 11,
-      "matched": 13
-    },
-    "devices": {
       "layout": 12,
       "reference": 12,
-      "matched": 12
+      "matched": 14
+    },
+    "devices": {
+      "layout": 14,
+      "reference": 14,
+      "matched": 14
     },
     "pins": {
-      "layout": 5,
-      "reference": 5,
-      "matched": 7
+      "layout": 6,
+      "reference": 6,
+      "matched": 8
     }
   },
   "device_classes": null,
   "environment": {
     "engine": "klayout",
-    "engine_version": "0.30.10",
-    "layout_sha256": "cd162f1ac1c2f118a9180467baac2725f5bc6779d34699e72443783e2de0e707",
-    "reference_sha256": "02b9c554d7dd5c6a4ba8e5ba3f69493e5b553279f6fc82145dff4758c952c19f",
+    "engine_version": "0.30.12",
+    "layout_sha256": "72d952c209c13c9b2d5d91038514a11e9a302569c1cf47f097c6429e692ace55",
+    "reference_sha256": "ecc0834cfd9e992e9fc111f763f688279b056c1d7783457b525447eac022fadb",
     "extracted_netlist": null
   },
   "provenance": {
-    "klt_version": "0.5.0+gb15edf5e3a2e",
-    "klayout_version": "0.30.10",
+    "klt_version": "0.5.0+gb15edf5e3a2e.dirty",
+    "klayout_version": "0.30.12",
     "pdk": null,
     "deck": null,
     "input": {
-      "content_hash": "sha256:cd162f1ac1c2f118a9180467baac2725f5bc6779d34699e72443783e2de0e707",
+      "content_hash": "sha256:72d952c209c13c9b2d5d91038514a11e9a302569c1cf47f097c6429e692ace55",
       "role": "netlist"
     },
-    "klayout_version_mismatch": false
+    "klayout_version_mismatch": true
   },
   "mismatches": [],
   "net_correspondence": [
@@ -101,6 +101,11 @@
       "layout": "EAOUT",
       "reference": "EAOUT",
       "pin": false
+    },
+    {
+      "layout": "EN",
+      "reference": "EN",
+      "pin": true
     },
     {
       "layout": "FB",
