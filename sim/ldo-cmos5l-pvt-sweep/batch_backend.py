@@ -412,7 +412,14 @@ def write_group(g, work, osdi_dir, preamble_path):
     return gdir
 
 
-def submit(gdir):
+# The fleet's shared instance cap refuses a launch outright, and klt's own
+# capacity_wait_s does not cover that refusal (klayout-tools#2917). Nothing
+# ran, so re-submitting the same request to the fleet is safe. It is never
+# a local fallback.
+CAP_REFUSAL = "exceeds BATCH_MAX_CONCURRENT_INSTANCES"
+
+
+def submit_once(gdir):
     art = os.path.join(gdir, "artifacts")
     if os.path.isdir(art):
         shutil.rmtree(art)
@@ -422,6 +429,38 @@ def submit(gdir):
                               "--backend", "batch", "-o", art, "--format", "json"],
                              stdout=out, stderr=err)
     return rc
+
+
+def cap_refused(gdir):
+    for fn in ("report.json", "klt-sim.stderr"):
+        with open(os.path.join(gdir, fn), encoding="utf-8", errors="replace") as f:
+            if CAP_REFUSAL in f.read():
+                return True
+    return False
+
+
+def submit(gdir, cap_wait_s=0.0, sleep=None, clock=None):
+    """Submit one request. A refusal by the fleet's concurrency cap is
+    re-submitted with a jittered backoff (60 s doubling to 600 s) for up to
+    cap_wait_s seconds. Each refusal is logged to <gdir>/cap-retries.log."""
+    import random
+    import time
+    sleep = sleep or time.sleep
+    clock = clock or time.monotonic
+    start, n = clock(), 0
+    while True:
+        rc = submit_once(gdir)
+        if rc == 0 or not cap_refused(gdir):
+            return rc
+        delay = min(600.0, 60.0 * 2 ** n) * (0.5 + 0.5 * random.random())
+        if clock() - start + delay > cap_wait_s:
+            return rc
+        with open(os.path.join(gdir, "cap-retries.log"), "a") as f:
+            f.write(f"refused by the fleet concurrency cap; retry {n + 1} in {delay:.0f}s\n")
+        print(f"batch_backend: {os.path.basename(gdir)}: fleet concurrency cap, "
+              f"retry {n + 1} in {delay:.0f}s", file=sys.stderr)
+        sleep(delay)
+        n += 1
 
 
 def collect(g, gdir, corners_out, record_meta):
@@ -518,7 +557,7 @@ def cmd_run(a):
 
     rcs = {}
     with concurrent.futures.ThreadPoolExecutor(max_workers=a.submit_concurrency) as ex:
-        futs = {ex.submit(submit, gdirs[g["name"]]): g["name"] for g in groups}
+        futs = {ex.submit(submit, gdirs[g["name"]], a.cap_wait_s): g["name"] for g in groups}
         for fu in concurrent.futures.as_completed(futs):
             name = futs[fu]
             rcs[name] = fu.result()
@@ -545,7 +584,8 @@ def cmd_run(a):
         src, dst = gdirs[g["name"]], os.path.join(prov, g["name"])
         os.makedirs(dst, exist_ok=True)
         for fn in sorted(os.listdir(src)):
-            if fn in ("request.json", "tb.spice", "corners.lib", "report.json") or fn.endswith(".corner.cir"):
+            if fn in ("request.json", "tb.spice", "corners.lib", "report.json",
+                      "cap-retries.log") or fn.endswith(".corner.cir"):
                 shutil.copyfile(os.path.join(src, fn), os.path.join(dst, fn))
     staged = {n: sha256(os.path.join(a.osdi_dir, f"{n}.osdi")) for n in OSDI_ORDER}
     engines = sorted(meta["engines"])
@@ -575,6 +615,9 @@ def main():
     r.add_argument("--work", required=True)
     r.add_argument("--osdi-dir", required=True)
     r.add_argument("--submit-concurrency", type=int, default=2)
+    r.add_argument("--cap-wait-s", type=float, default=3600.0,
+                   help="re-submit a request refused by the fleet's concurrency cap "
+                        "for up to this many seconds (default 3600; 0 = never)")
     r.add_argument("--max-points-per-request", type=int, metavar="N",
                    help="split larger groups into requests of at most N points")
     r.add_argument("--variant-lines", metavar="REGEX",

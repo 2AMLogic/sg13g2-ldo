@@ -174,5 +174,53 @@ class VariantLines(unittest.TestCase):
             bb.parse_deck(path, r"^Rnothing ")
 
 
+class CapRetry(unittest.TestCase):
+    """A fleet concurrency-cap refusal is re-submitted (to the fleet) within
+    a budget; any other failure returns at once."""
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp()
+        self.orig = bb.submit_once
+
+    def tearDown(self):
+        bb.submit_once = self.orig
+        shutil.rmtree(self.tmp)
+
+    def fake(self, outcomes):
+        calls = []
+
+        def once(gdir):
+            rc, text = outcomes[len(calls)]
+            calls.append(rc)
+            open(os.path.join(gdir, "report.json"), "w").write(text)
+            open(os.path.join(gdir, "klt-sim.stderr"), "w").write("")
+            return rc
+        bb.submit_once = once
+        return calls
+
+    def run_submit(self, budget):
+        t = [0.0]
+        return bb.submit(self.tmp, budget, sleep=lambda s: t.__setitem__(0, t[0] + s),
+                         clock=lambda: t[0])
+
+    REFUSED = '{"error": {"message": "8 instance(s) already running + 1 requested exceeds BATCH_MAX_CONCURRENT_INSTANCES=8"}}'
+
+    def test_cap_refusal_retried_then_succeeds(self):
+        calls = self.fake([(1, self.REFUSED), (1, self.REFUSED), (0, "{}")])
+        self.assertEqual(self.run_submit(3600), 0)
+        self.assertEqual(calls, [1, 1, 0])
+        self.assertEqual(len(open(os.path.join(self.tmp, "cap-retries.log")).readlines()), 2)
+
+    def test_budget_exhausted_returns_failure(self):
+        calls = self.fake([(1, self.REFUSED)] * 50)
+        self.assertEqual(self.run_submit(100), 1)
+        self.assertLessEqual(len(calls), 3)
+
+    def test_other_failure_not_retried(self):
+        calls = self.fake([(1, '{"error": {"message": "upload failed"}}')])
+        self.assertEqual(self.run_submit(3600), 1)
+        self.assertEqual(calls, [1])
+
+
 if __name__ == "__main__":
     unittest.main()
