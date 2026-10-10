@@ -9,6 +9,10 @@
 #                                                 # models for this PDK
 #   sim/ldo-cmos5l-pvt-sweep/run_sweep.sh
 #
+#   sim/ldo-cmos5l-pvt-sweep/run_sweep.sh --doe-generate --batch   # issue #64
+#     dynamic DoE (load x Cout x ESR) on the batch fleet; README.md
+#     "Dynamic DoE" (refinement: --doe-extra/--doe-only-extra/--doe-base).
+#
 #   sim/ldo-cmos5l-pvt-sweep/run_sweep.sh --check-env   # CI-weight preflight:
 #     generates + syntax-checks one netlist per bench (mos_tt/27C), without
 #     running the full corner grid or writing a records/ entry.
