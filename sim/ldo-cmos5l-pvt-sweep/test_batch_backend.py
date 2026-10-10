@@ -76,5 +76,91 @@ class Grouping(unittest.TestCase):
             shutil.rmtree(tmp)
 
 
+DECK = """* tb for {pid}
+.lib "/pdk/cornerMOShv.lib" mos_{mos}
+.lib "/pdk/cornerRES.lib" res_{res}
+.lib "/pdk/cornerCAP.lib" cap_typ
+.options temp={temp} tnom=27
+.include "/design/ldo.spice"
+Vin VIN 0 dc 3.3 ac 1
+Iload VOUT 0 dc {load}
+Cout VOUT {bottom} {cout}
+{esr}
+Xtop VIN VOUT 0 VREF IBIAS VIN ldo_core_cmos5l
+.control
+pre_osdi /o/psp103.osdi
+pre_osdi /o/psp103_nqs.osdi
+pre_osdi /o/mosvar.osdi
+pre_osdi /o/r3_cmc.osdi
+pre_osdi /o/cap_cmomi.osdi
+pre_osdi /o/cap_cmomf.osdi
+ac dec 20 1 100meg
+let psrr_db = -db(v(vout)/v(vin))
+wrdata /x/{pid}_ac.csv psrr_db
+.endc
+.end
+"""
+VARIANT_RE = r"^(Iload|Cout|Resr) "
+
+
+class VariantLines(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp)
+
+    def deck(self, mos, temp, res, load, cout, esr):
+        pid = f"psrr_dyn_{mos}_{temp}c_r{res}_{load}_{cout}_{esr}"
+        bottom, esr_line = ("0", "* ESR=0") if esr == "0" else \
+            ("COUT_ESR", f"Resr COUT_ESR 0 {esr}")
+        path = os.path.join(self.tmp, pid + ".spice")
+        with open(path, "w") as f:
+            f.write(DECK.format(pid=pid, mos=mos, res=res, temp=temp,
+                                load=load, cout=cout, bottom=bottom,
+                                esr=esr_line))
+        return pid, path
+
+    def points(self, variant_re):
+        out = []
+        for mos, temp, res in DOE_CORNERS:
+            for load, cout, esr in [("0", "330n", "0"), ("50000e-6", "4700n", "500e-3")]:
+                pid, path = self.deck(mos, temp, res, load, cout, esr)
+                out.append((pid, bb.parse_deck(path, variant_re)))
+        return out
+
+    def test_without_variant_lines_each_op_is_its_own_request(self):
+        self.assertEqual(len(bb.plan_groups(self.points(None))), 2)
+
+    def test_variant_lines_share_one_request_one_corner_per_point(self):
+        pts = self.points(VARIANT_RE)
+        groups = bb.plan_groups(pts)
+        self.assertEqual(len(groups), 1)
+        g = groups[0]
+        self.assertEqual(len(g["members"]), 8)
+        names = {bb.corner_name(p) for _, p in pts}
+        self.assertEqual(len(names), 8)  # unique per (model bundle, variant)
+        for _, p in pts:
+            self.assertNotIn("Iload", p["body"])
+            self.assertNotIn("Cout", p["body"])
+            self.assertIn("Xtop", p["body"])
+        gdir = bb.write_group(g, self.tmp, "/osdi", "/pre.cir")
+        lib = open(os.path.join(gdir, "corners.lib")).read()
+        # each section: its model cards, then exactly its own variant lines
+        for _, p in pts:
+            name = bb.corner_name(p)
+            sec = lib.split(f".lib {name}\n", 1)[1].split(f".endl {name}\n", 1)[0]
+            self.assertEqual(sec.splitlines()[3:], p["variant"])
+        self.assertIn("Resr COUT_ESR 0 500e-3", lib)
+        req = json.load(open(os.path.join(gdir, "request.json")))
+        n = len(req["corners"]["process"]) * len(req["corners"]["temperature_c"])
+        self.assertEqual(n - len(req["exclude"]), 8)
+
+    def test_variant_regex_that_matches_nothing_is_an_error(self):
+        pid, path = self.deck("ss", 125, "bcs", "0", "330n", "0")
+        with self.assertRaises(bb.BackendError):
+            bb.parse_deck(path, r"^Rnothing ")
+
+
 if __name__ == "__main__":
     unittest.main()

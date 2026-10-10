@@ -436,6 +436,7 @@ if [[ ${BATCH} -eq 1 ]]; then
   BATCH_QUEUE="${BATCH_WORK}/queue.tsv"
   : > "${BATCH_QUEUE}"
 fi
+BATCH_EXTRA_ARGS=()
 
 run_ngspice() {
   local point_id="$1" netlist="$2"
@@ -514,6 +515,7 @@ run_batch_queue() {
     --queue "${BATCH_QUEUE}" --corners-out "${CORNERS_OUT}" \
     --work "${BATCH_WORK}" --osdi-dir "${OSDI_DIR}" \
     --submit-concurrency "${SWEEP_BATCH_CONCURRENCY:-2}" \
+    "${BATCH_EXTRA_ARGS[@]}" \
     ${SWEEP_BATCH_PLAN_ONLY:+--plan-only} || batch_rc=$?
   if [[ -n "${SWEEP_BATCH_PLAN_ONLY:-}" ]]; then
     echo "run_sweep.sh: SWEEP_BATCH_PLAN_ONLY set -- plan printed, nothing submitted;" >&2
@@ -558,6 +560,13 @@ if [[ ${DOE_GENERATE} -eq 1 ]]; then
   plan_args=(plan)
   [[ -n "${DOE_EXTRA}" ]] && plan_args+=(--extra "${DOE_EXTRA}")
   [[ ${DOE_ONLY_EXTRA} -eq 1 ]] && plan_args+=(--only-extra)
+  # The DoE decks differ only in their Iload/Cout/Resr lines (the bench
+  # body is otherwise identical), so batch_backend.py moves exactly those
+  # lines into each point's own corners.lib section and runs each bench as
+  # ONE klt sim request instead of one per operating point. Each fleet job
+  # costs minutes of overhead for seconds of simulation; see README.md
+  # "Dynamic DoE" for the measured numbers and the cross-check.
+  BATCH_EXTRA_ARGS=(--variant-lines '^(Iload|Cout|Resr) ')
   doe_rows=()
   while IFS=$'\t' read -r bench pid mos res temp load cout esr; do
     netlist="$(gen_netlist "${bench}" "${pid}" "${mos}" "${res}" cap_typ "${temp}" "${DESIGN_NETLIST}" "170u (nominal)" "${load}" "${cout}" "${esr}")"
