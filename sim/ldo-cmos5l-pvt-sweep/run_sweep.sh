@@ -232,6 +232,8 @@ fi
 export PDK=ihp-sg13cmos5l
 # shellcheck source=/dev/null
 source "${SIM_DIR}/env.sh"
+# shellcheck source=/dev/null
+source "${SIM_DIR}/tools/preflight.sh"
 
 if [[ -z "${PDK_ROOT:-}" || ! -d "${PDK_ROOT}/${PDK}/libs.tech/ngspice" ]]; then
   echo "run_sweep.sh: no resolvable ${PDK} install -- see sim/env.sh output above." >&2
@@ -272,6 +274,17 @@ fi
 
 assert_loopgain_topology_sync
 
+# Expected output-row counts, per bench, for the POSITIVE completeness
+# check in run_ngspice below (and the --check-env output validation, #91). Derived from the templates' own analysis
+# statements, not guessed: the DC bench's nested sweep is Vin
+# 2.00..3.63 step 0.01 (164 rows) x 5 Iload blocks = 820; the two AC
+# benches are `ac dec 20 1 100meg` = 20 points/decade x 8 decades + 1 = 161.
+# If a template's analysis statement is ever changed without updating
+# these, every point fails loudly -- the same "fail loudly rather than go
+# silently stale" posture assert_loopgain_topology_sync() takes above.
+EXPECT_ROWS_DC=820
+EXPECT_ROWS_AC=161
+
 if [[ ${CHECK_ENV} -eq 1 ]]; then
   echo "run_sweep.sh: --check-env: syntax-checking all three benches at mos_tt/27C, no records written."
   tmp="$(mktemp -d)"
@@ -298,13 +311,12 @@ if [[ ${CHECK_ENV} -eq 1 ]]; then
       -e "s|@@AC_CSV@@|${tmp}/${bench}_check_ac.csv|g" \
       "${template}" > "${netlist}"
     log="${tmp}/${bench}_check.log"
-    if ! ngspice -b "${netlist}" > "${log}" 2>&1 || grep -qiE "Unable to find definition of model|couldn't be loaded|Unknown model type|fatal error" "${log}"; then
-      echo "run_sweep.sh: --check-env FAILED for ${bench} bench -- see below:" >&2
-      cat "${log}" >&2
-      rc=1
-    else
-      echo "run_sweep.sh: --check-env OK for ${bench} bench"
-    fi
+    case "${bench}" in
+      dcsweep)  vargs=(--wrdata "${tmp}/${bench}_check_dc.csv:8:${EXPECT_ROWS_DC}") ;;
+      loopgain) vargs=(--wrdata "${tmp}/${bench}_check_ac.csv:4:${EXPECT_ROWS_AC}" --marker LOOPGAIN_VOUT_OP) ;;
+      psrr)     vargs=(--wrdata "${tmp}/${bench}_check_ac.csv:2:${EXPECT_ROWS_AC}") ;;
+    esac
+    preflight_bench_ok "${bench}" "${netlist}" "${log}" "${vargs[@]}" || rc=1
   done
   exit ${rc}
 fi
@@ -405,16 +417,6 @@ gen_netlist() {
   echo "${netlist}"
 }
 
-# Expected output-row counts, per bench, for the POSITIVE completeness
-# check in run_ngspice below. Derived from the templates' own analysis
-# statements, not guessed: the DC bench's nested sweep is Vin
-# 2.00..3.63 step 0.01 (164 rows) x 5 Iload blocks = 820; the two AC
-# benches are `ac dec 20 1 100meg` = 20 points/decade x 8 decades + 1 = 161.
-# If a template's analysis statement is ever changed without updating
-# these, every point fails loudly -- the same "fail loudly rather than go
-# silently stale" posture assert_loopgain_topology_sync() takes above.
-EXPECT_ROWS_DC=820
-EXPECT_ROWS_AC=161
 
 recoverable_warning_points=()
 

@@ -63,6 +63,8 @@ REPO_ROOT="$(cd "${SIM_DIR}/.." && pwd)"
 
 # shellcheck source=/dev/null
 source "${SIM_DIR}/env.sh"
+# shellcheck source=/dev/null
+source "${SIM_DIR}/tools/preflight.sh"
 
 if [[ -z "${PDK_ROOT:-}" || ! -d "${PDK_ROOT}/${PDK}/libs.tech/ngspice" ]]; then
   echo "run_sweep.sh: no resolvable ${PDK:-ihp-sg13g2} install -- see sim/env.sh output above." >&2
@@ -99,13 +101,11 @@ if [[ ${CHECK_ENV} -eq 1 ]]; then
       -e "s|@@DC_CSV@@|${tmp}/${bench}_check_dc.csv|g" \
       "${template}" > "${netlist}"
     log="${tmp}/${bench}_check.log"
-    if ! ngspice -b "${netlist}" > "${log}" 2>&1 || grep -qiE "Unable to find definition of model|couldn't be loaded|Unknown model type|fatal error" "${log}"; then
-      echo "run_sweep.sh: --check-env FAILED for ${bench} bench -- see below:" >&2
-      cat "${log}" >&2
-      rc=1
-    else
-      echo "run_sweep.sh: --check-env OK for ${bench} bench"
-    fi
+    case "${bench}" in
+      dropout) vargs=(--wrdata "${tmp}/${bench}_check_dc.csv:4:121" --marker DROPOUT_CGATE) ;;
+      stress)  vargs=(--marker STRESS_ID --marker STRESS_VSG --marker STRESS_VDS --marker STRESS_VDG) ;;
+    esac
+    preflight_bench_ok "${bench}" "${netlist}" "${log}" "${vargs[@]}" || rc=1
   done
   exit ${rc}
 fi
