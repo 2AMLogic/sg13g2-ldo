@@ -126,6 +126,8 @@ ITEMS = {
             "sim/ldo-cmos5l-enable/enable-corners.lib",
             "sim/ldo-cmos5l-enable/summarize.py",
             "sim/ldo-cmos5l-enable/derive.py",
+            # issue #96: record-reproduction gate run by CI's enable-record job
+            "sim/ldo-cmos5l-enable/check.sh",
             "sim/ldo-cmos5l-enable/baseline/ldo_core_cmos5l.pre-67.spice",
             "sim/ldo-cmos5l-enable/tb_baseline_reg.spice",
             "sim/ldo-cmos5l-enable/tb_disabled_leak.spice",

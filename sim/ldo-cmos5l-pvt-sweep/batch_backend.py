@@ -33,9 +33,17 @@ How a generated deck becomes a klt sim request (and why each step is safe):
     anything else is a hard error, so a template edit cannot be silently
     mistranslated.
   * Groups: points whose body text is identical (same bench, same design
-    netlist, same substitutions) share one request. Their (section, temp)
-    pairs must form a full cross product, otherwise the group is split per
-    temperature.
+    netlist, same substitutions) share one request. When their (section,
+    temp) pairs are not a full cross product, the missing pairs go into the
+    request's `exclude` list (issue #64), so the request still runs exactly
+    the member points.
+  * `--variant-lines REGEX` (issue #64 DoE): body lines matching REGEX (the
+    Iload/Cout/Resr lines) are moved verbatim into each point's own
+    `corners.lib` section, after its model cards. Decks that differ only in
+    those lines then share one body and one request, one corner per point.
+    Element order does not matter to SPICE, so the circuit is unchanged.
+    Cross-checked byte-for-byte against one-request-per-deck runs, see
+    backend-validation/20261010-variant-lines/.
 
 Usage (normally invoked by run_sweep.sh --batch):
 
@@ -92,10 +100,14 @@ def sha256(path):
 # deck -> (body, sections, temp, analysis, outputs)
 # --------------------------------------------------------------------------- #
 
-def parse_deck(path):
+def parse_deck(path, variant_re=None):
+    """variant_re (issue #64): body lines matching it are taken out of the
+    body into p["variant"]; write_group puts them in the point's own
+    corners.lib section, so decks that differ only in those lines share
+    one request (one corner per point)."""
     text = open(path, encoding="utf-8").read()
     lines = text.splitlines()
-    body, sections, control = [], [], []
+    body, sections, control, variant = [], [], [], []
     temp = None
     in_control = False
     for ln in lines:
@@ -128,6 +140,9 @@ def parse_deck(path):
             continue
         if low.startswith(".lib") or low.startswith(".temp") or "temp=" in low and low.startswith(".option"):
             raise BackendError(f"{path}: unrecognised model/temperature card: {s}")
+        if variant_re is not None and re.match(variant_re, s):
+            variant.append(s)
+            continue
         body.append(ln)
     if temp is None or not sections:
         raise BackendError(f"{path}: no .options temp / .lib cards found")
@@ -159,8 +174,11 @@ def parse_deck(path):
     expected_osdi = [f"{n}.osdi" for n in OSDI_ORDER]
     if osdi != expected_osdi:
         raise BackendError(f"{path}: pre_osdi set {osdi} != expected {expected_osdi}")
+    if variant_re is not None and not variant:
+        raise BackendError(f"{path}: no line matches --variant-lines {variant_re!r}")
     return {"body": "\n".join(body) + "\n", "sections": sections, "temp": temp,
-            "analysis": analysis, "lets": lets, "wrdata": wrdata}
+            "analysis": analysis, "lets": lets, "wrdata": wrdata,
+            "variant": variant}
 
 
 def bench_of(point_id):
@@ -274,12 +292,28 @@ def wrdata_rows(bench, parsed, names, data, cplx):
 # grouping and submission
 # --------------------------------------------------------------------------- #
 
+def num(t):
+    return int(t) if float(t).is_integer() else t
+
+
 def section_name(sections):
     return "__".join(sec for _, sec in sections)
 
 
-def plan_groups(points):
-    """points: list of (point_id, parsed). Returns list of groups."""
+def corner_name(p):
+    """klt process name of a point: its model sections, plus a hash of its
+    variant lines when it has any (so the name is unique per variant)."""
+    name = section_name(p["sections"])
+    if p.get("variant"):
+        h = hashlib.sha256("\n".join(p["variant"]).encode()).hexdigest()[:12]
+        name += f"__v{h}"
+    return name
+
+
+def plan_groups(points, max_points=None):
+    """points: list of (point_id, parsed). Returns list of groups.
+    max_points: split any larger group into requests of at most this many
+    points (bounds what one Spot interruption can hold up)."""
     by_key = {}
     for pid, p in points:
         key = (bench_of(pid), hashlib.sha256(p["body"].encode()).hexdigest(),
@@ -292,23 +326,32 @@ def plan_groups(points):
         # into separate layers, so each one is still simulated on its own.
         layers = []
         for m in all_members:
-            pair = (section_name(m[1]["sections"]), m[1]["temp"])
+            pair = (corner_name(m[1]), m[1]["temp"])
             for layer in layers:
                 if pair not in layer:
                     layer[pair] = m
                     break
             else:
                 layers.append({pair: m})
+        chunks = []
         for layer in layers:
+            items = list(layer.items())
+            step = max_points or len(items)
+            chunks += [dict(items[i:i + step]) for i in range(0, len(items), step)]
+        for layer in chunks:
             members = list(layer.values())
             procs = sorted({a for a, _ in layer})
             temps = sorted({b for _, b in layer})
-            if set(layer) == {(a, b) for a in procs for b in temps}:
-                splits = [members]
-            else:
-                splits = [[m for m in members if m[1]["temp"] == t] for t in temps]
-            for sub in splits:
-                groups.append({"bench": key[0], "members": sub})
+            # A sparse (section, temp) set (the issue #64 DoE: four
+            # corners at three temperatures) stays ONE request: the pairs
+            # nobody asked for go into klt's `exclude` list, so the runner
+            # simulates exactly the member pairs and nothing else.
+            # (`exclude` has been in the request schema since klt 0.5.0,
+            # the runner image's version.) A full cross product has none.
+            exclude = sorted((a, b) for a in procs for b in temps
+                             if (a, b) not in layer)
+            groups.append({"bench": key[0], "members": members,
+                           "exclude": exclude})
     for n, g in enumerate(groups):
         first = g["members"][0][0]
         g["name"] = f"g{n:02d}_{first}"
@@ -325,13 +368,18 @@ def write_group(g, work, osdi_dir, preamble_path):
         f.write(body)
     secs = {}
     for _, p in g["members"]:
-        secs[section_name(p["sections"])] = p["sections"]
+        secs[corner_name(p)] = (p["sections"], p.get("variant") or [])
     with open(os.path.join(gdir, "corners.lib"), "w") as f:
         f.write("* generated by batch_backend.py: one section per (MOS, RES, CAP) corner bundle\n")
-        for name, cards in sorted(secs.items()):
+        if any(v for _, v in secs.values()):
+            f.write("* plus, after the model cards, the deck lines that differ per point\n"
+                    "* (--variant-lines), moved here verbatim from the generated deck\n")
+        for name, (cards, variant) in sorted(secs.items()):
             f.write(f".lib {name}\n")
             for libfile, sec in cards:
                 f.write(f'.lib "{libfile}" {sec}\n')
+            for ln in variant:
+                f.write(ln + "\n")
             f.write(f".endl {name}\n")
     kind, args = first["analysis"]
     temps = sorted({p["temp"] for _, p in g["members"]})
@@ -343,7 +391,7 @@ def write_group(g, work, osdi_dir, preamble_path):
         "analysis": {"kind": kind, "args": args},
         "measurements": [{"name": "liveness_vout", "spice": LIVENESS_MEAS[kind], "unit": "V"}],
         "corners": {"process": sorted(secs),
-                    "temperature_c": [int(t) if float(t).is_integer() else t for t in temps]},
+                    "temperature_c": [num(t) for t in temps]},
         "options": {
             "timeout_s": 1800,
             "keep_artifacts": True,
@@ -356,13 +404,22 @@ def write_group(g, work, osdi_dir, preamble_path):
             "osdi_preload": [os.path.join(osdi_dir, f"{n}.osdi") for n in OSDI_ORDER],
         },
     }
+    if g.get("exclude"):
+        req["exclude"] = [{"process": a, "temperature_c": num(b)} for a, b in g["exclude"]]
     with open(os.path.join(gdir, "request.json"), "w") as f:
         json.dump(req, f, indent=1)
         f.write("\n")
     return gdir
 
 
-def submit(gdir):
+# The fleet's shared instance cap refuses a launch outright, and klt's own
+# capacity_wait_s does not cover that refusal (klayout-tools#2917). Nothing
+# ran, so re-submitting the same request to the fleet is safe. It is never
+# a local fallback.
+CAP_REFUSAL = "exceeds BATCH_MAX_CONCURRENT_INSTANCES"
+
+
+def submit_once(gdir):
     art = os.path.join(gdir, "artifacts")
     if os.path.isdir(art):
         shutil.rmtree(art)
@@ -374,6 +431,38 @@ def submit(gdir):
     return rc
 
 
+def cap_refused(gdir):
+    for fn in ("report.json", "klt-sim.stderr"):
+        with open(os.path.join(gdir, fn), encoding="utf-8", errors="replace") as f:
+            if CAP_REFUSAL in f.read():
+                return True
+    return False
+
+
+def submit(gdir, cap_wait_s=0.0, sleep=None, clock=None):
+    """Submit one request. A refusal by the fleet's concurrency cap is
+    re-submitted with a jittered backoff (60 s doubling to 600 s) for up to
+    cap_wait_s seconds. Each refusal is logged to <gdir>/cap-retries.log."""
+    import random
+    import time
+    sleep = sleep or time.sleep
+    clock = clock or time.monotonic
+    start, n = clock(), 0
+    while True:
+        rc = submit_once(gdir)
+        if rc == 0 or not cap_refused(gdir):
+            return rc
+        delay = min(600.0, 60.0 * 2 ** n) * (0.5 + 0.5 * random.random())
+        if clock() - start + delay > cap_wait_s:
+            return rc
+        with open(os.path.join(gdir, "cap-retries.log"), "a") as f:
+            f.write(f"refused by the fleet concurrency cap; retry {n + 1} in {delay:.0f}s\n")
+        print(f"batch_backend: {os.path.basename(gdir)}: fleet concurrency cap, "
+              f"retry {n + 1} in {delay:.0f}s", file=sys.stderr)
+        sleep(delay)
+        n += 1
+
+
 def collect(g, gdir, corners_out, record_meta):
     rep = json.load(open(os.path.join(gdir, "report.json")))
     remote = rep.get("environment", {}).get("remote") or {}
@@ -381,13 +470,18 @@ def collect(g, gdir, corners_out, record_meta):
                                 "runner_klt_version": remote.get("runner_klt_version"),
                                 "instance_type": remote.get("instance_type"),
                                 "lifecycle": remote.get("lifecycle"),
-                                "corners": len(rep.get("corners", []))})
+                                "corners": len(rep.get("corners", [])),
+                                "requested": len(g["members"]),
+                                "points": [pid for pid, _ in g["members"]]})
+    if len(rep.get("corners", [])) != len(g["members"]):
+        print(f"batch_backend: WARNING: {g['name']}: report has {len(rep.get('corners', []))} "
+              f"corners, {len(g['members'])} requested (was `exclude` honoured?)", file=sys.stderr)
     by_corner = {}
     for c in rep.get("corners", []):
         by_corner[(c["process"], float(c["temperature_c"]))] = c
     problems = []
     for pid, p in g["members"]:
-        key = (section_name(p["sections"]), p["temp"])
+        key = (corner_name(p), p["temp"])
         c = by_corner.get(key)
         log_out = os.path.join(corners_out, f"{pid}.log")
         csv_out = os.path.join(corners_out, f"{pid}_{'dc' if g['bench'] == 'dcsweep' else 'ac'}.csv")
@@ -443,20 +537,27 @@ def cmd_run(a):
             if not ln.strip():
                 continue
             pid, path = ln.rstrip("\n").split("\t")
-            points.append((pid, parse_deck(path)))
-    groups = plan_groups(points)
+            points.append((pid, parse_deck(path, a.variant_lines)))
+    groups = plan_groups(points, a.max_points_per_request)
     print(f"batch_backend: {len(points)} points in {len(groups)} klt sim requests", file=sys.stderr)
     if a.plan_only:
         for g in groups:
-            procs = sorted({section_name(p["sections"]) for _, p in g["members"]})
+            procs = sorted({corner_name(p) for _, p in g["members"]})
             temps = sorted({p["temp"] for _, p in g["members"]})
-            print(f"  {g['name']}: {len(g['members'])} points, {len(procs)} sections x temps {temps}")
+            print(f"  {g['name']}: {len(g['members'])} points, {len(procs)} sections x temps {temps}"
+                  f", {len(g.get('exclude') or [])} excluded")
         return 0
     gdirs = {g["name"]: write_group(g, work, a.osdi_dir, preamble) for g in groups}
 
+    with open(os.path.join(work, "points.tsv"), "w") as f:
+        f.write("point_id\tgroup\tprocess\ttemperature_c\n")
+        for g in groups:
+            for pid, p in g["members"]:
+                f.write(f"{pid}\t{g['name']}\t{corner_name(p)}\t{num(p['temp'])}\n")
+
     rcs = {}
     with concurrent.futures.ThreadPoolExecutor(max_workers=a.submit_concurrency) as ex:
-        futs = {ex.submit(submit, gdirs[g["name"]]): g["name"] for g in groups}
+        futs = {ex.submit(submit, gdirs[g["name"]], a.cap_wait_s): g["name"] for g in groups}
         for fu in concurrent.futures.as_completed(futs):
             name = futs[fu]
             rcs[name] = fu.result()
@@ -478,11 +579,13 @@ def cmd_run(a):
     prov = os.path.join(corners_out, "_batch")
     os.makedirs(prov, exist_ok=True)
     shutil.copyfile(preamble, os.path.join(prov, "osdi-preamble.cir"))
+    shutil.copyfile(os.path.join(work, "points.tsv"), os.path.join(prov, "points.tsv"))
     for g in groups:
         src, dst = gdirs[g["name"]], os.path.join(prov, g["name"])
         os.makedirs(dst, exist_ok=True)
         for fn in sorted(os.listdir(src)):
-            if fn in ("request.json", "tb.spice", "corners.lib", "report.json") or fn.endswith(".corner.cir"):
+            if fn in ("request.json", "tb.spice", "corners.lib", "report.json",
+                      "cap-retries.log") or fn.endswith(".corner.cir"):
                 shutil.copyfile(os.path.join(src, fn), os.path.join(dst, fn))
     staged = {n: sha256(os.path.join(a.osdi_dir, f"{n}.osdi")) for n in OSDI_ORDER}
     engines = sorted(meta["engines"])
@@ -512,6 +615,15 @@ def main():
     r.add_argument("--work", required=True)
     r.add_argument("--osdi-dir", required=True)
     r.add_argument("--submit-concurrency", type=int, default=2)
+    r.add_argument("--cap-wait-s", type=float, default=3600.0,
+                   help="re-submit a request refused by the fleet's concurrency cap "
+                        "for up to this many seconds (default 3600; 0 = never)")
+    r.add_argument("--max-points-per-request", type=int, metavar="N",
+                   help="split larger groups into requests of at most N points")
+    r.add_argument("--variant-lines", metavar="REGEX",
+                   help="move body lines matching REGEX into each point's own "
+                        "corners.lib section, so decks differing only in them share "
+                        "one request (issue #64 DoE: the Iload/Cout/Resr lines)")
     r.add_argument("--plan-only", action="store_true",
                    help="parse and group the queue, print the plan, submit nothing")
     a = ap.parse_args()

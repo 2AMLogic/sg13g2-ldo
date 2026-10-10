@@ -1,0 +1,26 @@
+
+Note: No compatibility mode selected!
+
+
+Circuit: * klt sim -- generated corner deck, do not edit
+
+2e4299c4683997e26469410dc1ab36b02ced924b1ac0972d6c4eae360e1fc796  inputs/psp103.osdi
+839b164483205601c09032951f6c41d3580f15e506dc40a7202950d3afbdfc7d  inputs/psp103_nqs.osdi
+25e64a374ab523dbfeb7ffed75dcb8b086ee10f06120a9074bd68b92d7b0fb41  inputs/mosvar.osdi
+4fead17bc2e9cbfe3df6f106e9dbd6f2cdcd48c002af9c56c2ca0b0712fce350  inputs/r3_cmc.osdi
+9e16967935d9a69f5a18629f83be8bbd7d3d50ac6dae230f8e00b369ba969b04  inputs/cap_cmomi.osdi
+006ebb9bb05729e408966da04b3c02391ef3e460666e3a59ec2900c8089ea6cc  inputs/cap_cmomf.osdi
+Doing analysis at TEMP = 125.000000 and TNOM = 27.000000
+
+Using SPARSE 1.3 as Direct Linear Solver
+Note: Starting dynamic gmin stepping
+Note: Dynamic gmin stepping completed
+
+No. of Data Rows : 161
+
+  Measurements for AC Analysis
+
+liveness_vout       =  1.66020e-04
+
+ASCII raw file "/var/tmp/eda-job-klt-sim-3d9b96d2b278/outputs/artifacts/mos_ss__res_wcs__cap_typ__vce8ce97b280d_novdd_125C/waveform.raw"
+ngspice-46 done

@@ -1,0 +1,3098 @@
+[
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "cout_nf": 330,
+  "esr_mohm": 0,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 0}) | non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 0}) | target failure (gain_margin_db along load_ua @ {'cout_nf': 330, 'esr_mohm': 0}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 0}) | non-monotonic (psrr_db_100khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 0}) | interior worst (psrr_db_100khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "cout_nf": 330,
+  "esr_mohm": 0,
+  "load_ua": 13000,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 0}) | non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 0}) | target failure (gain_margin_db along load_ua @ {'cout_nf': 330, 'esr_mohm': 0}) | target failure (gain_margin_db along load_ua @ {'cout_nf': 330, 'esr_mohm': 0}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 0}) | non-monotonic (psrr_db_100khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 0}) | non-monotonic (psrr_db_100khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 0}) | interior worst (psrr_db_100khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "cout_nf": 330,
+  "esr_mohm": 0,
+  "load_ua": 37500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 0}) | target failure (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 0}) | target failure (gain_margin_db along load_ua @ {'cout_nf': 330, 'esr_mohm': 0}) | target failure (gain_margin_db along load_ua @ {'cout_nf': 330, 'esr_mohm': 0}) | non-monotonic (psrr_db_100khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "cout_nf": 330,
+  "esr_mohm": 250,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 250}) | non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 250}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 250}) | non-monotonic (psrr_db_100khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 250}) | interior worst (psrr_db_100khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "cout_nf": 330,
+  "esr_mohm": 250,
+  "load_ua": 13000,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 250}) | non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 250}) | target failure (gain_margin_db along load_ua @ {'cout_nf': 330, 'esr_mohm': 250}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 250}) | non-monotonic (psrr_db_100khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 250}) | non-monotonic (psrr_db_100khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 250}) | interior worst (psrr_db_100khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "cout_nf": 330,
+  "esr_mohm": 250,
+  "load_ua": 37500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 250}) | target failure (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 250}) | target failure (gain_margin_db along load_ua @ {'cout_nf': 330, 'esr_mohm': 250}) | target failure (gain_margin_db along load_ua @ {'cout_nf': 330, 'esr_mohm': 250}) | non-monotonic (psrr_db_100khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "cout_nf": 330,
+  "esr_mohm": 500,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 500}) | non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 500}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 500}) | non-monotonic (psrr_db_100khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "cout_nf": 330,
+  "esr_mohm": 500,
+  "load_ua": 13000,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 500}) | non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 500}) | target failure (gain_margin_db along load_ua @ {'cout_nf': 330, 'esr_mohm': 500}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 500}) | non-monotonic (psrr_db_100khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 500}) | non-monotonic (psrr_db_100khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "cout_nf": 330,
+  "esr_mohm": 500,
+  "load_ua": 37500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 500}) | target failure (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 500}) | target failure (gain_margin_db along load_ua @ {'cout_nf': 330, 'esr_mohm': 500}) | target failure (gain_margin_db along load_ua @ {'cout_nf': 330, 'esr_mohm': 500}) | non-monotonic (psrr_db_100khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "cout_nf": 1000,
+  "esr_mohm": 0,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 1000, 'esr_mohm': 0}) | non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 1000, 'esr_mohm': 0}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 1000, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "cout_nf": 1000,
+  "esr_mohm": 0,
+  "load_ua": 13000,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 1000, 'esr_mohm': 0}) | non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 1000, 'esr_mohm': 0}) | target failure (gain_margin_db along load_ua @ {'cout_nf': 1000, 'esr_mohm': 0}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 1000, 'esr_mohm': 0}) | non-monotonic (psrr_db_100khz along load_ua @ {'cout_nf': 1000, 'esr_mohm': 0}) | interior worst (psrr_db_100khz along load_ua @ {'cout_nf': 1000, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "cout_nf": 1000,
+  "esr_mohm": 0,
+  "load_ua": 37500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 1000, 'esr_mohm': 0}) | target failure (phase_margin_deg along load_ua @ {'cout_nf': 1000, 'esr_mohm': 0}) | target failure (gain_margin_db along load_ua @ {'cout_nf': 1000, 'esr_mohm': 0}) | target failure (gain_margin_db along load_ua @ {'cout_nf': 1000, 'esr_mohm': 0}) | non-monotonic (psrr_db_100khz along load_ua @ {'cout_nf': 1000, 'esr_mohm': 0}) | interior worst (psrr_db_100khz along load_ua @ {'cout_nf': 1000, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "cout_nf": 1000,
+  "esr_mohm": 250,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 1000, 'esr_mohm': 250}) | non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 1000, 'esr_mohm': 250}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 1000, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "cout_nf": 1000,
+  "esr_mohm": 250,
+  "load_ua": 37500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 1000, 'esr_mohm': 250}) | target failure (gain_margin_db along load_ua @ {'cout_nf': 1000, 'esr_mohm': 250}) | target failure (gain_margin_db along load_ua @ {'cout_nf': 1000, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "cout_nf": 1000,
+  "esr_mohm": 250,
+  "load_ua": 13000,
+  "reason": "non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 1000, 'esr_mohm': 250}) | target failure (gain_margin_db along load_ua @ {'cout_nf': 1000, 'esr_mohm': 250}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 1000, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "cout_nf": 1000,
+  "esr_mohm": 500,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 1000, 'esr_mohm': 500}) | non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 1000, 'esr_mohm': 500}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 1000, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "cout_nf": 1000,
+  "esr_mohm": 500,
+  "load_ua": 13000,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 1000, 'esr_mohm': 500}) | non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 1000, 'esr_mohm': 500}) | target failure (gain_margin_db along load_ua @ {'cout_nf': 1000, 'esr_mohm': 500}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 1000, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "cout_nf": 1000,
+  "esr_mohm": 500,
+  "load_ua": 37500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 1000, 'esr_mohm': 500}) | target failure (phase_margin_deg along load_ua @ {'cout_nf': 1000, 'esr_mohm': 500}) | target failure (gain_margin_db along load_ua @ {'cout_nf': 1000, 'esr_mohm': 500}) | target failure (gain_margin_db along load_ua @ {'cout_nf': 1000, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "cout_nf": 2200,
+  "esr_mohm": 0,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 2200, 'esr_mohm': 0}) | non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 2200, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "cout_nf": 2200,
+  "esr_mohm": 0,
+  "load_ua": 37500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 2200, 'esr_mohm': 0}) | target failure (gain_margin_db along load_ua @ {'cout_nf': 2200, 'esr_mohm': 0}) | target failure (gain_margin_db along load_ua @ {'cout_nf': 2200, 'esr_mohm': 0}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 2200, 'esr_mohm': 0}) | non-monotonic (psrr_db_100khz along load_ua @ {'cout_nf': 2200, 'esr_mohm': 0}) | interior worst (psrr_db_100khz along load_ua @ {'cout_nf': 2200, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "cout_nf": 2200,
+  "esr_mohm": 0,
+  "load_ua": 13000,
+  "reason": "non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 2200, 'esr_mohm': 0}) | target failure (gain_margin_db along load_ua @ {'cout_nf': 2200, 'esr_mohm': 0}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 2200, 'esr_mohm': 0}) | non-monotonic (psrr_db_100khz along load_ua @ {'cout_nf': 2200, 'esr_mohm': 0}) | interior worst (psrr_db_100khz along load_ua @ {'cout_nf': 2200, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "cout_nf": 2200,
+  "esr_mohm": 250,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 2200, 'esr_mohm': 250}) | non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 2200, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "cout_nf": 2200,
+  "esr_mohm": 250,
+  "load_ua": 13000,
+  "reason": "non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 2200, 'esr_mohm': 250}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 2200, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "cout_nf": 2200,
+  "esr_mohm": 500,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 2200, 'esr_mohm': 500}) | non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 2200, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "cout_nf": 2200,
+  "esr_mohm": 500,
+  "load_ua": 13000,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 2200, 'esr_mohm': 500}) | non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 2200, 'esr_mohm': 500}) | target failure (gain_margin_db along load_ua @ {'cout_nf': 2200, 'esr_mohm': 500}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 2200, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "cout_nf": 2200,
+  "esr_mohm": 500,
+  "load_ua": 37500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 2200, 'esr_mohm': 500}) | target failure (phase_margin_deg along load_ua @ {'cout_nf': 2200, 'esr_mohm': 500}) | target failure (gain_margin_db along load_ua @ {'cout_nf': 2200, 'esr_mohm': 500}) | target failure (gain_margin_db along load_ua @ {'cout_nf': 2200, 'esr_mohm': 500}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 2200, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "cout_nf": 4700,
+  "esr_mohm": 0,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 4700, 'esr_mohm': 0}) | non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 4700, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "cout_nf": 4700,
+  "esr_mohm": 0,
+  "load_ua": 13000,
+  "reason": "non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 4700, 'esr_mohm': 0}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 4700, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "cout_nf": 4700,
+  "esr_mohm": 250,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 4700, 'esr_mohm': 250}) | non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 4700, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "cout_nf": 4700,
+  "esr_mohm": 250,
+  "load_ua": 13000,
+  "reason": "non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 4700, 'esr_mohm': 250}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 4700, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "cout_nf": 4700,
+  "esr_mohm": 500,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 4700, 'esr_mohm': 500}) | non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 4700, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "cout_nf": 4700,
+  "esr_mohm": 500,
+  "load_ua": 37500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 4700, 'esr_mohm': 500}) | target failure (gain_margin_db along load_ua @ {'cout_nf': 4700, 'esr_mohm': 500}) | target failure (gain_margin_db along load_ua @ {'cout_nf': 4700, 'esr_mohm': 500}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 4700, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "cout_nf": 4700,
+  "esr_mohm": 500,
+  "load_ua": 13000,
+  "reason": "non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 4700, 'esr_mohm': 500}) | target failure (gain_margin_db along load_ua @ {'cout_nf': 4700, 'esr_mohm': 500}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 4700, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 0,
+  "esr_mohm": 0,
+  "cout_nf": 665,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 0}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 0,
+  "esr_mohm": 0,
+  "cout_nf": 1600,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 0}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 0,
+  "esr_mohm": 0,
+  "cout_nf": 3450,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 0}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 0,
+  "esr_mohm": 250,
+  "cout_nf": 665,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 250}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 0,
+  "esr_mohm": 250,
+  "cout_nf": 1600,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 250}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 0,
+  "esr_mohm": 250,
+  "cout_nf": 3450,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 250}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 0,
+  "esr_mohm": 500,
+  "cout_nf": 665,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 500}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 0,
+  "esr_mohm": 500,
+  "cout_nf": 1600,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 500}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 0,
+  "esr_mohm": 500,
+  "cout_nf": 3450,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 500}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 1000,
+  "esr_mohm": 0,
+  "cout_nf": 1600,
+  "reason": "non-monotonic (phase_margin_deg along cout_nf @ {'load_ua': 1000, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 1000,
+  "esr_mohm": 0,
+  "cout_nf": 3450,
+  "reason": "non-monotonic (phase_margin_deg along cout_nf @ {'load_ua': 1000, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 1000,
+  "esr_mohm": 250,
+  "cout_nf": 1600,
+  "reason": "non-monotonic (phase_margin_deg along cout_nf @ {'load_ua': 1000, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 1000,
+  "esr_mohm": 250,
+  "cout_nf": 3450,
+  "reason": "non-monotonic (phase_margin_deg along cout_nf @ {'load_ua': 1000, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 1000,
+  "esr_mohm": 500,
+  "cout_nf": 1600,
+  "reason": "non-monotonic (phase_margin_deg along cout_nf @ {'load_ua': 1000, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 1000,
+  "esr_mohm": 500,
+  "cout_nf": 3450,
+  "reason": "non-monotonic (phase_margin_deg along cout_nf @ {'load_ua': 1000, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 25000,
+  "esr_mohm": 0,
+  "cout_nf": 665,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 25000, 'esr_mohm': 0}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 25000, 'esr_mohm': 0}) | target failure (gain_margin_db along cout_nf @ {'load_ua': 25000, 'esr_mohm': 0}) | target failure (gain_margin_db along cout_nf @ {'load_ua': 25000, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 25000,
+  "esr_mohm": 0,
+  "cout_nf": 1600,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 25000, 'esr_mohm': 0}) | target failure (gain_margin_db along cout_nf @ {'load_ua': 25000, 'esr_mohm': 0}) | target failure (gain_margin_db along cout_nf @ {'load_ua': 25000, 'esr_mohm': 0}) | non-monotonic (psrr_db_100khz along cout_nf @ {'load_ua': 25000, 'esr_mohm': 0}) | interior worst (psrr_db_100khz along cout_nf @ {'load_ua': 25000, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 25000,
+  "esr_mohm": 250,
+  "cout_nf": 665,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 25000, 'esr_mohm': 250}) | target failure (gain_margin_db along cout_nf @ {'load_ua': 25000, 'esr_mohm': 250}) | target failure (gain_margin_db along cout_nf @ {'load_ua': 25000, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 25000,
+  "esr_mohm": 500,
+  "cout_nf": 665,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 25000, 'esr_mohm': 500}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 25000, 'esr_mohm': 500}) | target failure (gain_margin_db along cout_nf @ {'load_ua': 25000, 'esr_mohm': 500}) | target failure (gain_margin_db along cout_nf @ {'load_ua': 25000, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 25000,
+  "esr_mohm": 500,
+  "cout_nf": 1600,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 25000, 'esr_mohm': 500}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 25000, 'esr_mohm': 500}) | target failure (gain_margin_db along cout_nf @ {'load_ua': 25000, 'esr_mohm': 500}) | target failure (gain_margin_db along cout_nf @ {'load_ua': 25000, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 25000,
+  "esr_mohm": 500,
+  "cout_nf": 3450,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 25000, 'esr_mohm': 500}) | target failure (gain_margin_db along cout_nf @ {'load_ua': 25000, 'esr_mohm': 500}) | target failure (gain_margin_db along cout_nf @ {'load_ua': 25000, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 50000,
+  "esr_mohm": 0,
+  "cout_nf": 665,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 50000, 'esr_mohm': 0}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 50000, 'esr_mohm': 0}) | target failure (gain_margin_db along cout_nf @ {'load_ua': 50000, 'esr_mohm': 0}) | target failure (gain_margin_db along cout_nf @ {'load_ua': 50000, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 50000,
+  "esr_mohm": 0,
+  "cout_nf": 1600,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 50000, 'esr_mohm': 0}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 50000, 'esr_mohm': 0}) | target failure (gain_margin_db along cout_nf @ {'load_ua': 50000, 'esr_mohm': 0}) | target failure (gain_margin_db along cout_nf @ {'load_ua': 50000, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 50000,
+  "esr_mohm": 0,
+  "cout_nf": 3450,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 50000, 'esr_mohm': 0}) | target failure (gain_margin_db along cout_nf @ {'load_ua': 50000, 'esr_mohm': 0}) | target failure (gain_margin_db along cout_nf @ {'load_ua': 50000, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 50000,
+  "esr_mohm": 250,
+  "cout_nf": 665,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 50000, 'esr_mohm': 250}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 50000, 'esr_mohm': 250}) | target failure (gain_margin_db along cout_nf @ {'load_ua': 50000, 'esr_mohm': 250}) | target failure (gain_margin_db along cout_nf @ {'load_ua': 50000, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 50000,
+  "esr_mohm": 250,
+  "cout_nf": 1600,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 50000, 'esr_mohm': 250}) | target failure (gain_margin_db along cout_nf @ {'load_ua': 50000, 'esr_mohm': 250}) | target failure (gain_margin_db along cout_nf @ {'load_ua': 50000, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 50000,
+  "esr_mohm": 500,
+  "cout_nf": 665,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 50000, 'esr_mohm': 500}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 50000, 'esr_mohm': 500}) | target failure (gain_margin_db along cout_nf @ {'load_ua': 50000, 'esr_mohm': 500}) | target failure (gain_margin_db along cout_nf @ {'load_ua': 50000, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 50000,
+  "esr_mohm": 500,
+  "cout_nf": 1600,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 50000, 'esr_mohm': 500}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 50000, 'esr_mohm': 500}) | target failure (gain_margin_db along cout_nf @ {'load_ua': 50000, 'esr_mohm': 500}) | target failure (gain_margin_db along cout_nf @ {'load_ua': 50000, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 50000,
+  "esr_mohm": 500,
+  "cout_nf": 3450,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 50000, 'esr_mohm': 500}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 50000, 'esr_mohm': 500}) | target failure (gain_margin_db along cout_nf @ {'load_ua': 50000, 'esr_mohm': 500}) | target failure (gain_margin_db along cout_nf @ {'load_ua': 50000, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 0,
+  "cout_nf": 330,
+  "esr_mohm": 125,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 330}) | target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 330})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 0,
+  "cout_nf": 330,
+  "esr_mohm": 375,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 330}) | target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 330})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 0,
+  "cout_nf": 1000,
+  "esr_mohm": 125,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 1000}) | target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 1000})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 0,
+  "cout_nf": 1000,
+  "esr_mohm": 375,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 1000}) | target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 1000})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 0,
+  "cout_nf": 2200,
+  "esr_mohm": 125,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 2200}) | target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 2200})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 0,
+  "cout_nf": 2200,
+  "esr_mohm": 375,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 2200}) | target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 2200})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 0,
+  "cout_nf": 4700,
+  "esr_mohm": 125,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 4700}) | target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 4700})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 0,
+  "cout_nf": 4700,
+  "esr_mohm": 375,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 4700}) | target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 4700})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 25000,
+  "cout_nf": 330,
+  "esr_mohm": 125,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 25000, 'cout_nf': 330}) | target failure (phase_margin_deg along esr_mohm @ {'load_ua': 25000, 'cout_nf': 330}) | target failure (gain_margin_db along esr_mohm @ {'load_ua': 25000, 'cout_nf': 330}) | target failure (gain_margin_db along esr_mohm @ {'load_ua': 25000, 'cout_nf': 330})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 25000,
+  "cout_nf": 330,
+  "esr_mohm": 375,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 25000, 'cout_nf': 330}) | target failure (phase_margin_deg along esr_mohm @ {'load_ua': 25000, 'cout_nf': 330}) | target failure (gain_margin_db along esr_mohm @ {'load_ua': 25000, 'cout_nf': 330}) | target failure (gain_margin_db along esr_mohm @ {'load_ua': 25000, 'cout_nf': 330})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 25000,
+  "cout_nf": 1000,
+  "esr_mohm": 125,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 25000, 'cout_nf': 1000}) | non-monotonic (phase_margin_deg along esr_mohm @ {'load_ua': 25000, 'cout_nf': 1000}) | target failure (gain_margin_db along esr_mohm @ {'load_ua': 25000, 'cout_nf': 1000}) | target failure (gain_margin_db along esr_mohm @ {'load_ua': 25000, 'cout_nf': 1000}) | non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 25000, 'cout_nf': 1000})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 25000,
+  "cout_nf": 1000,
+  "esr_mohm": 375,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 25000, 'cout_nf': 1000}) | non-monotonic (phase_margin_deg along esr_mohm @ {'load_ua': 25000, 'cout_nf': 1000}) | target failure (gain_margin_db along esr_mohm @ {'load_ua': 25000, 'cout_nf': 1000}) | target failure (gain_margin_db along esr_mohm @ {'load_ua': 25000, 'cout_nf': 1000}) | non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 25000, 'cout_nf': 1000})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 25000,
+  "cout_nf": 2200,
+  "esr_mohm": 375,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 25000, 'cout_nf': 2200}) | non-monotonic (phase_margin_deg along esr_mohm @ {'load_ua': 25000, 'cout_nf': 2200}) | target failure (gain_margin_db along esr_mohm @ {'load_ua': 25000, 'cout_nf': 2200}) | non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 25000, 'cout_nf': 2200})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 25000,
+  "cout_nf": 2200,
+  "esr_mohm": 125,
+  "reason": "non-monotonic (phase_margin_deg along esr_mohm @ {'load_ua': 25000, 'cout_nf': 2200}) | target failure (gain_margin_db along esr_mohm @ {'load_ua': 25000, 'cout_nf': 2200}) | non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 25000, 'cout_nf': 2200})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 25000,
+  "cout_nf": 4700,
+  "esr_mohm": 125,
+  "reason": "non-monotonic (phase_margin_deg along esr_mohm @ {'load_ua': 25000, 'cout_nf': 4700}) | non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 25000, 'cout_nf': 4700}) | non-monotonic (psrr_db_100khz along esr_mohm @ {'load_ua': 25000, 'cout_nf': 4700})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 25000,
+  "cout_nf": 4700,
+  "esr_mohm": 375,
+  "reason": "non-monotonic (phase_margin_deg along esr_mohm @ {'load_ua': 25000, 'cout_nf': 4700}) | target failure (gain_margin_db along esr_mohm @ {'load_ua': 25000, 'cout_nf': 4700}) | non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 25000, 'cout_nf': 4700}) | non-monotonic (psrr_db_100khz along esr_mohm @ {'load_ua': 25000, 'cout_nf': 4700})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 50000,
+  "cout_nf": 330,
+  "esr_mohm": 125,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 50000, 'cout_nf': 330}) | target failure (phase_margin_deg along esr_mohm @ {'load_ua': 50000, 'cout_nf': 330}) | target failure (gain_margin_db along esr_mohm @ {'load_ua': 50000, 'cout_nf': 330}) | target failure (gain_margin_db along esr_mohm @ {'load_ua': 50000, 'cout_nf': 330})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 50000,
+  "cout_nf": 330,
+  "esr_mohm": 375,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 50000, 'cout_nf': 330}) | target failure (phase_margin_deg along esr_mohm @ {'load_ua': 50000, 'cout_nf': 330}) | target failure (gain_margin_db along esr_mohm @ {'load_ua': 50000, 'cout_nf': 330}) | target failure (gain_margin_db along esr_mohm @ {'load_ua': 50000, 'cout_nf': 330})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 50000,
+  "cout_nf": 1000,
+  "esr_mohm": 125,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 50000, 'cout_nf': 1000}) | target failure (phase_margin_deg along esr_mohm @ {'load_ua': 50000, 'cout_nf': 1000}) | non-monotonic (phase_margin_deg along esr_mohm @ {'load_ua': 50000, 'cout_nf': 1000}) | target failure (gain_margin_db along esr_mohm @ {'load_ua': 50000, 'cout_nf': 1000}) | target failure (gain_margin_db along esr_mohm @ {'load_ua': 50000, 'cout_nf': 1000}) | non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 50000, 'cout_nf': 1000})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 50000,
+  "cout_nf": 1000,
+  "esr_mohm": 375,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 50000, 'cout_nf': 1000}) | target failure (phase_margin_deg along esr_mohm @ {'load_ua': 50000, 'cout_nf': 1000}) | non-monotonic (phase_margin_deg along esr_mohm @ {'load_ua': 50000, 'cout_nf': 1000}) | target failure (gain_margin_db along esr_mohm @ {'load_ua': 50000, 'cout_nf': 1000}) | target failure (gain_margin_db along esr_mohm @ {'load_ua': 50000, 'cout_nf': 1000}) | non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 50000, 'cout_nf': 1000})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 50000,
+  "cout_nf": 2200,
+  "esr_mohm": 125,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 50000, 'cout_nf': 2200}) | non-monotonic (phase_margin_deg along esr_mohm @ {'load_ua': 50000, 'cout_nf': 2200}) | target failure (gain_margin_db along esr_mohm @ {'load_ua': 50000, 'cout_nf': 2200}) | target failure (gain_margin_db along esr_mohm @ {'load_ua': 50000, 'cout_nf': 2200}) | non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 50000, 'cout_nf': 2200})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 50000,
+  "cout_nf": 2200,
+  "esr_mohm": 375,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 50000, 'cout_nf': 2200}) | non-monotonic (phase_margin_deg along esr_mohm @ {'load_ua': 50000, 'cout_nf': 2200}) | target failure (gain_margin_db along esr_mohm @ {'load_ua': 50000, 'cout_nf': 2200}) | target failure (gain_margin_db along esr_mohm @ {'load_ua': 50000, 'cout_nf': 2200}) | non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 50000, 'cout_nf': 2200})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 50000,
+  "cout_nf": 4700,
+  "esr_mohm": 375,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 50000, 'cout_nf': 4700}) | target failure (gain_margin_db along esr_mohm @ {'load_ua': 50000, 'cout_nf': 4700}) | non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 50000, 'cout_nf': 4700})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "cout_nf": 2200,
+  "esr_mohm": 250,
+  "load_ua": 37500,
+  "reason": "target failure (gain_margin_db along load_ua @ {'cout_nf': 2200, 'esr_mohm': 250}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 2200, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "cout_nf": 4700,
+  "esr_mohm": 0,
+  "load_ua": 37500,
+  "reason": "target failure (gain_margin_db along load_ua @ {'cout_nf': 4700, 'esr_mohm': 0}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 4700, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 1000,
+  "esr_mohm": 0,
+  "cout_nf": 665,
+  "reason": "target failure (gain_margin_db along cout_nf @ {'load_ua': 1000, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 25000,
+  "esr_mohm": 0,
+  "cout_nf": 3450,
+  "reason": "target failure (gain_margin_db along cout_nf @ {'load_ua': 25000, 'esr_mohm': 0}) | non-monotonic (psrr_db_100khz along cout_nf @ {'load_ua': 25000, 'esr_mohm': 0}) | interior worst (psrr_db_100khz along cout_nf @ {'load_ua': 25000, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 25000,
+  "esr_mohm": 250,
+  "cout_nf": 1600,
+  "reason": "target failure (gain_margin_db along cout_nf @ {'load_ua': 25000, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 50000,
+  "esr_mohm": 250,
+  "cout_nf": 3450,
+  "reason": "target failure (gain_margin_db along cout_nf @ {'load_ua': 50000, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 1000,
+  "cout_nf": 330,
+  "esr_mohm": 125,
+  "reason": "target failure (gain_margin_db along esr_mohm @ {'load_ua': 1000, 'cout_nf': 330})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 1000,
+  "cout_nf": 1000,
+  "esr_mohm": 125,
+  "reason": "non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 1000, 'cout_nf': 1000})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 1000,
+  "cout_nf": 1000,
+  "esr_mohm": 375,
+  "reason": "non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 1000, 'cout_nf': 1000})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 1000,
+  "cout_nf": 2200,
+  "esr_mohm": 125,
+  "reason": "non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 1000, 'cout_nf': 2200})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 1000,
+  "cout_nf": 2200,
+  "esr_mohm": 375,
+  "reason": "non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 1000, 'cout_nf': 2200})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 1000,
+  "cout_nf": 4700,
+  "esr_mohm": 125,
+  "reason": "non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 1000, 'cout_nf': 4700}) | non-monotonic (psrr_db_100khz along esr_mohm @ {'load_ua': 1000, 'cout_nf': 4700})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 1000,
+  "cout_nf": 4700,
+  "esr_mohm": 375,
+  "reason": "non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 1000, 'cout_nf': 4700}) | non-monotonic (psrr_db_100khz along esr_mohm @ {'load_ua': 1000, 'cout_nf': 4700})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "load_ua": 50000,
+  "cout_nf": 4700,
+  "esr_mohm": 125,
+  "reason": "target failure (gain_margin_db along esr_mohm @ {'load_ua': 50000, 'cout_nf': 4700}) | non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 50000, 'cout_nf': 4700})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": -40,
+  "res": "wcs",
+  "cout_nf": 4700,
+  "esr_mohm": 250,
+  "load_ua": 37500,
+  "reason": "non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 4700, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "cout_nf": 330,
+  "esr_mohm": 0,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 0}) | non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 0}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 0}) | non-monotonic (psrr_db_100khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 0}) | interior worst (psrr_db_100khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "cout_nf": 330,
+  "esr_mohm": 0,
+  "load_ua": 13000,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 0}) | non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 0}) | target failure (gain_margin_db along load_ua @ {'cout_nf': 330, 'esr_mohm': 0}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 0}) | non-monotonic (psrr_db_100khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 0}) | interior worst (psrr_db_100khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "cout_nf": 330,
+  "esr_mohm": 0,
+  "load_ua": 37500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 0}) | target failure (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 0}) | target failure (gain_margin_db along load_ua @ {'cout_nf': 330, 'esr_mohm': 0}) | target failure (gain_margin_db along load_ua @ {'cout_nf': 330, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "cout_nf": 330,
+  "esr_mohm": 250,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 250}) | non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 250}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "cout_nf": 330,
+  "esr_mohm": 250,
+  "load_ua": 37500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 250}) | target failure (gain_margin_db along load_ua @ {'cout_nf': 330, 'esr_mohm': 250}) | non-monotonic (psrr_db_100khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 250}) | interior worst (psrr_db_100khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "cout_nf": 330,
+  "esr_mohm": 250,
+  "load_ua": 13000,
+  "reason": "non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 250}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 250}) | non-monotonic (psrr_db_100khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 250}) | interior worst (psrr_db_100khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "cout_nf": 330,
+  "esr_mohm": 500,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 500}) | non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 500}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "cout_nf": 330,
+  "esr_mohm": 500,
+  "load_ua": 13000,
+  "reason": "non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 500}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "cout_nf": 1000,
+  "esr_mohm": 0,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 1000, 'esr_mohm': 0}) | non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 1000, 'esr_mohm': 0}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 1000, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "cout_nf": 1000,
+  "esr_mohm": 0,
+  "load_ua": 13000,
+  "reason": "non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 1000, 'esr_mohm': 0}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 1000, 'esr_mohm': 0}) | non-monotonic (psrr_db_100khz along load_ua @ {'cout_nf': 1000, 'esr_mohm': 0}) | interior worst (psrr_db_100khz along load_ua @ {'cout_nf': 1000, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "cout_nf": 1000,
+  "esr_mohm": 250,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 1000, 'esr_mohm': 250}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 1000, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "cout_nf": 1000,
+  "esr_mohm": 250,
+  "load_ua": 13000,
+  "reason": "non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 1000, 'esr_mohm': 250}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 1000, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "cout_nf": 1000,
+  "esr_mohm": 250,
+  "load_ua": 37500,
+  "reason": "non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 1000, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "cout_nf": 1000,
+  "esr_mohm": 500,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 1000, 'esr_mohm': 500}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 1000, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "cout_nf": 1000,
+  "esr_mohm": 500,
+  "load_ua": 13000,
+  "reason": "non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 1000, 'esr_mohm': 500}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 1000, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "cout_nf": 1000,
+  "esr_mohm": 500,
+  "load_ua": 37500,
+  "reason": "non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 1000, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "cout_nf": 2200,
+  "esr_mohm": 0,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 2200, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "cout_nf": 2200,
+  "esr_mohm": 0,
+  "load_ua": 13000,
+  "reason": "non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 2200, 'esr_mohm': 0}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 2200, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "cout_nf": 2200,
+  "esr_mohm": 0,
+  "load_ua": 37500,
+  "reason": "non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 2200, 'esr_mohm': 0}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 2200, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "cout_nf": 2200,
+  "esr_mohm": 250,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 2200, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "cout_nf": 2200,
+  "esr_mohm": 500,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 2200, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "cout_nf": 2200,
+  "esr_mohm": 500,
+  "load_ua": 13000,
+  "reason": "non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 2200, 'esr_mohm': 500}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 2200, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "cout_nf": 2200,
+  "esr_mohm": 500,
+  "load_ua": 37500,
+  "reason": "non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 2200, 'esr_mohm': 500}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 2200, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "cout_nf": 4700,
+  "esr_mohm": 0,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 4700, 'esr_mohm': 0}) | target failure (phase_margin_deg along load_ua @ {'cout_nf': 4700, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "cout_nf": 4700,
+  "esr_mohm": 0,
+  "load_ua": 13000,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 4700, 'esr_mohm': 0}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 4700, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "cout_nf": 4700,
+  "esr_mohm": 250,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 4700, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "cout_nf": 4700,
+  "esr_mohm": 500,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 4700, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "cout_nf": 4700,
+  "esr_mohm": 500,
+  "load_ua": 13000,
+  "reason": "non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 4700, 'esr_mohm': 500}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 4700, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "cout_nf": 4700,
+  "esr_mohm": 500,
+  "load_ua": 37500,
+  "reason": "non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 4700, 'esr_mohm': 500}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 4700, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 0,
+  "esr_mohm": 0,
+  "cout_nf": 665,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 0}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 0,
+  "esr_mohm": 0,
+  "cout_nf": 1600,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 0}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 0,
+  "esr_mohm": 0,
+  "cout_nf": 3450,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 0}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 0,
+  "esr_mohm": 250,
+  "cout_nf": 665,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 250}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 0,
+  "esr_mohm": 250,
+  "cout_nf": 1600,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 250}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 250}) | non-monotonic (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 250}) | interior worst (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 0,
+  "esr_mohm": 250,
+  "cout_nf": 3450,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 250}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 250}) | non-monotonic (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 250}) | interior worst (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 0,
+  "esr_mohm": 500,
+  "cout_nf": 665,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 500}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 0,
+  "esr_mohm": 500,
+  "cout_nf": 1600,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 500}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 500}) | non-monotonic (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 500}) | interior worst (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 0,
+  "esr_mohm": 500,
+  "cout_nf": 3450,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 500}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 500}) | non-monotonic (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 500}) | interior worst (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 1000,
+  "esr_mohm": 0,
+  "cout_nf": 3450,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 1000, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 25000,
+  "esr_mohm": 0,
+  "cout_nf": 665,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 25000, 'esr_mohm': 0}) | target failure (gain_margin_db along cout_nf @ {'load_ua': 25000, 'esr_mohm': 0}) | non-monotonic (psrr_db_100khz along cout_nf @ {'load_ua': 25000, 'esr_mohm': 0}) | interior worst (psrr_db_100khz along cout_nf @ {'load_ua': 25000, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 50000,
+  "esr_mohm": 0,
+  "cout_nf": 665,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 50000, 'esr_mohm': 0}) | target failure (gain_margin_db along cout_nf @ {'load_ua': 50000, 'esr_mohm': 0}) | target failure (gain_margin_db along cout_nf @ {'load_ua': 50000, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 50000,
+  "esr_mohm": 250,
+  "cout_nf": 665,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 50000, 'esr_mohm': 250}) | target failure (gain_margin_db along cout_nf @ {'load_ua': 50000, 'esr_mohm': 250}) | non-monotonic (psrr_db_100khz along cout_nf @ {'load_ua': 50000, 'esr_mohm': 250}) | interior worst (psrr_db_100khz along cout_nf @ {'load_ua': 50000, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 0,
+  "cout_nf": 330,
+  "esr_mohm": 125,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 330}) | target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 330})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 0,
+  "cout_nf": 330,
+  "esr_mohm": 375,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 330}) | target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 330})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 0,
+  "cout_nf": 1000,
+  "esr_mohm": 125,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 1000}) | target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 1000})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 0,
+  "cout_nf": 1000,
+  "esr_mohm": 375,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 1000}) | target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 1000})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 0,
+  "cout_nf": 2200,
+  "esr_mohm": 125,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 2200}) | target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 2200})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 0,
+  "cout_nf": 2200,
+  "esr_mohm": 375,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 2200}) | target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 2200})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 0,
+  "cout_nf": 4700,
+  "esr_mohm": 125,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 4700}) | target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 4700})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 0,
+  "cout_nf": 4700,
+  "esr_mohm": 375,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 4700}) | target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 4700})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 1000,
+  "cout_nf": 4700,
+  "esr_mohm": 125,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 1000, 'cout_nf': 4700}) | non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 1000, 'cout_nf': 4700})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 25000,
+  "cout_nf": 330,
+  "esr_mohm": 125,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 25000, 'cout_nf': 330}) | target failure (gain_margin_db along esr_mohm @ {'load_ua': 25000, 'cout_nf': 330})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 25000,
+  "cout_nf": 1000,
+  "esr_mohm": 125,
+  "reason": "non-monotonic (phase_margin_deg along esr_mohm @ {'load_ua': 25000, 'cout_nf': 1000}) | non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 25000, 'cout_nf': 1000})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 25000,
+  "cout_nf": 1000,
+  "esr_mohm": 375,
+  "reason": "non-monotonic (phase_margin_deg along esr_mohm @ {'load_ua': 25000, 'cout_nf': 1000}) | non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 25000, 'cout_nf': 1000})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 25000,
+  "cout_nf": 2200,
+  "esr_mohm": 125,
+  "reason": "non-monotonic (phase_margin_deg along esr_mohm @ {'load_ua': 25000, 'cout_nf': 2200}) | non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 25000, 'cout_nf': 2200})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 25000,
+  "cout_nf": 2200,
+  "esr_mohm": 375,
+  "reason": "non-monotonic (phase_margin_deg along esr_mohm @ {'load_ua': 25000, 'cout_nf': 2200}) | non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 25000, 'cout_nf': 2200})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 25000,
+  "cout_nf": 4700,
+  "esr_mohm": 125,
+  "reason": "non-monotonic (phase_margin_deg along esr_mohm @ {'load_ua': 25000, 'cout_nf': 4700}) | non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 25000, 'cout_nf': 4700}) | non-monotonic (psrr_db_100khz along esr_mohm @ {'load_ua': 25000, 'cout_nf': 4700})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 25000,
+  "cout_nf": 4700,
+  "esr_mohm": 375,
+  "reason": "non-monotonic (phase_margin_deg along esr_mohm @ {'load_ua': 25000, 'cout_nf': 4700}) | non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 25000, 'cout_nf': 4700}) | non-monotonic (psrr_db_100khz along esr_mohm @ {'load_ua': 25000, 'cout_nf': 4700})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 50000,
+  "cout_nf": 330,
+  "esr_mohm": 125,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 50000, 'cout_nf': 330}) | target failure (phase_margin_deg along esr_mohm @ {'load_ua': 50000, 'cout_nf': 330}) | target failure (gain_margin_db along esr_mohm @ {'load_ua': 50000, 'cout_nf': 330}) | target failure (gain_margin_db along esr_mohm @ {'load_ua': 50000, 'cout_nf': 330})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 50000,
+  "cout_nf": 330,
+  "esr_mohm": 375,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 50000, 'cout_nf': 330}) | target failure (gain_margin_db along esr_mohm @ {'load_ua': 50000, 'cout_nf': 330})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 50000,
+  "cout_nf": 1000,
+  "esr_mohm": 125,
+  "reason": "non-monotonic (phase_margin_deg along esr_mohm @ {'load_ua': 50000, 'cout_nf': 1000}) | target failure (gain_margin_db along esr_mohm @ {'load_ua': 50000, 'cout_nf': 1000}) | non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 50000, 'cout_nf': 1000})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 50000,
+  "cout_nf": 1000,
+  "esr_mohm": 375,
+  "reason": "non-monotonic (phase_margin_deg along esr_mohm @ {'load_ua': 50000, 'cout_nf': 1000}) | non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 50000, 'cout_nf': 1000})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 50000,
+  "cout_nf": 2200,
+  "esr_mohm": 125,
+  "reason": "non-monotonic (phase_margin_deg along esr_mohm @ {'load_ua': 50000, 'cout_nf': 2200}) | non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 50000, 'cout_nf': 2200})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 50000,
+  "cout_nf": 2200,
+  "esr_mohm": 375,
+  "reason": "non-monotonic (phase_margin_deg along esr_mohm @ {'load_ua': 50000, 'cout_nf': 2200}) | non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 50000, 'cout_nf': 2200})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 50000,
+  "cout_nf": 4700,
+  "esr_mohm": 125,
+  "reason": "non-monotonic (phase_margin_deg along esr_mohm @ {'load_ua': 50000, 'cout_nf': 4700}) | non-monotonic (psrr_db_100khz along esr_mohm @ {'load_ua': 50000, 'cout_nf': 4700})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 50000,
+  "cout_nf": 4700,
+  "esr_mohm": 375,
+  "reason": "non-monotonic (phase_margin_deg along esr_mohm @ {'load_ua': 50000, 'cout_nf': 4700}) | non-monotonic (psrr_db_100khz along esr_mohm @ {'load_ua': 50000, 'cout_nf': 4700})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "cout_nf": 1000,
+  "esr_mohm": 0,
+  "load_ua": 37500,
+  "reason": "target failure (gain_margin_db along load_ua @ {'cout_nf': 1000, 'esr_mohm': 0}) | non-monotonic (psrr_db_100khz along load_ua @ {'cout_nf': 1000, 'esr_mohm': 0}) | interior worst (psrr_db_100khz along load_ua @ {'cout_nf': 1000, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 50000,
+  "esr_mohm": 0,
+  "cout_nf": 1600,
+  "reason": "target failure (gain_margin_db along cout_nf @ {'load_ua': 50000, 'esr_mohm': 0}) | non-monotonic (psrr_db_100khz along cout_nf @ {'load_ua': 50000, 'esr_mohm': 0}) | interior worst (psrr_db_100khz along cout_nf @ {'load_ua': 50000, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 1000,
+  "cout_nf": 1000,
+  "esr_mohm": 125,
+  "reason": "non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 1000, 'cout_nf': 1000})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 1000,
+  "cout_nf": 1000,
+  "esr_mohm": 375,
+  "reason": "non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 1000, 'cout_nf': 1000})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 1000,
+  "cout_nf": 2200,
+  "esr_mohm": 125,
+  "reason": "non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 1000, 'cout_nf': 2200}) | non-monotonic (psrr_db_100khz along esr_mohm @ {'load_ua': 1000, 'cout_nf': 2200})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 1000,
+  "cout_nf": 2200,
+  "esr_mohm": 375,
+  "reason": "non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 1000, 'cout_nf': 2200}) | non-monotonic (psrr_db_100khz along esr_mohm @ {'load_ua': 1000, 'cout_nf': 2200})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 1000,
+  "cout_nf": 4700,
+  "esr_mohm": 375,
+  "reason": "non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 1000, 'cout_nf': 4700})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "cout_nf": 2200,
+  "esr_mohm": 250,
+  "load_ua": 13000,
+  "reason": "non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 2200, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "cout_nf": 2200,
+  "esr_mohm": 250,
+  "load_ua": 37500,
+  "reason": "non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 2200, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "cout_nf": 4700,
+  "esr_mohm": 0,
+  "load_ua": 37500,
+  "reason": "non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 4700, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "cout_nf": 4700,
+  "esr_mohm": 250,
+  "load_ua": 13000,
+  "reason": "non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 4700, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "cout_nf": 4700,
+  "esr_mohm": 250,
+  "load_ua": 37500,
+  "reason": "non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 4700, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 25000,
+  "esr_mohm": 0,
+  "cout_nf": 1600,
+  "reason": "non-monotonic (psrr_db_100khz along cout_nf @ {'load_ua': 25000, 'esr_mohm': 0}) | interior worst (psrr_db_100khz along cout_nf @ {'load_ua': 25000, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 50000,
+  "esr_mohm": 0,
+  "cout_nf": 3450,
+  "reason": "non-monotonic (psrr_db_100khz along cout_nf @ {'load_ua': 50000, 'esr_mohm': 0}) | interior worst (psrr_db_100khz along cout_nf @ {'load_ua': 50000, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ff",
+  "temp_c": 27,
+  "res": "bcs",
+  "load_ua": 50000,
+  "esr_mohm": 250,
+  "cout_nf": 1600,
+  "reason": "non-monotonic (psrr_db_100khz along cout_nf @ {'load_ua': 50000, 'esr_mohm': 250}) | interior worst (psrr_db_100khz along cout_nf @ {'load_ua': 50000, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "cout_nf": 330,
+  "esr_mohm": 0,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 0}) | non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 0}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "cout_nf": 330,
+  "esr_mohm": 0,
+  "load_ua": 37500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 0}) | target failure (gain_margin_db along load_ua @ {'cout_nf': 330, 'esr_mohm': 0}) | non-monotonic (psrr_db_100khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 0}) | interior worst (psrr_db_100khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "cout_nf": 330,
+  "esr_mohm": 0,
+  "load_ua": 13000,
+  "reason": "non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 0}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 0}) | non-monotonic (psrr_db_100khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 0}) | interior worst (psrr_db_100khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "cout_nf": 330,
+  "esr_mohm": 250,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 250}) | non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 250}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "cout_nf": 330,
+  "esr_mohm": 250,
+  "load_ua": 13000,
+  "reason": "non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 250}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "cout_nf": 330,
+  "esr_mohm": 500,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 500}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "cout_nf": 330,
+  "esr_mohm": 500,
+  "load_ua": 13000,
+  "reason": "non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 500}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "cout_nf": 330,
+  "esr_mohm": 500,
+  "load_ua": 37500,
+  "reason": "non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "cout_nf": 1000,
+  "esr_mohm": 0,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 1000, 'esr_mohm': 0}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 1000, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "cout_nf": 1000,
+  "esr_mohm": 0,
+  "load_ua": 13000,
+  "reason": "non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 1000, 'esr_mohm': 0}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 1000, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "cout_nf": 1000,
+  "esr_mohm": 0,
+  "load_ua": 37500,
+  "reason": "non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 1000, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "cout_nf": 1000,
+  "esr_mohm": 250,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 1000, 'esr_mohm': 250}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 1000, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "cout_nf": 1000,
+  "esr_mohm": 500,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 1000, 'esr_mohm': 500}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 1000, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "cout_nf": 2200,
+  "esr_mohm": 0,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 2200, 'esr_mohm': 0}) | target failure (phase_margin_deg along load_ua @ {'cout_nf': 2200, 'esr_mohm': 0}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 2200, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "cout_nf": 2200,
+  "esr_mohm": 0,
+  "load_ua": 13000,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 2200, 'esr_mohm': 0}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 2200, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "cout_nf": 2200,
+  "esr_mohm": 250,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 2200, 'esr_mohm': 250}) | target failure (phase_margin_deg along load_ua @ {'cout_nf': 2200, 'esr_mohm': 250}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 2200, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "cout_nf": 2200,
+  "esr_mohm": 250,
+  "load_ua": 13000,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 2200, 'esr_mohm': 250}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 2200, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "cout_nf": 2200,
+  "esr_mohm": 500,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 2200, 'esr_mohm': 500}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 2200, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "cout_nf": 4700,
+  "esr_mohm": 0,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 4700, 'esr_mohm': 0}) | target failure (phase_margin_deg along load_ua @ {'cout_nf': 4700, 'esr_mohm': 0}) | target failure (psrr_db_1khz along load_ua @ {'cout_nf': 4700, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "cout_nf": 4700,
+  "esr_mohm": 0,
+  "load_ua": 13000,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 4700, 'esr_mohm': 0}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 4700, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "cout_nf": 4700,
+  "esr_mohm": 250,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 4700, 'esr_mohm': 250}) | target failure (phase_margin_deg along load_ua @ {'cout_nf': 4700, 'esr_mohm': 250}) | target failure (psrr_db_1khz along load_ua @ {'cout_nf': 4700, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "cout_nf": 4700,
+  "esr_mohm": 250,
+  "load_ua": 13000,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 4700, 'esr_mohm': 250}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 4700, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "cout_nf": 4700,
+  "esr_mohm": 500,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 4700, 'esr_mohm': 500}) | target failure (phase_margin_deg along load_ua @ {'cout_nf': 4700, 'esr_mohm': 500}) | target failure (psrr_db_1khz along load_ua @ {'cout_nf': 4700, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "cout_nf": 4700,
+  "esr_mohm": 500,
+  "load_ua": 13000,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 4700, 'esr_mohm': 500}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 4700, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 0,
+  "esr_mohm": 0,
+  "cout_nf": 665,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 0}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 0}) | non-monotonic (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 0}) | interior worst (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 0,
+  "esr_mohm": 0,
+  "cout_nf": 1600,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 0}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 0}) | non-monotonic (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 0}) | interior worst (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 0,
+  "esr_mohm": 0,
+  "cout_nf": 3450,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 0}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 0}) | target failure (psrr_db_1khz along cout_nf @ {'load_ua': 0, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 0,
+  "esr_mohm": 250,
+  "cout_nf": 665,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 250}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 250}) | non-monotonic (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 250}) | interior worst (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 0,
+  "esr_mohm": 250,
+  "cout_nf": 1600,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 250}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 250}) | non-monotonic (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 250}) | interior worst (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 0,
+  "esr_mohm": 250,
+  "cout_nf": 3450,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 250}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 250}) | target failure (psrr_db_1khz along cout_nf @ {'load_ua': 0, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 0,
+  "esr_mohm": 500,
+  "cout_nf": 665,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 500}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 500}) | non-monotonic (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 500}) | interior worst (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 0,
+  "esr_mohm": 500,
+  "cout_nf": 1600,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 500}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 500}) | non-monotonic (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 500}) | interior worst (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 0,
+  "esr_mohm": 500,
+  "cout_nf": 3450,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 500}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 500}) | target failure (psrr_db_1khz along cout_nf @ {'load_ua': 0, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 1000,
+  "esr_mohm": 0,
+  "cout_nf": 1600,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 1000, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 1000,
+  "esr_mohm": 0,
+  "cout_nf": 3450,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 1000, 'esr_mohm': 0}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 1000, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 1000,
+  "esr_mohm": 250,
+  "cout_nf": 1600,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 1000, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 1000,
+  "esr_mohm": 250,
+  "cout_nf": 3450,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 1000, 'esr_mohm': 250}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 1000, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 1000,
+  "esr_mohm": 500,
+  "cout_nf": 3450,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 1000, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 25000,
+  "esr_mohm": 0,
+  "cout_nf": 665,
+  "reason": "non-monotonic (phase_margin_deg along cout_nf @ {'load_ua': 25000, 'esr_mohm': 0}) | non-monotonic (psrr_db_100khz along cout_nf @ {'load_ua': 25000, 'esr_mohm': 0}) | interior worst (psrr_db_100khz along cout_nf @ {'load_ua': 25000, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 25000,
+  "esr_mohm": 0,
+  "cout_nf": 1600,
+  "reason": "non-monotonic (phase_margin_deg along cout_nf @ {'load_ua': 25000, 'esr_mohm': 0}) | non-monotonic (psrr_db_100khz along cout_nf @ {'load_ua': 25000, 'esr_mohm': 0}) | interior worst (psrr_db_100khz along cout_nf @ {'load_ua': 25000, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 25000,
+  "esr_mohm": 250,
+  "cout_nf": 1600,
+  "reason": "non-monotonic (phase_margin_deg along cout_nf @ {'load_ua': 25000, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 25000,
+  "esr_mohm": 250,
+  "cout_nf": 3450,
+  "reason": "non-monotonic (phase_margin_deg along cout_nf @ {'load_ua': 25000, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 25000,
+  "esr_mohm": 500,
+  "cout_nf": 1600,
+  "reason": "non-monotonic (phase_margin_deg along cout_nf @ {'load_ua': 25000, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 25000,
+  "esr_mohm": 500,
+  "cout_nf": 3450,
+  "reason": "non-monotonic (phase_margin_deg along cout_nf @ {'load_ua': 25000, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 50000,
+  "esr_mohm": 0,
+  "cout_nf": 665,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 50000, 'esr_mohm': 0}) | target failure (gain_margin_db along cout_nf @ {'load_ua': 50000, 'esr_mohm': 0}) | non-monotonic (psrr_db_100khz along cout_nf @ {'load_ua': 50000, 'esr_mohm': 0}) | interior worst (psrr_db_100khz along cout_nf @ {'load_ua': 50000, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 50000,
+  "esr_mohm": 0,
+  "cout_nf": 1600,
+  "reason": "non-monotonic (phase_margin_deg along cout_nf @ {'load_ua': 50000, 'esr_mohm': 0}) | non-monotonic (psrr_db_100khz along cout_nf @ {'load_ua': 50000, 'esr_mohm': 0}) | interior worst (psrr_db_100khz along cout_nf @ {'load_ua': 50000, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 50000,
+  "esr_mohm": 0,
+  "cout_nf": 3450,
+  "reason": "non-monotonic (phase_margin_deg along cout_nf @ {'load_ua': 50000, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 50000,
+  "esr_mohm": 250,
+  "cout_nf": 1600,
+  "reason": "non-monotonic (phase_margin_deg along cout_nf @ {'load_ua': 50000, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 50000,
+  "esr_mohm": 250,
+  "cout_nf": 3450,
+  "reason": "non-monotonic (phase_margin_deg along cout_nf @ {'load_ua': 50000, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 0,
+  "cout_nf": 330,
+  "esr_mohm": 125,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 330}) | target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 330})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 0,
+  "cout_nf": 330,
+  "esr_mohm": 375,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 330}) | target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 330})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 0,
+  "cout_nf": 1000,
+  "esr_mohm": 125,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 1000}) | target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 1000})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 0,
+  "cout_nf": 1000,
+  "esr_mohm": 375,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 1000}) | target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 1000})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 0,
+  "cout_nf": 2200,
+  "esr_mohm": 125,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 2200}) | target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 2200})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 0,
+  "cout_nf": 2200,
+  "esr_mohm": 375,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 2200}) | target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 2200})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 0,
+  "cout_nf": 4700,
+  "esr_mohm": 125,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 4700}) | target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 4700}) | target failure (psrr_db_1khz along esr_mohm @ {'load_ua': 0, 'cout_nf': 4700}) | target failure (psrr_db_1khz along esr_mohm @ {'load_ua': 0, 'cout_nf': 4700})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 0,
+  "cout_nf": 4700,
+  "esr_mohm": 375,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 4700}) | target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 4700}) | target failure (psrr_db_1khz along esr_mohm @ {'load_ua': 0, 'cout_nf': 4700}) | target failure (psrr_db_1khz along esr_mohm @ {'load_ua': 0, 'cout_nf': 4700})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 1000,
+  "cout_nf": 2200,
+  "esr_mohm": 125,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 1000, 'cout_nf': 2200}) | target failure (phase_margin_deg along esr_mohm @ {'load_ua': 1000, 'cout_nf': 2200}) | non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 1000, 'cout_nf': 2200})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 1000,
+  "cout_nf": 2200,
+  "esr_mohm": 375,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 1000, 'cout_nf': 2200}) | non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 1000, 'cout_nf': 2200})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 1000,
+  "cout_nf": 4700,
+  "esr_mohm": 125,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 1000, 'cout_nf': 4700}) | target failure (phase_margin_deg along esr_mohm @ {'load_ua': 1000, 'cout_nf': 4700})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 1000,
+  "cout_nf": 4700,
+  "esr_mohm": 375,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 1000, 'cout_nf': 4700}) | target failure (phase_margin_deg along esr_mohm @ {'load_ua': 1000, 'cout_nf': 4700})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 50000,
+  "cout_nf": 330,
+  "esr_mohm": 125,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 50000, 'cout_nf': 330}) | target failure (gain_margin_db along esr_mohm @ {'load_ua': 50000, 'cout_nf': 330})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 1000,
+  "cout_nf": 1000,
+  "esr_mohm": 125,
+  "reason": "non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 1000, 'cout_nf': 1000})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 1000,
+  "cout_nf": 1000,
+  "esr_mohm": 375,
+  "reason": "non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 1000, 'cout_nf': 1000})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 25000,
+  "cout_nf": 1000,
+  "esr_mohm": 125,
+  "reason": "non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 25000, 'cout_nf': 1000})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 25000,
+  "cout_nf": 1000,
+  "esr_mohm": 375,
+  "reason": "non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 25000, 'cout_nf': 1000})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 25000,
+  "cout_nf": 2200,
+  "esr_mohm": 125,
+  "reason": "non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 25000, 'cout_nf': 2200})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 25000,
+  "cout_nf": 2200,
+  "esr_mohm": 375,
+  "reason": "non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 25000, 'cout_nf': 2200})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 50000,
+  "cout_nf": 1000,
+  "esr_mohm": 125,
+  "reason": "non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 50000, 'cout_nf': 1000})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 50000,
+  "cout_nf": 1000,
+  "esr_mohm": 375,
+  "reason": "non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 50000, 'cout_nf': 1000})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 50000,
+  "cout_nf": 2200,
+  "esr_mohm": 125,
+  "reason": "non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 50000, 'cout_nf': 2200})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 50000,
+  "cout_nf": 2200,
+  "esr_mohm": 375,
+  "reason": "non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 50000, 'cout_nf': 2200})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "cout_nf": 1000,
+  "esr_mohm": 250,
+  "load_ua": 13000,
+  "reason": "non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 1000, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "cout_nf": 1000,
+  "esr_mohm": 500,
+  "load_ua": 13000,
+  "reason": "non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 1000, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "cout_nf": 2200,
+  "esr_mohm": 500,
+  "load_ua": 13000,
+  "reason": "non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 2200, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "cout_nf": 4700,
+  "esr_mohm": 0,
+  "load_ua": 37500,
+  "reason": "non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 4700, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "cout_nf": 4700,
+  "esr_mohm": 250,
+  "load_ua": 37500,
+  "reason": "non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 4700, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "cout_nf": 4700,
+  "esr_mohm": 500,
+  "load_ua": 37500,
+  "reason": "non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 4700, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 25000,
+  "cout_nf": 4700,
+  "esr_mohm": 125,
+  "reason": "non-monotonic (psrr_db_100khz along esr_mohm @ {'load_ua': 25000, 'cout_nf': 4700})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 25000,
+  "cout_nf": 4700,
+  "esr_mohm": 375,
+  "reason": "non-monotonic (psrr_db_100khz along esr_mohm @ {'load_ua': 25000, 'cout_nf': 4700})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 50000,
+  "cout_nf": 4700,
+  "esr_mohm": 125,
+  "reason": "non-monotonic (psrr_db_100khz along esr_mohm @ {'load_ua': 50000, 'cout_nf': 4700})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "bcs",
+  "load_ua": 50000,
+  "cout_nf": 4700,
+  "esr_mohm": 375,
+  "reason": "non-monotonic (psrr_db_100khz along esr_mohm @ {'load_ua': 50000, 'cout_nf': 4700})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "cout_nf": 330,
+  "esr_mohm": 0,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 0}) | non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 0}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "cout_nf": 330,
+  "esr_mohm": 0,
+  "load_ua": 13000,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 0}) | non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 0}) | target failure (gain_margin_db along load_ua @ {'cout_nf': 330, 'esr_mohm': 0}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "cout_nf": 330,
+  "esr_mohm": 0,
+  "load_ua": 37500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 0}) | target failure (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 0}) | target failure (gain_margin_db along load_ua @ {'cout_nf': 330, 'esr_mohm': 0}) | target failure (gain_margin_db along load_ua @ {'cout_nf': 330, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "cout_nf": 330,
+  "esr_mohm": 250,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 250}) | non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 250}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "cout_nf": 330,
+  "esr_mohm": 250,
+  "load_ua": 37500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 250}) | target failure (gain_margin_db along load_ua @ {'cout_nf': 330, 'esr_mohm': 250}) | target failure (gain_margin_db along load_ua @ {'cout_nf': 330, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "cout_nf": 330,
+  "esr_mohm": 250,
+  "load_ua": 13000,
+  "reason": "non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 250}) | target failure (gain_margin_db along load_ua @ {'cout_nf': 330, 'esr_mohm': 250}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "cout_nf": 330,
+  "esr_mohm": 500,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 500}) | non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 500}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "cout_nf": 330,
+  "esr_mohm": 500,
+  "load_ua": 37500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 500}) | target failure (gain_margin_db along load_ua @ {'cout_nf': 330, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "cout_nf": 330,
+  "esr_mohm": 500,
+  "load_ua": 13000,
+  "reason": "non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 330, 'esr_mohm': 500}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 330, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "cout_nf": 1000,
+  "esr_mohm": 0,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 1000, 'esr_mohm': 0}) | non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 1000, 'esr_mohm': 0}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 1000, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "cout_nf": 1000,
+  "esr_mohm": 0,
+  "load_ua": 13000,
+  "reason": "non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 1000, 'esr_mohm': 0}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 1000, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "cout_nf": 1000,
+  "esr_mohm": 250,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 1000, 'esr_mohm': 250}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 1000, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "cout_nf": 1000,
+  "esr_mohm": 250,
+  "load_ua": 13000,
+  "reason": "non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 1000, 'esr_mohm': 250}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 1000, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "cout_nf": 1000,
+  "esr_mohm": 250,
+  "load_ua": 37500,
+  "reason": "non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 1000, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "cout_nf": 1000,
+  "esr_mohm": 500,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 1000, 'esr_mohm': 500}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 1000, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "cout_nf": 1000,
+  "esr_mohm": 500,
+  "load_ua": 13000,
+  "reason": "non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 1000, 'esr_mohm': 500}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 1000, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "cout_nf": 1000,
+  "esr_mohm": 500,
+  "load_ua": 37500,
+  "reason": "non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 1000, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "cout_nf": 2200,
+  "esr_mohm": 0,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 2200, 'esr_mohm': 0}) | target failure (psrr_db_1khz along load_ua @ {'cout_nf': 2200, 'esr_mohm': 0}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 2200, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "cout_nf": 2200,
+  "esr_mohm": 0,
+  "load_ua": 13000,
+  "reason": "non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 2200, 'esr_mohm': 0}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 2200, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "cout_nf": 2200,
+  "esr_mohm": 0,
+  "load_ua": 37500,
+  "reason": "non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 2200, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "cout_nf": 2200,
+  "esr_mohm": 250,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 2200, 'esr_mohm': 250}) | target failure (psrr_db_1khz along load_ua @ {'cout_nf': 2200, 'esr_mohm': 250}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 2200, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "cout_nf": 2200,
+  "esr_mohm": 500,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 2200, 'esr_mohm': 500}) | target failure (psrr_db_1khz along load_ua @ {'cout_nf': 2200, 'esr_mohm': 500}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 2200, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "cout_nf": 2200,
+  "esr_mohm": 500,
+  "load_ua": 13000,
+  "reason": "non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 2200, 'esr_mohm': 500}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 2200, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "cout_nf": 2200,
+  "esr_mohm": 500,
+  "load_ua": 37500,
+  "reason": "non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 2200, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "cout_nf": 4700,
+  "esr_mohm": 0,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 4700, 'esr_mohm': 0}) | target failure (phase_margin_deg along load_ua @ {'cout_nf': 4700, 'esr_mohm': 0}) | target failure (psrr_db_1khz along load_ua @ {'cout_nf': 4700, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "cout_nf": 4700,
+  "esr_mohm": 0,
+  "load_ua": 13000,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 4700, 'esr_mohm': 0}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 4700, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "cout_nf": 4700,
+  "esr_mohm": 250,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 4700, 'esr_mohm': 250}) | target failure (psrr_db_1khz along load_ua @ {'cout_nf': 4700, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "cout_nf": 4700,
+  "esr_mohm": 500,
+  "load_ua": 500,
+  "reason": "target failure (phase_margin_deg along load_ua @ {'cout_nf': 4700, 'esr_mohm': 500}) | target failure (psrr_db_1khz along load_ua @ {'cout_nf': 4700, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "cout_nf": 4700,
+  "esr_mohm": 500,
+  "load_ua": 13000,
+  "reason": "non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 4700, 'esr_mohm': 500}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 4700, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "cout_nf": 4700,
+  "esr_mohm": 500,
+  "load_ua": 37500,
+  "reason": "non-monotonic (phase_margin_deg along load_ua @ {'cout_nf': 4700, 'esr_mohm': 500}) | non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 4700, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 0,
+  "esr_mohm": 0,
+  "cout_nf": 665,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 0}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 0}) | non-monotonic (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 0}) | interior worst (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 0,
+  "esr_mohm": 0,
+  "cout_nf": 1600,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 0}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 0}) | non-monotonic (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 0}) | interior worst (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 0}) | target failure (psrr_db_1khz along cout_nf @ {'load_ua': 0, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 0,
+  "esr_mohm": 0,
+  "cout_nf": 3450,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 0}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 0}) | target failure (psrr_db_1khz along cout_nf @ {'load_ua': 0, 'esr_mohm': 0}) | target failure (psrr_db_1khz along cout_nf @ {'load_ua': 0, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 0,
+  "esr_mohm": 250,
+  "cout_nf": 665,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 250}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 250}) | non-monotonic (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 250}) | interior worst (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 0,
+  "esr_mohm": 250,
+  "cout_nf": 1600,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 250}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 250}) | non-monotonic (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 250}) | interior worst (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 250}) | target failure (psrr_db_1khz along cout_nf @ {'load_ua': 0, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 0,
+  "esr_mohm": 250,
+  "cout_nf": 3450,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 250}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 250}) | target failure (psrr_db_1khz along cout_nf @ {'load_ua': 0, 'esr_mohm': 250}) | target failure (psrr_db_1khz along cout_nf @ {'load_ua': 0, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 0,
+  "esr_mohm": 500,
+  "cout_nf": 665,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 500}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 500}) | non-monotonic (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 500}) | interior worst (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 0,
+  "esr_mohm": 500,
+  "cout_nf": 1600,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 500}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 500}) | non-monotonic (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 500}) | interior worst (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 500}) | target failure (psrr_db_1khz along cout_nf @ {'load_ua': 0, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 0,
+  "esr_mohm": 500,
+  "cout_nf": 3450,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 500}) | target failure (phase_margin_deg along cout_nf @ {'load_ua': 0, 'esr_mohm': 500}) | target failure (psrr_db_1khz along cout_nf @ {'load_ua': 0, 'esr_mohm': 500}) | target failure (psrr_db_1khz along cout_nf @ {'load_ua': 0, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 1000,
+  "esr_mohm": 0,
+  "cout_nf": 3450,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 1000, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 25000,
+  "esr_mohm": 0,
+  "cout_nf": 665,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 25000, 'esr_mohm': 0}) | target failure (gain_margin_db along cout_nf @ {'load_ua': 25000, 'esr_mohm': 0}) | non-monotonic (psrr_db_100khz along cout_nf @ {'load_ua': 25000, 'esr_mohm': 0}) | interior worst (psrr_db_100khz along cout_nf @ {'load_ua': 25000, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 50000,
+  "esr_mohm": 0,
+  "cout_nf": 665,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 50000, 'esr_mohm': 0}) | target failure (gain_margin_db along cout_nf @ {'load_ua': 50000, 'esr_mohm': 0}) | target failure (gain_margin_db along cout_nf @ {'load_ua': 50000, 'esr_mohm': 0}) | non-monotonic (psrr_db_100khz along cout_nf @ {'load_ua': 50000, 'esr_mohm': 0}) | interior worst (psrr_db_100khz along cout_nf @ {'load_ua': 50000, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 50000,
+  "esr_mohm": 250,
+  "cout_nf": 665,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 50000, 'esr_mohm': 250}) | target failure (gain_margin_db along cout_nf @ {'load_ua': 50000, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 50000,
+  "esr_mohm": 500,
+  "cout_nf": 665,
+  "reason": "target failure (phase_margin_deg along cout_nf @ {'load_ua': 50000, 'esr_mohm': 500}) | target failure (gain_margin_db along cout_nf @ {'load_ua': 50000, 'esr_mohm': 500})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 0,
+  "cout_nf": 330,
+  "esr_mohm": 125,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 330}) | target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 330})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 0,
+  "cout_nf": 330,
+  "esr_mohm": 375,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 330}) | target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 330})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 0,
+  "cout_nf": 1000,
+  "esr_mohm": 125,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 1000}) | target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 1000})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 0,
+  "cout_nf": 1000,
+  "esr_mohm": 375,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 1000}) | target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 1000})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 0,
+  "cout_nf": 2200,
+  "esr_mohm": 125,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 2200}) | target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 2200}) | target failure (psrr_db_1khz along esr_mohm @ {'load_ua': 0, 'cout_nf': 2200}) | target failure (psrr_db_1khz along esr_mohm @ {'load_ua': 0, 'cout_nf': 2200})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 0,
+  "cout_nf": 2200,
+  "esr_mohm": 375,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 2200}) | target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 2200}) | target failure (psrr_db_1khz along esr_mohm @ {'load_ua': 0, 'cout_nf': 2200}) | target failure (psrr_db_1khz along esr_mohm @ {'load_ua': 0, 'cout_nf': 2200})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 0,
+  "cout_nf": 4700,
+  "esr_mohm": 125,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 4700}) | target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 4700}) | target failure (psrr_db_1khz along esr_mohm @ {'load_ua': 0, 'cout_nf': 4700}) | target failure (psrr_db_1khz along esr_mohm @ {'load_ua': 0, 'cout_nf': 4700})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 0,
+  "cout_nf": 4700,
+  "esr_mohm": 375,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 4700}) | target failure (phase_margin_deg along esr_mohm @ {'load_ua': 0, 'cout_nf': 4700}) | target failure (psrr_db_1khz along esr_mohm @ {'load_ua': 0, 'cout_nf': 4700}) | target failure (psrr_db_1khz along esr_mohm @ {'load_ua': 0, 'cout_nf': 4700})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 1000,
+  "cout_nf": 4700,
+  "esr_mohm": 125,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 1000, 'cout_nf': 4700})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 25000,
+  "cout_nf": 330,
+  "esr_mohm": 125,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 25000, 'cout_nf': 330}) | target failure (gain_margin_db along esr_mohm @ {'load_ua': 25000, 'cout_nf': 330}) | target failure (gain_margin_db along esr_mohm @ {'load_ua': 25000, 'cout_nf': 330})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 50000,
+  "cout_nf": 330,
+  "esr_mohm": 125,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 50000, 'cout_nf': 330}) | target failure (phase_margin_deg along esr_mohm @ {'load_ua': 50000, 'cout_nf': 330}) | target failure (gain_margin_db along esr_mohm @ {'load_ua': 50000, 'cout_nf': 330}) | target failure (gain_margin_db along esr_mohm @ {'load_ua': 50000, 'cout_nf': 330})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 50000,
+  "cout_nf": 330,
+  "esr_mohm": 375,
+  "reason": "target failure (phase_margin_deg along esr_mohm @ {'load_ua': 50000, 'cout_nf': 330}) | target failure (phase_margin_deg along esr_mohm @ {'load_ua': 50000, 'cout_nf': 330}) | target failure (gain_margin_db along esr_mohm @ {'load_ua': 50000, 'cout_nf': 330}) | target failure (gain_margin_db along esr_mohm @ {'load_ua': 50000, 'cout_nf': 330})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 50000,
+  "cout_nf": 1000,
+  "esr_mohm": 125,
+  "reason": "non-monotonic (phase_margin_deg along esr_mohm @ {'load_ua': 50000, 'cout_nf': 1000}) | target failure (gain_margin_db along esr_mohm @ {'load_ua': 50000, 'cout_nf': 1000}) | non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 50000, 'cout_nf': 1000})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 50000,
+  "cout_nf": 1000,
+  "esr_mohm": 375,
+  "reason": "non-monotonic (phase_margin_deg along esr_mohm @ {'load_ua': 50000, 'cout_nf': 1000}) | non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 50000, 'cout_nf': 1000})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 50000,
+  "cout_nf": 2200,
+  "esr_mohm": 125,
+  "reason": "non-monotonic (phase_margin_deg along esr_mohm @ {'load_ua': 50000, 'cout_nf': 2200}) | non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 50000, 'cout_nf': 2200})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 50000,
+  "cout_nf": 2200,
+  "esr_mohm": 375,
+  "reason": "non-monotonic (phase_margin_deg along esr_mohm @ {'load_ua': 50000, 'cout_nf': 2200}) | non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 50000, 'cout_nf': 2200})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 50000,
+  "cout_nf": 4700,
+  "esr_mohm": 125,
+  "reason": "non-monotonic (phase_margin_deg along esr_mohm @ {'load_ua': 50000, 'cout_nf': 4700}) | non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 50000, 'cout_nf': 4700}) | non-monotonic (psrr_db_100khz along esr_mohm @ {'load_ua': 50000, 'cout_nf': 4700})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 50000,
+  "cout_nf": 4700,
+  "esr_mohm": 375,
+  "reason": "non-monotonic (phase_margin_deg along esr_mohm @ {'load_ua': 50000, 'cout_nf': 4700}) | non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 50000, 'cout_nf': 4700}) | non-monotonic (psrr_db_100khz along esr_mohm @ {'load_ua': 50000, 'cout_nf': 4700})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "cout_nf": 1000,
+  "esr_mohm": 0,
+  "load_ua": 37500,
+  "reason": "target failure (gain_margin_db along load_ua @ {'cout_nf': 1000, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 25000,
+  "esr_mohm": 250,
+  "cout_nf": 665,
+  "reason": "target failure (gain_margin_db along cout_nf @ {'load_ua': 25000, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 50000,
+  "esr_mohm": 0,
+  "cout_nf": 1600,
+  "reason": "target failure (gain_margin_db along cout_nf @ {'load_ua': 50000, 'esr_mohm': 0}) | non-monotonic (psrr_db_100khz along cout_nf @ {'load_ua': 50000, 'esr_mohm': 0}) | interior worst (psrr_db_100khz along cout_nf @ {'load_ua': 50000, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 1000,
+  "cout_nf": 1000,
+  "esr_mohm": 125,
+  "reason": "non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 1000, 'cout_nf': 1000})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 1000,
+  "cout_nf": 1000,
+  "esr_mohm": 375,
+  "reason": "non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 1000, 'cout_nf': 1000})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 1000,
+  "cout_nf": 2200,
+  "esr_mohm": 125,
+  "reason": "non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 1000, 'cout_nf': 2200}) | non-monotonic (psrr_db_100khz along esr_mohm @ {'load_ua': 1000, 'cout_nf': 2200})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 1000,
+  "cout_nf": 2200,
+  "esr_mohm": 375,
+  "reason": "non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 1000, 'cout_nf': 2200}) | non-monotonic (psrr_db_100khz along esr_mohm @ {'load_ua': 1000, 'cout_nf': 2200})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 25000,
+  "cout_nf": 330,
+  "esr_mohm": 375,
+  "reason": "target failure (gain_margin_db along esr_mohm @ {'load_ua': 25000, 'cout_nf': 330})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 25000,
+  "cout_nf": 1000,
+  "esr_mohm": 125,
+  "reason": "non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 25000, 'cout_nf': 1000})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 25000,
+  "cout_nf": 1000,
+  "esr_mohm": 375,
+  "reason": "non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 25000, 'cout_nf': 1000})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 25000,
+  "cout_nf": 2200,
+  "esr_mohm": 125,
+  "reason": "non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 25000, 'cout_nf': 2200})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 25000,
+  "cout_nf": 2200,
+  "esr_mohm": 375,
+  "reason": "non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 25000, 'cout_nf': 2200})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 25000,
+  "cout_nf": 4700,
+  "esr_mohm": 125,
+  "reason": "non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 25000, 'cout_nf': 4700}) | non-monotonic (psrr_db_100khz along esr_mohm @ {'load_ua': 25000, 'cout_nf': 4700})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 25000,
+  "cout_nf": 4700,
+  "esr_mohm": 375,
+  "reason": "non-monotonic (gain_margin_db along esr_mohm @ {'load_ua': 25000, 'cout_nf': 4700}) | non-monotonic (psrr_db_100khz along esr_mohm @ {'load_ua': 25000, 'cout_nf': 4700})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "cout_nf": 2200,
+  "esr_mohm": 250,
+  "load_ua": 13000,
+  "reason": "non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 2200, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "cout_nf": 4700,
+  "esr_mohm": 0,
+  "load_ua": 37500,
+  "reason": "non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 4700, 'esr_mohm': 0})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "cout_nf": 4700,
+  "esr_mohm": 250,
+  "load_ua": 13000,
+  "reason": "non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 4700, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "cout_nf": 4700,
+  "esr_mohm": 250,
+  "load_ua": 37500,
+  "reason": "non-monotonic (psrr_db_1khz along load_ua @ {'cout_nf': 4700, 'esr_mohm': 250})"
+ },
+ {
+  "corner": "ss",
+  "temp_c": 125,
+  "res": "wcs",
+  "load_ua": 25000,
+  "esr_mohm": 0,
+  "cout_nf": 1600,
+  "reason": "non-monotonic (psrr_db_100khz along cout_nf @ {'load_ua': 25000, 'esr_mohm': 0}) | interior worst (psrr_db_100khz along cout_nf @ {'load_ua': 25000, 'esr_mohm': 0})"
+ }
+]

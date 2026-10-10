@@ -1,0 +1,621 @@
+{
+ "netlist": "tb.spice",
+ "backend": "batch",
+ "batch": {
+  "runner_version_check": "warn",
+  "capacity_wait_s": 3600
+ },
+ "models": {
+  "lib": "corners.lib"
+ },
+ "analysis": {
+  "kind": "ac",
+  "args": "dec 20 1 100meg"
+ },
+ "measurements": [
+  {
+   "name": "liveness_vout",
+   "spice": ".meas ac liveness_vout FIND vm(vout) AT=1",
+   "unit": "V"
+  }
+ ],
+ "corners": {
+  "process": [
+   "mos_ff__res_bcs__cap_typ__v00a6342baec5",
+   "mos_ff__res_bcs__cap_typ__v029a71300cbd",
+   "mos_ff__res_bcs__cap_typ__v07779b6d4308",
+   "mos_ff__res_bcs__cap_typ__v07fb86f3311c",
+   "mos_ff__res_bcs__cap_typ__v0ad39b3374b8",
+   "mos_ff__res_bcs__cap_typ__v0c294643af30",
+   "mos_ff__res_bcs__cap_typ__v103d6b3ee1db",
+   "mos_ff__res_bcs__cap_typ__v12f4428489a7",
+   "mos_ff__res_bcs__cap_typ__v172a9fce240e",
+   "mos_ff__res_bcs__cap_typ__v18f341205189",
+   "mos_ff__res_bcs__cap_typ__v297d543ba30d",
+   "mos_ff__res_bcs__cap_typ__v2b693b0b916a",
+   "mos_ff__res_bcs__cap_typ__v2bb873142d82",
+   "mos_ff__res_bcs__cap_typ__v307f0fdfaa17",
+   "mos_ff__res_bcs__cap_typ__v43456e431ec5",
+   "mos_ff__res_bcs__cap_typ__v446f6246d007",
+   "mos_ff__res_bcs__cap_typ__v45d42fb8bd09",
+   "mos_ff__res_bcs__cap_typ__v463fdcea2873",
+   "mos_ff__res_bcs__cap_typ__v4a100fac70fd",
+   "mos_ff__res_bcs__cap_typ__v4a2db5df4ecd",
+   "mos_ff__res_bcs__cap_typ__v4cecaeb20dab",
+   "mos_ff__res_bcs__cap_typ__v4f1f18772b13",
+   "mos_ff__res_bcs__cap_typ__v51eace02838b",
+   "mos_ff__res_bcs__cap_typ__v561a9073bc7a",
+   "mos_ff__res_bcs__cap_typ__v586ef5417a85",
+   "mos_ff__res_bcs__cap_typ__v65f32903c58a",
+   "mos_ff__res_bcs__cap_typ__v6904c379c5d5",
+   "mos_ff__res_bcs__cap_typ__v6d05d8b6654d",
+   "mos_ff__res_bcs__cap_typ__v75991e9680d6",
+   "mos_ff__res_bcs__cap_typ__v79b1afb2745c",
+   "mos_ff__res_bcs__cap_typ__v7c61ffda42f2",
+   "mos_ff__res_bcs__cap_typ__v7cf666eb40e7",
+   "mos_ff__res_bcs__cap_typ__v81c8397f7dce",
+   "mos_ff__res_bcs__cap_typ__v8489d4076db6",
+   "mos_ff__res_bcs__cap_typ__v856e29ea44c6",
+   "mos_ff__res_bcs__cap_typ__v89981a7ad006",
+   "mos_ff__res_bcs__cap_typ__v8e7575d9c240",
+   "mos_ff__res_bcs__cap_typ__v8ee780f3634b",
+   "mos_ff__res_bcs__cap_typ__v9357bf40e043",
+   "mos_ff__res_bcs__cap_typ__v9705af45617c",
+   "mos_ff__res_bcs__cap_typ__v98d3323b140e",
+   "mos_ff__res_bcs__cap_typ__v9917037ae448",
+   "mos_ff__res_bcs__cap_typ__v9921bbe0358c",
+   "mos_ff__res_bcs__cap_typ__v99450f344901",
+   "mos_ff__res_bcs__cap_typ__v99c1b823bb49",
+   "mos_ff__res_bcs__cap_typ__v9ffadcaa5689",
+   "mos_ff__res_bcs__cap_typ__va31855972c09",
+   "mos_ff__res_bcs__cap_typ__va93f8ddea332",
+   "mos_ff__res_bcs__cap_typ__vaceda12ab5a1",
+   "mos_ff__res_bcs__cap_typ__vafffbcb60d2d",
+   "mos_ff__res_bcs__cap_typ__vb0263702c900",
+   "mos_ff__res_bcs__cap_typ__vb449161da423",
+   "mos_ff__res_bcs__cap_typ__vc15f6a993692",
+   "mos_ff__res_bcs__cap_typ__vce8ce97b280d",
+   "mos_ff__res_bcs__cap_typ__vd58789330eb9",
+   "mos_ff__res_bcs__cap_typ__vd8d631b97b73",
+   "mos_ff__res_bcs__cap_typ__vdb849022ab9b",
+   "mos_ff__res_bcs__cap_typ__ve06fc7fb8df4",
+   "mos_ff__res_bcs__cap_typ__ve2b3d075021d",
+   "mos_ff__res_bcs__cap_typ__ve3907c6f120d",
+   "mos_ff__res_bcs__cap_typ__ve4fcef3a0ede",
+   "mos_ff__res_bcs__cap_typ__ve8905752732c",
+   "mos_ff__res_bcs__cap_typ__vee5e673ff7d8",
+   "mos_ff__res_bcs__cap_typ__vf7c3db5fae84",
+   "mos_ff__res_bcs__cap_typ__vfbd8ce721090",
+   "mos_ff__res_bcs__cap_typ__vfbe6b2e3f521",
+   "mos_ss__res_bcs__cap_typ__v01595a2d15e8",
+   "mos_ss__res_bcs__cap_typ__v029a71300cbd",
+   "mos_ss__res_bcs__cap_typ__v07779b6d4308",
+   "mos_ss__res_bcs__cap_typ__v0b1c68ef08e8",
+   "mos_ss__res_bcs__cap_typ__v0c294643af30",
+   "mos_ss__res_bcs__cap_typ__v103d6b3ee1db",
+   "mos_ss__res_bcs__cap_typ__v1136cff02aac",
+   "mos_ss__res_bcs__cap_typ__v13ab08e32021",
+   "mos_ss__res_bcs__cap_typ__v18f341205189",
+   "mos_ss__res_bcs__cap_typ__v19f425248f2b",
+   "mos_ss__res_bcs__cap_typ__v1bf88b5ef36e",
+   "mos_ss__res_bcs__cap_typ__v297d543ba30d",
+   "mos_ss__res_bcs__cap_typ__v307f0fdfaa17",
+   "mos_ss__res_bcs__cap_typ__v408576bf783b",
+   "mos_ss__res_bcs__cap_typ__v45d42fb8bd09",
+   "mos_ss__res_bcs__cap_typ__v463fdcea2873",
+   "mos_ss__res_bcs__cap_typ__v47b5287c2b28",
+   "mos_ss__res_bcs__cap_typ__v4a2db5df4ecd",
+   "mos_ss__res_bcs__cap_typ__v4cecaeb20dab",
+   "mos_ss__res_bcs__cap_typ__v51eace02838b",
+   "mos_ss__res_bcs__cap_typ__v561a9073bc7a",
+   "mos_ss__res_bcs__cap_typ__v6904c379c5d5",
+   "mos_ss__res_bcs__cap_typ__v79b1afb2745c",
+   "mos_ss__res_bcs__cap_typ__v7d32838bfaff",
+   "mos_ss__res_bcs__cap_typ__v846c5d00fdfb",
+   "mos_ss__res_bcs__cap_typ__v88b011a54244",
+   "mos_ss__res_bcs__cap_typ__v89981a7ad006",
+   "mos_ss__res_bcs__cap_typ__v98141a47c22c",
+   "mos_ss__res_bcs__cap_typ__v98d3323b140e",
+   "mos_ss__res_bcs__cap_typ__v9ac8bbe4f099",
+   "mos_ss__res_bcs__cap_typ__v9eee9e5a131f",
+   "mos_ss__res_bcs__cap_typ__v9ffadcaa5689",
+   "mos_ss__res_bcs__cap_typ__vafffbcb60d2d",
+   "mos_ss__res_bcs__cap_typ__vb37bee1517e7",
+   "mos_ss__res_bcs__cap_typ__vb449161da423",
+   "mos_ss__res_bcs__cap_typ__vc8bd87092508",
+   "mos_ss__res_bcs__cap_typ__vc9dd4387ab52",
+   "mos_ss__res_bcs__cap_typ__vce6f646790d0",
+   "mos_ss__res_bcs__cap_typ__vce8ce97b280d",
+   "mos_ss__res_bcs__cap_typ__vd2b9c38a54df",
+   "mos_ss__res_bcs__cap_typ__vd8d631b97b73",
+   "mos_ss__res_bcs__cap_typ__vdf09bde77f9c",
+   "mos_ss__res_bcs__cap_typ__ve06fc7fb8df4",
+   "mos_ss__res_bcs__cap_typ__ve2b3d075021d",
+   "mos_ss__res_bcs__cap_typ__ve8905752732c",
+   "mos_ss__res_bcs__cap_typ__vee5e673ff7d8",
+   "mos_ss__res_bcs__cap_typ__vf7c3db5fae84",
+   "mos_ss__res_bcs__cap_typ__vfbd8ce721090",
+   "mos_ss__res_bcs__cap_typ__vfec6fe7cdc4b"
+  ],
+  "temperature_c": [
+   27,
+   125
+  ]
+ },
+ "options": {
+  "timeout_s": 1800,
+  "keep_artifacts": true,
+  "waveforms": true,
+  "stage_model_inputs": true,
+  "osdi_preload": [
+   "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/psp103.osdi",
+   "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/psp103_nqs.osdi",
+   "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/mosvar.osdi",
+   "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/r3_cmc.osdi",
+   "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/cap_cmomi.osdi",
+   "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/cap_cmomf.osdi"
+  ]
+ },
+ "exclude": [
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v00a6342baec5",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v029a71300cbd",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v07779b6d4308",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v07fb86f3311c",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v0ad39b3374b8",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v0c294643af30",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v103d6b3ee1db",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v12f4428489a7",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v172a9fce240e",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v18f341205189",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v297d543ba30d",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v2b693b0b916a",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v2bb873142d82",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v307f0fdfaa17",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v43456e431ec5",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v446f6246d007",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v45d42fb8bd09",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v463fdcea2873",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v4a100fac70fd",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v4a2db5df4ecd",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v4cecaeb20dab",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v4f1f18772b13",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v51eace02838b",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v561a9073bc7a",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v586ef5417a85",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v65f32903c58a",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v6904c379c5d5",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v6d05d8b6654d",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v75991e9680d6",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v79b1afb2745c",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v7c61ffda42f2",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v7cf666eb40e7",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v81c8397f7dce",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v8489d4076db6",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v856e29ea44c6",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v89981a7ad006",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v8e7575d9c240",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v8ee780f3634b",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v9357bf40e043",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v9705af45617c",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v98d3323b140e",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v9917037ae448",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v9921bbe0358c",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v99450f344901",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v99c1b823bb49",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__v9ffadcaa5689",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__va31855972c09",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__va93f8ddea332",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__vaceda12ab5a1",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__vafffbcb60d2d",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__vb0263702c900",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__vb449161da423",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__vc15f6a993692",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__vce8ce97b280d",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__vd58789330eb9",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__vd8d631b97b73",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__vdb849022ab9b",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__ve06fc7fb8df4",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__ve2b3d075021d",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__ve3907c6f120d",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__ve4fcef3a0ede",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__ve8905752732c",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__vee5e673ff7d8",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__vf7c3db5fae84",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__vfbd8ce721090",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ff__res_bcs__cap_typ__vfbe6b2e3f521",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__v01595a2d15e8",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__v029a71300cbd",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__v07779b6d4308",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__v0b1c68ef08e8",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__v0c294643af30",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__v103d6b3ee1db",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__v1136cff02aac",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__v13ab08e32021",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__v18f341205189",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__v19f425248f2b",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__v1bf88b5ef36e",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__v297d543ba30d",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__v307f0fdfaa17",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__v408576bf783b",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__v45d42fb8bd09",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__v463fdcea2873",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__v47b5287c2b28",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__v4a2db5df4ecd",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__v4cecaeb20dab",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__v51eace02838b",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__v561a9073bc7a",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__v6904c379c5d5",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__v79b1afb2745c",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__v7d32838bfaff",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__v846c5d00fdfb",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__v88b011a54244",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__v89981a7ad006",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__v98141a47c22c",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__v98d3323b140e",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__v9ac8bbe4f099",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__v9eee9e5a131f",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__v9ffadcaa5689",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__vafffbcb60d2d",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__vb37bee1517e7",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__vb449161da423",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__vc8bd87092508",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__vc9dd4387ab52",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__vce6f646790d0",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__vce8ce97b280d",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__vd2b9c38a54df",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__vd8d631b97b73",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__vdf09bde77f9c",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__ve06fc7fb8df4",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__ve2b3d075021d",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__ve8905752732c",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__vee5e673ff7d8",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__vf7c3db5fae84",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__vfbd8ce721090",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__vfec6fe7cdc4b",
+   "temperature_c": 27
+  }
+ ]
+}
