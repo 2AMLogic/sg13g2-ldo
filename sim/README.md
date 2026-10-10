@@ -35,6 +35,7 @@ sim/
   env.sh                 PDK_ROOT/PDK resolution, sourced by every testbench
   tools/
     build-osdi.sh          builds the OSDI device models (see below)
+    check_append_only.py   PR-time append-only guard (see "Append-only rule")
   <experiment-slug>/     one directory per distinct claim under test
     README.md            testbench rationale, cold-start invocation, PDK pin,
                           and any device/model substitutions + why (required)
@@ -70,13 +71,53 @@ sim/
 
 ## Append-only rule
 
-`records/*.md`, `records/*.csv`, `netlist-snapshots/**` and `corners/**`
-files are **never** edited or deleted after creation. A correction or a
-re-run always mints a new `<record-id>`. Not yet mechanically enforced in
-this repo (no `check_evidence_formats.py`-equivalent exists here as of this
-writing — `sg13g2-bandgap`'s own copy is the fleet's reference
-implementation if/when this repo grows enough experiments to warrant
-porting it); enforced by PR review for now.
+Landed evidence is **never** edited, deleted or renamed. A correction or a
+re-run always mints a new `<record-id>`; a changed generator or provenance
+statement does too.
+
+This is mechanically enforced on pull requests by
+[`tools/check_append_only.py`](tools/check_append_only.py) (CI job
+`sim-append-only`; tests in `tools/test_check_append_only.py`). It diffs the
+PR head against its merge base and rejects any path that already existed at
+the merge base and was modified, deleted, type-changed, renamed away, or
+overwritten. New files and new record IDs always pass. The protected set is
+exactly these six classes:
+
+- `sim/*/records/**`
+- `sim/*/corners/**`
+- `sim/*/netlist-snapshots/**`
+- `sim/*/evidence/**`
+- `sim/*/backend-validation/**`
+- `sim/*/startup/**`
+
+`evidence/` is protected, not freely mutable derived output. The checker
+fails closed (exit 2) when the base or head cannot be resolved or diffed, or
+when the allowlist is invalid. The allowlist is read from the committed blob at
+the evaluated `--head` commit, never from the working tree; the
+`--allowlist FILE` override is for local debugging only and is refused under
+`GITHUB_ACTIONS`. Run it locally with
+`python3 sim/tools/check_append_only.py --base origin/main`.
+
+### Exact-path exceptions
+
+Only when minting a new record ID is genuinely impossible, add an entry to
+`sim/tools/append_only_allowlist.json` (absent by default), reviewed in the
+same PR:
+
+```json
+{"exceptions": [
+  {"path": "sim/<experiment>/records/<record-id>.md",
+   "rationale": "why a new record ID cannot be used"}
+]}
+```
+
+Each entry names one exact protected file path and a non-empty rationale.
+Wildcards, directories (including nested ones without a trailing slash: a path
+that is a tree at the merge base or at head is rejected), blank rationales, unprotected paths, duplicates and
+extra keys make the check fail. An entry permits only that path (for a
+rename, both sides must be listed). There is no blanket exception for any
+class; the historical `coverage-inventory.*` edits in `434c822` are not
+grandfathered and are a negative test.
 
 ## OSDI device models: required setup
 
