@@ -124,9 +124,22 @@ reproduce byte for byte before it will re-verify the reports.
 > violations, and `run_flow.sh --check` passes green under the pinned
 > build itself.
 
-There is no CI job for this flow, for the same reason there is none for
-`design/netlist.py --design sg13cmos5l --check`: no checksum-pinned fetch
-script exists for this PDK yet (`2AMLogic/klayout-tools#1929`).
+**CI runs `run_flow.sh --check`** (the `layout-check` job, #101) on every
+push and PR. Check mode needs no PDK: it re-runs `generate.py` and
+`lvs_reference.py` (KLayout Python module only), compares the committed GDS,
+LVS reference and `erc-tap-boxes.json` byte for byte (each mismatch fails and
+names the file), runs `erc_ties.py --check`, then `klt drc|extract|lvs
+--check` on the committed reports. Those three are cheap-mode hash checks
+(input and curated-deck hashes), not re-runs, and the deck hash is the one
+inside the `klt` build doing the check -- so the job installs the build that
+produced the drc/extract/lvs reports, `klt 0.5.0+gb15edf5e3a2e`
+(`KLAYOUT_TOOLS_LAYOUT_REF` in `ci.yml`), with KLayout Python `0.30.12`.
+Under the signoff pin (`0.7.0+gb82427b30c96`), whose curated deck is newer,
+an untouched tree reports `[DRIFTED] provenance.deck.content_hash` (exit 3).
+Moving the layout reports to that build means a full `run_flow.sh` re-run on
+it and a bump of `KLAYOUT_TOOLS_LAYOUT_REF` in the same PR. The full flow
+(stages 1-8, including the PDK's own deck on the standalone `klayout`) is
+not run in CI; only its check mode is.
 
 ## SG13CMOS5L layer numbers
 

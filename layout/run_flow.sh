@@ -3,6 +3,7 @@
 #
 #   layout/run_flow.sh                # regenerate, verify, refresh the reports
 #   layout/run_flow.sh --check        # verify the committed reports only
+#                                     # (PDK-free; CI's layout-check job)
 #
 # Everything this repo claims about the layout comes out of this script, and
 # every claim is re-runnable from a clean checkout with `klt` and an
@@ -99,11 +100,30 @@ if [[ "${MODE}" == "check" ]]; then
   cp "${TAPS}" "${WORK}/committed.taps"
   python3 "${DIR}/generate.py" > /dev/null
   python3 "${REPO}/layout/lvs_reference.py" --cell "${CELL}" --top "${TOP}" > /dev/null
-  cmp "${WORK}/committed.gds" "${GDS}" && echo "  GDS reproduces"
-  cmp "${WORK}/committed.ref" "${REF}" && echo "  reference netlist reproduces"
-  cmp "${WORK}/committed.taps" "${TAPS}" && echo "  tap-box document reproduces"
+  # Each comparison fails the script on its own. A bare `cmp a b && echo ok`
+  # does NOT: `set -e` ignores a failure on the left of `&&`, so a stale
+  # committed artifact used to print cmp's complaint and still exit 0 (#101).
+  reproduces() {  # <committed copy> <regenerated path> <what>
+    if cmp -s "$1" "$2"; then
+      echo "  $3 reproduces"
+    else
+      echo "DRIFT: $3 does not reproduce from its generator:" >&2
+      echo "  ${2#"${REPO}/"}" >&2
+      echo "  re-run layout/run_flow.sh (full mode) and commit every refreshed report" >&2
+      exit 1
+    fi
+  }
+  reproduces "${WORK}/committed.gds" "${GDS}" "GDS"
+  reproduces "${WORK}/committed.ref" "${REF}" "reference netlist"
+  reproduces "${WORK}/committed.taps" "${TAPS}" "tap-box document"
   python3 "${HERE}/erc_ties.py" --check "${TAPS}" "${ERC_SPEC}"
-  ( cd "${DIR}" && klt drc --check drc_report.json && klt lvs --check lvs_report.json )
+  # Cheap-mode report checks: each re-hashes the inputs its committed report
+  # recorded (GDS / deck for drc and extract, extracted + reference netlists
+  # for lvs) and exits non-zero naming the drifted field. `klt extract --check`
+  # binds the committed extracted netlist (what LVS compared) to this GDS.
+  ( cd "${DIR}" && klt drc --check drc_report.json \
+      && klt extract --check extract_report.json \
+      && klt lvs --check lvs_report.json )
   say "done (check)"
   exit 0
 fi

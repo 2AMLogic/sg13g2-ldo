@@ -64,7 +64,7 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:745a644201a4d90204bda573ec415540236bb902e46528b8557cd2c90828eeca",
+        "content_hash": "sha256:a1ea56d88075ad763f7b62ffe8ede8bf03c666b6da0b784d1497b2be7e9cc0ef",
         "input_verified": true,
         "exit_status": 0,
         "artifact_binding": {
@@ -73,7 +73,7 @@
             "path": "signoff/evidence/item2-layout.inventory.json",
             "scope": "repo"
           },
-          "content_hash": "sha256:745a644201a4d90204bda573ec415540236bb902e46528b8557cd2c90828eeca",
+          "content_hash": "sha256:a1ea56d88075ad763f7b62ffe8ede8bf03c666b6da0b784d1497b2be7e9cc0ef",
           "input_verified": true,
           "summary": "The SG13CMOS5L layout GDS stream and its generator are committed; every constituent hash matches the inventory. Freshness/identity only: DRC/LVS/ERC are the separate item 3/4/11 citations.",
           "source": "signoff/evidence/item2-layout.inventory.json"
@@ -267,7 +267,7 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:16c6efaf5ccd5786ba5ac121c9053d90b698f754b2ab8687b398dc0f3f98bb23",
+        "content_hash": "sha256:f99eb17e0ab9d304cd034cf84d0e468948b18aaf4a1c38edc10b557557bb2806",
         "input_verified": true,
         "exit_status": 0,
         "artifact_binding": {
@@ -276,7 +276,7 @@
             "path": "signoff/evidence/item10-repo-hygiene.inventory.json",
             "scope": "repo"
           },
-          "content_hash": "sha256:16c6efaf5ccd5786ba5ac121c9053d90b698f754b2ab8687b398dc0f3f98bb23",
+          "content_hash": "sha256:f99eb17e0ab9d304cd034cf84d0e468948b18aaf4a1c38edc10b557557bb2806",
           "input_verified": true,
           "summary": "README, LICENSE, spec index, agent instructions and the CI workflow are committed; every constituent hash matches the inventory and the CI workflow still defines the PDK-free signoff gates. Hygiene presence/freshness only.",
           "source": "signoff/evidence/item10-repo-hygiene.inventory.json"
