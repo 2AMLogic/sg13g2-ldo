@@ -1,5 +1,5 @@
 {
-  "netlist": "tb_row2_accuracy.spice",
+  "netlist": "tb_row2_accuracy_en.spice",
   "backend": "batch",
   "batch": {
     "runner_version_check": "warn",

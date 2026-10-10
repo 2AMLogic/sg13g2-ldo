@@ -134,27 +134,31 @@
     },
     {
       "path": "sim/ldo-cmos5l-monte-carlo/README.md",
-      "sha256": "sha256:3b44a57319e69055a4d9683a70be54205c5bae9f18f4ba5aa6ca7ae9c95c9e28"
+      "sha256": "sha256:3bc392b7d2eb641c15bbfbf017edb64dc1e642029c20922e20472af8a2912a41"
     },
     {
       "path": "sim/ldo-cmos5l-monte-carlo/request-row2-attribution.json",
-      "sha256": "sha256:47c7ae6d8894d753714ebe62b8d3458ec27dfa036c6aa5c5c56be9a0d2036da0"
+      "sha256": "sha256:d4b93cd41352dff00b45ef2afe82c3941a3117238bb0b26b5a9e7226246ed843"
     },
     {
       "path": "sim/ldo-cmos5l-monte-carlo/request-row2-mc.json",
-      "sha256": "sha256:a8fa707c0d7665b82b9b7b26b82df3cb7609a07bd9dacd76a7fe55c957e33a0d"
+      "sha256": "sha256:3314a27cd464b315d1b5d5c9c32b5b93018e37443119371b9c4627eca2058398"
     },
     {
       "path": "sim/ldo-cmos5l-monte-carlo/request-row2-negctl.json",
-      "sha256": "sha256:53d38399100698a12b2e1a40c04fb3449d436a3cca5d5ff31c5ac6e6e921132d"
+      "sha256": "sha256:84ab2a2ae2d3fc5f27f4b67139b91e77efb176f65821545f741148aa442fc218"
     },
     {
       "path": "sim/ldo-cmos5l-monte-carlo/request-row2-probe.json",
-      "sha256": "sha256:1d72bb6624c4f7ea9e285cfd48d4a917c93e82ebd7c3afa6a08fd6950f820f7b"
+      "sha256": "sha256:6b45d05cba080844be4a1d6417d440bab9b60d285418aae80b2166524c19c28f"
     },
     {
       "path": "sim/ldo-cmos5l-monte-carlo/request-row2-repro.json",
-      "sha256": "sha256:2ad18377d71a687138142a6bd03ed7808b663a3e51dc54e83c0722503422b75d"
+      "sha256": "sha256:28a2cbec04b06735bd673cff0c44739202f5aef2e3620152b07a1ac79e416d35"
+    },
+    {
+      "path": "sim/ldo-cmos5l-monte-carlo/request-row2-smoke-en.json",
+      "sha256": "sha256:fdd4ca53834d73146e6185c07a0cb4e178f8b5db13c6751d258f53bc39e0693e"
     },
     {
       "path": "sim/ldo-cmos5l-monte-carlo/row2-corners.lib",
@@ -171,6 +175,10 @@
     {
       "path": "sim/ldo-cmos5l-monte-carlo/tb_row2_accuracy.spice",
       "sha256": "sha256:b994dbb053ec99fe38ae4bca7fbe9099e9fcd9f77ea2c38ddc0f4f367dadbd45"
+    },
+    {
+      "path": "sim/ldo-cmos5l-monte-carlo/tb_row2_accuracy_en.spice",
+      "sha256": "sha256:6cc1467a7ba54bab357cd89dd4a47f239c429c516e17c4e379333767e6d26800"
     },
     {
       "path": "sim/ldo-cmos5l-pvt-sweep/README.md",
