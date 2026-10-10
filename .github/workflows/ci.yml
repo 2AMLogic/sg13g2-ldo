@@ -462,6 +462,12 @@ jobs:
       - name: Fixture tests and negative controls
         run: python3 -m unittest discover -s sim/characterization -p 'test_*.py' -v
 
+      - name: layout/ helper tests (LVS reference, ERC ties; offline, no klayout/PDK)
+        run: python3 -m unittest discover -s layout -p 'test_*.py' -v
+
+      - name: design/ netlist helper tests (fixtures only; no xschem/PDK)
+        run: python3 -m unittest discover -s design -p 'test_*.py' -v
+
       - name: Preflight output-validation tests (--check-env gate, stub simulator, no PDK)
         run: python3 -m unittest discover -s sim/tools -p 'test_*.py' -v
 
