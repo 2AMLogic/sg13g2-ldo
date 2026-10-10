@@ -187,3 +187,24 @@ addendum supersedes two of their bullets: "stale against the design" and
   the EN-bearing design (#68), and the item 3/4/11 citations stay historical
   for the old GDS. The Monte Carlo bench migration is #88, and the floating
   `Mn3` gate behind the disabled supply current is #89.
+
+## Addendum: Monte Carlo bench migration (#88)
+
+This addendum supersedes the "What this does not claim" bullet on the Monte
+Carlo bench. It covers the bench migration only.
+
+- **Versioned, not edited.** `sim/ldo-cmos5l-monte-carlo/tb_row2_accuracy.spice`
+  keeps its bytes (sha256 `b994dbb0…dbd45`) as the historical five-port deck
+  of record `20261009-003009-3ee8306`. The new file `tb_row2_accuracy_en.spice`
+  ties `EN` to `VIN` (`Xtop VIN VOUT 0 VREF IBIAS VIN ldo_core_cmos5l`), the
+  same tie the pvt-sweep templates use, and all live `request-row2-*.json`
+  select it. `run_campaign.sh check` never hashes the deck, so an in-place
+  edit would have passed CI while making that record's provenance statement
+  false. `test_deck_versioning.py` now guards the split in CI.
+- **Smoke only.** One batch-fleet unit (tt_nom, 27 °C, MC off, job
+  `klt-sim-ec04a78c8228`) elaborates and completes at 1.800306041 V, the same
+  value the historical probe gives at that point. That solve needed dynamic
+  gmin stepping, which the historical probe did not. See
+  `sim/ldo-cmos5l-monte-carlo/evidence/20261010-193208-028a3f8-en-smoke/`.
+- **No row-2 claim changes.** Row 2 stays Open. Its Monte Carlo evidence is
+  still the pre-EN record until a new campaign record exists on the EN design.
