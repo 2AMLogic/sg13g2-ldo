@@ -33,9 +33,10 @@ How a generated deck becomes a klt sim request (and why each step is safe):
     anything else is a hard error, so a template edit cannot be silently
     mistranslated.
   * Groups: points whose body text is identical (same bench, same design
-    netlist, same substitutions) share one request. Their (section, temp)
-    pairs must form a full cross product, otherwise the group is split per
-    temperature.
+    netlist, same substitutions) share one request. When their (section,
+    temp) pairs are not a full cross product, the missing pairs go into the
+    request's `exclude` list (issue #64), so the request still runs exactly
+    the member points.
 
 Usage (normally invoked by run_sweep.sh --batch):
 
@@ -274,6 +275,10 @@ def wrdata_rows(bench, parsed, names, data, cplx):
 # grouping and submission
 # --------------------------------------------------------------------------- #
 
+def num(t):
+    return int(t) if float(t).is_integer() else t
+
+
 def section_name(sections):
     return "__".join(sec for _, sec in sections)
 
@@ -303,12 +308,16 @@ def plan_groups(points):
             members = list(layer.values())
             procs = sorted({a for a, _ in layer})
             temps = sorted({b for _, b in layer})
-            if set(layer) == {(a, b) for a in procs for b in temps}:
-                splits = [members]
-            else:
-                splits = [[m for m in members if m[1]["temp"] == t] for t in temps]
-            for sub in splits:
-                groups.append({"bench": key[0], "members": sub})
+            # A sparse (section, temp) set (the issue #64 DoE: four
+            # corners at three temperatures) stays ONE request: the pairs
+            # nobody asked for go into klt's `exclude` list, so the runner
+            # simulates exactly the member pairs and nothing else.
+            # (`exclude` has been in the request schema since klt 0.5.0,
+            # the runner image's version.) A full cross product has none.
+            exclude = sorted((a, b) for a in procs for b in temps
+                             if (a, b) not in layer)
+            groups.append({"bench": key[0], "members": members,
+                           "exclude": exclude})
     for n, g in enumerate(groups):
         first = g["members"][0][0]
         g["name"] = f"g{n:02d}_{first}"
@@ -343,7 +352,7 @@ def write_group(g, work, osdi_dir, preamble_path):
         "analysis": {"kind": kind, "args": args},
         "measurements": [{"name": "liveness_vout", "spice": LIVENESS_MEAS[kind], "unit": "V"}],
         "corners": {"process": sorted(secs),
-                    "temperature_c": [int(t) if float(t).is_integer() else t for t in temps]},
+                    "temperature_c": [num(t) for t in temps]},
         "options": {
             "timeout_s": 1800,
             "keep_artifacts": True,
@@ -356,6 +365,8 @@ def write_group(g, work, osdi_dir, preamble_path):
             "osdi_preload": [os.path.join(osdi_dir, f"{n}.osdi") for n in OSDI_ORDER],
         },
     }
+    if g.get("exclude"):
+        req["exclude"] = [{"process": a, "temperature_c": num(b)} for a, b in g["exclude"]]
     with open(os.path.join(gdir, "request.json"), "w") as f:
         json.dump(req, f, indent=1)
         f.write("\n")
@@ -381,7 +392,12 @@ def collect(g, gdir, corners_out, record_meta):
                                 "runner_klt_version": remote.get("runner_klt_version"),
                                 "instance_type": remote.get("instance_type"),
                                 "lifecycle": remote.get("lifecycle"),
-                                "corners": len(rep.get("corners", []))})
+                                "corners": len(rep.get("corners", [])),
+                                "requested": len(g["members"]),
+                                "points": [pid for pid, _ in g["members"]]})
+    if len(rep.get("corners", [])) != len(g["members"]):
+        print(f"batch_backend: WARNING: {g['name']}: report has {len(rep.get('corners', []))} "
+              f"corners, {len(g['members'])} requested (was `exclude` honoured?)", file=sys.stderr)
     by_corner = {}
     for c in rep.get("corners", []):
         by_corner[(c["process"], float(c["temperature_c"]))] = c
@@ -450,9 +466,16 @@ def cmd_run(a):
         for g in groups:
             procs = sorted({section_name(p["sections"]) for _, p in g["members"]})
             temps = sorted({p["temp"] for _, p in g["members"]})
-            print(f"  {g['name']}: {len(g['members'])} points, {len(procs)} sections x temps {temps}")
+            print(f"  {g['name']}: {len(g['members'])} points, {len(procs)} sections x temps {temps}"
+                  f", {len(g.get('exclude') or [])} excluded")
         return 0
     gdirs = {g["name"]: write_group(g, work, a.osdi_dir, preamble) for g in groups}
+
+    with open(os.path.join(work, "points.tsv"), "w") as f:
+        f.write("point_id\tgroup\tprocess\ttemperature_c\n")
+        for g in groups:
+            for pid, p in g["members"]:
+                f.write(f"{pid}\t{g['name']}\t{section_name(p['sections'])}\t{num(p['temp'])}\n")
 
     rcs = {}
     with concurrent.futures.ThreadPoolExecutor(max_workers=a.submit_concurrency) as ex:
@@ -478,6 +501,7 @@ def cmd_run(a):
     prov = os.path.join(corners_out, "_batch")
     os.makedirs(prov, exist_ok=True)
     shutil.copyfile(preamble, os.path.join(prov, "osdi-preamble.cir"))
+    shutil.copyfile(os.path.join(work, "points.tsv"), os.path.join(prov, "points.tsv"))
     for g in groups:
         src, dst = gdirs[g["name"]], os.path.join(prov, g["name"])
         os.makedirs(dst, exist_ok=True)

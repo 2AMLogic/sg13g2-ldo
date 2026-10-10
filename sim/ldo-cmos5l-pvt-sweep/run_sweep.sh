@@ -88,6 +88,8 @@ CHECK_ENV=0
 CHECK_GUARD=0
 DOE_GENERATE=0
 DOE_EXTRA=""
+DOE_ONLY_EXTRA=0
+DOE_BASE=""
 # --batch (PR #87): run every point on the EDA batch fleet through
 # `klt sim --backend batch` (batch_backend.py) instead of a local
 # `ngspice -b` per point. Dispatch hosts must not run SPICE grids locally.
@@ -101,6 +103,8 @@ for arg in "$@"; do
     --check-topology-guard) CHECK_GUARD=1 ;;
     --doe-generate) DOE_GENERATE=1 ;;   # issue #64: netlists + manifest only, no simulation
     --doe-extra=*) DOE_EXTRA="${arg#--doe-extra=}" ;;
+    --doe-only-extra) DOE_ONLY_EXTRA=1 ;;   # with --doe-extra: simulate only the refinement points
+    --doe-base=*) DOE_BASE="${arg#--doe-base=}" ;;   # record id whose corners/ the analysis also reads
     --batch) BATCH=1 ;;
     -h|--help) sed -n '2,40p' "${BASH_SOURCE[0]}"; exit 0 ;;
     *) echo "run_sweep.sh: unknown argument '${arg}'" >&2; exit 2 ;;
@@ -365,6 +369,10 @@ RES_LABELS=(typ bcs wcs)
 # connectivity) and the same full 45-point grid, so the delta table isolates
 # what the enable devices change.
 BASELINE_CSV="${RECORDS_DIR}/20260917-023832-7061e8f.csv"
+# The newest committed main-grid record (issue #67, EN design, batch fleet).
+# The dynamic DoE (issue #64) compares its legacy 1 mA / 1 uF / 0 ohm point
+# against BOTH this and BASELINE_CSV.
+CURRENT_RECORD_CSV="${RECORDS_DIR}/20261010-025634-60a3e81.csv"
 
 total=0
 passed=0
@@ -492,29 +500,108 @@ screen_point() {
   return 0
 }
 
-# --- Dynamic DoE (issue #64): generate-only. Renders every planned
-# load x Cout x ESR x PVT netlist through the SAME gen_netlist as the main
-# grid and writes a provenance manifest. It deliberately does NOT launch
-# ngspice: the 384-run campaign is a batch job (README.md "Dynamic DoE"),
-# never a hand-launched local grid. The matrix, validation and ID rules are
-# dynamic_doe.py's; --doe-extra=FILE appends refinement points. ---
+# Run every queued point on the fleet, then screen each one (shared by the
+# main grid and the --doe-generate --batch campaign, issue #64).
+# SWEEP_BATCH_CONCURRENCY (default 2) bounds how many klt sim requests are
+# in flight at once; it is fleet-side work, the submitting host only waits.
+run_batch_queue() {
+  # Run every queued point on the fleet. batch_backend.py writes the same
+  # <point_id>.log and *_dc/_ac.csv files the local loop writes. A failed
+  # submission leaves its points without output, and screen_point then
+  # fails them. Nothing here ever falls back to a local ngspice run.
+  batch_rc=0
+  python3 "${SCRIPT_DIR}/batch_backend.py" run \
+    --queue "${BATCH_QUEUE}" --corners-out "${CORNERS_OUT}" \
+    --work "${BATCH_WORK}" --osdi-dir "${OSDI_DIR}" \
+    --submit-concurrency "${SWEEP_BATCH_CONCURRENCY:-2}" \
+    ${SWEEP_BATCH_PLAN_ONLY:+--plan-only} || batch_rc=$?
+  if [[ -n "${SWEEP_BATCH_PLAN_ONLY:-}" ]]; then
+    echo "run_sweep.sh: SWEEP_BATCH_PLAN_ONLY set -- plan printed, nothing submitted;" >&2
+    echo "run_sweep.sh: delete ${SNAPSHOTS_OUT} and ${CORNERS_OUT} by hand." >&2
+    exit "${batch_rc}"
+  fi
+  if [[ ${batch_rc} -ne 0 ]]; then
+    echo "run_sweep.sh: batch_backend.py exited ${batch_rc}; the affected points are screened as FAILED below." >&2
+  fi
+  if [[ -f "${CORNERS_OUT}/_batch/backend.env" ]]; then
+    # shellcheck source=/dev/null
+    source "${CORNERS_OUT}/_batch/backend.env"
+    NGSPICE_VERSION="${BATCH_NGSPICE_VERSION} (EDA batch fleet runner, klt ${BATCH_RUNNER_KLT})"
+  fi
+  while IFS=$'\t' read -r point_id _netlist; do
+    rc=0
+    [[ -f "${CORNERS_OUT}/${point_id}.log" ]] || rc=1
+    screen_point "${point_id}" "${rc}" || true
+  done < "${BATCH_QUEUE}"
+}
+
+# --- Dynamic DoE (issue #64). Renders every planned load x Cout x ESR x PVT
+# netlist through the SAME gen_netlist as the main grid and writes a
+# provenance manifest. Without --batch it stops there (generate-only; it
+# never launches a local ngspice grid). With --batch it sends every point to
+# the EDA batch fleet through the same run_batch_queue/batch_backend.py path
+# as the main grid, screens each point, and runs dynamic_doe.py analyse +
+# refine into records/<id>.dynamic-doe.*. The matrix, validation and ID
+# rules are dynamic_doe.py's; --doe-extra=FILE appends refinement points,
+# --doe-only-extra simulates only those, and --doe-base=<record id> names
+# the earlier record whose corners/ the analysis reads for the rest. ---
 if [[ ${DOE_GENERATE} -eq 1 ]]; then
+  if [[ ${DOE_ONLY_EXTRA} -eq 1 && ( -z "${DOE_EXTRA}" || -z "${DOE_BASE}" ) ]]; then
+    echo "run_sweep.sh: --doe-only-extra needs --doe-extra=FILE and --doe-base=<record id>." >&2
+    exit 2
+  fi
+  if [[ -n "${DOE_BASE}" && ! -d "${EXPERIMENT_DIR}/corners/${DOE_BASE}" ]]; then
+    echo "run_sweep.sh: --doe-base: ${EXPERIMENT_DIR}/corners/${DOE_BASE} not found." >&2
+    exit 2
+  fi
   MANIFEST="${RECORDS_DIR}/${RECORD_ID}.dynamic-doe.manifest.tsv"
   plan_args=(plan)
   [[ -n "${DOE_EXTRA}" ]] && plan_args+=(--extra "${DOE_EXTRA}")
-  printf 'bench\tpoint_id\tmos\tres\ttemp_c\tload_a\tcout_f\tesr_ohm\tnetlist\tnetlist_sha256\tinvocation\tgit_sha\tpdk\tngspice\n' > "${MANIFEST}"
-  n=0
+  [[ ${DOE_ONLY_EXTRA} -eq 1 ]] && plan_args+=(--only-extra)
+  doe_rows=()
   while IFS=$'\t' read -r bench pid mos res temp load cout esr; do
     netlist="$(gen_netlist "${bench}" "${pid}" "${mos}" "${res}" cap_typ "${temp}" "${DESIGN_NETLIST}" "170u (nominal)" "${load}" "${cout}" "${esr}")"
+    doe_rows+=("${bench}"$'\t'"${pid}"$'\t'"${mos}"$'\t'"${res}"$'\t'"${temp}"$'\t'"${load}"$'\t'"${cout}"$'\t'"${esr}"$'\t'"${netlist}")
+    [[ ${BATCH} -eq 1 ]] && run_ngspice "${pid}" "${netlist}"
+  done < <(python3 "${SCRIPT_DIR}/dynamic_doe.py" "${plan_args[@]}")
+  if [[ ${#doe_rows[@]} -eq 0 ]]; then
+    echo "run_sweep.sh: --doe-generate: the plan is empty." >&2
+    exit 2
+  fi
+  [[ ${BATCH} -eq 1 ]] && run_batch_queue
+  printf 'bench\tpoint_id\tmos\tres\ttemp_c\tload_a\tcout_f\tesr_ohm\tnetlist\tnetlist_sha256\tinvocation\tgit_sha\tpdk\tngspice\n' > "${MANIFEST}"
+  for row in "${doe_rows[@]}"; do
+    IFS=$'\t' read -r bench pid mos res temp load cout esr netlist <<< "${row}"
+    if [[ ${BATCH} -eq 1 ]]; then
+      group="$(awk -F'\t' -v p="${pid}" '$1 == p {print $2}' "${CORNERS_OUT}/_batch/points.tsv" 2>/dev/null || true)"
+      invocation="klt sim --backend batch corners/${RECORD_ID}/_batch/${group:-UNSUBMITTED}/request.json (batch_backend.py; corner ${mos}__${res}__cap_typ @ ${temp}C)"
+    else
+      invocation="ngspice -b ${netlist#"${REPO_ROOT}/"}"
+    fi
     printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
       "${bench}" "${pid}" "${mos}" "${res}" "${temp}" "${load}" "${cout}" "${esr}" \
       "${netlist#"${REPO_ROOT}/"}" "$(sha256sum "${netlist}" | cut -d' ' -f1)" \
-      "ngspice -b ${netlist#"${REPO_ROOT}/"}" "${REPO_GIT_SHA}" "${PDK}" "${NGSPICE_VERSION}" >> "${MANIFEST}"
-    n=$((n + 1))
-  done < <(python3 "${SCRIPT_DIR}/dynamic_doe.py" "${plan_args[@]}")
-  echo "run_sweep.sh: --doe-generate: ${n} netlists -> ${SNAPSHOTS_OUT}; manifest ${MANIFEST}"
-  echo "run_sweep.sh: no simulation was run (see README.md 'Dynamic DoE')."
-  exit 0
+      "${invocation}" "${REPO_GIT_SHA}" "${PDK}" "${NGSPICE_VERSION}" >> "${MANIFEST}"
+  done
+  echo "run_sweep.sh: --doe-generate: ${#doe_rows[@]} netlists -> ${SNAPSHOTS_OUT}; manifest ${MANIFEST}"
+  if [[ ${BATCH} -eq 0 ]]; then
+    echo "run_sweep.sh: no simulation was run (see README.md 'Dynamic DoE')."
+    exit 0
+  fi
+  echo "run_sweep.sh: --doe-generate --batch: ${passed}/${total} points passed screening; failed: ${failed_points[*]:-none}"
+  doe_dirs=("${CORNERS_OUT}")
+  [[ -n "${DOE_BASE}" ]] && doe_dirs+=("${EXPERIMENT_DIR}/corners/${DOE_BASE}")
+  doe_args=()
+  [[ -n "${DOE_EXTRA}" ]] && doe_args+=(--extra "${DOE_EXTRA}")
+  doe_rc=0
+  python3 "${SCRIPT_DIR}/dynamic_doe.py" analyse "${doe_dirs[@]}" "${doe_args[@]}" \
+    --legacy-record "${BASELINE_CSV}" \
+    --legacy-record "${CURRENT_RECORD_CSV}" \
+    --out-prefix "${RECORDS_DIR}/${RECORD_ID}.dynamic-doe" || doe_rc=$?
+  python3 "${SCRIPT_DIR}/dynamic_doe.py" refine "${doe_dirs[@]}" "${doe_args[@]}" \
+    --out "${RECORDS_DIR}/${RECORD_ID}.dynamic-doe.refine.json"
+  echo "run_sweep.sh: summary ${RECORDS_DIR}/${RECORD_ID}.dynamic-doe.md (analyse exit ${doe_rc}: non-zero = matrix incomplete)"
+  exit "${doe_rc}"
 fi
 
 # --- Main 45-point PVT x resistor-corner grid: dcsweep + loopgain + psrr
@@ -660,33 +747,7 @@ for corner in "${CORNERS[@]}"; do
 done
 
 if [[ ${BATCH} -eq 1 ]]; then
-  # Run every queued point on the fleet. batch_backend.py writes the same
-  # <point_id>.log and *_dc/_ac.csv files the local loop writes. A failed
-  # submission leaves its points without output, and screen_point then
-  # fails them. Nothing here ever falls back to a local ngspice run.
-  batch_rc=0
-  python3 "${SCRIPT_DIR}/batch_backend.py" run \
-    --queue "${BATCH_QUEUE}" --corners-out "${CORNERS_OUT}" \
-    --work "${BATCH_WORK}" --osdi-dir "${OSDI_DIR}" \
-    ${SWEEP_BATCH_PLAN_ONLY:+--plan-only} || batch_rc=$?
-  if [[ -n "${SWEEP_BATCH_PLAN_ONLY:-}" ]]; then
-    echo "run_sweep.sh: SWEEP_BATCH_PLAN_ONLY set -- plan printed, nothing submitted;" >&2
-    echo "run_sweep.sh: delete ${SNAPSHOTS_OUT} and ${CORNERS_OUT} by hand." >&2
-    exit "${batch_rc}"
-  fi
-  if [[ ${batch_rc} -ne 0 ]]; then
-    echo "run_sweep.sh: batch_backend.py exited ${batch_rc}; the affected points are screened as FAILED below." >&2
-  fi
-  if [[ -f "${CORNERS_OUT}/_batch/backend.env" ]]; then
-    # shellcheck source=/dev/null
-    source "${CORNERS_OUT}/_batch/backend.env"
-    NGSPICE_VERSION="${BATCH_NGSPICE_VERSION} (EDA batch fleet runner, klt ${BATCH_RUNNER_KLT})"
-  fi
-  while IFS=$'\t' read -r point_id _netlist; do
-    rc=0
-    [[ -f "${CORNERS_OUT}/${point_id}.log" ]] || rc=1
-    screen_point "${point_id}" "${rc}" || true
-  done < "${BATCH_QUEUE}"
+  run_batch_queue
 fi
 
 if [[ ${passed} -eq 0 ]]; then

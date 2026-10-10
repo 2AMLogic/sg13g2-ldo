@@ -214,6 +214,32 @@ class Parsers(unittest.TestCase):
         rows = d.build_rows(self.tmp, pts)
         self.assertTrue(d.completeness(rows, pts)["complete"])
 
+    def test_multiple_corner_dirs_and_source(self):
+        """A refinement record is analysed together with its base record:
+        each point is read from the first directory that has it."""
+        other = tempfile.mkdtemp()
+        try:
+            base = [point("loopgain"), point("psrr")]
+            ref = [point("loopgain", op(500)), point("psrr", op(500))]
+            self.put_lg()
+            self.put_ps(lambda f: 55.0)
+            for p in ref:
+                path = os.path.join(other, p["point_id"] + "_ac.csv")
+                if p["bench"] == "loopgain":
+                    write_lg(path)
+                else:
+                    write_psrr(path, lambda f: 56.0)
+            rows = d.build_rows([other, self.tmp], base + ref)
+            self.assertTrue(d.completeness(rows, base + ref)["complete"])
+            src = {r["load_ua"]: r["source"] for r in rows}
+            self.assertEqual(src[1000], os.path.basename(self.tmp))
+            self.assertEqual(src[500], os.path.basename(other))
+            # a point in neither directory is still a missing failure
+            gone = [point("psrr", op(0))]
+            self.assertIn("missing", d.build_rows([other, self.tmp], gone)[0]["failures"])
+        finally:
+            shutil.rmtree(other)
+
     def test_incomplete_matrix_rows(self):
         pts = [point("loopgain"), point("psrr"),
                point("loopgain", op(0)), point("psrr", op(0))]
@@ -317,6 +343,24 @@ class Refinement(unittest.TestCase):
                 mkrow(1000, 1000, 2, phase_margin_deg=60)]
         r, _ = d.refinement_requests(rows)
         self.assertTrue(any(x.get("unrefinable") for x in r))
+
+    def test_only_extra_plan_skips_base_points(self):
+        extra = [{"corner": "ss", "temp_c": 125, "res": "bcs", "op": op(500),
+                  "reason": "t"},
+                 {"corner": "ss", "temp_c": 125, "res": "bcs", "op": op(),
+                  "reason": "already a base point"}]
+        pts = d.plan(extra, only_extra=True)
+        self.assertEqual(len(pts), 2)  # one op x two benches
+        self.assertTrue(all(p["op"] == op(500) for p in pts))
+        self.assertTrue(all(p["origin"].startswith("refine") for p in pts))
+
+    def test_pending_requests_drop_already_planned(self):
+        rows = self.slice_rows([40, 50, 60, 70])
+        r, _ = d.refinement_requests(rows)
+        self.assertEqual(len(d.pending_requests(r, d.plan())), 1)
+        extra = [{"corner": "ss", "temp_c": 125, "res": "bcs",
+                  "op": op(1000, 665, 0), "reason": "t"}]
+        self.assertEqual(d.pending_requests(r, d.plan(extra)), [])
 
     def test_refined_requests_validate_and_plan(self):
         r, _ = self.reqs(self.slice_rows([40, 50, 60, 70]))

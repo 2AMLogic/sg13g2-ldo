@@ -7,9 +7,13 @@ PVT corners, or ratifies any DR-0007 row.
 
 Subcommands (see sim/ldo-cmos5l-pvt-sweep/README.md "Dynamic DoE"):
 
-    plan     [--extra FILE]            TSV of every point to simulate
-    analyse  CORNERS_DIR [--extra FILE] [--legacy-record CSV] [--out-prefix P]
-    refine   CORNERS_DIR [--extra FILE] [--out FILE]   midpoint requests
+    plan     [--extra FILE] [--only-extra]   TSV of every point to simulate
+    analyse  CORNERS_DIR... [--extra FILE] [--legacy-record CSV]... --out-prefix P
+    refine   CORNERS_DIR... [--extra FILE] [--out FILE]   midpoint requests
+
+Several CORNERS_DIRs may be given (a refinement record plus the base
+record it refines); each point is read from the first one that has it, and
+the row's `source` column names that directory.
 
 Operating-point values are held as exact integers in base units (load in
 uA, Cout in nF, ESR in mohm) so decimal formatting cannot collide IDs.
@@ -165,18 +169,24 @@ def load_extra(path):
     return out
 
 
-def plan(extra=()):
+def plan(extra=(), only_extra=False):
     """Every point to simulate: list of dicts with bench, point_id, corner
-    fields, op. Raises on ID collision (two distinct points, same ID)."""
+    fields, op. Raises on ID collision (two distinct points, same ID).
+    only_extra: just the extra points that are not already base points
+    (a refinement run whose base matrix was simulated earlier)."""
     pts, seen = [], {}
     combos = [(c[0], c[1], c[2], op, "base") for c in CORNERS
               for op in base_ops()]
+    base_coords = set()
+    if only_extra:
+        base_coords = {(c, t, r) + op_key(o) for c, t, r, o, _ in combos}
+        combos = []
     combos += [(e["corner"], e["temp_c"], e["res"], e["op"],
                 "refine: " + e["reason"]) for e in extra]
     done = set()
     for corner, temp, rlabel, op, origin in combos:
         coord = (corner, temp, rlabel) + op_key(op)
-        if coord in done:
+        if coord in done or coord in base_coords:
             continue
         done.add(coord)
         for bench in BENCHES:
@@ -211,8 +221,21 @@ def count_rows(path):
         return None
 
 
+def locate(corners_dirs, p):
+    """First directory holding this point's AC output (or its log), else
+    the first directory (so a missing point reports as missing there)."""
+    if isinstance(corners_dirs, str):
+        corners_dirs = [corners_dirs]
+    for d in corners_dirs:
+        if os.path.exists(os.path.join(d, p["point_id"] + "_ac.csv")) or \
+                os.path.exists(os.path.join(d, p["point_id"] + ".log")):
+            return d
+    return corners_dirs[0]
+
+
 def parse_point(corners_dir, p):
     """-> (metrics dict, failure-reason or None) for one bench point."""
+    corners_dir = locate(corners_dir, p)
     path = os.path.join(corners_dir, p["point_id"] + "_ac.csv")
     n = count_rows(path)
     if n is None or n == 0:
@@ -243,7 +266,7 @@ def parse_point(corners_dir, p):
 
 
 ROW_FIELDS = ["corner", "temp_c", "res_section", "load_ua", "cout_nf",
-              "esr_mohm", "origin", "phase_margin_deg", "gain_margin_db",
+              "esr_mohm", "origin", "source", "phase_margin_deg", "gain_margin_db",
               "unity_gain_freq_hz", "n_0db_crossings", "psrr_db_1khz",
               "psrr_db_100khz", "status", "failures"]
 
@@ -257,7 +280,8 @@ def build_rows(corners_dir, pts):
         r = rows.setdefault(key, {
             "corner": p["corner"], "temp_c": p["temp_c"],
             "res_section": f"res_{p['res']}", **p["op"],
-            "origin": p["origin"], "_fail": []})
+            "origin": p["origin"], "_fail": [], "_src": set()})
+        r["_src"].add(os.path.basename(os.path.normpath(locate(corners_dir, p))))
         m, why = parse_point(corners_dir, p)
         r.update({k: v for k, v in m.items() if v is not None})
         if why:
@@ -267,6 +291,7 @@ def build_rows(corners_dir, pts):
         r = rows[key]
         r["status"] = "ok" if not r["_fail"] else "failed"
         r["failures"] = "; ".join(r.pop("_fail"))
+        r["source"] = "+".join(sorted(r.pop("_src")))
         out.append(r)
     return out
 
@@ -494,13 +519,26 @@ def write_report(prefix, rows, pts, legacy, reqs, evidence):
         f.write("none\n" if not bad else "")
         for r in bad:
             f.write(f"- {coord_str(r)}: {r['failures']}\n")
-        if legacy is not None:
+        for name, res in legacy or []:
             f.write(f"\n## Legacy 1 mA / 1 uF / 0 ohm vs committed record "
-                    f"(tol {LEGACY_TOL})\n\n")
-            for e in legacy:
-                f.write(f"- {e['corner']}: {'OK' if e['ok'] else 'MISS'} "
-                        f"{json.dumps(e['diffs'])} {e['note']}\n")
+                    f"`{name}` (tol {LEGACY_TOL})\n\n")
+            f.write("| corner | result | |dPM| deg | |dGM| dB | |dPSRR@1k| dB "
+                    "| |dPSRR@100k| dB | note |\n|---|---|---|---|---|---|---|\n")
+            for e in res:
+                cells = " | ".join("n/a" if e["diffs"].get(m) is None
+                                   else f"{e['diffs'][m]:.4f}" for m in METRICS)
+                f.write(f"| {e['corner']} | {'OK' if e['ok'] else 'MISS'} | "
+                        f"{cells} | {e['note']} |\n")
         f.write("\n## Refinement\n\n")
+        extra = [p for p in pts if p["origin"] != "base"]
+        if extra:
+            f.write(f"This analysis includes {len({(p['corner'], p['temp_c'], p['res']) + op_key(p['op']) for p in extra})} "
+                    "refinement operating point(s) (`origin` column); the "
+                    "requests below are re-derived over base + refinement "
+                    "rows, and any that are not yet simulated are listed as "
+                    "PENDING.\n\n")
+        pend = {(r["corner"], r["temp_c"], r["res"]) + op_key(r)
+                for r in pending_requests(reqs, pts)}
         if not reqs:
             f.write(f"No trigger fired across {sum(e['slices'] for e in evidence)} "
                     "slices (per-slice evidence below).\n")
@@ -508,7 +546,8 @@ def write_report(prefix, rows, pts, legacy, reqs, evidence):
             f.write(f"{len(real)} midpoint request(s), {len(unref)} unrefinable "
                     f"interval(s); {fired} slice-metric triggers.\n\n")
             for r in real:
-                f.write(f"- {r['corner']}/{r['temp_c']}C/res_{r['res']} "
+                tag = "PENDING " if (r["corner"], r["temp_c"], r["res"]) + op_key(r) in pend else ""
+                f.write(f"- {tag}{r['corner']}/{r['temp_c']}C/res_{r['res']} "
                         f"load_ua={r['load_ua']} cout_nf={r['cout_nf']} "
                         f"esr_mohm={r['esr_mohm']}: {r['reason']}\n")
             for r in unref:
@@ -521,36 +560,46 @@ def write_report(prefix, rows, pts, legacy, reqs, evidence):
     return comp
 
 
+def pending_requests(reqs, pts):
+    """Midpoint requests that are not already planned points."""
+    have = {(p["corner"], p["temp_c"], p["res"]) + op_key(p["op"]) for p in pts}
+    return [r for r in reqs if not r.get("unrefinable") and
+            (r["corner"], r["temp_c"], r["res"]) + op_key(r) not in have]
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = ap.add_subparsers(dest="cmd", required=True)
     for name in ("plan", "analyse", "refine"):
         sp = sub.add_parser(name)
         if name != "plan":
-            sp.add_argument("corners_dir")
+            sp.add_argument("corners_dir", nargs="+")
         sp.add_argument("--extra")
+        if name == "plan":
+            sp.add_argument("--only-extra", action="store_true",
+                            help="only the --extra points not in the base matrix")
         if name == "analyse":
-            sp.add_argument("--legacy-record")
+            sp.add_argument("--legacy-record", action="append", default=[])
             sp.add_argument("--out-prefix", required=True)
         if name == "refine":
             sp.add_argument("--out")
     a = ap.parse_args(argv)
-    pts = plan(load_extra(a.extra))
     if a.cmd == "plan":
-        sys.stdout.write(plan_tsv(pts))
+        sys.stdout.write(plan_tsv(plan(load_extra(a.extra),
+                                       only_extra=a.only_extra)))
         return 0
+    pts = plan(load_extra(a.extra))
     rows = build_rows(a.corners_dir, pts)
     reqs, evidence = refinement_requests(rows)
     if a.cmd == "refine":
-        text = json.dumps([r for r in reqs if not r.get("unrefinable")], indent=1)
+        text = json.dumps(pending_requests(reqs, pts), indent=1)
         if a.out:
             open(a.out, "w").write(text + "\n")
         else:
             print(text)
         return 0
-    legacy = None
-    if a.legacy_record:
-        legacy = compare_legacy(rows, read_record_csv(a.legacy_record))
+    legacy = [(os.path.basename(path), compare_legacy(rows, read_record_csv(path)))
+              for path in a.legacy_record]
     comp = write_report(a.out_prefix, rows, pts, legacy, reqs, evidence)
     print(json.dumps(comp))
     return 0 if comp["complete"] else 1
