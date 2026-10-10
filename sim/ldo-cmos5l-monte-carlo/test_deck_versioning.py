@@ -87,6 +87,20 @@ def successor_problems(deck_text, ports):
     return probs
 
 
+def drift_problems(hist_text, succ_text):
+    """Reasons the successor differs from the historical deck other than in
+    the core instance's appended port(s) ([] = ok)."""
+    probs = []
+    h = [c for c in cards(hist_text) if not core_instances(c)]
+    s = [c for c in cards(succ_text) if not core_instances(c)]
+    if s != h:
+        probs.append("non-instance cards differ from the historical deck")
+    hi, si = core_instances(hist_text), core_instances(succ_text)
+    if not hi or not si or si[0][:len(hi[0])] != hi[0]:
+        probs.append("core instance does not extend the historical node list")
+    return probs
+
+
 class DeckVersioningTests(unittest.TestCase):
     def setUp(self):
         self.hist = (HERE / HISTORICAL).read_text()
@@ -128,10 +142,7 @@ class DeckVersioningTests(unittest.TestCase):
         self.assertEqual(successor_problems(self.succ, self.ports), [])
 
     def test_successor_differs_only_in_core_instance(self):
-        h = [c for c in cards(self.hist) if not core_instances(c)]
-        s = [c for c in cards(self.succ) if not core_instances(c)]
-        self.assertEqual(s, h)
-        self.assertEqual(core_instances(self.succ)[0][:5], core_instances(self.hist)[0])
+        self.assertEqual(drift_problems(self.hist, self.succ), [])
 
     # Negative controls: the guard must reject the shapes it exists to catch.
     def test_rejects_historical_five_port_instance(self):
@@ -145,6 +156,18 @@ class DeckVersioningTests(unittest.TestCase):
     def test_rejects_duplicate_instance(self):
         bad = self.succ + "Xtwo VIN VOUT 0 VREF IBIAS VIN ldo_core_cmos5l\n"
         self.assertTrue(successor_problems(bad, self.ports))
+
+    def test_rejects_extra_card_in_successor(self):
+        bad = self.succ + "Rextra VOUT 0 1meg\n"
+        self.assertEqual(successor_problems(bad, self.ports), [])  # instance still fine
+        self.assertTrue(drift_problems(self.hist, bad))
+
+    def test_rejects_reordered_core_nodes(self):
+        inst = core_instances(self.succ)[0]
+        swapped = " ".join([inst[1], inst[0]] + inst[2:])
+        bad = self.succ.replace(" ".join(inst) + " ldo_core_cmos5l", swapped + " ldo_core_cmos5l")
+        self.assertNotEqual(bad, self.succ)
+        self.assertTrue(drift_problems(self.hist, bad))
 
 
 if __name__ == "__main__":
