@@ -1,0 +1,111 @@
+{
+  "netlist": "tb_enable_reg.spice",
+  "backend": "batch",
+  "batch": {
+    "runner_version_check": "warn",
+    "capacity_wait_s": 1800
+  },
+  "models": {
+    "lib": "enable-corners.lib"
+  },
+  "analysis": {
+    "kind": "dc",
+    "args": "Vin 2.00 3.64 0.01"
+  },
+  "measurements": [
+    {
+      "name": "vout_2p97",
+      "spice": ".meas dc vout_2p97 FIND v(vout) AT=2.97",
+      "unit": "V"
+    },
+    {
+      "name": "eaout_2p97",
+      "spice": ".meas dc eaout_2p97 FIND v(xtop.eaout) AT=2.97",
+      "unit": "V"
+    },
+    {
+      "name": "fb_2p97",
+      "spice": ".meas dc fb_2p97 FIND v(xtop.fb) AT=2.97",
+      "unit": "V"
+    },
+    {
+      "name": "isup_2p97",
+      "spice": ".meas dc isup_2p97 FIND par('-i(vin)') AT=2.97",
+      "unit": "A"
+    },
+    {
+      "name": "vsg_pass_2p97",
+      "spice": ".meas dc vsg_pass_2p97 FIND par('v(vin)-v(xtop.eaout)') AT=2.97",
+      "unit": "V"
+    },
+    {
+      "name": "vout_3p30",
+      "spice": ".meas dc vout_3p30 FIND v(vout) AT=3.3",
+      "unit": "V"
+    },
+    {
+      "name": "eaout_3p30",
+      "spice": ".meas dc eaout_3p30 FIND v(xtop.eaout) AT=3.3",
+      "unit": "V"
+    },
+    {
+      "name": "fb_3p30",
+      "spice": ".meas dc fb_3p30 FIND v(xtop.fb) AT=3.3",
+      "unit": "V"
+    },
+    {
+      "name": "isup_3p30",
+      "spice": ".meas dc isup_3p30 FIND par('-i(vin)') AT=3.3",
+      "unit": "A"
+    },
+    {
+      "name": "vsg_pass_3p30",
+      "spice": ".meas dc vsg_pass_3p30 FIND par('v(vin)-v(xtop.eaout)') AT=3.3",
+      "unit": "V"
+    },
+    {
+      "name": "vout_3p63",
+      "spice": ".meas dc vout_3p63 FIND v(vout) AT=3.63",
+      "unit": "V"
+    },
+    {
+      "name": "eaout_3p63",
+      "spice": ".meas dc eaout_3p63 FIND v(xtop.eaout) AT=3.63",
+      "unit": "V"
+    },
+    {
+      "name": "fb_3p63",
+      "spice": ".meas dc fb_3p63 FIND v(xtop.fb) AT=3.63",
+      "unit": "V"
+    },
+    {
+      "name": "isup_3p63",
+      "spice": ".meas dc isup_3p63 FIND par('-i(vin)') AT=3.63",
+      "unit": "A"
+    },
+    {
+      "name": "vsg_pass_3p63",
+      "spice": ".meas dc vsg_pass_3p63 FIND par('v(vin)-v(xtop.eaout)') AT=3.63",
+      "unit": "V"
+    }
+  ],
+  "corners": {
+    "process": [
+      "tt_nom"
+    ],
+    "temperature_c": [
+      27
+    ],
+    "supply_v": {
+      "iload": [
+        0,
+        0.05
+      ]
+    }
+  },
+  "options": {
+    "timeout_s": 180,
+    "keep_artifacts": true,
+    "stage_model_inputs": true
+  }
+}

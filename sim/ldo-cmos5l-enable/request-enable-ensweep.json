@@ -1,0 +1,270 @@
+{
+  "netlist": "tb_enable_ensweep.spice",
+  "backend": "batch",
+  "batch": {
+    "runner_version_check": "warn",
+    "capacity_wait_s": 1800
+  },
+  "models": {
+    "lib": "enable-corners.lib"
+  },
+  "analysis": {
+    "kind": "dc",
+    "args": "Ven 0 3.3 0.1"
+  },
+  "measurements": [
+    {
+      "name": "vout_en0",
+      "spice": ".meas dc vout_en0 FIND v(vout) AT=0",
+      "unit": "V"
+    },
+    {
+      "name": "eaout_en0",
+      "spice": ".meas dc eaout_en0 FIND v(xtop.eaout) AT=0",
+      "unit": "V"
+    },
+    {
+      "name": "isup_en0",
+      "spice": ".meas dc isup_en0 FIND par('-i(vin)') AT=0",
+      "unit": "A"
+    },
+    {
+      "name": "vout_en0p5",
+      "spice": ".meas dc vout_en0p5 FIND v(vout) AT=0.5",
+      "unit": "V"
+    },
+    {
+      "name": "eaout_en0p5",
+      "spice": ".meas dc eaout_en0p5 FIND v(xtop.eaout) AT=0.5",
+      "unit": "V"
+    },
+    {
+      "name": "isup_en0p5",
+      "spice": ".meas dc isup_en0p5 FIND par('-i(vin)') AT=0.5",
+      "unit": "A"
+    },
+    {
+      "name": "vout_en1p0",
+      "spice": ".meas dc vout_en1p0 FIND v(vout) AT=1.0",
+      "unit": "V"
+    },
+    {
+      "name": "eaout_en1p0",
+      "spice": ".meas dc eaout_en1p0 FIND v(xtop.eaout) AT=1.0",
+      "unit": "V"
+    },
+    {
+      "name": "isup_en1p0",
+      "spice": ".meas dc isup_en1p0 FIND par('-i(vin)') AT=1.0",
+      "unit": "A"
+    },
+    {
+      "name": "vout_en1p5",
+      "spice": ".meas dc vout_en1p5 FIND v(vout) AT=1.5",
+      "unit": "V"
+    },
+    {
+      "name": "eaout_en1p5",
+      "spice": ".meas dc eaout_en1p5 FIND v(xtop.eaout) AT=1.5",
+      "unit": "V"
+    },
+    {
+      "name": "isup_en1p5",
+      "spice": ".meas dc isup_en1p5 FIND par('-i(vin)') AT=1.5",
+      "unit": "A"
+    },
+    {
+      "name": "vout_en2p0",
+      "spice": ".meas dc vout_en2p0 FIND v(vout) AT=2.0",
+      "unit": "V"
+    },
+    {
+      "name": "eaout_en2p0",
+      "spice": ".meas dc eaout_en2p0 FIND v(xtop.eaout) AT=2.0",
+      "unit": "V"
+    },
+    {
+      "name": "isup_en2p0",
+      "spice": ".meas dc isup_en2p0 FIND par('-i(vin)') AT=2.0",
+      "unit": "A"
+    },
+    {
+      "name": "vout_en2p2",
+      "spice": ".meas dc vout_en2p2 FIND v(vout) AT=2.2",
+      "unit": "V"
+    },
+    {
+      "name": "eaout_en2p2",
+      "spice": ".meas dc eaout_en2p2 FIND v(xtop.eaout) AT=2.2",
+      "unit": "V"
+    },
+    {
+      "name": "isup_en2p2",
+      "spice": ".meas dc isup_en2p2 FIND par('-i(vin)') AT=2.2",
+      "unit": "A"
+    },
+    {
+      "name": "vout_en2p4",
+      "spice": ".meas dc vout_en2p4 FIND v(vout) AT=2.4",
+      "unit": "V"
+    },
+    {
+      "name": "eaout_en2p4",
+      "spice": ".meas dc eaout_en2p4 FIND v(xtop.eaout) AT=2.4",
+      "unit": "V"
+    },
+    {
+      "name": "isup_en2p4",
+      "spice": ".meas dc isup_en2p4 FIND par('-i(vin)') AT=2.4",
+      "unit": "A"
+    },
+    {
+      "name": "vout_en2p5",
+      "spice": ".meas dc vout_en2p5 FIND v(vout) AT=2.5",
+      "unit": "V"
+    },
+    {
+      "name": "eaout_en2p5",
+      "spice": ".meas dc eaout_en2p5 FIND v(xtop.eaout) AT=2.5",
+      "unit": "V"
+    },
+    {
+      "name": "isup_en2p5",
+      "spice": ".meas dc isup_en2p5 FIND par('-i(vin)') AT=2.5",
+      "unit": "A"
+    },
+    {
+      "name": "vout_en2p6",
+      "spice": ".meas dc vout_en2p6 FIND v(vout) AT=2.6",
+      "unit": "V"
+    },
+    {
+      "name": "eaout_en2p6",
+      "spice": ".meas dc eaout_en2p6 FIND v(xtop.eaout) AT=2.6",
+      "unit": "V"
+    },
+    {
+      "name": "isup_en2p6",
+      "spice": ".meas dc isup_en2p6 FIND par('-i(vin)') AT=2.6",
+      "unit": "A"
+    },
+    {
+      "name": "vout_en2p7",
+      "spice": ".meas dc vout_en2p7 FIND v(vout) AT=2.7",
+      "unit": "V"
+    },
+    {
+      "name": "eaout_en2p7",
+      "spice": ".meas dc eaout_en2p7 FIND v(xtop.eaout) AT=2.7",
+      "unit": "V"
+    },
+    {
+      "name": "isup_en2p7",
+      "spice": ".meas dc isup_en2p7 FIND par('-i(vin)') AT=2.7",
+      "unit": "A"
+    },
+    {
+      "name": "vout_en2p8",
+      "spice": ".meas dc vout_en2p8 FIND v(vout) AT=2.8",
+      "unit": "V"
+    },
+    {
+      "name": "eaout_en2p8",
+      "spice": ".meas dc eaout_en2p8 FIND v(xtop.eaout) AT=2.8",
+      "unit": "V"
+    },
+    {
+      "name": "isup_en2p8",
+      "spice": ".meas dc isup_en2p8 FIND par('-i(vin)') AT=2.8",
+      "unit": "A"
+    },
+    {
+      "name": "vout_en2p9",
+      "spice": ".meas dc vout_en2p9 FIND v(vout) AT=2.9",
+      "unit": "V"
+    },
+    {
+      "name": "eaout_en2p9",
+      "spice": ".meas dc eaout_en2p9 FIND v(xtop.eaout) AT=2.9",
+      "unit": "V"
+    },
+    {
+      "name": "isup_en2p9",
+      "spice": ".meas dc isup_en2p9 FIND par('-i(vin)') AT=2.9",
+      "unit": "A"
+    },
+    {
+      "name": "vout_en3p0",
+      "spice": ".meas dc vout_en3p0 FIND v(vout) AT=3.0",
+      "unit": "V"
+    },
+    {
+      "name": "eaout_en3p0",
+      "spice": ".meas dc eaout_en3p0 FIND v(xtop.eaout) AT=3.0",
+      "unit": "V"
+    },
+    {
+      "name": "isup_en3p0",
+      "spice": ".meas dc isup_en3p0 FIND par('-i(vin)') AT=3.0",
+      "unit": "A"
+    },
+    {
+      "name": "vout_en3p1",
+      "spice": ".meas dc vout_en3p1 FIND v(vout) AT=3.1",
+      "unit": "V"
+    },
+    {
+      "name": "eaout_en3p1",
+      "spice": ".meas dc eaout_en3p1 FIND v(xtop.eaout) AT=3.1",
+      "unit": "V"
+    },
+    {
+      "name": "isup_en3p1",
+      "spice": ".meas dc isup_en3p1 FIND par('-i(vin)') AT=3.1",
+      "unit": "A"
+    },
+    {
+      "name": "vout_en3p2",
+      "spice": ".meas dc vout_en3p2 FIND v(vout) AT=3.2",
+      "unit": "V"
+    },
+    {
+      "name": "eaout_en3p2",
+      "spice": ".meas dc eaout_en3p2 FIND v(xtop.eaout) AT=3.2",
+      "unit": "V"
+    },
+    {
+      "name": "isup_en3p2",
+      "spice": ".meas dc isup_en3p2 FIND par('-i(vin)') AT=3.2",
+      "unit": "A"
+    },
+    {
+      "name": "vout_en3p3",
+      "spice": ".meas dc vout_en3p3 FIND v(vout) AT=3.3",
+      "unit": "V"
+    },
+    {
+      "name": "eaout_en3p3",
+      "spice": ".meas dc eaout_en3p3 FIND v(xtop.eaout) AT=3.3",
+      "unit": "V"
+    },
+    {
+      "name": "isup_en3p3",
+      "spice": ".meas dc isup_en3p3 FIND par('-i(vin)') AT=3.3",
+      "unit": "A"
+    }
+  ],
+  "corners": {
+    "process": [
+      "tt_nom"
+    ],
+    "temperature_c": [
+      27
+    ]
+  },
+  "options": {
+    "timeout_s": 180,
+    "keep_artifacts": true,
+    "stage_model_inputs": true
+  }
+}

@@ -1,0 +1,57 @@
+* klt sim -- generated corner deck, do not edit
+.lib /var/tmp/eda-job-klt-sim-a7a48ed04e51/inputs/enable-corners.lib tt_nom
+.include /var/tmp/eda-job-klt-sim-a7a48ed04e51/inputs/netlist.cir
+.temp 27
+.meas dc vout_en0 FIND v(vout) AT=0
+.meas dc eaout_en0 FIND v(xtop.eaout) AT=0
+.meas dc isup_en0 FIND par('-i(vin)') AT=0
+.meas dc vout_en0p5 FIND v(vout) AT=0.5
+.meas dc eaout_en0p5 FIND v(xtop.eaout) AT=0.5
+.meas dc isup_en0p5 FIND par('-i(vin)') AT=0.5
+.meas dc vout_en1p0 FIND v(vout) AT=1.0
+.meas dc eaout_en1p0 FIND v(xtop.eaout) AT=1.0
+.meas dc isup_en1p0 FIND par('-i(vin)') AT=1.0
+.meas dc vout_en1p5 FIND v(vout) AT=1.5
+.meas dc eaout_en1p5 FIND v(xtop.eaout) AT=1.5
+.meas dc isup_en1p5 FIND par('-i(vin)') AT=1.5
+.meas dc vout_en2p0 FIND v(vout) AT=2.0
+.meas dc eaout_en2p0 FIND v(xtop.eaout) AT=2.0
+.meas dc isup_en2p0 FIND par('-i(vin)') AT=2.0
+.meas dc vout_en2p2 FIND v(vout) AT=2.2
+.meas dc eaout_en2p2 FIND v(xtop.eaout) AT=2.2
+.meas dc isup_en2p2 FIND par('-i(vin)') AT=2.2
+.meas dc vout_en2p4 FIND v(vout) AT=2.4
+.meas dc eaout_en2p4 FIND v(xtop.eaout) AT=2.4
+.meas dc isup_en2p4 FIND par('-i(vin)') AT=2.4
+.meas dc vout_en2p5 FIND v(vout) AT=2.5
+.meas dc eaout_en2p5 FIND v(xtop.eaout) AT=2.5
+.meas dc isup_en2p5 FIND par('-i(vin)') AT=2.5
+.meas dc vout_en2p6 FIND v(vout) AT=2.6
+.meas dc eaout_en2p6 FIND v(xtop.eaout) AT=2.6
+.meas dc isup_en2p6 FIND par('-i(vin)') AT=2.6
+.meas dc vout_en2p7 FIND v(vout) AT=2.7
+.meas dc eaout_en2p7 FIND v(xtop.eaout) AT=2.7
+.meas dc isup_en2p7 FIND par('-i(vin)') AT=2.7
+.meas dc vout_en2p8 FIND v(vout) AT=2.8
+.meas dc eaout_en2p8 FIND v(xtop.eaout) AT=2.8
+.meas dc isup_en2p8 FIND par('-i(vin)') AT=2.8
+.meas dc vout_en2p9 FIND v(vout) AT=2.9
+.meas dc eaout_en2p9 FIND v(xtop.eaout) AT=2.9
+.meas dc isup_en2p9 FIND par('-i(vin)') AT=2.9
+.meas dc vout_en3p0 FIND v(vout) AT=3.0
+.meas dc eaout_en3p0 FIND v(xtop.eaout) AT=3.0
+.meas dc isup_en3p0 FIND par('-i(vin)') AT=3.0
+.meas dc vout_en3p1 FIND v(vout) AT=3.1
+.meas dc eaout_en3p1 FIND v(xtop.eaout) AT=3.1
+.meas dc isup_en3p1 FIND par('-i(vin)') AT=3.1
+.meas dc vout_en3p2 FIND v(vout) AT=3.2
+.meas dc eaout_en3p2 FIND v(xtop.eaout) AT=3.2
+.meas dc isup_en3p2 FIND par('-i(vin)') AT=3.2
+.meas dc vout_en3p3 FIND v(vout) AT=3.3
+.meas dc eaout_en3p3 FIND v(xtop.eaout) AT=3.3
+.meas dc isup_en3p3 FIND par('-i(vin)') AT=3.3
+.control
+dc Ven 0 3.3 0.1
+quit
+.endc
+.end

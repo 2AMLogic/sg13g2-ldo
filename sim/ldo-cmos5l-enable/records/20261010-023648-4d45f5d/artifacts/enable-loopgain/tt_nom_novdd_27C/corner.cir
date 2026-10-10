@@ -1,0 +1,13 @@
+* klt sim -- generated corner deck, do not edit
+.lib /var/tmp/eda-job-klt-sim-4c0d76319770/inputs/enable-corners.lib tt_nom
+.include /var/tmp/eda-job-klt-sim-4c0d76319770/inputs/netlist.cir
+.temp 27
+.meas ac fb_re_1hz FIND vr(fb) AT=1
+.meas ac fb_im_1hz FIND vi(fb) AT=1
+.meas ac ugf_hz WHEN vr(fb)=0.5 CROSS=1
+.meas ac fb_im_at_ugf FIND vi(fb) WHEN vr(fb)=0.5 CROSS=1
+.control
+ac dec 20 1 100meg
+quit
+.endc
+.end

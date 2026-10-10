@@ -1,0 +1,564 @@
+{
+  "schema_version": 3,
+  "netlist": {
+    "path": "sim/ldo-cmos5l-enable/tb_disabled_leak.spice",
+    "scope": "repo"
+  },
+  "status": "pass",
+  "corner_count": 1,
+  "passed": 1,
+  "failed": 0,
+  "errored": 0,
+  "inconclusive": 0,
+  "diagnostic_counts": {
+    "by_code": {},
+    "by_severity": {},
+    "corners_with_diagnostics": 0
+  },
+  "metrics": {
+    "sim__corner__count": 1,
+    "sim__corner__passed_count": 1,
+    "sim__corner__failed_count": 0,
+    "sim__corner__errored_count": 0,
+    "sim__corner__inconclusive_count": 0
+  },
+  "environment": {
+    "engine": "ngspice",
+    "engine_version": "46",
+    "ngspice_binary": "/usr/bin/ngspice",
+    "models_lib": {
+      "path": "sim/ldo-cmos5l-enable/enable-corners.lib",
+      "scope": "repo"
+    },
+    "models_lib_sha256": "b44965af00a30c57f35ec5ef3f7cab867381aa989ebe85a83d1aad9b6e05db00",
+    "netlist_sha256": "b369e275b31f1afe220f8da4aafe714d732f39dc49e8b0656c740be75710e90a",
+    "netlist_closure": [
+      {
+        "path": "sim/ldo-cmos5l-enable/tb_disabled_leak.spice",
+        "scope": "repo",
+        "sha256": "b369e275b31f1afe220f8da4aafe714d732f39dc49e8b0656c740be75710e90a"
+      },
+      {
+        "path": "sim/ldo-cmos5l-enable/runner-preamble.cir",
+        "scope": "repo",
+        "sha256": "24a2581f33183c67a7cb530519c44b8637cd339e28ce753aff0e48303a53e4bf"
+      },
+      {
+        "path": "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice",
+        "scope": "repo",
+        "sha256": "7953b25be4cb00053f8df5f283bee0500f60a826b7a2d6519b88a8578d222cc1"
+      }
+    ],
+    "staged_model_inputs": [
+      {
+        "name": "enable-corners.lib",
+        "field": "models.lib",
+        "kind": "library",
+        "sha256": "87a36413c27eefbeb062291a82fe603366aa8d81353ec36d5ca4cda99976d500",
+        "rewritten": true
+      },
+      {
+        "name": "cornerMOShv.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "40c4140415a2a2e92d2f42fd64e026d1c04d800708b7a5b663ef083206ddfd62",
+        "rewritten": true
+      },
+      {
+        "name": "cornerRES.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "8c27e705a59d4221a5107b8fe95d388f3e166414d0fe214acfd2f07dcbb22b61",
+        "rewritten": true
+      },
+      {
+        "name": "sg13g2_moshv_mod.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "a2800206343e9adfb4758e9cca40d50dae05fb42a33da3cde4fca8e0780e1bf9",
+        "rewritten": true
+      },
+      {
+        "name": "sg13g2_svaricaphv_mod.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "1462f67e80da7f5fa6f6b51efb0eb0e4dc7ef2da28d8bfde95a19ce2a780580a",
+        "rewritten": false
+      },
+      {
+        "name": "sg13g2_moshv_mismatch.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "2e9612bdb8252c281f422511039dc9b3ea983892aec89f8ef3361592e68fed09",
+        "rewritten": false
+      },
+      {
+        "name": "sg13g2_moshv_mod_mismatch.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "52d45aec4c933d78bf9309a8d6ab53d16fd3ef97251a9a293f2c9764e586e54e",
+        "rewritten": true
+      },
+      {
+        "name": "sg13g2_svaricaphv_mod_mismatch.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "16da7669ee7e963645a604f64770d2f8d871fa8483c34e3dddaa9fcf01c51f50",
+        "rewritten": false
+      },
+      {
+        "name": "sg13g2_moshv_stat.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "cd30f22637e41fdbbaba506ebe0f17746b8438027e4651a7a87b241a39d68903",
+        "rewritten": false
+      },
+      {
+        "name": "resistors_mod.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "c2329110bcb66894936e942d4cb73fc5eb9188c5230e1bebf18f60d9b00c5c7f",
+        "rewritten": false
+      },
+      {
+        "name": "resistors_mod_mismatch.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "f0aa7d90b6489112ed256aaf4cb0a11b9ab17ebe0c3ce092f4f8c5ecb1fd1e15",
+        "rewritten": false
+      },
+      {
+        "name": "resistors_stat.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "183eb9192bf711db991b8df87e031bab2ca5e559c73393edc756fa02a2720d40",
+        "rewritten": false
+      },
+      {
+        "name": "sg13g2_moshv_parm.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "eea5bbed39184cb1e2654ae29425a9ed6ee2f2341d6cb76c472591c75237bd35",
+        "rewritten": false
+      }
+    ],
+    "remote": {
+      "provider": "aws-batch-fleet",
+      "job_id": "klt-sim-b6aeb9f71746",
+      "bucket": "2am-batch-jobs-221082181346",
+      "region": "us-east-1",
+      "instance_id": "i-0ae109788ca63f84a",
+      "instance_type": "c7i.8xlarge",
+      "availability_zone": "us-east-1d",
+      "ami_id": "ami-0e40e3245f1923ac8",
+      "lifecycle": "spot",
+      "spot": true,
+      "state": "done",
+      "exit_code": "0",
+      "concurrency": "2",
+      "physical_cores": "16",
+      "elapsed_seconds": 6,
+      "runner_klt_version": "0.5.0",
+      "client_klt_version": "0.7.0+g5e5b55992a7f",
+      "runner_compatibility": "mismatch",
+      "runner_compatibility_warning": "the fleet runner ran klt 0.5.0 but the submitting client is 0.7.0+g5e5b55992a7f; request options the runner does not know may have been ignored -- update the runner image or use a compatible client"
+    }
+  },
+  "coverage": {
+    "corners_simulated": 1,
+    "measurements_declared": 15,
+    "measurements_with_limits": 0,
+    "unrecognized_limit_keys": [],
+    "schema_version": 1,
+    "known": true,
+    "checked": [
+      "measurement:[0,\"tt_nom/novdd/27C\",\"eaout_2p97\"]/observation",
+      "measurement:[0,\"tt_nom/novdd/27C\",\"eaout_3p30\"]/observation",
+      "measurement:[0,\"tt_nom/novdd/27C\",\"eaout_3p63\"]/observation",
+      "measurement:[0,\"tt_nom/novdd/27C\",\"ileak_pass_2p97\"]/observation",
+      "measurement:[0,\"tt_nom/novdd/27C\",\"ileak_pass_3p30\"]/observation",
+      "measurement:[0,\"tt_nom/novdd/27C\",\"ileak_pass_3p63\"]/observation",
+      "measurement:[0,\"tt_nom/novdd/27C\",\"isup_2p97\"]/observation",
+      "measurement:[0,\"tt_nom/novdd/27C\",\"isup_3p30\"]/observation",
+      "measurement:[0,\"tt_nom/novdd/27C\",\"isup_3p63\"]/observation",
+      "measurement:[0,\"tt_nom/novdd/27C\",\"vsg_men_2p97\"]/observation",
+      "measurement:[0,\"tt_nom/novdd/27C\",\"vsg_men_3p30\"]/observation",
+      "measurement:[0,\"tt_nom/novdd/27C\",\"vsg_men_3p63\"]/observation",
+      "measurement:[0,\"tt_nom/novdd/27C\",\"vsg_pass_2p97\"]/observation",
+      "measurement:[0,\"tt_nom/novdd/27C\",\"vsg_pass_3p30\"]/observation",
+      "measurement:[0,\"tt_nom/novdd/27C\",\"vsg_pass_3p63\"]/observation"
+    ],
+    "skipped": [],
+    "inapplicable": [
+      {
+        "id": "measurement:[0,\"tt_nom/novdd/27C\",\"eaout_2p97\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt_nom/novdd/27C\",\"eaout_3p30\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt_nom/novdd/27C\",\"eaout_3p63\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt_nom/novdd/27C\",\"ileak_pass_2p97\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt_nom/novdd/27C\",\"ileak_pass_3p30\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt_nom/novdd/27C\",\"ileak_pass_3p63\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt_nom/novdd/27C\",\"isup_2p97\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt_nom/novdd/27C\",\"isup_3p30\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt_nom/novdd/27C\",\"isup_3p63\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt_nom/novdd/27C\",\"vsg_men_2p97\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt_nom/novdd/27C\",\"vsg_men_3p30\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt_nom/novdd/27C\",\"vsg_men_3p63\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt_nom/novdd/27C\",\"vsg_pass_2p97\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt_nom/novdd/27C\",\"vsg_pass_3p30\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt_nom/novdd/27C\",\"vsg_pass_3p63\"]/limits",
+        "reason": "characterization_without_limits"
+      }
+    ],
+    "unknown": [],
+    "nothing_checked": false,
+    "nothing_checked_reasons": []
+  },
+  "provenance": {
+    "klt_version": "0.7.0+g5e5b55992a7f",
+    "klayout_version": "0.30.12",
+    "pdk": null,
+    "deck": {
+      "name": "enable-corners.lib",
+      "content_hash": "sha256:b44965af00a30c57f35ec5ef3f7cab867381aa989ebe85a83d1aad9b6e05db00",
+      "released": false
+    },
+    "input": {
+      "content_hash": "sha256:b369e275b31f1afe220f8da4aafe714d732f39dc49e8b0656c740be75710e90a",
+      "role": "netlist"
+    }
+  },
+  "measurements": [
+    {
+      "name": "ileak_pass_2p97",
+      "unit": "A",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_nom/novdd/27C",
+        "value": 3.191435327e-10,
+        "margin": null
+      }
+    },
+    {
+      "name": "isup_2p97",
+      "unit": "A",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_nom/novdd/27C",
+        "value": 5.365203095e-05,
+        "margin": null
+      }
+    },
+    {
+      "name": "eaout_2p97",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_nom/novdd/27C",
+        "value": 2.96163308,
+        "margin": null
+      }
+    },
+    {
+      "name": "vsg_pass_2p97",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_nom/novdd/27C",
+        "value": 0.008366920164,
+        "margin": null
+      }
+    },
+    {
+      "name": "vsg_men_2p97",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_nom/novdd/27C",
+        "value": 2.97,
+        "margin": null
+      }
+    },
+    {
+      "name": "ileak_pass_3p30",
+      "unit": "A",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_nom/novdd/27C",
+        "value": 6.271110565e-10,
+        "margin": null
+      }
+    },
+    {
+      "name": "isup_3p30",
+      "unit": "A",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_nom/novdd/27C",
+        "value": 7.322682037e-05,
+        "margin": null
+      }
+    },
+    {
+      "name": "eaout_3p30",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_nom/novdd/27C",
+        "value": 3.289319296,
+        "margin": null
+      }
+    },
+    {
+      "name": "vsg_pass_3p30",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_nom/novdd/27C",
+        "value": 0.01068070436,
+        "margin": null
+      }
+    },
+    {
+      "name": "vsg_men_3p30",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_nom/novdd/27C",
+        "value": 3.3,
+        "margin": null
+      }
+    },
+    {
+      "name": "ileak_pass_3p63",
+      "unit": "A",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_nom/novdd/27C",
+        "value": 1.242796536e-09,
+        "margin": null
+      }
+    },
+    {
+      "name": "isup_3p63",
+      "unit": "A",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_nom/novdd/27C",
+        "value": 9.958350741e-05,
+        "margin": null
+      }
+    },
+    {
+      "name": "eaout_3p63",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_nom/novdd/27C",
+        "value": 3.616301679,
+        "margin": null
+      }
+    },
+    {
+      "name": "vsg_pass_3p63",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_nom/novdd/27C",
+        "value": 0.01369832129,
+        "margin": null
+      }
+    },
+    {
+      "name": "vsg_men_3p63",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_nom/novdd/27C",
+        "value": 3.63,
+        "margin": null
+      }
+    }
+  ],
+  "corners": [
+    {
+      "corner_id": "tt_nom/novdd/27C",
+      "process": "tt_nom",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 0.588,
+      "measurements": [
+        {
+          "name": "ileak_pass_2p97",
+          "value": 3.191435327e-10,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_2p97",
+          "value": 5.365203095e-05,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "eaout_2p97",
+          "value": 2.96163308,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vsg_pass_2p97",
+          "value": 0.008366920164,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vsg_men_2p97",
+          "value": 2.97,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ileak_pass_3p30",
+          "value": 6.271110565e-10,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_3p30",
+          "value": 7.322682037e-05,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "eaout_3p30",
+          "value": 3.289319296,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vsg_pass_3p30",
+          "value": 0.01068070436,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vsg_men_3p30",
+          "value": 3.3,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ileak_pass_3p63",
+          "value": 1.242796536e-09,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_3p63",
+          "value": 9.958350741e-05,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "eaout_3p63",
+          "value": 3.616301679,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vsg_pass_3p63",
+          "value": 0.01369832129,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vsg_men_3p63",
+          "value": 3.63,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/rec67/artifacts/enable-leak/tt_nom_novdd_27C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/tmp/rec67/artifacts/enable-leak/tt_nom_novdd_27C/corner.cir"
+      },
+      "monte_carlo": null
+    }
+  ]
+}

@@ -15,8 +15,8 @@
   ],
   "selection": {
     "file": "sim/characterization/selection.json",
-    "sha256": "b6c117f883973e9a8b1fc2928dc8b24ed8f16324b8e49b41a7dfc6153bf373de",
-    "circuit_record_id": "20260917-023832-7061e8f",
+    "sha256": "c9aca911794aa9c6aa5b73e6cff24456e35ad1d2df17171e0048812905e6e174",
+    "circuit_record_id": "20261010-025634-60a3e81",
     "experiment": "ldo-cmos5l-pvt-sweep",
     "device_context_record_id": "20260909-220347-ed18110",
     "policy": "Explicit selection only. The generator never discovers records by directory listing or filesystem order: the circuit record below is named here, its bytes are pinned by sha256, and a record that is missing or whose bytes differ from its pin is a hard generator error. Moving to a newer record is a deliberate edit to this file in the same change that regenerates the report. Historical records (other ids under sim/*/records/) are never read except where listed under superseded_evidence, and then only as a quoted, clearly-labelled statement about an older design, never as a current measurement."
@@ -30,26 +30,26 @@
     },
     {
       "role": "circuit_cc_tolerance_csv",
-      "path": "sim/ldo-cmos5l-pvt-sweep/records/20260917-023832-7061e8f.cc-tolerance.csv",
-      "sha256": "e990545a42d26841f1d1c169fb1d858c34133ae83800d3c82a2198807974359a",
+      "path": "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.cc-tolerance.csv",
+      "sha256": "4a9edd748c5df94530ee9ff010d4aa4b9272e0720d32a386e842c3741216e6f8",
       "pinned": true
     },
     {
       "role": "circuit_pvt_csv",
-      "path": "sim/ldo-cmos5l-pvt-sweep/records/20260917-023832-7061e8f.csv",
-      "sha256": "cc90f70546403389093f3cc0927a7af06eb04febc9ce378a26be3fdf71c77c8d",
+      "path": "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv",
+      "sha256": "d0c1e057c8cbbf0aaaab3df57b753fcca8557375372ee8bf6f6103a0b946c981",
       "pinned": true
     },
     {
       "role": "circuit_record_md",
-      "path": "sim/ldo-cmos5l-pvt-sweep/records/20260917-023832-7061e8f.md",
-      "sha256": "531ecd3bf8473c657dc2030869ad71cc5b28e337ece46e45a3153a1124a73ffe",
+      "path": "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.md",
+      "sha256": "89239ec65964818a9678ba92d9a13f353be38540d73006a24e2fd0ff04d44f22",
       "pinned": true
     },
     {
       "role": "design_netlist_freshness",
       "path": "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice",
-      "sha256": "c6e630e92fe012d16adf71229c99b52d8eb6cc4b85fffbb891108930acf11041",
+      "sha256": "7953b25be4cb00053f8df5f283bee0500f60a826b7a2d6519b88a8578d222cc1",
       "pinned": true
     },
     {
@@ -67,7 +67,7 @@
     {
       "role": "superseded_evidence_statement",
       "path": "sim/ldo-cmos5l-pvt-sweep/README.md",
-      "sha256": "ff5155fa58359bb174225f66aa2d923416a4618f8e0f6b8f8f50319c9818625f",
+      "sha256": "55e490a889309e13d7dc88ac1e9047a0c30c14fccb1ea57d39bcdb923a6be669",
       "pinned": false
     },
     {
@@ -79,12 +79,12 @@
   ],
   "design_freshness": {
     "state": "current",
-    "basis": "DR-0007 'The evidence base': these are the design netlist hashes the selected record was judged current against (the netlist last changed at commit 1a20b30, DR-0005; the record's own git sha does not resolve in this clone and its snapshots .include the design by absolute worktree path, so freshness is established by these pins, not by the record). If either netlist changes, the evidence is classified stale against the design and the envelope verdict becomes fail until a new record is selected.",
+    "basis": "These are the design netlist hashes the selected record ran against. The record md states both sha256 values, so freshness is recorded rather than inferred. The record was made by run_sweep.sh --batch on the EDA batch fleet (PR #87, #67) after the EN interface changed ldo_core_cmos5l.spice (DR-0008). It replaces 20260917-023832-7061e8f, which was current against the pre-EN netlist c6e630e9...f11041 and is now historical. If either netlist changes, the evidence is classified stale against the design, and the envelope verdict becomes fail until a new record is selected.",
     "pins": [
       {
         "path": "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice",
-        "pinned_sha256": "c6e630e92fe012d16adf71229c99b52d8eb6cc4b85fffbb891108930acf11041",
-        "actual_sha256": "c6e630e92fe012d16adf71229c99b52d8eb6cc4b85fffbb891108930acf11041",
+        "pinned_sha256": "7953b25be4cb00053f8df5f283bee0500f60a826b7a2d6519b88a8578d222cc1",
+        "actual_sha256": "7953b25be4cb00053f8df5f283bee0500f60a826b7a2d6519b88a8578d222cc1",
         "matches": true
       },
       {
@@ -215,12 +215,12 @@
           "verdict": "pass",
           "conditions": "no load, Vin = 3.30 V (record md: dcsweep bench)",
           "source": {
-            "record": "sim/ldo-cmos5l-pvt-sweep/records/20260917-023832-7061e8f.csv",
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv",
             "column": "vout_no_load_v"
           },
           "observed_range": {
             "min": 1.80022787,
-            "max": 1.8006551
+            "max": 1.80065464
           }
         },
         {
@@ -237,7 +237,7 @@
           "n_censored_upper_bound": 0,
           "n_ambiguous": 0,
           "worst_case": {
-            "value": 1.8006551,
+            "value": 1.80065464,
             "at": {
               "corner": "ff",
               "temp_c": 125,
@@ -248,7 +248,7 @@
           "verdict": "pass",
           "conditions": "no load, Vin = 3.30 V (record md: dcsweep bench)",
           "source": {
-            "record": "sim/ldo-cmos5l-pvt-sweep/records/20260917-023832-7061e8f.csv",
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv",
             "column": "vout_no_load_v"
           }
         }
@@ -304,7 +304,7 @@
           "verdict": "pass",
           "conditions": "50 mA load, Vin = 3.63 V (record md: dcsweep bench)",
           "source": {
-            "record": "sim/ldo-cmos5l-pvt-sweep/records/20260917-023832-7061e8f.csv",
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv",
             "column": "vout_at_vinmax_50ma_v"
           }
         },
@@ -322,18 +322,18 @@
           "n_censored_upper_bound": 0,
           "n_ambiguous": 0,
           "worst_case": {
-            "value": 1.80028575,
+            "value": 1.80028532,
             "at": {
               "corner": "ff",
               "temp_c": 125,
-              "res_section": "res_wcs"
+              "res_section": "res_typ"
             },
-            "n_points_at_this_value": 1
+            "n_points_at_this_value": 2
           },
           "verdict": "pass",
           "conditions": "50 mA load, Vin = 3.63 V (record md: dcsweep bench)",
           "source": {
-            "record": "sim/ldo-cmos5l-pvt-sweep/records/20260917-023832-7061e8f.csv",
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv",
             "column": "vout_at_vinmax_50ma_v"
           }
         },
@@ -392,7 +392,7 @@
           "verdict": "pass",
           "conditions": "50 mA load; 1 % VOUT-loss definition; sweep floor 0.20 V (values at the floor are upper bounds)",
           "source": {
-            "record": "sim/ldo-cmos5l-pvt-sweep/records/20260917-023832-7061e8f.csv",
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv",
             "column": "dropout_v_50ma"
           },
           "note": "Values equal to the sweep floor are censored: the true dropout is <= the reported value. For a '<' target an upper bound that already satisfies the bound is sufficient; the worst case is an exact (uncensored) measurement.",
@@ -440,7 +440,7 @@
           "n_censored_upper_bound": 0,
           "n_ambiguous": 0,
           "worst_case": {
-            "value": 0.245772727,
+            "value": 0.245757576,
             "at": {
               "corner": "ff",
               "temp_c": 125,
@@ -451,7 +451,7 @@
           "verdict": "pass",
           "conditions": "no load only",
           "source": {
-            "record": "sim/ldo-cmos5l-pvt-sweep/records/20260917-023832-7061e8f.csv",
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv",
             "column": "line_reg_mv_per_v"
           }
         },
@@ -469,7 +469,7 @@
           "n_censored_upper_bound": 0,
           "n_ambiguous": 0,
           "worst_case": {
-            "value": 0.0253767512,
+            "value": 0.0253750917,
             "at": {
               "corner": "ff",
               "temp_c": 125,
@@ -480,7 +480,7 @@
           "verdict": "pass",
           "conditions": "0-50 mA, Vin = 3.63 V only",
           "source": {
-            "record": "sim/ldo-cmos5l-pvt-sweep/records/20260917-023832-7061e8f.csv",
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv",
             "column": "load_reg_pct"
           }
         }
@@ -524,7 +524,7 @@
           "n_censored_upper_bound": 0,
           "n_ambiguous": 0,
           "worst_case": {
-            "value": 53.6430496,
+            "value": 53.6428867,
             "at": {
               "corner": "ss",
               "temp_c": 125,
@@ -535,7 +535,7 @@
           "verdict": "pass",
           "conditions": "Vin = 3.30 V, Iload = 1 mA, Cout = 1 uF, ESR = 0, ideal 0.90 V reference; Cc nominal (MoM-cap model has no corner spread at this PDK pin)",
           "source": {
-            "record": "sim/ldo-cmos5l-pvt-sweep/records/20260917-023832-7061e8f.csv",
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv",
             "column": "psrr_db_1khz"
           }
         },
@@ -553,7 +553,7 @@
           "n_censored_upper_bound": 0,
           "n_ambiguous": 0,
           "worst_case": {
-            "value": 33.2347545,
+            "value": 33.2341904,
             "at": {
               "corner": "ff",
               "temp_c": 27,
@@ -564,14 +564,14 @@
           "verdict": "pass",
           "conditions": "Vin = 3.30 V, Iload = 1 mA, Cout = 1 uF, ESR = 0, ideal 0.90 V reference; Cc nominal (MoM-cap model has no corner spread at this PDK pin)",
           "source": {
-            "record": "sim/ldo-cmos5l-pvt-sweep/records/20260917-023832-7061e8f.csv",
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv",
             "column": "psrr_db_100khz"
           }
         }
       ],
       "stretch_note": "stretch > 60 dB @ 1 kHz not met: 45 of 45 points are <= 60 dB; stretch is not ratified.",
       "notes": [
-        "Cc value tolerance (ss/125C only, sim/ldo-cmos5l-pvt-sweep/records/20260917-023832-7061e8f.cc-tolerance.csv): all of PM, GM and PSRR rows hold for Cc in x0.647..x1.524 of nominal."
+        "Cc value tolerance (ss/125C only, sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.cc-tolerance.csv): all of PM, GM and PSRR rows hold for Cc in x0.647..x1.524 of nominal."
       ]
     },
     {
@@ -609,7 +609,7 @@
           "n_censored_upper_bound": 0,
           "n_ambiguous": 0,
           "worst_case": {
-            "value": 24.7222854,
+            "value": 24.7221613,
             "at": {
               "corner": "ss",
               "temp_c": 125,
@@ -620,7 +620,7 @@
           "verdict": "pass",
           "conditions": "no load, Vin = 3.30 V (record md: dcsweep bench)",
           "source": {
-            "record": "sim/ldo-cmos5l-pvt-sweep/records/20260917-023832-7061e8f.csv",
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv",
             "column": "iq_a"
           },
           "note": "column iq_a is in A; converted to uA (x1e6) for the row's unit"
@@ -666,7 +666,7 @@
           "verdict": "not_implemented",
           "reason": "No current limiter in the design; record md lists current limit as 'not implemented'.",
           "source": {
-            "record": "sim/ldo-cmos5l-pvt-sweep/records/20260917-023832-7061e8f.md"
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.md"
           }
         }
       ],
@@ -700,7 +700,7 @@
           "verdict": "not_implemented",
           "reason": "No enable input and no transient testbench; record md lists startup as 'not implemented'.",
           "source": {
-            "record": "sim/ldo-cmos5l-pvt-sweep/records/20260917-023832-7061e8f.md"
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.md"
           }
         }
       ],
@@ -744,7 +744,7 @@
           "n_censored_upper_bound": 0,
           "n_ambiguous": 15,
           "worst_case": {
-            "value": 53.8745301,
+            "value": 53.8710338,
             "at": {
               "corner": "ss",
               "temp_c": 125,
@@ -755,7 +755,7 @@
           "verdict": "ambiguous",
           "conditions": "Vin = 3.30 V, Iload = 1 mA, Cout = 1 uF, ESR = 0, ideal 0.90 V reference; Cc nominal (MoM-cap model has no corner spread at this PDK pin)",
           "source": {
-            "record": "sim/ldo-cmos5l-pvt-sweep/records/20260917-023832-7061e8f.csv",
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv",
             "column": "phase_margin_deg"
           },
           "ambiguous_points": [
@@ -837,12 +837,12 @@
           ],
           "note": "Points with more than one 0 dB crossing are not scored: the scalar PM is the first crossing only and the record's phase_margin_worst_deg is reported beside it unresolved. No scalar pass is manufactured for them.",
           "ambiguous_first_crossing_pm_range_deg": {
-            "min": 74.3457798,
-            "max": 76.8048774
+            "min": 74.3390934,
+            "max": 76.7959245
           },
           "ambiguous_phase_margin_worst_deg_range": {
-            "min": -166.212182,
-            "max": -158.05186
+            "min": -166.185006,
+            "max": -158.026268
           }
         },
         {
@@ -859,7 +859,7 @@
           "n_censored_upper_bound": 0,
           "n_ambiguous": 0,
           "worst_case": {
-            "value": 13.870091,
+            "value": 13.8525525,
             "at": {
               "corner": "ff",
               "temp_c": -40,
@@ -870,14 +870,14 @@
           "verdict": "pass",
           "conditions": "Vin = 3.30 V, Iload = 1 mA, Cout = 1 uF, ESR = 0, ideal 0.90 V reference; Cc nominal (MoM-cap model has no corner spread at this PDK pin)",
           "source": {
-            "record": "sim/ldo-cmos5l-pvt-sweep/records/20260917-023832-7061e8f.csv",
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv",
             "column": "gain_margin_db"
           }
         }
       ],
       "stretch_note": null,
       "notes": [
-        "Cc value tolerance (ss/125C only, sim/ldo-cmos5l-pvt-sweep/records/20260917-023832-7061e8f.cc-tolerance.csv): PM, GM and PSRR all hold for Cc in x0.647..x1.524 of nominal."
+        "Cc value tolerance (ss/125C only, sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.cc-tolerance.csv): PM, GM and PSRR all hold for Cc in x0.647..x1.524 of nominal."
       ]
     }
   ],

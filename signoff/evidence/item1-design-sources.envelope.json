@@ -16,7 +16,7 @@
         "path": "signoff/evidence/item1-design-sources.inventory.json",
         "scope": "repo"
       },
-      "content_hash": "sha256:7f16d8d8fb0e0955f375a308758683c007e3b74a0a70538f64e63d106a8b73e9",
+      "content_hash": "sha256:534b788b414cfea4418bb56fdfb67137b88ab18004d2babaf3d473eaa5c9aa4d",
       "role": "inventory"
     },
     "generator": {

@@ -1,0 +1,45 @@
+{
+  "netlist": "tb_psrr_baseline.spice",
+  "backend": "batch",
+  "batch": {
+    "runner_version_check": "warn",
+    "capacity_wait_s": 1800
+  },
+  "models": {
+    "lib": "enable-corners.lib"
+  },
+  "analysis": {
+    "kind": "ac",
+    "args": "dec 20 1 100meg"
+  },
+  "measurements": [
+    {
+      "name": "vdb_vout_10hz",
+      "spice": ".meas ac vdb_vout_10hz FIND vdb(vout) AT=10",
+      "unit": "dB"
+    },
+    {
+      "name": "vdb_vout_1khz",
+      "spice": ".meas ac vdb_vout_1khz FIND vdb(vout) AT=1000",
+      "unit": "dB"
+    },
+    {
+      "name": "vdb_vout_100khz",
+      "spice": ".meas ac vdb_vout_100khz FIND vdb(vout) AT=100000",
+      "unit": "dB"
+    }
+  ],
+  "corners": {
+    "process": [
+      "tt_nom"
+    ],
+    "temperature_c": [
+      27
+    ]
+  },
+  "options": {
+    "timeout_s": 180,
+    "keep_artifacts": true,
+    "stage_model_inputs": true
+  }
+}

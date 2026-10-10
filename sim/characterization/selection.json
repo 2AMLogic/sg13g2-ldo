@@ -3,20 +3,20 @@
   "policy": "Explicit selection only. The generator never discovers records by directory listing or filesystem order: the circuit record below is named here, its bytes are pinned by sha256, and a record that is missing or whose bytes differ from its pin is a hard generator error. Moving to a newer record is a deliberate edit to this file in the same change that regenerates the report. Historical records (other ids under sim/*/records/) are never read except where listed under superseded_evidence, and then only as a quoted, clearly-labelled statement about an older design, never as a current measurement.",
   "circuit_record": {
     "experiment": "ldo-cmos5l-pvt-sweep",
-    "id": "20260917-023832-7061e8f",
-    "design_branch": "design/sg13cmos5l (SG13CMOS5L branch; DR-0007 'The evidence base')",
+    "id": "20261010-025634-60a3e81",
+    "design_branch": "design/sg13cmos5l (SG13CMOS5L branch; DR-0007 'The evidence base'; EN interface per DR-0008, EN tied to VIN)",
     "files": {
       "pvt_csv": {
-        "path": "sim/ldo-cmos5l-pvt-sweep/records/20260917-023832-7061e8f.csv",
-        "sha256": "cc90f70546403389093f3cc0927a7af06eb04febc9ce378a26be3fdf71c77c8d"
+        "path": "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv",
+        "sha256": "d0c1e057c8cbbf0aaaab3df57b753fcca8557375372ee8bf6f6103a0b946c981"
       },
       "record_md": {
-        "path": "sim/ldo-cmos5l-pvt-sweep/records/20260917-023832-7061e8f.md",
-        "sha256": "531ecd3bf8473c657dc2030869ad71cc5b28e337ece46e45a3153a1124a73ffe"
+        "path": "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.md",
+        "sha256": "89239ec65964818a9678ba92d9a13f353be38540d73006a24e2fd0ff04d44f22"
       },
       "cc_tolerance_csv": {
-        "path": "sim/ldo-cmos5l-pvt-sweep/records/20260917-023832-7061e8f.cc-tolerance.csv",
-        "sha256": "e990545a42d26841f1d1c169fb1d858c34133ae83800d3c82a2198807974359a"
+        "path": "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.cc-tolerance.csv",
+        "sha256": "4a9edd748c5df94530ee9ff010d4aa4b9272e0720d32a386e842c3741216e6f8"
       }
     },
     "bench_conditions": {
@@ -30,14 +30,14 @@
     "design_freshness_pins": [
       {
         "path": "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice",
-        "sha256": "c6e630e92fe012d16adf71229c99b52d8eb6cc4b85fffbb891108930acf11041"
+        "sha256": "7953b25be4cb00053f8df5f283bee0500f60a826b7a2d6519b88a8578d222cc1"
       },
       {
         "path": "design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice",
         "sha256": "7982d728a2db933165eedcae69feaa4985dbddf54c269fc68b82d88577c8e38c"
       }
     ],
-    "design_freshness_basis": "DR-0007 'The evidence base': these are the design netlist hashes the selected record was judged current against (the netlist last changed at commit 1a20b30, DR-0005; the record's own git sha does not resolve in this clone and its snapshots .include the design by absolute worktree path, so freshness is established by these pins, not by the record). If either netlist changes, the evidence is classified stale against the design and the envelope verdict becomes fail until a new record is selected."
+    "design_freshness_basis": "These are the design netlist hashes the selected record ran against. The record md states both sha256 values, so freshness is recorded rather than inferred. The record was made by run_sweep.sh --batch on the EDA batch fleet (PR #87, #67) after the EN interface changed ldo_core_cmos5l.spice (DR-0008). It replaces 20260917-023832-7061e8f, which was current against the pre-EN netlist c6e630e9...f11041 and is now historical. If either netlist changes, the evidence is classified stale against the design, and the envelope verdict becomes fail until a new record is selected."
   },
   "device_context_record": {
     "experiment": "pass-device-screening",

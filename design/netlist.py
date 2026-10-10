@@ -181,12 +181,14 @@ DESIGNS: dict[str, Design] = {
     # added port: the real two-stage OTA that replaces the SG13G2 branch's
     # ideal-VCVS placeholder needs a bias reference, and
     # spec/decision-records/DR-0002-sg13cmos5l-device-topology.md leaves
-    # the bias scheme to this phase. See design/README.md.
+    # the bias scheme to this phase. See design/README.md. Issue #67 appends
+    # EN (active-high enable); the SG13G2 four-port invariant above is
+    # untouched.
     "sg13cmos5l": Design(
         name="sg13cmos5l",
         dir=DESIGN_DIR / "sg13cmos5l",
         top_cell="ldo_core_cmos5l",
-        expected_top_ports=["VIN", "VOUT", "VSS", "VREF", "IBIAS"],
+        expected_top_ports=["VIN", "VOUT", "VSS", "VREF", "IBIAS", "EN"],
         variant="ihp-sg13cmos5l",
     ),
 }

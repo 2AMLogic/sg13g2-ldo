@@ -248,7 +248,96 @@ characterization -- but the qualitative verdict does not depend on that
 caveat, and now has a measured tolerance band attached to it rather than an
 assertion.
 
-## Results (issue #35, `Cc` re-compensation -- current)
+## Results (issue #67, `EN` interface -- current)
+
+Record cited: [`records/20261010-025634-60a3e81.md`](records/20261010-025634-60a3e81.md),
+with its [`.csv`](records/20261010-025634-60a3e81.csv),
+[`.sensitivity.csv`](records/20261010-025634-60a3e81.sensitivity.csv),
+[`.cc-tolerance.csv`](records/20261010-025634-60a3e81.cc-tolerance.csv),
+[`.delta.csv`](records/20261010-025634-60a3e81.delta.csv) and
+[`.divider-attribution.csv`](records/20261010-025634-60a3e81.divider-attribution.csv).
+`214/214` simulation points passed and the completeness matrix is OK. This is
+the first record made with `run_sweep.sh --batch`: every point ran on the EDA
+batch fleet, none on the dispatch host (see "Batch backend" below).
+
+The design under test is the #67 core with the active-high `EN` port
+(DR-0008), with `EN` tied to `VIN` in all three benches. The core netlist is
+sha256 `7953b25b...222cc1` and the erramp is unchanged (`7982d728...c8e38c`).
+The record md states both hashes. The before/after/delta table is now
+against the last pre-`EN` record, `20260917-023832-7061e8f` (the #35 record
+below), at the same `(MOS corner, temperature, resistor section)` point on
+both sides.
+
+**The enable devices change nothing measurable in the enabled state.** The
+largest change at any of the 45 points is:
+
+| Metric | Largest change vs 7061e8f | Point |
+|---|---|---|
+| Phase margin | -0.015 deg | `ff`/-40C/`res_wcs` |
+| Gain margin | -0.023 dB | `ss`/27C/`res_typ` |
+| Unity-gain frequency | -6.7 Hz | `ff`/125C/`res_wcs` |
+| DC loop gain | -0.0015 dB | `ff`/125C/`res_typ` |
+| PSRR @ 1kHz | -0.0010 dB | `ff`/125C/`res_bcs` |
+| PSRR @ 100kHz | -0.0008 dB | `ff`/125C/`res_wcs` |
+| Iq, no load | -0.43 nA | `ff`/125C/`res_bcs` |
+| VOUT, no load | -0.46 uV | `ff`/125C/`res_wcs` |
+
+Dropout, line regulation and load regulation are unchanged to the printed
+precision. All 45 points meet every row in the spec comparison table, and
+the same 15 points have more than one 0 dB crossing as before. The `Cc`
+tolerance window is unchanged at `110e-6`-`259e-6` (x0.65-x1.52). The binding
+points are the same as in the #35 worst-corner summary below. A few ranges
+under #35 move in the last printed digit: phase margin is now
+53.87-76.93 deg (was 76.94 at the top), gain margin 13.85-29.87 dB (was
+13.87-29.89; the worst point, `ff`/-40C/`res_wcs`, keeps a 3.85 dB margin),
+and PSRR @ 100kHz 33.23-36.99 dB (was 37.00 at the top). Every other figure
+there is unchanged to the digits shown.
+
+What this record does **not** cover: the disabled state (`EN` low), which is
+the single-corner smoke evidence in `sim/ldo-cmos5l-enable/` (DR-0008); any
+layout, DRC, LVS or extraction of the `EN`-bearing design (#68); and the
+Monte Carlo bench, which still instantiates the five-port core (#88).
+
+## Batch backend (`run_sweep.sh --batch`, PR #87)
+
+Dispatch hosts do not run SPICE grids locally. `--batch` keeps every part of
+the harness (decks, screening, post-processing, record) and changes one step:
+the simulator runs on the EDA batch fleet. `batch_backend.py` turns each
+generated per-point deck into a `klt sim --backend batch` request. Its
+docstring has the full translation. Points with the same body share one
+request (214 points in 22 requests).
+
+- `.lib` cards go into a generated `corners.lib` section, staged with
+  `options.stage_model_inputs` from the local PDK install. The
+  `.options temp=` line becomes klt's temperature axis.
+- **OSDI.** The runner image lacks `cap_cmomi`, and the runner's klt 0.5.0
+  ignores `options.osdi_preload` (klayout-tools#2901). The six local OSDI
+  binaries are therefore staged with every job through `osdi_preload`, and a
+  body-level preamble loads them with `pre_osdi inputs/<name>.osdi`. Every
+  per-point log prints their sha256, and `corners/<id>/_batch/backend.json`
+  lists them. The backend refuses to run if a runner ever applies
+  `osdi_preload` itself, which would load each binary twice.
+- **Data.** The deck's `wrdata` vectors are rebuilt from the corner's ASCII
+  rawfile (`options.waveforms`). Loop gain and PSRR are recomputed from the
+  complex node voltages with the templates' own `let` expressions, which must
+  match the known text exactly. The output is written in `wrdata`'s
+  `% .8e` layout, so `dc_metrics.py`, `item5_evidence.py` and the inline
+  post-processing read it unchanged.
+- **Validated byte-for-byte.** Six points (all three benches at `tt`/27C/
+  `res_typ` and `ss`/125C/`res_bcs`) were run through the backend against
+  the pre-#67 templates and netlist. They reproduced the local ngspice-46
+  files of record `20260917-023832-7061e8f` exactly. See
+  [`backend-validation/20261010-025044/`](backend-validation/20261010-025044/README.md).
+- A failed submission is reported, and its points are screened as FAILED.
+  The backend never falls back to a local ngspice run.
+- Provenance for each record is in `corners/<id>/_batch/`: one directory per
+  request with `request.json`, `tb.spice`, `corners.lib`, the klt
+  `report.json` (`environment.remote.job_id`) and the exact `*.corner.cir`
+  each point ran. Rawfiles (~1 MB per corner) are not committed.
+  `SWEEP_BATCH_PLAN_ONLY=1 run_sweep.sh --batch` prints the request plan
+  without submitting anything.
+
+## Results (issue #35, `Cc` re-compensation -- superseded by #67 above, numerically unchanged)
 
 **Every ratified spec row is met at every one of the 45 grid points.** The
 `res_bcs`/125C phase-margin gap #31 found is closed by a single-parameter
@@ -645,9 +734,11 @@ verification-only phase, and is captured in full in
 ## T1 item 5 evidence derivation and coverage inventory (issue #55)
 
 `item5_evidence.py` re-derives, with no simulator and no PDK, from the
-committed raw DC grids of record `20260917-023832-7061e8f`
-(`corners/20260917-023832-7061e8f/dcsweep_*_dc.csv`, 45 independent MOS x
-temperature x resistor points):
+committed raw DC grids of record `20261010-025634-60a3e81`
+(`corners/20261010-025634-60a3e81/dcsweep_*_dc.csv`, 45 independent MOS x
+temperature x resistor points; the `EN` design, PR #87). Until #67 it read
+record `20260917-023832-7061e8f`. That record's outputs under
+`evidence/20260917-023832-7061e8f/` are kept unchanged as history.
 
 - the record's own DC columns (it **fails** if they do not reproduce, so the
   raw grid and the committed record CSV cannot silently disagree);
@@ -664,7 +755,7 @@ python3 sim/ldo-cmos5l-pvt-sweep/item5_evidence.py --check   # byte-compare (CI)
 python3 -m unittest discover -s sim/ldo-cmos5l-pvt-sweep -p 'test_*.py' -v
 ```
 
-Outputs: `evidence/20260917-023832-7061e8f/{coverage-inventory.json,
+Outputs: `evidence/20261010-025634-60a3e81/{coverage-inventory.json,
 coverage-inventory.md,dc-informational-summary.csv}`; inputs and their sha256
 are listed in the JSON. `dc_metrics.py` is the DC parser extracted from
 `run_sweep.sh`'s inline Python so both read the grid identically.
@@ -672,11 +763,13 @@ are listed in the JSON. `dc_metrics.py` is the DC parser extracted from
 What this is **not**:
 
 - It is not a `klt sim` envelope and item 5 in `signoff/` stays uncited.
-  `klt sim`'s batch/remote backends refuse `ihp-sg13cmos5l`
+  The raw grid now comes from `klt sim` batch requests (`run_sweep.sh
+  --batch`), but those requests declare no limits, and the metrics are
+  reduced outside klt, so they are measurement runs, not a corner-matrix
+  envelope graded against the ratified spec. `klt sim`'s batch backend still
+  refuses `models.pdk: ihp-sg13cmos5l`
   ([klayout-tools#2727](https://github.com/2AMLogic/klayout-tools/issues/2727)),
-  and the DC bench needs the PDK's OSDI models under ngspice >= 46, so the
-  ratified dropout measurement could not be re-run through the supported tool
-  from the dispatch host.
+  so the runs rely on staged model inputs instead.
 - It does not ratify any Open row. Only row 4 (dropout) is ratified, and its
   dropout is the **legacy** metric (lowest in-regulation grid Vin minus the
   fixed 1.8 V target); 36 of 45 points sit at the 0.20 V sweep floor and are
@@ -688,10 +781,13 @@ What this is **not**:
   Iq at 50 mA is quantized at 1e-10 A; ngspice's own convergence noise on a
   22 uA difference of two ~50 mA currents is not bounded beyond that floor
   by this data.
-- Provenance: the record's git sha does not resolve and its snapshots
-  `.include` the design by absolute worktree path, so netlist freshness is
-  inferred from the DR-0007 hash pins and the record's nominal `Cc`, not
-  recorded. `run_sweep.sh`'s spec comparison table now labels every row's
+- Provenance: the record's git sha (`60a3e81`, a PR #87 branch commit) may
+  not resolve after a squash merge. main's #64 changes were merged into the
+  branch afterwards, and regenerating all 214 decks with the merged harness
+  gives decks that are identical apart from comments. The snapshots `.include` the design by absolute worktree path. The record md does state both design netlist
+  sha256 values, so netlist freshness is recorded for this record. (For the
+  older `7061e8f` record it was inferred from the DR-0007 hash pins.)
+  `run_sweep.sh`'s spec comparison table now labels every row's
   DR-0007 status (only dropout is a gate; the rest are informational); this
   affects future records only, existing records are unchanged.
 
@@ -715,9 +811,15 @@ is a local/manual step, verified by this PR's author before submission
 ```bash
 export PDK_ROOT=/path/to/pdk/parent   # containing BOTH ihp-sg13g2/ and ihp-sg13cmos5l/
 PDK=ihp-sg13cmos5l sim/tools/build-osdi.sh   # one-time OSDI build for this PDK
-sim/ldo-cmos5l-pvt-sweep/run_sweep.sh
+sim/ldo-cmos5l-pvt-sweep/run_sweep.sh --batch   # dispatch hosts: every point on the batch fleet
+sim/ldo-cmos5l-pvt-sweep/run_sweep.sh           # workstation with ngspice >= 46: local loop
 sim/ldo-cmos5l-pvt-sweep/run_sweep.sh --check-env   # syntax-check only, no records written
 ```
+
+`--batch` needs `klt` (client 0.7.0 was used for record
+`20261010-025634-60a3e81`) with batch-fleet credentials, plus the six OSDI
+binaries built locally. They are staged, not loaded, on the submitting host,
+so its own ngspice version does not matter.
 
 Requires `ngspice >= 46` (OSDI ABI v0.4, see `sim/README.md`) and both
 `ihp-sg13g2`/`ihp-sg13cmos5l` installed under the same `PDK_ROOT`
@@ -804,7 +906,9 @@ PDK, ngspice version). `--doe-extra=FILE` appends refinement points.
 The 384 simulations must be submitted to the batch fleet, not run locally.
 That requires `klt sim` batch support for `ihp-sg13cmos5l` (#2727) or another
 sanctioned batch path; if a submit fails, record the error here, do not fall
-back to a local grid. After the AC CSVs are in `corners/<record>/`:
+back to a local grid. (PR #87 added one such path for the main grid,
+`run_sweep.sh --batch`; see "Batch backend" above. `--doe-generate` does not
+route through it yet.) After the AC CSVs are in `corners/<record>/`:
 
 ```
 python3 sim/ldo-cmos5l-pvt-sweep/dynamic_doe.py analyse corners/<record> \

@@ -1,0 +1,36 @@
+* sg13g2-ldo -- batch-fleet runner preamble: OSDI preload + .meas precision
+* (issue #56).
+*
+* The fleet runner image pins klt 0.5.0, which predates `options.osdi_preload`
+* (and the client-side staging of .osdi binaries). The PSP103 / r3_cmc OSDI
+* models are therefore loaded with `pre_osdi` control cards reached through
+* `.include` -- the same deviation sg13g2-bandgap's batch decks take (ngspice
+* runs `pre_` commands before parsing the circuit, wherever the .control
+* block sits). The paths are the runner image's baked PDK root
+* (2AMLogic/2am infra/aws/batch-image-pins.env: BAKED_PDK_ROOT=/opt/pdk,
+* PIN_IHP_OPEN_PDK_VERSION=0.3.0, ngspice 46). Those binaries are compiled
+* from ihp-sg13g2's own psp103 / r3_cmc Verilog-A sources, which the
+* SG13CMOS5L tree symlinks to (libs.tech/verilog-a/{psp103,r3_cmc} ->
+* ../../../ihp-sg13g2/...), so they are the same compact models this
+* repository's local OSDI build compiles.
+*
+* `shell sha256sum` prints the hashes of the exact binaries that loaded into
+* each sample's ngspice log (retained by requests that set keep_artifacts),
+* because klt cannot pin a binary it was not asked to preload.
+* cap_cmomi/cap_cmomf are not baked there and are not needed (see
+* tb_row2_accuracy.spice).
+*
+* `set measureprec=9` widens ngspice's printed .meas mantissa from its default
+* (6 significant digits, i.e. 10 uV at 1.8 V) to 10 significant digits. klt
+* reports the printed token verbatim; the runner's klt 0.5.0 predates
+* `options.ngspice_init`, so the setting is made here, ahead of the analysis
+* klt's own .control block runs. Formatting only -- solver tolerances are the
+* ngspice defaults.
+.control
+set measureprec=9
+pre_osdi /opt/pdk/ihp-sg13g2/libs.tech/ngspice/osdi/psp103.osdi
+pre_osdi /opt/pdk/ihp-sg13g2/libs.tech/ngspice/osdi/psp103_nqs.osdi
+pre_osdi /opt/pdk/ihp-sg13g2/libs.tech/ngspice/osdi/mosvar.osdi
+pre_osdi /opt/pdk/ihp-sg13g2/libs.tech/ngspice/osdi/r3_cmc.osdi
+shell sha256sum /opt/pdk/ihp-sg13g2/libs.tech/ngspice/osdi/psp103.osdi /opt/pdk/ihp-sg13g2/libs.tech/ngspice/osdi/r3_cmc.osdi
+.endc

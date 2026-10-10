@@ -1,0 +1,196 @@
+{
+ "backend": "batch",
+ "client_klt": "klt 0.7.0+g5e5b55992a7f",
+ "runner_klt": [
+  "0.5.0"
+ ],
+ "engines": [
+  "ngspice-46"
+ ],
+ "staged_osdi_sha256": {
+  "psp103": "2e4299c4683997e26469410dc1ab36b02ced924b1ac0972d6c4eae360e1fc796",
+  "psp103_nqs": "839b164483205601c09032951f6c41d3580f15e506dc40a7202950d3afbdfc7d",
+  "mosvar": "25e64a374ab523dbfeb7ffed75dcb8b086ee10f06120a9074bd68b92d7b0fb41",
+  "r3_cmc": "4fead17bc2e9cbfe3df6f106e9dbd6f2cdcd48c002af9c56c2ca0b0712fce350",
+  "cap_cmomi": "9e16967935d9a69f5a18629f83be8bbd7d3d50ac6dae230f8e00b369ba969b04",
+  "cap_cmomf": "006ebb9bb05729e408966da04b3c02391ef3e460666e3a59ec2900c8089ea6cc"
+ },
+ "jobs": [
+  {
+   "group": "g00_dcsweep_tt_-40c_rtyp",
+   "job_id": "klt-sim-55ed56f82c98",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 45
+  },
+  {
+   "group": "g01_loopgain_tt_-40c_rtyp",
+   "job_id": "klt-sim-0827047f9932",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 45
+  },
+  {
+   "group": "g02_loopgain_ressens_bcs_tt_27c",
+   "job_id": "klt-sim-734bfc588a5b",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 3
+  },
+  {
+   "group": "g03_psrr_tt_-40c_rtyp",
+   "job_id": "klt-sim-671c55d5f512",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 45
+  },
+  {
+   "group": "g04_loopgain_ccsens_0.5x_tt_27c",
+   "job_id": "klt-sim-35bb60e6555b",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 1
+  },
+  {
+   "group": "g05_loopgain_ccsens_1x_tt_27c",
+   "job_id": "klt-sim-c8ffef4b2cb0",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 1
+  },
+  {
+   "group": "g06_loopgain_ccsens_2x_tt_27c",
+   "job_id": "klt-sim-d223147dd138",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 1
+  },
+  {
+   "group": "g07_loopgain_cctol_85e-6_ss_125c_rbcs",
+   "job_id": "klt-sim-cceb2e2e5a47",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 2
+  },
+  {
+   "group": "g08_psrr_cctol_85e-6_ss_125c_rbcs",
+   "job_id": "klt-sim-fe96d9b8f933",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 2
+  },
+  {
+   "group": "g09_loopgain_cctol_110e-6_ss_125c_rbcs",
+   "job_id": "klt-sim-65671a95bece",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 2
+  },
+  {
+   "group": "g10_psrr_cctol_110e-6_ss_125c_rbcs",
+   "job_id": "klt-sim-d5966d102ed3",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 2
+  },
+  {
+   "group": "g11_loopgain_cctol_130e-6_ss_125c_rbcs",
+   "job_id": "klt-sim-f0213ad7f6aa",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 2
+  },
+  {
+   "group": "g12_psrr_cctol_130e-6_ss_125c_rbcs",
+   "job_id": "klt-sim-30659b6373ff",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 2
+  },
+  {
+   "group": "g13_loopgain_cctol_170e-6_ss_125c_rbcs",
+   "job_id": "klt-sim-34dd9e5c577f",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 2
+  },
+  {
+   "group": "g14_psrr_cctol_170e-6_ss_125c_rbcs",
+   "job_id": "klt-sim-6415348f0a20",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 2
+  },
+  {
+   "group": "g15_loopgain_cctol_220e-6_ss_125c_rbcs",
+   "job_id": "klt-sim-a9305af6d438",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 2
+  },
+  {
+   "group": "g16_psrr_cctol_220e-6_ss_125c_rbcs",
+   "job_id": "klt-sim-839d3472774e",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 2
+  },
+  {
+   "group": "g17_loopgain_cctol_259e-6_ss_125c_rbcs",
+   "job_id": "klt-sim-a7f01aa5ad60",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 2
+  },
+  {
+   "group": "g18_psrr_cctol_259e-6_ss_125c_rbcs",
+   "job_id": "klt-sim-44f689b07814",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 2
+  },
+  {
+   "group": "g19_loopgain_cctol_340e-6_ss_125c_rbcs",
+   "job_id": "klt-sim-f5da9918d651",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 2
+  },
+  {
+   "group": "g20_psrr_cctol_340e-6_ss_125c_rbcs",
+   "job_id": "klt-sim-99b9af580538",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 2
+  },
+  {
+   "group": "g21_loopgain_divattr_tt_-40c_rtyp",
+   "job_id": "klt-sim-8d6b4d9d563b",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 45
+  }
+ ]
+}

@@ -1,0 +1,608 @@
+{
+  "generator": {
+    "parser": {
+      "path": "sim/ldo-cmos5l-pvt-sweep/dc_metrics.py",
+      "sha256": "782319eb4ef619b040f3a4001af67a10def775c9cf17e37fe15b4dd8f3340c81"
+    },
+    "path": "sim/ldo-cmos5l-pvt-sweep/item5_evidence.py",
+    "sha256": "9455d8a2885b1cf12acf7dcdf4e3640b4acda94e7bf71fbeac69ba80e4ca1baa",
+    "version": 1
+  },
+  "grid": {
+    "corners": [
+      "tt",
+      "ff",
+      "ss",
+      "sf",
+      "fs"
+    ],
+    "independence": "MOS x temperature x resistor crossed independently (45 combinations, no assumed correlation)",
+    "points": 45,
+    "points_valid": 45,
+    "reproduces_record_csv": true,
+    "res_sections": [
+      "res_typ",
+      "res_bcs",
+      "res_wcs"
+    ],
+    "temps_c": [
+      -40,
+      27,
+      125
+    ]
+  },
+  "inputs": {
+    "decision_record": {
+      "path": "spec/decision-records/DR-0007-target-spec-row-ratification.md",
+      "sha256": "74496ee0800de6de36ff2f045796a7c2f802f6d647439255df5a8c8e69451556"
+    },
+    "design_netlists": {
+      "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice": "7953b25be4cb00053f8df5f283bee0500f60a826b7a2d6519b88a8578d222cc1",
+      "design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice": "7982d728a2db933165eedcae69feaa4985dbddf54c269fc68b82d88577c8e38c"
+    },
+    "raw_dc_grids": {
+      "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81/dcsweep_ff_-40c_rbcs_dc.csv": "b79dafaa4c086afac7d3180e4a2243cbdb52e27e065a4dc6da1070d0202bdcbd",
+      "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81/dcsweep_ff_-40c_rtyp_dc.csv": "8929b96f9d96eac506568572e27281b53978d4649fc15b017e7bd5cdab7fea62",
+      "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81/dcsweep_ff_-40c_rwcs_dc.csv": "d866c59d8d3ceff86bfd84325d352f2d4376b7d6a0d192cfe6f2b2b3234fdd69",
+      "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81/dcsweep_ff_125c_rbcs_dc.csv": "aeeae3c1c8f477ecbe15840f8244ef43e109e9e7c9e9853af5fda1250e99d64c",
+      "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81/dcsweep_ff_125c_rtyp_dc.csv": "b8eb65b4a6aee63ea80330083c41d3d761f3060a32ff0e49ea5ebc997b5e6545",
+      "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81/dcsweep_ff_125c_rwcs_dc.csv": "e0f0c0589fdb689cff33cee07d00625786091bb95cea9d5e3ab629af2d735529",
+      "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81/dcsweep_ff_27c_rbcs_dc.csv": "b566790326ceeb4a0e3315dca21868f17de39387a04ada9d9657f1d5d79e8abe",
+      "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81/dcsweep_ff_27c_rtyp_dc.csv": "daee699ef1914ba0a18b673c44d9df69bf57831a37368693018ee29d61baa20a",
+      "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81/dcsweep_ff_27c_rwcs_dc.csv": "d94ab331935adced78e61c378b2a90cbf70397e5f6520583d85b496934a35ce3",
+      "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81/dcsweep_fs_-40c_rbcs_dc.csv": "0ac5600b52e448b5e98193a4630ba583953706fd8f2a6ec95afbeef7df12a4b6",
+      "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81/dcsweep_fs_-40c_rtyp_dc.csv": "97f68490783d9ddd548d8a0e5dca21c944897bb15804af7ae403fb926193d41d",
+      "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81/dcsweep_fs_-40c_rwcs_dc.csv": "5178f0b8aa14d5e3cc8fa33ab063645bff699398efdae7c98aaa0a6a5fdfd47f",
+      "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81/dcsweep_fs_125c_rbcs_dc.csv": "213f1d3be33c64e6d4bafd4f2171f478a70365c49461528f2f7c7eb1515ff644",
+      "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81/dcsweep_fs_125c_rtyp_dc.csv": "b116c4c8c61475bde3536f36af81b0f4068ca5a62f063f3360edbfc45180cd01",
+      "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81/dcsweep_fs_125c_rwcs_dc.csv": "53e20522afb9d4b74edb9d89d7fb7bcf3dda4bf43e710768ff5050b4dfdec414",
+      "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81/dcsweep_fs_27c_rbcs_dc.csv": "c29eccd01803a4eec8a2c8cc5e517292db6cc431e4f091f61acacb8ca803e69f",
+      "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81/dcsweep_fs_27c_rtyp_dc.csv": "0bfd25fb716f1533061512adfda8498dfc46faac005b31b88e3a66837863762a",
+      "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81/dcsweep_fs_27c_rwcs_dc.csv": "4b14ea0df2d27aa8d2ebca861c628d751bda268f110762778a4be42da1951aa0",
+      "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81/dcsweep_sf_-40c_rbcs_dc.csv": "80612565583cf802b3e086e3e8b06318126e7fe17a4087247c5bdcf586d0c8de",
+      "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81/dcsweep_sf_-40c_rtyp_dc.csv": "625e92a8bc1b53fad97838f09f5a384eeedc6492b9cd776ccd5b6197f5594502",
+      "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81/dcsweep_sf_-40c_rwcs_dc.csv": "33bdfa05e637e0a04e7d739c6fa5acab65d3ae573dd4882274cb5a1486d72f33",
+      "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81/dcsweep_sf_125c_rbcs_dc.csv": "3691b8e693effc2c9ad7dfee611799ebf42fef69748cfdf022641f8742d32a67",
+      "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81/dcsweep_sf_125c_rtyp_dc.csv": "b54f76bb0eed46b1bee8c39f0d132f333cfb7d071adeadb4e1e51f6e5cb19ee4",
+      "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81/dcsweep_sf_125c_rwcs_dc.csv": "516e36bfa80e5cb58eb0e77b1ec54ac2324f56ba94a6f74dcce26bf8df42e963",
+      "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81/dcsweep_sf_27c_rbcs_dc.csv": "c7554f9f27df344975d9b7afda7be8c80ca5ecb0b67bebc273a858fa7aaeb5ce",
+      "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81/dcsweep_sf_27c_rtyp_dc.csv": "b825d8ec1978325d3d211936cdc19025a85d4313a0d8736af628b842533b5ddf",
+      "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81/dcsweep_sf_27c_rwcs_dc.csv": "41af5d7fc0d35482354eede175dc7da2e34d56d7a8a6d1571915c19d93192613",
+      "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81/dcsweep_ss_-40c_rbcs_dc.csv": "f8704854fc485d07eb60404a891df8b9fda241735a9f79fbfcf3ff1c709766d8",
+      "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81/dcsweep_ss_-40c_rtyp_dc.csv": "491e6673060f0d7baa1a3be8604bb65690c73304ca0bee390293d59ee3c94cfc",
+      "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81/dcsweep_ss_-40c_rwcs_dc.csv": "426feac0ac246c98bf0d40fbddba9e7765ac6f2c2bbbef066169e71f4ba78528",
+      "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81/dcsweep_ss_125c_rbcs_dc.csv": "90db39c0c7aa8748ad6726acef04165942770ef879dcb4a2c6fa1af89001221f",
+      "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81/dcsweep_ss_125c_rtyp_dc.csv": "5195a34da48f6331da27610bf376bbff9163c906d1e8fc3f02386460b5c5f65b",
+      "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81/dcsweep_ss_125c_rwcs_dc.csv": "96e1bd8f590cf128e3bf24f1314ef44494a504f74a9680a39e779513c7617f42",
+      "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81/dcsweep_ss_27c_rbcs_dc.csv": "38cdd32329448ae85fa7d3930d93965adcfde306251d9e0356012dfeb7ab770c",
+      "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81/dcsweep_ss_27c_rtyp_dc.csv": "9262b5b6fe2cf425b9ec72be865178017ed19b08a631b8211dc33498dc1f88c8",
+      "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81/dcsweep_ss_27c_rwcs_dc.csv": "a248c76be1e6c1de0129d144d8117153b246e258e9fb995073c5d65d598c5697",
+      "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81/dcsweep_tt_-40c_rbcs_dc.csv": "099113d05aca9ebd5641aac1d489f4924d949e82dbca5ee95c99cac6f5c2a479",
+      "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81/dcsweep_tt_-40c_rtyp_dc.csv": "86fcf436527f01d9ce344a1c8fa566a6adbf494155eeeb6df4c456ed518805dd",
+      "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81/dcsweep_tt_-40c_rwcs_dc.csv": "1aedc10b222edbaba9c557fa7332f45566daa3acead80b8a6b6906b03114079a",
+      "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81/dcsweep_tt_125c_rbcs_dc.csv": "52be1f9a430adcc18b92a94c63bd052494a3884a555becdb8d22f9f7e2d0c71e",
+      "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81/dcsweep_tt_125c_rtyp_dc.csv": "16772eff87a30b97e56b1dbbfd57d982df0486ca6879ed47f82d41bd95cc07ac",
+      "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81/dcsweep_tt_125c_rwcs_dc.csv": "2a06ba87e16ccc292395ccb8e875aaa798be4387e6858f9c65332e314e4b9379",
+      "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81/dcsweep_tt_27c_rbcs_dc.csv": "d2393dc1165290e16184e784b72636b2163d2174f355047b3a53e6c1d1f64763",
+      "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81/dcsweep_tt_27c_rtyp_dc.csv": "278a56c5a27ce6a068e6e430194ec77bbcb9332323b80877f14dd9f3170bee17",
+      "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81/dcsweep_tt_27c_rwcs_dc.csv": "6601e17f00b82f61b29e81034e1e83660249d6df82bf951fa0aa132777a9f069"
+    },
+    "record_csv": {
+      "path": "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv",
+      "sha256": "d0c1e057c8cbbf0aaaab3df57b753fcca8557375372ee8bf6f6103a0b946c981"
+    },
+    "record_md": {
+      "path": "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.md",
+      "sha256": "89239ec65964818a9678ba92d9a13f353be38540d73006a24e2fd0ff04d44f22"
+    }
+  },
+  "klt_sim_envelope": {
+    "produced": false,
+    "reason": "The raw grid now comes from 22 klt sim batch requests (reports under corners/<record>/_batch/). Those requests declare no limits, and the metrics are reduced from rawfiles outside klt, so they are measurement runs, not a corner-matrix envelope graded against the ratified spec. klt sim's batch backend still refuses models.pdk=ihp-sg13cmos5l (klayout-tools#2727), and the runner's klt 0.5.0 ignores options.osdi_preload (klayout-tools#2901), so the runs depend on staged libraries and a body-level pre_osdi preamble. A success envelope is never synthesized or hand-wrapped from the CSVs.",
+    "signoff_item_5": "uncited / unmet; signoff/sg13g2-ldo.json is unchanged",
+    "tool_gap_issue": "2AMLogic/klayout-tools#2727; 2AMLogic/klayout-tools#2901"
+  },
+  "provenance_caveats": [
+    "Record 20261010-025634-60a3e81 was made by run_sweep.sh --batch at PR #87 branch commit 60a3e81, which may not resolve after a squash merge. main's #64 changes were merged into the branch afterwards. Regenerating all 214 decks with the merged harness gives decks that are line-for-line identical apart from comments, and that check was run. Its netlist snapshots .include the design by an absolute worktree path, but the record md states the sha256 of both design netlists it ran against, and those equal the pins here, so netlist freshness is recorded rather than inferred.",
+    "Every point ran on the EDA batch fleet (runner klt 0.5.0, ngspice-46) at PDK commit 607e18d (sim/pdk-cmos5l.json). The six OSDI binaries, including cap_cmomi, were staged from the submitting host's build, and their sha256 appears in every per-point log. The rawfile-to-wrdata reduction reproduced six points of the local ngspice-46 record 20260917-023832-7061e8f byte-for-byte (sim/ldo-cmos5l-pvt-sweep/backend-validation/20261010-025044/).",
+    "The design under test carries the #67 EN interface (DR-0008), with EN tied to VIN in every bench. The disabled state is not part of this grid.",
+    "Cap model: cornerCAP.lib maps every section to one nominal cap_cmomi, so Cc has no process-corner spread; this affects the AC rows (6, 10) not the DC grid used here.",
+    "Reference is an ideal 0.90 V source; supply is swept 2.00-3.63 V; Ibias is an ideal 2 uA sink; loads are ideal DC current sources; Cout = 1 uF is irrelevant at DC."
+  ],
+  "purpose_and_limits": [
+    "Coverage accounting, not compliance. Only row 4 is ratified (DR-0007); nine rows are Open and are informational here, never upgraded to ratified passes.",
+    "Every number is derived from committed SG13CMOS5L raw data or carried from the committed record CSV. Nothing is transferred to SG13G2 (#71).",
+    "No new simulation was run. No klt sim envelope was produced; see klt_sim_envelope."
+  ],
+  "reproduce": "python3 sim/ldo-cmos5l-pvt-sweep/item5_evidence.py --check",
+  "rows": [
+    {
+      "binding_corner": null,
+      "evidence_paths": [
+        "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv",
+        "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81"
+      ],
+      "gate": "none",
+      "id": 1,
+      "informational_measurement": {
+        "in_regulation_at_both_window_ends_50mA": "45/45",
+        "in_regulation_at_both_window_ends_noload": "45/45"
+      },
+      "kind": "D",
+      "measured_verdict": "informational: regulation window reproduced at DC; device-rating gate unevidenced",
+      "measurement_definition": "Supply window 2.97-3.63 V over which the regulator holds VOUT within 1 % of 1.8 V.",
+      "open_issues": [
+        "#63",
+        "#71"
+      ],
+      "parameter": "Input",
+      "pdk_branch": "SG13CMOS5L closed-loop (design/sg13cmos5l); SG13G2 branch: no closed-loop evidence (behavioural error-amp placeholder; #71).",
+      "status": "open",
+      "target": "3.3 V +/-10 %",
+      "tested_axes": "Vin 2.00-3.63 V step 10 mV x Iload {0,12.5,25,37.5,50} mA x 45 PVT-resistor points (DC).",
+      "transfer_to_sg13g2": "not claimed",
+      "unit": "V",
+      "untested_axes": "Continuous-short |Vsg| <= 3.3 V gate at 3.63 V (no limiter, #63); normal-regulation |Vgs| check; SG13G2 branch."
+    },
+    {
+      "binding_corner": null,
+      "evidence_paths": [
+        "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv"
+      ],
+      "gate": "none",
+      "id": 2,
+      "informational_measurement": {
+        "n_invalid": 0,
+        "n_points": 45,
+        "n_valid": 45,
+        "worst_at": {
+          "corner": "ff",
+          "res_section": "res_wcs",
+          "temp_c": 125
+        },
+        "worst_value": 1.80065464
+      },
+      "kind": "S",
+      "measured_verdict": "informational: corner-only spread inside the band; statistical row, not decidable by corners",
+      "measurement_definition": "No-load VOUT at Vin = 3.30 V with an IDEAL 0.90 V reference (regulator-only; excludes reference error and offset/mismatch).",
+      "open_issues": [
+        "#56"
+      ],
+      "parameter": "Output",
+      "pdk_branch": "SG13CMOS5L closed-loop (design/sg13cmos5l); SG13G2 branch: no closed-loop evidence (behavioural error-amp placeholder; #71).",
+      "status": "open",
+      "target": "1.8 V +/-2 % (fixed)",
+      "tested_axes": "PVT-resistor corners only; deterministic.",
+      "transfer_to_sg13g2": "not claimed",
+      "unit": "V",
+      "untested_axes": "Monte Carlo offset/divider mismatch (#56); reference error."
+    },
+    {
+      "binding_corner": null,
+      "evidence_paths": [
+        "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv",
+        "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81"
+      ],
+      "gate": "none",
+      "id": 3,
+      "informational_measurement": {
+        "points_in_regulation_at_50mA_by_vin": {
+          "2p97": "45/45",
+          "3p30": "45/45",
+          "3p63": "45/45"
+        }
+      },
+      "kind": "D",
+      "measured_verdict": "informational: DC load span covered; dynamic coverage absent",
+      "measurement_definition": "DC regulation at five load points 0-50 mA; in regulation = |VOUT-1.8| < 1 % of 1.8 V.",
+      "open_issues": [
+        "#64"
+      ],
+      "parameter": "Load",
+      "pdk_branch": "SG13CMOS5L closed-loop (design/sg13cmos5l); SG13G2 branch: no closed-loop evidence (behavioural error-amp placeholder; #71).",
+      "status": "open",
+      "target": "0-50 mA (no external preload assumed)",
+      "tested_axes": "Iload x5 DC; Vin 2.00-3.63 V.",
+      "transfer_to_sg13g2": "not claimed",
+      "unit": "A",
+      "untested_axes": "Dynamic/no-preload stability at 0 mA (#64); stretch 100 mA."
+    },
+    {
+      "binding_corner": {
+        "corner": "ss",
+        "res_section": "res_wcs",
+        "temp_c": 125
+      },
+      "evidence_paths": [
+        "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv",
+        "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81",
+        "sim/ldo-cmos5l-pvt-sweep/evidence/20261010-025634-60a3e81/dc-informational-summary.csv"
+      ],
+      "gate": "ratified requirement; gate NOT closed by this evidence",
+      "id": 4,
+      "kind": "D",
+      "measured_verdict": "legacy metric < 0.3 V at 45/45 points (36 floor-limited upper bounds, 9 resolved crossings, 0 never in regulation, 0 invalid grids); worst 0.24 V. QUALIFIED evidence only: no klt sim envelope, definition unresolved (#70), SG13G2 branch unevidenced (#71). Not a completeness or definitive-margin claim.",
+      "measurement": {
+        "candidate_vin_minus_vout_at_resolved_points_informational_pending_70": {
+          "n_invalid": 36,
+          "n_points": 45,
+          "n_valid": 9,
+          "worst_at": {
+            "corner": "ss",
+            "res_section": "res_bcs",
+            "temp_c": 125
+          },
+          "worst_value": 0.2546290200000001
+        },
+        "legacy_worst": {
+          "n_invalid": 0,
+          "n_points": 45,
+          "n_valid": 45,
+          "worst_at": {
+            "corner": "ss",
+            "res_section": "res_wcs",
+            "temp_c": 125
+          },
+          "worst_value": 0.24
+        },
+        "status_counts": {
+          "floor_limited_upper_bound": 36,
+          "resolved_crossing": 9
+        },
+        "target_v": 0.3
+      },
+      "measurement_definition": "LEGACY metric: lowest Vin on the 10 mV grid at which VOUT >= 0.99 x 1.8 V (scanning down from 3.63 V) minus the fixed 1.8 V target. NOT Vin - actual VOUT at 1 % loss; that definition is unresolved (#70).",
+      "open_issues": [
+        "#70",
+        "#71",
+        "#57"
+      ],
+      "parameter": "Dropout @ 50 mA",
+      "pdk_branch": "SG13CMOS5L closed-loop (design/sg13cmos5l); SG13G2 branch: no closed-loop evidence (behavioural error-amp placeholder; #71).",
+      "status": "ratified",
+      "target": "< 300 mV worst corner",
+      "tested_axes": "Iload = 50 mA; Vin 2.00-3.63 V step 10 mV (sweep floor 0.20 V); 45 PVT-resistor points.",
+      "transfer_to_sg13g2": "not claimed",
+      "unit": "V",
+      "untested_axes": "Stretch < 200 mV (not ratified); finer sweep below the floor; definition per #70; SG13G2 branch (#71, unevidenced/unmet); post-layout (#57)."
+    },
+    {
+      "binding_corner": null,
+      "evidence_paths": [
+        "sim/ldo-cmos5l-pvt-sweep/evidence/20261010-025634-60a3e81/dc-informational-summary.csv",
+        "sim/ldo-cmos5l-pvt-sweep/corners/20261010-025634-60a3e81"
+      ],
+      "gate": "none",
+      "id": 5,
+      "informational_measurement": {
+        "line_worst_by_load": {
+          "0mA": {
+            "n_invalid": 0,
+            "n_points": 45,
+            "n_valid": 45,
+            "worst_at": {
+              "corner": "ff",
+              "res_section": "res_wcs",
+              "temp_c": 125
+            },
+            "worst_value": 0.24575757575774593
+          },
+          "12p5mA": {
+            "n_invalid": 0,
+            "n_points": 45,
+            "n_valid": 45,
+            "worst_at": {
+              "corner": "ff",
+              "res_section": "res_wcs",
+              "temp_c": 125
+            },
+            "worst_value": 0.17945454545462575
+          },
+          "25mA": {
+            "n_invalid": 0,
+            "n_points": 45,
+            "n_valid": 45,
+            "worst_at": {
+              "corner": "ff",
+              "res_section": "res_wcs",
+              "temp_c": 125
+            },
+            "worst_value": 0.1763181818181467
+          },
+          "37p5mA": {
+            "n_invalid": 0,
+            "n_points": 45,
+            "n_valid": 45,
+            "worst_at": {
+              "corner": "fs",
+              "res_section": "res_wcs",
+              "temp_c": 125
+            },
+            "worst_value": 0.17600000000021646
+          },
+          "50mA": {
+            "n_invalid": 0,
+            "n_points": 45,
+            "n_valid": 45,
+            "worst_at": {
+              "corner": "fs",
+              "res_section": "res_wcs",
+              "temp_c": 125
+            },
+            "worst_value": 0.17786363636362887
+          }
+        },
+        "load_reg_worst_by_vin": {
+          "2p97": {
+            "n_invalid": 0,
+            "n_points": 45,
+            "n_valid": 45,
+            "worst_at": {
+              "corner": "ff",
+              "res_section": "res_wcs",
+              "temp_c": 125
+            },
+            "worst_value": 0.02284819259855353
+          },
+          "3p30": {
+            "n_invalid": 0,
+            "n_points": 45,
+            "n_valid": 45,
+            "worst_at": {
+              "corner": "ff",
+              "res_section": "res_wcs",
+              "temp_c": 125
+            },
+            "worst_value": 0.023713042496589794
+          },
+          "3p63": {
+            "n_invalid": 0,
+            "n_points": 45,
+            "n_valid": 45,
+            "worst_at": {
+              "corner": "ff",
+              "res_section": "res_wcs",
+              "temp_c": 125
+            },
+            "worst_value": 0.025375091713573283
+          }
+        }
+      },
+      "kind": "D",
+      "measured_verdict": "informational: see worst values; invalid (out-of-regulation) points are counted, not dropped",
+      "measurement_definition": "Line: |dVOUT/dVin| over 2.97-3.63 V at each load. Load: (V(0 mA)-V(50 mA))/V(0 mA) at fixed Vin. A value is VALID only if both end points are within 1 % of 1.8 V.",
+      "open_issues": [
+        "#56"
+      ],
+      "parameter": "Line / load regulation",
+      "pdk_branch": "SG13CMOS5L closed-loop (design/sg13cmos5l); SG13G2 branch: no closed-loop evidence (behavioural error-amp placeholder; #71).",
+      "status": "open",
+      "target": "< 5 mV/V; < 1 % over full load, inside the accuracy window",
+      "tested_axes": "Line at 5 loads; load regulation at Vin 2.97/3.30/3.63 V; 45 points; DC.",
+      "transfer_to_sg13g2": "not claimed",
+      "unit": "mV/V ; %",
+      "untested_axes": "Accuracy-window coupling with row 2 (statistical, #56); dynamic regulation."
+    },
+    {
+      "binding_corner": {
+        "corner": "ss",
+        "res_section": "res_wcs",
+        "temp_c": 125
+      },
+      "evidence_paths": [
+        "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv"
+      ],
+      "gate": "none",
+      "id": 6,
+      "informational_measurement": {
+        "100kHz_min": {
+          "n_invalid": 0,
+          "n_points": 45,
+          "n_valid": 45,
+          "worst_at": {
+            "corner": "ff",
+            "res_section": "res_bcs",
+            "temp_c": 27
+          },
+          "worst_value": 33.2341904
+        },
+        "1kHz_min": {
+          "n_invalid": 0,
+          "n_points": 45,
+          "n_valid": 45,
+          "worst_at": {
+            "corner": "ss",
+            "res_section": "res_wcs",
+            "temp_c": 125
+          },
+          "worst_value": 53.6428867
+        }
+      },
+      "kind": "D",
+      "measured_verdict": "informational: carried from the record unchanged; not re-derived here (AC data)",
+      "measurement_definition": "Closed-loop AC supply-to-output rejection from the committed record.",
+      "open_issues": [
+        "#64"
+      ],
+      "parameter": "PSRR",
+      "pdk_branch": "SG13CMOS5L closed-loop (design/sg13cmos5l); SG13G2 branch: no closed-loop evidence (behavioural error-amp placeholder; #71).",
+      "status": "open",
+      "target": "> 50 dB @ 1 kHz, > 20 dB @ 100 kHz",
+      "tested_axes": "Vin = 3.30 V, Iload = 1 mA, Cout = 1 uF, ESR = 0, 45 points; Cc nominal (no corner spread).",
+      "transfer_to_sg13g2": "not claimed",
+      "unit": "dB",
+      "untested_axes": "50 mA, Cout/ESR window (#64); Cc corner spread (record: insufficient-evidence)."
+    },
+    {
+      "binding_corner": {
+        "corner": "ff",
+        "res_section": "res_bcs",
+        "temp_c": 125
+      },
+      "evidence_paths": [
+        "sim/ldo-cmos5l-pvt-sweep/evidence/20261010-025634-60a3e81/dc-informational-summary.csv",
+        "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv"
+      ],
+      "gate": "none",
+      "id": 7,
+      "informational_measurement": {
+        "full_load_noise_proxy_worst_a": 1.000000082740371e-10,
+        "full_load_print_resolution_a": 1e-10,
+        "full_load_worst": {
+          "n_invalid": 0,
+          "n_points": 45,
+          "n_valid": 45,
+          "worst_at": {
+            "corner": "ff",
+            "res_section": "res_bcs",
+            "temp_c": 125
+          },
+          "worst_value": 2.488729999999828e-05
+        },
+        "no_load_worst": {
+          "n_invalid": 0,
+          "n_points": 45,
+          "n_valid": 45,
+          "worst_at": {
+            "corner": "ss",
+            "res_section": "res_bcs",
+            "temp_c": 125
+          },
+          "worst_value": 2.47221613e-05
+        },
+        "target_a": 3e-05
+      },
+      "kind": "D",
+      "measured_verdict": "informational: no-load and full-load Iq both < 30 uA at 45/45 points; resolution = 9-digit print quantum (1e-10 A), solver-noise proxy at that floor",
+      "measurement_definition": "|i(Vin)| minus the load current, at Vin = 3.30 V (includes bias and divider standing current).",
+      "open_issues": [],
+      "parameter": "Iq (excl. load)",
+      "pdk_branch": "SG13CMOS5L closed-loop (design/sg13cmos5l); SG13G2 branch: no closed-loop evidence (behavioural error-amp placeholder; #71).",
+      "status": "open",
+      "target": "< 30 uA at no load and at full load",
+      "tested_axes": "No load and 50 mA (and intermediate loads in the CSV); Vin 3.30 V; 45 points.",
+      "transfer_to_sg13g2": "not claimed",
+      "unit": "A",
+      "untested_axes": "Other supplies; stretch < 10 uA is not met by the data."
+    },
+    {
+      "binding_corner": null,
+      "evidence_paths": [],
+      "gate": "none",
+      "id": 8,
+      "informational_measurement": null,
+      "kind": "S",
+      "measured_verdict": "not implemented",
+      "measurement_definition": "Not defined by any bench: no limiter exists.",
+      "open_issues": [
+        "#63",
+        "#56"
+      ],
+      "parameter": "Current limit",
+      "pdk_branch": "none",
+      "status": "open",
+      "target": "65-80 mA brickwall over PVT; short-survivable",
+      "tested_axes": "none",
+      "transfer_to_sg13g2": "not claimed",
+      "unit": "A",
+      "untested_axes": "everything"
+    },
+    {
+      "binding_corner": null,
+      "evidence_paths": [],
+      "gate": "none",
+      "id": 9,
+      "informational_measurement": null,
+      "kind": "D",
+      "measured_verdict": "not implemented",
+      "measurement_definition": "Not defined by any bench: no enable input or transient bench exists.",
+      "open_issues": [
+        "#67",
+        "#68",
+        "#69"
+      ],
+      "parameter": "Startup",
+      "pdk_branch": "none",
+      "status": "open",
+      "target": "monotonic, controlled ramp, inside +/-2 % within 3 ms of enable",
+      "tested_axes": "none",
+      "transfer_to_sg13g2": "not claimed",
+      "unit": "s",
+      "untested_axes": "everything"
+    },
+    {
+      "binding_corner": {
+        "corner": "ss",
+        "res_section": "res_bcs",
+        "temp_c": 125
+      },
+      "evidence_paths": [
+        "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv"
+      ],
+      "gate": "none",
+      "id": 10,
+      "informational_measurement": {
+        "gain_margin_min": {
+          "n_invalid": 0,
+          "n_points": 45,
+          "n_valid": 45,
+          "worst_at": {
+            "corner": "ff",
+            "res_section": "res_wcs",
+            "temp_c": -40
+          },
+          "worst_value": 13.852552535669732
+        },
+        "phase_margin_min": {
+          "n_invalid": 0,
+          "n_points": 45,
+          "n_valid": 45,
+          "worst_at": {
+            "corner": "ss",
+            "res_section": "res_bcs",
+            "temp_c": 125
+          },
+          "worst_value": 53.871033849219955
+        }
+      },
+      "kind": "D",
+      "measured_verdict": "informational: plumbing-grade subset of the row only; carried from the record unchanged",
+      "measurement_definition": "Loop broken at FB; phase/gain margin from the committed record.",
+      "open_issues": [
+        "#64"
+      ],
+      "parameter": "Stability",
+      "pdk_branch": "SG13CMOS5L closed-loop (design/sg13cmos5l); SG13G2 branch: no closed-loop evidence (behavioural error-amp placeholder; #71).",
+      "status": "open",
+      "target": "0-50 mA, C_out 0.33-4.7 uF, ESR 0-500 mOhm; PM >= 45 deg, GM >= 10 dB worst corner",
+      "tested_axes": "One (Cout, ESR, Iload) point: 1 uF, 0 ohm, 1 mA; Vin 3.30 V; 45 points; Cc nominal.",
+      "transfer_to_sg13g2": "not claimed",
+      "unit": "deg ; dB",
+      "untested_axes": "Rest of the load/Cout/ESR window (#64); Cc corner spread."
+    }
+  ],
+  "schema_version": 1,
+  "summary": {
+    "open_rows": [
+      1,
+      2,
+      3,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "ratified_pass_claims": 0,
+    "ratified_rows": [
+      4
+    ],
+    "rows_not_implemented": [
+      8,
+      9
+    ],
+    "rows_total": 10
+  },
+  "title": "sg13g2-ldo T1 item 5 coverage inventory (DR-0007 ten rows)"
+}

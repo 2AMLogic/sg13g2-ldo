@@ -1,0 +1,50 @@
+{
+  "netlist": "tb_loopgain_en.spice",
+  "backend": "batch",
+  "batch": {
+    "runner_version_check": "warn",
+    "capacity_wait_s": 1800
+  },
+  "models": {
+    "lib": "enable-corners.lib"
+  },
+  "analysis": {
+    "kind": "ac",
+    "args": "dec 20 1 100meg"
+  },
+  "measurements": [
+    {
+      "name": "fb_re_1hz",
+      "spice": ".meas ac fb_re_1hz FIND vr(fb) AT=1",
+      "unit": "V"
+    },
+    {
+      "name": "fb_im_1hz",
+      "spice": ".meas ac fb_im_1hz FIND vi(fb) AT=1",
+      "unit": "V"
+    },
+    {
+      "name": "ugf_hz",
+      "spice": ".meas ac ugf_hz WHEN vr(fb)=0.5 CROSS=1",
+      "unit": "Hz"
+    },
+    {
+      "name": "fb_im_at_ugf",
+      "spice": ".meas ac fb_im_at_ugf FIND vi(fb) WHEN vr(fb)=0.5 CROSS=1",
+      "unit": "V"
+    }
+  ],
+  "corners": {
+    "process": [
+      "tt_nom"
+    ],
+    "temperature_c": [
+      27
+    ]
+  },
+  "options": {
+    "timeout_s": 180,
+    "keep_artifacts": true,
+    "stage_model_inputs": true
+  }
+}
