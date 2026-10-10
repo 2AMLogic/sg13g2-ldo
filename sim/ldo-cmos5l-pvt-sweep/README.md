@@ -781,10 +781,10 @@ What this is **not**:
   Iq at 50 mA is quantized at 1e-10 A; ngspice's own convergence noise on a
   22 uA difference of two ~50 mA currents is not bounded beyond that floor
   by this data.
-- Provenance: the record's git sha (`60a3e81`, a PR #87 branch commit) no
-  longer resolves, because the branch was rebased onto #64. Regenerating all
-  214 decks with the rebased harness gives decks that are identical apart from
-  comments. The snapshots `.include` the design by absolute worktree path. The record md does state both design netlist
+- Provenance: the record's git sha (`60a3e81`, a PR #87 branch commit) may
+  not resolve after a squash merge. main's #64 changes were merged into the
+  branch afterwards, and regenerating all 214 decks with the merged harness
+  gives decks that are identical apart from comments. The snapshots `.include` the design by absolute worktree path. The record md does state both design netlist
   sha256 values, so netlist freshness is recorded for this record. (For the
   older `7061e8f` record it was inferred from the DR-0007 hash pins.)
   `run_sweep.sh`'s spec comparison table now labels every row's

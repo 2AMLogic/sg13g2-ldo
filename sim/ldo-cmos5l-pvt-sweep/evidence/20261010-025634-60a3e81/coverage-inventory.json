@@ -5,7 +5,7 @@
       "sha256": "782319eb4ef619b040f3a4001af67a10def775c9cf17e37fe15b4dd8f3340c81"
     },
     "path": "sim/ldo-cmos5l-pvt-sweep/item5_evidence.py",
-    "sha256": "27c213ebd4608dbd83cd0db5b353c2ca4040c1a86caf0576705b2004809db871",
+    "sha256": "9455d8a2885b1cf12acf7dcdf4e3640b4acda94e7bf71fbeac69ba80e4ca1baa",
     "version": 1
   },
   "grid": {
@@ -103,7 +103,7 @@
     "tool_gap_issue": "2AMLogic/klayout-tools#2727; 2AMLogic/klayout-tools#2901"
   },
   "provenance_caveats": [
-    "Record 20261010-025634-60a3e81 was made by run_sweep.sh --batch at PR #87 branch commit 60a3e81. That commit stopped resolving when the branch was rebased onto #64. Regenerating all 214 decks with the rebased harness gives decks that are line-for-line identical apart from comments, and that check was run. Its netlist snapshots .include the design by an absolute worktree path, but the record md states the sha256 of both design netlists it ran against, and those equal the pins here, so netlist freshness is recorded rather than inferred.",
+    "Record 20261010-025634-60a3e81 was made by run_sweep.sh --batch at PR #87 branch commit 60a3e81, which may not resolve after a squash merge. main's #64 changes were merged into the branch afterwards. Regenerating all 214 decks with the merged harness gives decks that are line-for-line identical apart from comments, and that check was run. Its netlist snapshots .include the design by an absolute worktree path, but the record md states the sha256 of both design netlists it ran against, and those equal the pins here, so netlist freshness is recorded rather than inferred.",
     "Every point ran on the EDA batch fleet (runner klt 0.5.0, ngspice-46) at PDK commit 607e18d (sim/pdk-cmos5l.json). The six OSDI binaries, including cap_cmomi, were staged from the submitting host's build, and their sha256 appears in every per-point log. The rawfile-to-wrdata reduction reproduced six points of the local ngspice-46 record 20260917-023832-7061e8f byte-for-byte (sim/ldo-cmos5l-pvt-sweep/backend-validation/20261010-025044/).",
     "The design under test carries the #67 EN interface (DR-0008), with EN tied to VIN in every bench. The disabled state is not part of this grid.",
     "Cap model: cornerCAP.lib maps every section to one nominal cap_cmomi, so Cc has no process-corner spread; this affects the AC rows (6, 10) not the DC grid used here.",
