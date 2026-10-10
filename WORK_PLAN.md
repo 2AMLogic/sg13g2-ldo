@@ -26,6 +26,7 @@ _None._
 Issues currently being built (`loom:building`).
 
 - **#64**: sim: parameterise loop-gain/PSRR benches over load, Cout and ESR for rows 3, 6, 10 dynamic coverage
+- **#69**: SG13CMOS5L startup measurements: transient bench and bounded corner campaign
 
 ## PRs Awaiting Review
 
@@ -48,12 +49,12 @@ Issues carrying `loom:curated`.
 - **#57**: Post-layout: klt pex extraction of the LDO core and spec re-run on the extracted netlist (T1 item 7) *(curated)*
 - **#63**: SG13CMOS5L current limiter: topology and sizing design plan for row 8 *(curated)*
 - **#64**: sim: parameterise loop-gain/PSRR benches over load, Cout and ESR for rows 3, 6, 10 dynamic coverage *(curated)*
+- **#69**: SG13CMOS5L startup measurements: transient bench and bounded corner campaign *(curated)*
 
 ## Proposed (Architect / Hermit)
 
 - **#62**: SG13CMOS5L startup: add enable input and transient testbench for spec row 9 *(architect)*
 - **#63**: SG13CMOS5L current limiter: topology and sizing design plan for row 8 *(architect)*
-- **#96**: CI: gate that the enable-smoke record reproduces from its raw reports *(architect)*
 
 ## Epics
 
@@ -67,10 +68,10 @@ Issues carrying `loom:curated`.
 | Operator merge-risk holds | 0 |
 | Operator priority | 0 |
 | Ready (`loom:issue`) | 0 |
-| In Progress (`loom:building`) | 1 |
+| In Progress (`loom:building`) | 2 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
-| Curated | 5 |
-| Architect / Hermit proposals | 3 |
+| Curated | 6 |
+| Architect / Hermit proposals | 2 |
 | Active epics | 2 |
 <!-- guide:plan-body:end -->
