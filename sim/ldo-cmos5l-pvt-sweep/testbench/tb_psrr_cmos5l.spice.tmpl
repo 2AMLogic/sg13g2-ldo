@@ -36,8 +36,16 @@
 Vin VIN 0 dc 3.30 ac 1
 Vref VREF 0 dc 0.90 ac 0
 Ibias IBIAS 0 dc 2u
-Iload VOUT 0 dc 0.001
-Cout VOUT 0 1u
+* Operating point (issue #64): load current, effective output capacitance
+* and capacitor ESR are substituted by run_sweep.sh's gen_netlist (defaults
+* 1mA / 1u / 0 ohm = the legacy point). ESR is a series element with Cout:
+* Cout sits between VOUT and a private node, and the line after Cout is
+* either a real series resistor from that node to ground or, for ESR=0, a
+* comment with Cout wired straight to ground -- never a zero-valued
+* resistor (simulator-dependent).
+Iload VOUT 0 dc @@LOAD_A@@
+Cout VOUT @@COUT_BOTTOM@@ @@COUT_F@@
+@@ESR_LINE@@
 
 * EN tied to VIN (enabled).
 Xtop VIN VOUT 0 VREF IBIAS VIN ldo_core_cmos5l

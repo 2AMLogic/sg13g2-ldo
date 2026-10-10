@@ -781,11 +781,13 @@ What this is **not**:
   Iq at 50 mA is quantized at 1e-10 A; ngspice's own convergence noise on a
   22 uA difference of two ~50 mA currents is not bounded beyond that floor
   by this data.
-- Provenance: the record's git sha (`60a3e81`, a PR #87 branch commit) may
-  not resolve after a squash merge, and its snapshots `.include` the design
-  by absolute worktree path. The record md does state both design netlist
+- Provenance: the record's git sha (`60a3e81`, a PR #87 branch commit) no
+  longer resolves, because the branch was rebased onto #64. Regenerating all
+  214 decks with the rebased harness gives decks that are identical apart from
+  comments. The snapshots `.include` the design by absolute worktree path. The record md does state both design netlist
   sha256 values, so netlist freshness is recorded for this record. (For the
-  older `7061e8f` record it was inferred from the DR-0007 hash pins.) `run_sweep.sh`'s spec comparison table now labels every row's
+  older `7061e8f` record it was inferred from the DR-0007 hash pins.)
+  `run_sweep.sh`'s spec comparison table now labels every row's
   DR-0007 status (only dropout is a gate; the rest are informational); this
   affects future records only, existing records are unchanged.
 
@@ -822,3 +824,131 @@ so its own ngspice version does not matter.
 Requires `ngspice >= 46` (OSDI ABI v0.4, see `sim/README.md`) and both
 `ihp-sg13g2`/`ihp-sg13cmos5l` installed under the same `PDK_ROOT`
 (`design/README.md` "Install shape is a dispatch hazard").
+
+## Dynamic DoE: load x Cout x ESR (issue #64)
+
+**Status: tooling and one-point probe only. The 384-run campaign has NOT been
+run.** `klt sim`'s batch/remote backends refuse `ihp-sg13cmos5l`
+([klayout-tools#2727](https://github.com/2AMLogic/klayout-tools/issues/2727),
+see "Not a `klt sim` envelope" above) and hand-launched local grids are not
+permitted on the dispatch host, so no records for the grid exist. Nothing in
+this section ratifies or changes DR-0007 rows 3, 6 or 10.
+
+### What this is (and is not)
+
+DR-0007 leaves rows 3 (load), 6 (PSRR) and 10 (stability) Open because the
+committed dynamic evidence is a single operating point: 1 mA, 1 uF, 0 ohm ESR.
+The target window is 0-50 mA, 0.33-4.7 uF effective Cout, 0-500 mohm ESR.
+This DoE is **exploratory**. It reports measured extrema and trends at sampled
+discrete points only. It does not prove monotonicity, does not bound the
+continuous window, does not cover unsampled PVT corners, and does not
+interpolate between levels.
+
+### Matrix
+
+| axis | levels |
+|---|---|
+| load | 0, 1, 25, 50 mA |
+| effective Cout | 0.33, 1.0, 2.2, 4.7 uF |
+| ESR (series with Cout) | 0, 250, 500 mohm |
+
+= 48 operating points, at each of four PVT/resistor corners taken from the
+DR-0007 evidence at `4d45f5d` (2026-10-10; re-derive from the current record
+before relying on them):
+
+| corner | why |
+|---|---|
+| `ss` / 125 C / `res_bcs` | phase-margin binding |
+| `ff` / -40 C / `res_wcs` | gain-margin binding |
+| `ss` / 125 C / `res_wcs` | PSRR @ 1 kHz binding |
+| `ff` / 27 C / `res_bcs` | PSRR @ 100 kHz binding |
+
+Both benches (loop gain, PSRR) at every point: 4 x 48 x 2 = **384** AC
+simulations before refinement. Failed or missing points stay in the
+completeness accounting.
+
+Targets (informational comparison only): PM >= 45 deg, GM >= 10 dB, PSRR @ 1 kHz
+> 50 dB, PSRR @ 100 kHz > 20 dB.
+
+### Parameterisation
+
+`tb_loopgain_cmos5l` and `tb_psrr_cmos5l` take `@@LOAD_A@@`, `@@COUT_F@@`,
+`@@COUT_BOTTOM@@` and `@@ESR_LINE@@` through `run_sweep.sh`'s `gen_netlist`
+(optional args 9-11; the defaults 1 mA / 1u / 0 ohm render the legacy lines).
+ESR is a series resistor `Resr` from a private node `COUT_ESR` to ground with
+`Cout` between `VOUT` and that node. ESR = 0 wires `Cout` straight to ground and
+emits a comment: no zero-valued resistor is ever written. Load 0 renders
+`Iload VOUT 0 dc 0`.
+
+Operating-point values are exact integers in base units (uA, nF, mohm) so
+formatting cannot collide IDs. Point IDs:
+`<bench>_dyn_<mos>_<temp>c_r<res>_i<uA>ua_c<nF>nf_e<mohm>mohm`, shared by the
+snapshot netlist, the `corners/` AC CSV and log, and the record row.
+`dynamic_doe.py` rejects negative load/Cout/ESR, zero Cout, non-numbers and
+values that are not integral in base units; the plan fails on ID collisions.
+The AC parsers were extracted verbatim from this script into `ac_metrics.py`
+(one interpretation for the legacy post-processing and the DoE). The
+`assert_loopgain_topology_sync` check is unchanged.
+
+### Reproduction
+
+```
+sim/ldo-cmos5l-pvt-sweep/run_sweep.sh --check-env     # benches still parse
+sim/ldo-cmos5l-pvt-sweep/run_sweep.sh --doe-generate  # 384 netlists + provenance manifest, NO simulation
+python3 sim/ldo-cmos5l-pvt-sweep/dynamic_doe.py plan  # bench, id, mos, res, temp, load, cout, esr
+```
+
+`--doe-generate` writes `netlist-snapshots/<record>/*.spice` through the same
+`gen_netlist` as the main grid and `records/<record>.dynamic-doe.manifest.tsv`
+(per point: netlist path and sha256, the `ngspice -b` invocation, repo git sha,
+PDK, ngspice version). `--doe-extra=FILE` appends refinement points.
+
+The 384 simulations must be submitted to the batch fleet, not run locally.
+That requires `klt sim` batch support for `ihp-sg13cmos5l` (#2727) or another
+sanctioned batch path; if a submit fails, record the error here, do not fall
+back to a local grid. (PR #87 added one such path for the main grid,
+`run_sweep.sh --batch`; see "Batch backend" above. `--doe-generate` does not
+route through it yet.) After the AC CSVs are in `corners/<record>/`:
+
+```
+python3 sim/ldo-cmos5l-pvt-sweep/dynamic_doe.py analyse corners/<record> \
+  --legacy-record records/20260917-023832-7061e8f.csv \
+  --out-prefix records/<record>.dynamic-doe
+python3 sim/ldo-cmos5l-pvt-sweep/dynamic_doe.py refine corners/<record> --out refine.json
+```
+
+`analyse` writes `<prefix>.csv` (one row per corner x load x Cout x ESR, with
+status and failure reasons) and `<prefix>.md` (completeness, extrema with full
+coordinates versus the targets, legacy comparison, refinement requests and the
+per-slice trigger table); it exits non-zero unless the matrix is complete.
+Failures are: missing or truncated AC output (not 161 rows), no unity-gain
+crossover, no -180 degree crossing (gain margin unmeasured), non-finite values.
+
+### Legacy regression
+
+The 1 mA / 1 uF / 0 ohm point is compared with the committed record
+`20260917-023832-7061e8f.csv` on parsed metrics: |delta| <= 0.10 deg (PM) and
+<= 0.10 dB (GM, PSRR @ 1 kHz, PSRR @ 100 kHz). A miss is reported and explained,
+never overwritten.
+
+### Refinement rule
+
+Add adjacent midpoints on the changing axis (other axes and the corner fixed)
+when a selected point fails a target, or a metric is non-monotonic along a
+one-dimensional slice, or the slice's worst point is interior (strictly below
+both endpoints). `refine` emits those requests (intervals with no integral
+midpoint are listed as unrefinable, not dropped); re-run `--doe-generate
+--doe-extra=` for them. A run that fires no trigger must say so with the
+per-slice table; no endpoint-only or monotonicity claim without that support.
+
+### What was actually run for #64
+
+One debug probe, local, two ngspice runs: the legacy operating point at
+`ss`/125 C/`res_bcs` through the parameterised templates (record
+`20261010-032206-4d45f5d`: netlists in `netlist-snapshots/`, AC CSVs and logs
+in `corners/`). Parsed metrics are identical to the committed
+`20260917-023832-7061e8f` row (PM 53.8745 deg, GM 29.8944 dB, PSRR 53.6506 /
+34.4470 dB, differences 0.00), so the parameterisation does not move the
+legacy point at that corner. The other three legacy corners were not run.
+Fixture tests (`test_dynamic_doe.py`) cover generation, validation, parsing,
+completeness, extrema, tolerance and refinement logic with synthetic data.

@@ -86,6 +86,8 @@ set -euo pipefail
 
 CHECK_ENV=0
 CHECK_GUARD=0
+DOE_GENERATE=0
+DOE_EXTRA=""
 # --batch (PR #87): run every point on the EDA batch fleet through
 # `klt sim --backend batch` (batch_backend.py) instead of a local
 # `ngspice -b` per point. Dispatch hosts must not run SPICE grids locally.
@@ -97,6 +99,8 @@ for arg in "$@"; do
   case "${arg}" in
     --check-env) CHECK_ENV=1 ;;
     --check-topology-guard) CHECK_GUARD=1 ;;
+    --doe-generate) DOE_GENERATE=1 ;;   # issue #64: netlists + manifest only, no simulation
+    --doe-extra=*) DOE_EXTRA="${arg#--doe-extra=}" ;;
     --batch) BATCH=1 ;;
     -h|--help) sed -n '2,40p' "${BASH_SOURCE[0]}"; exit 0 ;;
     *) echo "run_sweep.sh: unknown argument '${arg}'" >&2; exit 2 ;;
@@ -285,6 +289,10 @@ if [[ ${CHECK_ENV} -eq 1 ]]; then
       -e "s|@@CAP_SECTION@@|cap_typ|g" \
       -e "s|@@TEMP@@|27|g" \
       -e "s|@@CC_W@@|nominal (--check-env)|g" \
+      -e "s|@@LOAD_A@@|0.001|g" \
+      -e "s|@@COUT_F@@|1u|g" \
+      -e "s|@@COUT_BOTTOM@@|0|g" \
+      -e "s|@@ESR_LINE@@|* ESR=0 (--check-env)|g" \
       -e "s|@@DESIGN_NETLIST@@|${DESIGN_NETLIST}|g" \
       -e "s|@@DC_CSV@@|${tmp}/${bench}_check_dc.csv|g" \
       -e "s|@@AC_CSV@@|${tmp}/${bench}_check_ac.csv|g" \
@@ -350,8 +358,27 @@ total=0
 passed=0
 failed_points=()
 
+# ESR as a series element with Cout. Prints "<cout-bottom-node> <esr-line>".
+# ESR of exactly 0 wires Cout to ground and emits a comment instead of a
+# zero-valued resistor, which ngspice versions treat differently.
+esr_netlist_parts() {
+  local esr="$1"
+  if [[ "${esr}" == "0" ]]; then
+    echo "0 * ESR=0: Cout wired directly to ground, no series resistor"
+  else
+    echo "COUT_ESR Resr COUT_ESR 0 ${esr}"
+  fi
+}
+
 gen_netlist() {
   local bench="$1" point_id="$2" mos_section="$3" res_section="$4" cap_section="$5" temp="$6" design_netlist="$7" cc_w_desc="$8"
+  # Optional operating point (issue #64); defaults are the legacy 1mA / 1uF /
+  # 0 ohm point, so every pre-#64 call site renders the same Iload/Cout.
+  # $9 load [A], $10 effective Cout [F], $11 ESR [ohm], all in ngspice number
+  # syntax. Validation/canonicalisation lives in dynamic_doe.py.
+  local load_a="${9:-0.001}" cout_f="${10:-1u}" esr_ohm="${11:-0}"
+  local cout_bottom esr_line
+  read -r cout_bottom esr_line < <(esr_netlist_parts "${esr_ohm}")
   local template="${EXPERIMENT_DIR}/testbench/tb_${bench}_cmos5l.spice.tmpl"
   local netlist="${SNAPSHOTS_OUT}/${point_id}.spice"
   local extra_sed=()
@@ -369,6 +396,10 @@ gen_netlist() {
     -e "s|@@TEMP@@|${temp}|g" \
     -e "s|@@CC_W@@|${cc_w_desc}|g" \
     -e "s|@@DESIGN_NETLIST@@|${design_netlist}|g" \
+    -e "s|@@LOAD_A@@|${load_a}|g" \
+    -e "s|@@COUT_F@@|${cout_f}|g" \
+    -e "s|@@COUT_BOTTOM@@|${cout_bottom}|g" \
+    -e "s|@@ESR_LINE@@|${esr_line}|g" \
     "${extra_sed[@]}" \
     "${template}" > "${netlist}"
   echo "${netlist}"
@@ -458,6 +489,31 @@ screen_point() {
   passed=$((passed + 1))
   return 0
 }
+
+# --- Dynamic DoE (issue #64): generate-only. Renders every planned
+# load x Cout x ESR x PVT netlist through the SAME gen_netlist as the main
+# grid and writes a provenance manifest. It deliberately does NOT launch
+# ngspice: the 384-run campaign is a batch job (README.md "Dynamic DoE"),
+# never a hand-launched local grid. The matrix, validation and ID rules are
+# dynamic_doe.py's; --doe-extra=FILE appends refinement points. ---
+if [[ ${DOE_GENERATE} -eq 1 ]]; then
+  MANIFEST="${RECORDS_DIR}/${RECORD_ID}.dynamic-doe.manifest.tsv"
+  plan_args=(plan)
+  [[ -n "${DOE_EXTRA}" ]] && plan_args+=(--extra "${DOE_EXTRA}")
+  printf 'bench\tpoint_id\tmos\tres\ttemp_c\tload_a\tcout_f\tesr_ohm\tnetlist\tnetlist_sha256\tinvocation\tgit_sha\tpdk\tngspice\n' > "${MANIFEST}"
+  n=0
+  while IFS=$'\t' read -r bench pid mos res temp load cout esr; do
+    netlist="$(gen_netlist "${bench}" "${pid}" "${mos}" "${res}" cap_typ "${temp}" "${DESIGN_NETLIST}" "170u (nominal)" "${load}" "${cout}" "${esr}")"
+    printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+      "${bench}" "${pid}" "${mos}" "${res}" "${temp}" "${load}" "${cout}" "${esr}" \
+      "${netlist#"${REPO_ROOT}/"}" "$(sha256sum "${netlist}" | cut -d' ' -f1)" \
+      "ngspice -b ${netlist#"${REPO_ROOT}/"}" "${REPO_GIT_SHA}" "${PDK}" "${NGSPICE_VERSION}" >> "${MANIFEST}"
+    n=$((n + 1))
+  done < <(python3 "${SCRIPT_DIR}/dynamic_doe.py" "${plan_args[@]}")
+  echo "run_sweep.sh: --doe-generate: ${n} netlists -> ${SNAPSHOTS_OUT}; manifest ${MANIFEST}"
+  echo "run_sweep.sh: no simulation was run (see README.md 'Dynamic DoE')."
+  exit 0
+fi
 
 # --- Main 45-point PVT x resistor-corner grid: dcsweep + loopgain + psrr
 # at each point. Point ids carry the resistor section explicitly (the
@@ -664,87 +720,11 @@ read_wrdata = _dcm.read_wrdata
 dc_metrics = _dcm.dc_metrics
 
 
-def unwrap_deg(phases):
-    out = [phases[0]]
-    offset = 0.0
-    for p in phases[1:]:
-        d = (p + offset) - out[-1]
-        while d > 180.0:
-            offset -= 360.0
-            d = (p + offset) - out[-1]
-        while d < -180.0:
-            offset += 360.0
-            d = (p + offset) - out[-1]
-        out.append(p + offset)
-    return out
-
-
-def loopgain_metrics(path):
-    rows = read_wrdata(path, 4)
-    if not rows:
-        return None
-    freqs = [r[0] for r in rows]
-    dbs = [r[1] for r in rows]
-    degs_unwrapped = unwrap_deg([r[3] for r in rows])
-
-    out = {"dc_gain_db": dbs[0]}
-
-    # All 0dB crossings (log-interp freq, linear-interp unwrapped phase).
-    crossings = []
-    for i in range(1, len(dbs)):
-        if (dbs[i - 1] - 0) * (dbs[i] - 0) < 0:
-            frac = (0 - dbs[i - 1]) / (dbs[i] - dbs[i - 1])
-            logf = math.log10(freqs[i - 1]) + frac * (math.log10(freqs[i]) - math.log10(freqs[i - 1]))
-            f_cross = 10 ** logf
-            deg_cross = degs_unwrapped[i - 1] + frac * (degs_unwrapped[i] - degs_unwrapped[i - 1])
-            crossings.append((f_cross, deg_cross))
-    out["n_0db_crossings"] = len(crossings)
-    if crossings:
-        f0, deg0 = crossings[0]
-        out["unity_gain_freq_hz"] = f0
-        out["phase_margin_deg"] = 180.0 + deg0
-        out["phase_margin_worst_deg"] = min(180.0 + d for _, d in crossings)
-    else:
-        out["unity_gain_freq_hz"] = None
-        out["phase_margin_deg"] = None
-        out["phase_margin_worst_deg"] = None
-
-    # First -180deg (mod 360) unwrapped-phase crossing -> gain margin.
-    gm_crossings = []
-    for i in range(1, len(degs_unwrapped)):
-        target = -180.0
-        while target > max(degs_unwrapped[i - 1], degs_unwrapped[i]):
-            target -= 360.0
-        while target < min(degs_unwrapped[i - 1], degs_unwrapped[i]) - 360.0:
-            target += 360.0
-        lo, hi = degs_unwrapped[i - 1], degs_unwrapped[i]
-        if (lo - target) * (hi - target) < 0 and abs(hi - lo) < 180.0:
-            frac = (target - lo) / (hi - lo)
-            logf = math.log10(freqs[i - 1]) + frac * (math.log10(freqs[i]) - math.log10(freqs[i - 1]))
-            f_cross = 10 ** logf
-            db_cross = dbs[i - 1] + frac * (dbs[i] - dbs[i - 1])
-            gm_crossings.append((f_cross, db_cross))
-    out["n_gain_margin_crossings"] = len(gm_crossings)
-    if gm_crossings:
-        f0, db0 = gm_crossings[0]
-        out["gain_margin_freq_hz"] = f0
-        out["gain_margin_db"] = -db0
-    else:
-        out["gain_margin_freq_hz"] = None
-        out["gain_margin_db"] = None
-    return out
-
-
-def psrr_metrics(path):
-    rows = read_wrdata(path, 2)
-    if not rows:
-        return None
-    def nearest(freq_target):
-        return min(rows, key=lambda r: abs(math.log10(r[0]) - math.log10(freq_target)))
-    return {
-        "psrr_db_1khz": nearest(1e3)[1],
-        "psrr_db_100khz": nearest(1e5)[1],
-    }
+# Shared AC parsers (issue #64): extracted verbatim to ac_metrics.py.
+import ac_metrics as _acm
+unwrap_deg = _acm.unwrap_deg
+loopgain_metrics = _acm.loopgain_metrics
+psrr_metrics = _acm.psrr_metrics
 
 
 main_rows = []
