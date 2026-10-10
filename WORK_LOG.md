@@ -2,6 +2,18 @@
 
 Chronological record of recently merged pull requests and closed issues, maintained by the Loom Guide role.
 
+### 2026-10-10
+
+- **PR #95**: CI: run the SG13CMOS5L topology guard on pull requests
+- **Issue #94** (closed): CI: run the existing SG13CMOS5L topology guard on pull requests
+- **PR #92**: sim: require output artifacts before preflight reports success
+- **Issue #91** (closed): sim: require output artifacts before preflight reports success
+- **PR #93**: layout: SG13CMOS5L EN port, XMen/XMbdis and refreshed physical evidence (#68)
+- **Issue #68** (closed): SG13CMOS5L enable layout: route new interface and refresh physical evidence
+- **PR #87**: feat(sg13cmos5l): EN enable interface and bench migration (#67)
+- **Issue #67** (closed): SG13CMOS5L enable: implement electrical interface and migrate existing benches
+- **PR #90**: sim: parameterise AC benches over load/Cout/ESR; bounded dynamic DoE tooling (#64)
+
 ### 2026-10-09
 
 - **PR #85**: feat(signoff): artifact-anchored evidence for T1 items 1, 2, 9, 10 (#60)
