@@ -15,6 +15,7 @@ PDK=ihp-sg13cmos5l source sim/env.sh            # exports PDK_ROOT
 sim/ldo-cmos5l-enable/run_smoke.sh <record-dir> [request-name ...]
 python3 sim/ldo-cmos5l-enable/summarize.py <record-dir>/raw/*.sim.json
 python3 sim/ldo-cmos5l-enable/derive.py <record-dir>/raw
+sim/ldo-cmos5l-enable/check.sh <record-dir>      # offline: regenerate derived.txt + summary.csv, fail on drift
 ```
 
 `run_smoke.sh` submits each `request-<name>.json` with `klt sim --backend
@@ -65,7 +66,9 @@ reported, not retried locally.
 `records/<id>/` holds the raw `klt sim` JSON reports (`raw/`), per-corner
 ngspice logs (`artifacts/`), `summary.csv` (every measurement) and
 `derived.txt` (deltas against the baseline). Append-only: a new run gets a new
-id; existing records are never edited.
+id; existing records are never edited. CI (`enable-record`) runs `check.sh` on every
+`records/*/`; the `artifacts/` ngspice logs are raw run output, not derived, so
+they have nothing to regenerate.
 
 Record `20261010-023648-4d45f5d`: design under test
 `design/sg13cmos5l/netlist/ldo_core_cmos5l.spice` sha256
