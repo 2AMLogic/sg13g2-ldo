@@ -310,8 +310,10 @@ def corner_name(p):
     return name
 
 
-def plan_groups(points):
-    """points: list of (point_id, parsed). Returns list of groups."""
+def plan_groups(points, max_points=None):
+    """points: list of (point_id, parsed). Returns list of groups.
+    max_points: split any larger group into requests of at most this many
+    points (bounds what one Spot interruption can hold up)."""
     by_key = {}
     for pid, p in points:
         key = (bench_of(pid), hashlib.sha256(p["body"].encode()).hexdigest(),
@@ -331,7 +333,12 @@ def plan_groups(points):
                     break
             else:
                 layers.append({pair: m})
+        chunks = []
         for layer in layers:
+            items = list(layer.items())
+            step = max_points or len(items)
+            chunks += [dict(items[i:i + step]) for i in range(0, len(items), step)]
+        for layer in chunks:
             members = list(layer.values())
             procs = sorted({a for a, _ in layer})
             temps = sorted({b for _, b in layer})
@@ -492,7 +499,7 @@ def cmd_run(a):
                 continue
             pid, path = ln.rstrip("\n").split("\t")
             points.append((pid, parse_deck(path, a.variant_lines)))
-    groups = plan_groups(points)
+    groups = plan_groups(points, a.max_points_per_request)
     print(f"batch_backend: {len(points)} points in {len(groups)} klt sim requests", file=sys.stderr)
     if a.plan_only:
         for g in groups:
@@ -568,6 +575,8 @@ def main():
     r.add_argument("--work", required=True)
     r.add_argument("--osdi-dir", required=True)
     r.add_argument("--submit-concurrency", type=int, default=2)
+    r.add_argument("--max-points-per-request", type=int, metavar="N",
+                   help="split larger groups into requests of at most N points")
     r.add_argument("--variant-lines", metavar="REGEX",
                    help="move body lines matching REGEX into each point's own "
                         "corners.lib section, so decks differing only in them share "

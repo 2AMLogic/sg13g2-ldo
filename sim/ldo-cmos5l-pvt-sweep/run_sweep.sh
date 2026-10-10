@@ -566,7 +566,10 @@ if [[ ${DOE_GENERATE} -eq 1 ]]; then
   # ONE klt sim request instead of one per operating point. Each fleet job
   # costs minutes of overhead for seconds of simulation; see README.md
   # "Dynamic DoE" for the measured numbers and the cross-check.
+  # SWEEP_BATCH_MAX_POINTS caps the points per request (default: no cap),
+  # so one Spot interruption holds up only that slice of the grid.
   BATCH_EXTRA_ARGS=(--variant-lines '^(Iload|Cout|Resr) ')
+  [[ -n "${SWEEP_BATCH_MAX_POINTS:-}" ]] && BATCH_EXTRA_ARGS+=(--max-points-per-request "${SWEEP_BATCH_MAX_POINTS}")
   doe_rows=()
   while IFS=$'\t' read -r bench pid mos res temp load cout esr; do
     netlist="$(gen_netlist "${bench}" "${pid}" "${mos}" "${res}" cap_typ "${temp}" "${DESIGN_NETLIST}" "170u (nominal)" "${load}" "${cout}" "${esr}")"

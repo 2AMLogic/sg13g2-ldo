@@ -156,6 +156,18 @@ class VariantLines(unittest.TestCase):
         n = len(req["corners"]["process"]) * len(req["corners"]["temperature_c"])
         self.assertEqual(n - len(req["exclude"]), 8)
 
+    def test_max_points_splits_into_bounded_requests(self):
+        pts = self.points(VARIANT_RE)
+        groups = bb.plan_groups(pts, max_points=3)
+        self.assertEqual([len(g["members"]) for g in groups], [3, 3, 2])
+        seen = [pid for g in groups for pid, _ in g["members"]]
+        self.assertEqual(sorted(seen), sorted(pid for pid, _ in pts))
+        for g in groups:
+            procs = {bb.corner_name(p) for _, p in g["members"]}
+            temps = {p["temp"] for _, p in g["members"]}
+            self.assertEqual(len(procs) * len(temps) - len(g["exclude"]),
+                             len(g["members"]))
+
     def test_variant_regex_that_matches_nothing_is_an_error(self):
         pid, path = self.deck("ss", 125, "bcs", "0", "330n", "0")
         with self.assertRaises(bb.BackendError):
