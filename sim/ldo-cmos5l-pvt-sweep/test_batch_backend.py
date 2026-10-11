@@ -223,46 +223,157 @@ class CapRetry(unittest.TestCase):
 
 
 class ReuseReport(unittest.TestCase):
-    """--reuse-work (issue #89): only a byte-identical request with a complete
-    earlier report is reused; anything else is submitted again."""
+    """--reuse-work (issue #89): only a byte-identical request, whose input
+    bytes (design netlist, model include closure, OSDI binaries) still match
+    a verified inventory, with a complete earlier report is reused; anything
+    else is submitted again."""
 
     def setUp(self):
         self.root = tempfile.mkdtemp()
         self.old, self.new = os.path.join(self.root, "old"), os.path.join(self.root, "new")
+        # Shared inputs referenced BY PATH from the request files, as the real
+        # decks reference the design netlist, the PDK models and the OSDI dir.
+        self.design = os.path.join(self.root, "design", "core.spice")
+        self.models = os.path.join(self.root, "models")
+        self.osdi = os.path.join(self.root, "osdi")
+        for d in (os.path.dirname(self.design), self.models, self.osdi):
+            os.makedirs(d)
+        self.put(self.design, ".subckt core a b\nR1 a b 1k\n.ends\n")
+        self.put(os.path.join(self.models, "corner.lib"),
+                 ".LIB a\n  .include sub_mod.lib\n.ENDL a\n")
+        self.sub = os.path.join(self.models, "sub_mod.lib")
+        self.put(self.sub, ".model r1 r\n")
+        for n in bb.OSDI_ORDER:
+            self.put(os.path.join(self.osdi, f"{n}.osdi"), f"osdi {n}")
         for w in (self.old, self.new):
             os.makedirs(os.path.join(w, "g00"))
-            open(os.path.join(w, "osdi-preamble.cir"), "w").write("* preamble\n")
-            open(os.path.join(w, "g00", "request.json"), "w").write('{"netlist": "tb.spice"}\n')
-            open(os.path.join(w, "g00", "corners.lib"), "w").write(".lib a\n.endl a\n")
-            open(os.path.join(w, "g00", "tb.spice"), "w").write(f'.include "{w}/osdi-preamble.cir"\nR1 a 0 1k\n')
+            self.put(os.path.join(w, "osdi-preamble.cir"), "* preamble\n")
+            self.put(os.path.join(w, "g00", "request.json"), '{"netlist": "tb.spice"}\n')
+            self.put(os.path.join(w, "g00", "corners.lib"),
+                     f'.lib a\n.lib "{self.models}/corner.lib" a\n.endl a\n')
+            self.put(os.path.join(w, "g00", "tb.spice"),
+                     f'.include "{w}/osdi-preamble.cir"\n.include "{self.design}"\nX1 a 0 core\n')
         self.raw = os.path.join(self.old, "g00", "c.raw")
-        open(self.raw, "w").write("raw")
+        self.put(self.raw, "raw")
         self.write_report([{"artifacts": {"raw": self.raw}}, {"artifacts": {"raw": self.raw}}])
+        # The earlier run: inventory written with the request, verified once
+        # its report came back. The new run: inventory written with the request.
+        self.inventory(self.old)
+        self.assertTrue(bb.verify_inputs(os.path.join(self.old, "g00")))
+        self.inventory(self.new)
 
     def tearDown(self):
         shutil.rmtree(self.root)
 
+    @staticmethod
+    def put(path, text, mode="w"):
+        with open(path, mode) as f:
+            f.write(text)
+
+    def inventory(self, w):
+        gdir = os.path.join(w, "g00")
+        bb.write_inventory(gdir, bb.group_inventory(gdir, self.osdi, os.path.join(w, "osdi-preamble.cir")),
+                           verified=False)
+
     def write_report(self, corners):
-        open(os.path.join(self.old, "g00", "report.json"), "w").write(json.dumps({"corners": corners}))
+        self.put(os.path.join(self.old, "g00", "report.json"), json.dumps({"corners": corners}))
 
     def reuse(self, n=2):
         return bb.reusable_report(os.path.join(self.old, "g00"), os.path.join(self.new, "g00"),
                                   self.old, self.new, n)
 
+    def compared_text(self):
+        """The four files reuse compared before the review fix, normalised the
+        way reusable_report normalises them."""
+        out = []
+        for w in (self.old, self.new):
+            t = []
+            for fn in ("request.json", "corners.lib", "tb.spice"):
+                t.append(open(os.path.join(w, "g00", fn)).read().replace(w, "W"))
+            t.append(open(os.path.join(w, "osdi-preamble.cir")).read())
+            out.append(t)
+        return out
+
+    def test_inventory_covers_design_models_and_osdi(self):
+        files = bb.read_inventory(os.path.join(self.old, "g00"))["files"]
+        self.assertIn(self.design, files)
+        self.assertIn(os.path.join(self.models, "corner.lib"), files)
+        self.assertIn(self.sub, files)   # nested .include of a model library
+        for n in bb.OSDI_ORDER:
+            self.assertIn(os.path.join(self.osdi, f"{n}.osdi"), files)
+        self.assertNotIn(os.path.join(self.old, "osdi-preamble.cir"), files)
+        self.assertTrue(all(files.values()))
+
     def test_identical_complete_request_is_reused(self):
         self.assertEqual(self.reuse(), os.path.join(self.old, "g00", "report.json"))
 
+    def test_design_netlist_changed_in_place_is_not_reused(self):
+        # Negative control (review of PR #131): the netlist changes at the
+        # same path; every text file the old check compared stays identical.
+        before = self.compared_text()
+        self.put(self.design, ".subckt core a b\nR1 a b 2k\n.ends\n")
+        self.inventory(self.new)
+        after = self.compared_text()
+        self.assertEqual(before, after)
+        self.assertEqual(after[0], after[1])
+        self.assertIsNone(self.reuse())
+
+    def test_design_netlist_changed_after_new_inventory_is_not_reused(self):
+        self.put(self.design, "* edited\n", mode="a")
+        self.assertIsNone(self.reuse())
+
+    def test_nested_model_include_changed_is_not_reused(self):
+        self.put(self.sub, ".model r1 r rsh=2\n")
+        self.inventory(self.new)
+        self.assertIsNone(self.reuse())
+
+    def test_osdi_binary_changed_is_not_reused(self):
+        self.put(os.path.join(self.osdi, "psp103.osdi"), "rebuilt")
+        self.inventory(self.new)
+        self.assertIsNone(self.reuse())
+
+    def test_missing_old_inventory_fails_closed(self):
+        os.remove(os.path.join(self.old, "g00", bb.INPUTS_FILE))
+        self.assertIsNone(self.reuse())
+
+    def test_unverified_old_inventory_fails_closed(self):
+        self.inventory(self.old)   # written with the request, never verified
+        self.assertIsNone(self.reuse())
+
+    def test_unreadable_old_inventory_fails_closed(self):
+        self.put(os.path.join(self.old, "g00", bb.INPUTS_FILE), "{not json")
+        self.assertIsNone(self.reuse())
+
+    def test_missing_referenced_file_fails_closed(self):
+        os.remove(self.sub)
+        self.inventory(self.new)
+        self.assertIsNone(bb.read_inventory(os.path.join(self.new, "g00"))["files"][self.sub])
+        self.assertIsNone(self.reuse())
+
+    def test_changed_closure_is_not_reused(self):
+        self.put(os.path.join(self.models, "corner.lib"),
+                 ".LIB a\n  .include sub_mod.lib\n  .include extra.lib\n.ENDL a\n")
+        self.put(os.path.join(self.models, "extra.lib"), "* extra\n")
+        self.inventory(self.new)
+        self.assertIsNone(self.reuse())
+
+    def test_input_changed_in_flight_is_not_verified(self):
+        gdir = os.path.join(self.new, "g00")
+        self.put(self.design, "* edited while in flight\n", mode="a")
+        self.assertFalse(bb.verify_inputs(gdir))
+        self.assertFalse(bb.read_inventory(gdir)["verified_after_report"])
+
     def test_changed_body_is_not_reused(self):
-        open(os.path.join(self.new, "g00", "tb.spice"), "a").write("R2 a 0 2k\n")
+        self.put(os.path.join(self.new, "g00", "tb.spice"), "R2 a 0 2k\n", mode="a")
         self.assertIsNone(self.reuse())
 
     def test_changed_request_or_corner_lib_is_not_reused(self):
-        open(os.path.join(self.new, "g00", "corners.lib"), "a").write("* x\n")
+        self.put(os.path.join(self.new, "g00", "corners.lib"), "* x\n", mode="a")
         self.assertIsNone(self.reuse())
 
     def test_incomplete_or_empty_report_is_not_reused(self):
         self.assertIsNone(self.reuse(n=3))
-        open(os.path.join(self.old, "g00", "report.json"), "w").write("")
+        self.put(os.path.join(self.old, "g00", "report.json"), "")
         self.assertIsNone(self.reuse())
 
     def test_missing_rawfile_is_not_reused(self):

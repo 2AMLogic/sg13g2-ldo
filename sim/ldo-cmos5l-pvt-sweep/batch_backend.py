@@ -52,7 +52,9 @@ Usage (normally invoked by run_sweep.sh --batch):
 Q holds one `<point_id>\\t<netlist>` line per point. On success it writes
 `DIR/_batch/backend.env` (shell-sourceable: ngspice version, job ids) and
 `DIR/_batch/<group>/` (request, body, corner lib, klt report, per-corner
-generated decks), and exits 0. A failed submission is reported and exits
+generated decks, and inputs.sha256.json: the sha256 of every file the request
+references by path -- design netlist, model include closure, OSDI binaries --
+re-hashed after the report came back), and exits 0. A failed submission is reported and exits
 non-zero. It never falls back to running ngspice locally.
 """
 import argparse
@@ -358,6 +360,87 @@ def plan_groups(points, max_points=None):
     return groups
 
 
+# --------------------------------------------------------------------------- #
+# input-closure inventory (issue #89 review): what a request's bytes depend on
+# --------------------------------------------------------------------------- #
+
+INPUTS_FILE = "inputs.sha256.json"
+_INCLUDE_RE = re.compile(r'^\s*\.inc(?:lude)?\s+"?([^"\s]+)"?\s*$', re.I)
+_LIB_FILE_RE = re.compile(r'^\s*\.lib\s+"?([^"\s]+)"?\s+\S+\s*$', re.I)
+
+
+def referenced_files(path):
+    """Files a SPICE file pulls in: `.include`/`.inc <file>` and the two-word
+    `.lib <file> <section>` form (the one-word `.lib <section>` is a section
+    header, not a reference). Relative names resolve against the file's own
+    directory, as ngspice does. Every section's references are listed, not
+    just the one a deck selects, so the closure over-approximates."""
+    out = []
+    with open(path, encoding="utf-8", errors="replace") as f:
+        for ln in f:
+            m = _INCLUDE_RE.match(ln) or _LIB_FILE_RE.match(ln)
+            if m:
+                t = m.group(1)
+                out.append(os.path.normpath(t if os.path.isabs(t)
+                                            else os.path.join(os.path.dirname(path), t)))
+    return out
+
+
+def input_inventory(roots, osdi_paths, skip=()):
+    """sha256 of every file the roots reference, transitively (the design
+    netlist(s) and the model include closure), plus the OSDI binaries the
+    request stages. The roots themselves (tb.spice, corners.lib) are not
+    listed: reusable_report compares their text directly. A referenced file
+    that does not exist is listed with sha256 null, and a null makes the
+    inventory unusable for reuse. Keys are absolute paths."""
+    files, todo = {}, []
+    skip = {os.path.normpath(s) for s in skip}
+    for r in roots:
+        todo += referenced_files(r)
+    while todo:
+        p = todo.pop()
+        if p in files or p in skip:
+            continue
+        if not os.path.isfile(p):
+            files[p] = None
+            continue
+        files[p] = sha256(p)
+        todo += referenced_files(p)
+    for p in osdi_paths:
+        p = os.path.normpath(p)
+        files[p] = sha256(p) if os.path.isfile(p) else None
+    return dict(sorted(files.items()))
+
+
+def group_inventory(gdir, osdi_dir, preamble_path):
+    return input_inventory([os.path.join(gdir, "tb.spice"), os.path.join(gdir, "corners.lib")],
+                           [os.path.join(osdi_dir, f"{n}.osdi") for n in OSDI_ORDER],
+                           skip=[preamble_path])
+
+
+def write_inventory(gdir, files, verified, note=None):
+    """verified: the inventory was re-hashed after the fleet report came back
+    and still matched, so the report ran against exactly these bytes (or, for
+    a reused report, the earlier verified inventory equals these bytes)."""
+    doc = {"schema": 1, "verified_after_report": bool(verified), "files": files}
+    if note:
+        doc["note"] = note
+    with open(os.path.join(gdir, INPUTS_FILE), "w") as f:
+        json.dump(doc, f, indent=1)
+        f.write("\n")
+
+
+def read_inventory(gdir):
+    try:
+        with open(os.path.join(gdir, INPUTS_FILE), encoding="utf-8") as f:
+            doc = json.load(f)
+    except (OSError, ValueError):
+        return None
+    if not isinstance(doc, dict) or doc.get("schema") != 1 or not isinstance(doc.get("files"), dict):
+        return None
+    return doc
+
+
 def write_group(g, work, osdi_dir, preamble_path):
     gdir = os.path.join(work, g["name"])
     os.makedirs(gdir, exist_ok=True)
@@ -409,6 +492,7 @@ def write_group(g, work, osdi_dir, preamble_path):
     with open(os.path.join(gdir, "request.json"), "w") as f:
         json.dump(req, f, indent=1)
         f.write("\n")
+    write_inventory(gdir, group_inventory(gdir, osdi_dir, preamble_path), verified=False)
     return gdir
 
 
@@ -463,6 +547,33 @@ def submit(gdir, cap_wait_s=0.0, sleep=None, clock=None):
         n += 1
 
 
+def current_hashes_match(files):
+    """True when every listed file still exists with exactly the listed
+    sha256. A null entry, or an empty list, never matches."""
+    if not files:
+        return False
+    for p, h in files.items():
+        if not h or not os.path.isfile(p) or sha256(p) != h:
+            return False
+    return True
+
+
+def verify_inputs(gdir):
+    """Re-hash a group's inventory after its fleet report came back. If any
+    referenced file (design netlist, model include, OSDI binary) changed
+    while the request was being written or in flight, the report cannot be
+    tied to one set of input bytes: the inventory stays unverified and the
+    caller treats the group as failed. Returns True when verified."""
+    inv = read_inventory(gdir)
+    if inv is None:
+        return False
+    ok = current_hashes_match(inv["files"])
+    write_inventory(gdir, inv["files"], verified=ok,
+                    note=None if ok else "an input changed between writing the request "
+                                         "and reading back its report")
+    return ok
+
+
 def reusable_report(old_gdir, gdir, old_work, work, n_members):
     """Return the path of a completed report in an earlier work dir that can
     stand in for submitting this group again, or None.
@@ -470,7 +581,14 @@ def reusable_report(old_gdir, gdir, old_work, work, n_members):
     Only a byte-identical request is reused: request.json and corners.lib
     must match exactly, tb.spice must match once the earlier work dir's path
     (the OSDI preamble include) is replaced by this one's, and so must the
-    OSDI preamble itself. The earlier report must parse, cover every member
+    OSDI preamble itself. Those files name the design netlist, the model
+    libraries and the OSDI binaries by path only, so the input bytes are
+    compared too: the earlier group must carry an inventory
+    (inputs.sha256.json) that was verified after its report came back, its
+    file set must equal this group's, and every file in it must still hash
+    to the recorded sha256. A missing, unverified or unreadable inventory
+    (every work dir written before this check existed) is never reused:
+    it fails closed. The earlier report must parse, cover every member
     point and point at rawfiles that still exist. Anything else is
     submitted to the fleet as usual. It is never a local run."""
     def read(path):
@@ -479,6 +597,11 @@ def reusable_report(old_gdir, gdir, old_work, work, n_members):
                 return f.read()
         except OSError:
             return None
+    old_inv, new_inv = read_inventory(old_gdir), read_inventory(gdir)
+    if old_inv is None or new_inv is None or old_inv.get("verified_after_report") is not True:
+        return None
+    if set(old_inv["files"]) != set(new_inv["files"]) or not current_hashes_match(old_inv["files"]):
+        return None
     for fn in ("request.json", "corners.lib"):
         a = read(os.path.join(old_gdir, fn))
         if a is None or a != read(os.path.join(gdir, fn)):
@@ -604,21 +727,32 @@ def cmd_run(a):
                                  old_work, work, len(g["members"]))
             if rp:
                 shutil.copyfile(rp, os.path.join(gdirs[g["name"]], "report.json"))
+                inv = read_inventory(gdirs[g["name"]])
+                write_inventory(gdirs[g["name"]], inv["files"], verified=True,
+                                note=f"report reused from {os.path.dirname(rp)}, whose verified "
+                                     "inventory equals these bytes")
                 reused[g["name"]] = rp
                 rcs[g["name"]] = 0
                 print(f"batch_backend: {g['name']}: reusing the completed fleet report {rp} "
-                      "(byte-identical request; nothing submitted)", file=sys.stderr)
+                      "(byte-identical request and input bytes; nothing submitted)", file=sys.stderr)
         with open(os.path.join(work, "reused-reports.tsv"), "w") as f:
             f.write("group\treused_report\n")
             for name in sorted(reused):
                 f.write(f"{name}\t{reused[name]}\n")
     todo = [g for g in groups if g["name"] not in reused]
+
+    def submit_and_verify(gdir):
+        rc = submit(gdir, a.cap_wait_s)
+        return rc, verify_inputs(gdir)
+
+    verified = {name: True for name in reused}
     with concurrent.futures.ThreadPoolExecutor(max_workers=a.submit_concurrency) as ex:
-        futs = {ex.submit(submit, gdirs[g["name"]], a.cap_wait_s): g["name"] for g in todo}
+        futs = {ex.submit(submit_and_verify, gdirs[g["name"]]): g["name"] for g in todo}
         for fu in concurrent.futures.as_completed(futs):
             name = futs[fu]
-            rcs[name] = fu.result()
-            print(f"batch_backend: {name}: klt sim exit {rcs[name]}", file=sys.stderr)
+            rcs[name], verified[name] = fu.result()
+            print(f"batch_backend: {name}: klt sim exit {rcs[name]}"
+                  + ("" if verified[name] else "; INPUTS CHANGED while in flight"), file=sys.stderr)
 
     meta = {"jobs": [], "engines": set()}
     problems = []
@@ -628,6 +762,11 @@ def cmd_run(a):
             err = open(os.path.join(gdirs[g["name"]], "klt-sim.stderr")).read()
             rep = open(os.path.join(gdirs[g["name"]], "report.json")).read()
             problems.append(f"{g['name']}: klt sim exit {rc}\n{err[-2000:]}\n{rep[-2000:]}")
+            continue
+        if not verified[g["name"]]:
+            problems.append(f"{g['name']}: a referenced input (design netlist, model include or "
+                            f"OSDI binary) changed while the request was in flight; see "
+                            f"{INPUTS_FILE}. Its report is not used.")
             continue
         problems += collect(g, gdirs[g["name"]], corners_out, meta)
 
@@ -644,7 +783,7 @@ def cmd_run(a):
         os.makedirs(dst, exist_ok=True)
         for fn in sorted(os.listdir(src)):
             if fn in ("request.json", "tb.spice", "corners.lib", "report.json",
-                      "cap-retries.log") or fn.endswith(".corner.cir"):
+                      "cap-retries.log", INPUTS_FILE) or fn.endswith(".corner.cir"):
                 shutil.copyfile(os.path.join(src, fn), os.path.join(dst, fn))
     staged = {n: sha256(os.path.join(a.osdi_dir, f"{n}.osdi")) for n in OSDI_ORDER}
     engines = sorted(meta["engines"])
@@ -686,8 +825,11 @@ def main():
                         "one request (issue #64 DoE: the Iload/Cout/Resr lines)")
     r.add_argument("--reuse-work", metavar="DIR",
                    help="an earlier --work dir: a group whose request is byte-identical "
-                        "there (and whose report there is complete) reuses that fleet "
-                        "report instead of being submitted again; recorded in "
+                        "there, whose verified inputs.sha256.json there matches the current "
+                        "bytes of every referenced file (design netlist, model includes, "
+                        "OSDI binaries) and whose report there is complete reuses that "
+                        "fleet report instead of being submitted again; a missing or "
+                        "unverified inventory is never reused; recorded in "
                         "_batch/reused-reports.tsv and backend.json")
     r.add_argument("--plan-only", action="store_true",
                    help="parse and group the queue, print the plan, submit nothing")

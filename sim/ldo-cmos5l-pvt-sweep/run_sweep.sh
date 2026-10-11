@@ -529,8 +529,11 @@ screen_point() {
 # in flight at once; it is fleet-side work, the submitting host only waits.
 # SWEEP_BATCH_REUSE_WORK=<earlier batch work dir> (issue #89) reuses the
 # completed fleet report of any group whose request there is byte-identical
+# AND whose verified input inventory (inputs.sha256.json: design netlist,
+# model include closure, OSDI binaries) matches the current bytes
 # (batch_backend.py --reuse-work), so a run whose client was interrupted
-# after most jobs finished does not resubmit them. Reused groups are listed
+# after most jobs finished does not resubmit them. A work dir without such
+# inventories is never reused (fail closed). Reused groups are listed
 # in corners/<id>/_batch/reused-reports.tsv. Nothing ever runs locally.
 run_batch_queue() {
   # Run every queued point on the fleet. batch_backend.py writes the same
