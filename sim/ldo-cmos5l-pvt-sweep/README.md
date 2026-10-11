@@ -762,8 +762,17 @@ record `20260917-023832-7061e8f`. That record's outputs under
 ```bash
 python3 sim/ldo-cmos5l-pvt-sweep/item5_evidence.py           # write
 python3 sim/ldo-cmos5l-pvt-sweep/item5_evidence.py --check   # byte-compare (CI)
+python3 sim/ldo-cmos5l-pvt-sweep/item5_grid.py --check       # same, shared grid contract (CI)
 python3 -m unittest discover -s sim/ldo-cmos5l-pvt-sweep -p 'test_*.py' -v
 ```
+
+Grid completeness (#120): the live sweep and this analysis apply one
+contract, `dc_grid.validate_file`. It checks for exactly five Iload blocks, each
+with the full 2.00..3.63 V / 10 mV Vin sequence, and requires every value to be
+finite. `item5_evidence.py` is pinned by sha256 in its own landed outputs, so
+it is not edited. Instead, `item5_grid.py` rebinds its `split_blocks` to the
+shared validator and runs it unchanged, which yields the same bytes. CI runs
+both checks.
 
 Outputs: `evidence/20261010-025634-60a3e81/{coverage-inventory.json,
 coverage-inventory.md,dc-informational-summary.csv}`; inputs and their sha256
