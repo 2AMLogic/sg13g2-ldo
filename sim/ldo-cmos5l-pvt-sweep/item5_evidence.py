@@ -40,6 +40,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.abspath(os.path.join(HERE, "..", ".."))
 sys.path.insert(0, HERE)
 import dc_metrics as dcm  # noqa: E402
+import dc_grid as dcg  # noqa: E402
 
 RECORD_ID = "20261010-025634-60a3e81"
 RECORD_CSV = f"sim/ldo-cmos5l-pvt-sweep/records/{RECORD_ID}.csv"
@@ -92,28 +93,10 @@ def point_files():
 
 
 def split_blocks(path):
-    """Iload blocks of one raw grid, using dc_metrics' own reader and the
-    same Vin-reset boundary rule. Returns (blocks, problems)."""
-    rows = dcm.read_wrdata(os.path.join(REPO, path), 8)
-    problems = []
-    if not rows:
-        return [], ["missing or empty raw grid"]
-    blocks, cur, prev = [], [], None
-    for r in rows:
-        if prev is not None and r[1] < prev - 1e-9:
-            blocks.append(cur)
-            cur = []
-        cur.append((r[1], r[3], r[5], r[7]))
-        prev = r[1]
-    blocks.append(cur)
-    if len(blocks) != 5:
-        problems.append(f"expected 5 Iload blocks, got {len(blocks)}")
-    for k, b in enumerate(blocks):
-        if len(b) != EXPECTED_ROWS_PER_BLOCK:
-            problems.append(f"block {k}: {len(b)} rows, expected {EXPECTED_ROWS_PER_BLOCK}")
-        elif abs(b[0][0] - dcm.VIN_MIN) > 1e-6 or abs(b[-1][0] - dcm.VIN_MAX) > 1e-6:
-            problems.append(f"block {k}: Vin span {b[0][0]}..{b[-1][0]}")
-    return blocks, problems
+    """Iload blocks of one raw grid, validated by the shared complete-grid
+    contract in dc_grid.py (also used by run_sweep.sh, #120). Returns
+    (blocks, problems)."""
+    return dcg.validate_file(os.path.join(REPO, path))
 
 
 def at(block, vin):
@@ -482,7 +465,9 @@ def main():
         "generator": {"path": "sim/ldo-cmos5l-pvt-sweep/item5_evidence.py", "version": 1,
                       "sha256": sha256_file("sim/ldo-cmos5l-pvt-sweep/item5_evidence.py"),
                       "parser": {"path": "sim/ldo-cmos5l-pvt-sweep/dc_metrics.py",
-                                 "sha256": sha256_file("sim/ldo-cmos5l-pvt-sweep/dc_metrics.py")}},
+                                 "sha256": sha256_file("sim/ldo-cmos5l-pvt-sweep/dc_metrics.py")},
+                      "grid_validator": {"path": "sim/ldo-cmos5l-pvt-sweep/dc_grid.py",
+                                         "sha256": sha256_file("sim/ldo-cmos5l-pvt-sweep/dc_grid.py")}},
         "reproduce": "python3 sim/ldo-cmos5l-pvt-sweep/item5_evidence.py --check",
         "purpose_and_limits": [
             "Coverage accounting, not compliance. Only row 4 is ratified (DR-0007); nine rows are Open and are informational here, never upgraded to ratified passes.",

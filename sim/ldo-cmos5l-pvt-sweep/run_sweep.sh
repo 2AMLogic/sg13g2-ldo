@@ -796,7 +796,13 @@ VIN_MIN, VIN_MAX, VIN_STEP = 2.00, 3.63, 0.01
 sys.path.insert(0, os.environ["SWEEP_SCRIPT_DIR"])
 import dc_metrics as _dcm
 read_wrdata = _dcm.read_wrdata
-dc_metrics = _dcm.dc_metrics
+# Complete-grid contract (issue #120): the same validator item5_evidence.py
+# uses. dc_metrics.py stays byte-identical (its sha256 is pinned by landed
+# artifacts); a grid that fails validation yields {"error": ...}, never a
+# nearest-point numeric summary.
+import dc_grid as _dcg
+dc_metrics = _dcg.validated_dc_metrics
+dc_grid_errors = {}
 
 
 # Shared AC parsers (issue #64): extracted verbatim to ac_metrics.py.
@@ -813,6 +819,9 @@ for corner in CORNERS:
             row = {"corner": corner, "temp_c": temp, "res_section": f"res_{rlabel}"}
             sfx = f"{corner}_{temp}c_r{rlabel}"
             dc = dc_metrics(f"{corners_dir}/dcsweep_{sfx}_dc.csv")
+            if dc and "error" in dc:
+                dc_grid_errors[f"dcsweep_{sfx}"] = dc["error"]
+                dc = None  # no metrics from an invalid grid; error kept below
             lg = loopgain_metrics(f"{corners_dir}/loopgain_{sfx}_ac.csv")
             ps = psrr_metrics(f"{corners_dir}/psrr_{sfx}_ac.csv")
             for src in (dc, lg, ps):
@@ -836,6 +845,14 @@ with open(csv_out, "w", newline="") as f:
     w.writeheader()
     for row in main_rows:
         w.writerow({k: ("" if row.get(k) is None else row.get(k)) for k in fieldnames})
+
+# Invalid DC grids keep their failure reason: written to a sidecar the shell
+# folds into failed_points (-> INCOMPLETE + exit 1) after the outputs exist.
+if dc_grid_errors:
+    with open(os.path.join(corners_dir, "_dc_grid_errors.tsv"), "w") as f:
+        for pid, err in dc_grid_errors.items():
+            print(f"run_sweep.sh: INVALID DC GRID {pid}: {err}", file=sys.stderr)
+            f.write(f"{pid}\t{err}\n")
 
 # --- Sensitivity CSV: Cc value sweep + resistor corner sweep, tt/27C only ---
 sens_rows = []
@@ -1173,6 +1190,18 @@ print(f"run_sweep.sh (post-process): wrote {len(main_rows)} main rows, "
       f"{len(attr_rows)} divider-attribution rows")
 PYEOF
 
+# Fold invalid-DC-grid points (#120) into the failed-point accounting.
+DC_GRID_ERRORS_TSV="${CORNERS_OUT}/_dc_grid_errors.tsv"
+DC_GRID_ERROR_LINES=()
+if [[ -s "${DC_GRID_ERRORS_TSV}" ]]; then
+  while IFS=$'\t' read -r _pid _err; do
+    DC_GRID_ERROR_LINES+=("${_pid}: ${_err}")
+    if [[ " ${failed_points[*]-} " != *" ${_pid} "* ]]; then
+      failed_points+=("${_pid}")
+    fi
+  done < "${DC_GRID_ERRORS_TSV}"
+fi
+
 # --- Completeness matrix: every (corner,temp,res_section) has all 3
 # benches present ---
 COMPLETENESS_OK=1
@@ -1246,6 +1275,9 @@ done
   if [[ ${#failed_points[@]} -gt 0 ]]; then
     echo "- **Failed points**: ${failed_points[*]}"
   fi
+  for _l in "${DC_GRID_ERROR_LINES[@]-}"; do
+    [[ -n "${_l}" ]] && echo "- **Invalid DC grid** (#120): ${_l}"
+  done
   echo "- **Recovered \`Warning: singular matrix\` points**: ${#recoverable_warning_points[@]}"
   echo "  of ${total}. ngspice emitted its recoverable singular-matrix"
   echo "  warning at these points while walking its own convergence-aid"
