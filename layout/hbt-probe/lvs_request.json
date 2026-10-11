@@ -1,0 +1,15 @@
+{
+  "schema": "klt.lvs.request/1",
+  "engine": "klayout",
+  "layout": {
+    "netlist": "npn13G2.extracted.spice",
+    "top": "npn13G2",
+    "deck": "sg13g2"
+  },
+  "reference": {
+    "netlist": "npn13G2.cdl",
+    "top": "npn13G2",
+    "deck": "sg13g2",
+    "form": "plain-element"
+  }
+}

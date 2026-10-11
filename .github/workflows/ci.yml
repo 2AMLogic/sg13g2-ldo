@@ -38,7 +38,12 @@ name: CI
 #                                 reproduce byte-for-byte from generate.py /
 #                                 common_sg13cmos5l.py, and the committed
 #                                 drc/extract/lvs reports still hash-match
-#                                 them (#101). klt + KLayout Python module
+#                                 them (#101). Also layout/hbt-probe (issue
+#                                 #150): the offline --check of the vendored
+#                                 IHP HBT fixture's stored evidence plus a
+#                                 fresh --run that witnesses the upstream
+#                                 sg13g2 bipolar extraction gap on this same
+#                                 pinned build. klt + KLayout Python module
 #                                 only; no PDK, no standalone klayout.
 #
 # So, unlike 2AMLogic/gf180-ldo's ci.yml -- which splits a PDK-free
@@ -705,6 +710,30 @@ jobs:
 
       - name: layout/run_flow.sh --check
         run: layout/run_flow.sh --check
+
+      - name: layout/hbt-probe offline check + tests (issue #150; stdlib-only, stored evidence)
+        # --check attests the COMMITTED vendor-fixture evidence (hashes, raw-
+        # report chain, tool/deck pins, byte-for-byte summary regeneration).
+        # It claims stored-evidence freshness only -- no tool is re-run and no
+        # live-gap persistence is claimed (that is the next step's job). The
+        # negative-control tests tamper each input class in temp copies; the
+        # tool-backed cases run here (pinned klt on PATH) and skip, with the
+        # reason, in the PDK-free characterization-report job's layout
+        # discovery, which picks this same file up.
+        run: |
+          python3 layout/hbt-probe/hbt_probe.py --check
+          python3 -m unittest discover -s layout -p 'test_hbt_probe.py' -v
+
+      - name: layout/hbt-probe fresh run (issue #150; witnesses the upstream sg13g2 bipolar extraction gap)
+        # Fresh tool execution on exactly the build layout-check already
+        # installed: DRC clean/0 (incomplete curated coverage), extract
+        # extracted/0 devices (no bipolar class in the deck -- upstream
+        # klayout-tools#2864), LVS mismatch 0/3/0 against the vendor CDL.
+        # Any changed verdict or pin drift fails the job naming the upstream
+        # issue; the probe never rewrites its committed baseline on its own.
+        # Writes only to a temporary workdir, so the tree-untouched guard
+        # below covers it too.
+        run: python3 layout/hbt-probe/hbt_probe.py --run
 
       - name: Check mode left the tree untouched
         # Belt and braces: check mode regenerates in place, so any artifact

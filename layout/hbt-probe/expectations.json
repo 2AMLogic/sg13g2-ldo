@@ -1,0 +1,74 @@
+{
+  "schema": "sg13g2-ldo.hbt-probe.expectations/1",
+  "comment": [
+    "Pinned contract for the layout/hbt-probe vendor-fixture witness (issue #150).",
+    "pins.* is the tool/deck provenance the probe requires; a drift is a hard failure.",
+    "The pinned klt build (commit b15edf5e3a2e) was TESTED against klayout 0.30.10 and",
+    "warns on every run that the resolved engine (0.30.12, the version pinned here and",
+    "used by layout CI) differs. That disclosure is preserved deliberately: the probe",
+    "pins the engine actually used and records it in every raw report and summary."
+  ],
+  "pins": {
+    "klt_commit": "b15edf5e3a2e56467a3406c98a2555eb1a5ae45c",
+    "klt_version": "0.5.0+gb15edf5e3a2e",
+    "klayout_version": "0.30.12",
+    "klayout_tested_version": "0.30.10",
+    "deck": "sg13g2",
+    "deck_content_hash": "sha256:894326a4e37fb24fef2f7ffc6ae1da55a0e262b0f0bc1c09adc4862909278fda",
+    "ihp_source_commit": "5e6d592e4002946a4616f798c357f0f3c06cf3b6",
+    "ihp_source_layout_path": "ihp-sg13g2/libs.tech/klayout/tech/lvs/testing/testcases/unit/bjt_devices/layout/npn13G2.gds",
+    "ihp_source_netlist_path": "ihp-sg13g2/libs.tech/klayout/tech/lvs/testing/testcases/unit/bjt_devices/netlist/npn13G2.cdl"
+  },
+  "inputs": {
+    "npn13G2.gds": "sha256:cb381d067c1862b0df2a0d7a9303423cf0a3737cddf4dc98d39e32ede8c5853d",
+    "npn13G2.cdl": "sha256:c0fe68ca5277621084e2051244e2b562188df7155257c75739c280ade77f9f90"
+  },
+  "vendor": {
+    "license": "LICENSE-IHP.txt",
+    "license_sha256": "sha256:c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+    "license_spdx": "Apache-2.0",
+    "copyright": "Copyright 2024 IHP PDK Authors",
+    "source_repo": "https://github.com/IHP-GmbH/IHP-Open-PDK"
+  },
+  "permitted_exit_codes": {
+    "drc": [0],
+    "extract": [0],
+    "lvs": [3]
+  },
+  "expected": {
+    "drc": {
+      "status": "clean",
+      "violation_count": 0
+    },
+    "extract": {
+      "status": "extracted",
+      "device_count": 0,
+      "bipolar_class_in_deck": false
+    },
+    "lvs": {
+      "status": "mismatch",
+      "error_count": 15,
+      "devices": {
+        "layout": 0,
+        "reference": 3,
+        "matched": 0
+      }
+    }
+  },
+  "upstream": {
+    "extraction_recognition_gap": {
+      "issue": "2AMLogic/klayout-tools#2864",
+      "url": "https://github.com/2AMLogic/klayout-tools/issues/2864",
+      "claim": "The sg13g2 curated extraction deck declares no bipolar device class, so the three vendor npn13G2 HBT instances are not recognized (extract: 0 devices) and LVS then cannot match them (0/3/0). This fixture witnesses the aggregate recognition gap only.",
+      "sub_gaps_described_there_not_reproduced": [
+        "2AMLogic/klayout-tools#2860",
+        "2AMLogic/klayout-tools#2861",
+        "2AMLogic/klayout-tools#2862"
+      ]
+    },
+    "not_reproduced": {
+      "2AMLogic/klayout-tools#2688": "DRC behavior; this npn13G2 fixture is DRC-clean under the curated deck and no expected false positives are asserted here.",
+      "2AMLogic/klayout-tools#2952": "X-call false green; NOT established by this probe. The attempted transformed reference in subckt-call form errors with 'reference netlist has no top circuit' on the pinned build, and this probe treats that error as a hard failure, never as a known gap."
+    }
+  }
+}
