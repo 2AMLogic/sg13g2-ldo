@@ -487,6 +487,9 @@ jobs:
         run: |
           python3 -m unittest discover -s sim/ldo-cmos5l-pvt-sweep -p 'test_*.py' -v
           python3 sim/ldo-cmos5l-pvt-sweep/item5_evidence.py --check
+          # Same byte-check, with the shared complete-grid contract (dc_grid.py,
+          # #120) applied around the hash-pinned generator.
+          python3 sim/ldo-cmos5l-pvt-sweep/item5_grid.py --check
 
       - name: Manifest item-8 pin matches the committed report hash
         run: |

@@ -1,15 +1,11 @@
 {
   "generator": {
-    "grid_validator": {
-      "path": "sim/ldo-cmos5l-pvt-sweep/dc_grid.py",
-      "sha256": "e0e61c2d0b578ca040e37bcd7ba904cbad4b366efd0c490f9664d99842de7f57"
-    },
     "parser": {
       "path": "sim/ldo-cmos5l-pvt-sweep/dc_metrics.py",
       "sha256": "782319eb4ef619b040f3a4001af67a10def775c9cf17e37fe15b4dd8f3340c81"
     },
     "path": "sim/ldo-cmos5l-pvt-sweep/item5_evidence.py",
-    "sha256": "f1e985bb9ba10b64ba42e14aed2a0e458e3a70db864b70eef412a331b93d203f",
+    "sha256": "9455d8a2885b1cf12acf7dcdf4e3640b4acda94e7bf71fbeac69ba80e4ca1baa",
     "version": 1
   },
   "grid": {

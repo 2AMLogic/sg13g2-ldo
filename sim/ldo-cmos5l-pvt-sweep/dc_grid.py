@@ -2,8 +2,10 @@
 
 tb_dcsweep_cmos5l.spice.tmpl sweeps Iload (outer, 5 values) x Vin (inner,
 2.00..3.63 V, 10 mV).  Both the live sweep post-processing (run_sweep.sh) and
-the offline item-5 analysis (item5_evidence.py) validate the raw grid HERE
-before any metric is computed, so a truncated, padded, duplicated, reordered,
+the offline item-5 analysis validate the raw grid HERE before any metric is
+computed (item5_evidence.py is itself hash-pinned in its landed outputs, so
+item5_grid.py rebinds its split_blocks to validate_file rather than editing
+it; CI runs `item5_grid.py --check`), so a truncated, padded, duplicated, reordered,
 malformed or non-finite grid is rejected with an explicit reason instead of
 being measured through a nearest-point lookup.
 

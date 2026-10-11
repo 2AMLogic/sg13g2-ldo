@@ -3,9 +3,10 @@
     python3 -m unittest discover -s sim/ldo-cmos5l-pvt-sweep -p 'test_*.py' -v
 
 Covers the shared validator (dc_grid.py), the offline item-5 consumer
-(item5_evidence.analyse_point) and the live sweep post-processing, which is
-extracted verbatim from run_sweep.sh's heredoc and executed on a synthetic
-corners directory.
+(item5_evidence.analyse_point run under item5_grid.py, which routes its grid
+splitting through dc_grid without editing the hash-pinned generator) and the
+live sweep post-processing, which is extracted verbatim from run_sweep.sh's
+heredoc and executed on a synthetic corners directory.
 """
 import csv
 import os
@@ -20,6 +21,9 @@ sys.path.insert(0, HERE)
 import dc_grid as dcg  # noqa: E402
 import dc_metrics as dcm  # noqa: E402
 import item5_evidence as ev  # noqa: E402
+import item5_grid  # noqa: E402
+import hashlib  # noqa: E402
+import json  # noqa: E402
 
 LOADS = [0.0, 0.0125, 0.025, 0.0375, 0.05]
 VINS = [round(2.00 + 0.01 * i, 2) for i in range(164)]
@@ -117,10 +121,17 @@ class OfflineConsumer(unittest.TestCase):
         self.tmp = tempfile.mkdtemp()
         self._repo = ev.REPO
         ev.REPO = self.tmp
+        item5_grid.install()
 
     def tearDown(self):
+        item5_grid.uninstall()
         ev.REPO = self._repo
         shutil.rmtree(self.tmp)
+
+    def test_wrapper_routes_item5_through_shared_validator(self):
+        self.assertIs(ev.split_blocks, item5_grid.split_blocks)
+        write(os.path.join(self.tmp, "g.csv"), good_lines())
+        self.assertEqual(ev.split_blocks("g.csv"), dcg.validate_file(os.path.join(self.tmp, "g.csv")))
 
     def test_item5_rejects_each_negative_control(self):
         for name, lines in mutations().items():
@@ -130,6 +141,38 @@ class OfflineConsumer(unittest.TestCase):
                 self.assertFalse(a["valid"])
                 self.assertFalse(a["grid_ok"])
                 self.assertTrue(a["grid_problems"])
+                self.assertEqual(a["grid_problems"], "; ".join(dcg.validate_file(os.path.join(self.tmp, name + ".csv"))[1]))
+
+    def test_invalid_point_is_reported_by_reproduce_record(self):
+        """Failure accounting: an invalid grid is a named mismatch, not a value."""
+        write(os.path.join(self.tmp, "r.csv"), mutations()["replaced_interior_point"])
+        a = ev.analyse_point("r.csv")
+        bad = ev.reproduce_record({("tt", 27, "res_typ"): a},
+                                  [{"corner": "tt", "temp_c": "27", "res_section": "res_typ"}])
+        self.assertTrue(any("raw grid invalid" in b for b in bad), bad)
+
+    def test_legacy_split_alone_misses_interior_replacement(self):
+        """Why the wrapper exists: the pinned generator's own splitter accepts it."""
+        write(os.path.join(self.tmp, "r.csv"), mutations()["replaced_interior_point"])
+        self.assertEqual(item5_grid._LEGACY_SPLIT_BLOCKS("r.csv")[1], [])
+        self.assertTrue(ev.split_blocks("r.csv")[1])
+
+
+class PinnedGeneratorUntouched(unittest.TestCase):
+    """item5_evidence.py is pinned in landed, append-only evidence; the shared
+    contract must be applied around it, never by editing it (#120 review)."""
+
+    def test_generator_and_parser_match_landed_inventory_pins(self):
+        inv_path = os.path.join(ev.REPO, ev.OUT_DIR, "coverage-inventory.json")
+        with open(inv_path) as f:
+            gen = json.load(f)["generator"]
+        for rel, want in ((gen["path"], gen["sha256"]), (gen["parser"]["path"], gen["parser"]["sha256"])):
+            with open(os.path.join(ev.REPO, rel), "rb") as f:
+                self.assertEqual(hashlib.sha256(f.read()).hexdigest(), want, rel)
+
+    def test_ci_runs_the_strict_wrapper(self):
+        with open(os.path.join(ev.REPO, ".github/workflows/ci.yml")) as f:
+            self.assertIn("python3 sim/ldo-cmos5l-pvt-sweep/item5_grid.py --check", f.read())
 
 
 def _post_script():
