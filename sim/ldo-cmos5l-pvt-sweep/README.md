@@ -380,10 +380,53 @@ all four compared text files left identical, is not reused. The earlier work
 dir for this record predates the inventory, so the four reports above have no
 committed proof of the input bytes they ran against. Indirect evidence
 (PM, GM and Iq differ from `60a3e81` at the points of those groups) says they
-are post-edit, but it does not prove it. Closing that gap is a fleet
-resubmission of those four groups without `--reuse-work`, appended as new
-evidence rather than an edit to this record; it is tracked in a follow-up
-issue and is not done here.
+are post-edit, but it does not prove it.
+
+**Gap closed by appended evidence (issue #132).** Record
+`20261011-060305-bcc60e2` re-ran the whole #89 grid on the EDA batch fleet
+(`run_sweep.sh --batch`, `KLT_SIM_BACKEND=batch`, no `SWEEP_BATCH_REUSE_WORK`;
+`corners/20261011-060305-bcc60e2/_batch/backend.json` has
+`"reused_reports": {}`). It was imported unchanged, as new paths only
+(`corners/`, `netlist-snapshots/` and `records/` `20261011-060305-bcc60e2*`);
+`20261011-051956-eda9285` is untouched. The four groups are fresh jobs,
+not the reused ones:
+
+| Group | Reused job in `eda9285` | Fresh job in `bcc60e2` |
+| --- | --- | --- |
+| `g00_dcsweep` | `klt-sim-bed146f000fe` | `klt-sim-caf90ab0666c` |
+| `g01_loopgain` | `klt-sim-31caae6411af` | `klt-sim-9d6f8be563eb` |
+| `g02_loopgain_ressens_bcs` | `klt-sim-a6a272d2e5fb` | `klt-sim-8a3dc509fbf2` |
+| `g21_loopgain_divattr` | `klt-sim-dbefbd8c9ba9` | `klt-sim-ea2a27022477` |
+
+Comparison with `20261011-051956-eda9285` (done at import time): all 214
+per-point `*_dc.csv` / `*_ac.csv` files are byte-identical; the five record
+CSVs (`.csv`, `.sensitivity.csv`, `.cc-tolerance.csv`, `.delta.csv`,
+`.divider-attribution.csv`) are byte-identical; the record `.md` differs only
+in the record id, git sha and timestamp. The four groups' `request.json`
+and `corners.lib` match (apart from the scratch work-dir path), all four
+reports pass (45/45; g02 3/3), and `backend.json` records the same client
+klt, runner klt, engine and staged OSDI sha256 values. The only `tb.spice`
+difference is the `/tmp` scratch path of its `.include`. Each of the four
+`inputs.sha256.json` records the design core netlist
+`08a7b857...bae57`, which is the sha256 of
+`design/sg13cmos5l/netlist/ldo_core_cmos5l.spice` on main, plus the model
+cards and OSDI binaries the group ran against. So the four reused reports
+did measure the current design. The 10 GHz record
+`20261011-070111-5391c68` stays the selected characterization source; this
+evidence validates the historical 100 MHz record and is not selected.
+
+**Schema disclosure.** `bcc60e2` was produced by an earlier `batch_backend.py`
+implementation (commit `bcc60e2` of the #89 rerun branch), not the one on
+main. Its `inputs.sha256.json` is nested,
+`{"schema": 1, "verified_after_report": true, "files": {path: sha256}}`, and
+that implementation fails a group if an input changed while the job ran
+(inventory re-hashed after the report returned). Main's implementation writes
+a flat `{path: sha256}` dict. The imported bytes are kept as produced and are
+not rewritten to look like main's output; migrating the backend to one schema
+is out of scope here. Its inventory paths point at an `issue-89` worktree
+whose design netlist hashes identically to main's. The derived
+`evidence/20261011-060305-bcc60e2/` files from that branch were not imported,
+as they were generated against an older base.
 
 The disabled state is not part of this grid. It is in
 `sim/ldo-cmos5l-enable/` (DC smoke, tt/27C) and in the off-state samples of

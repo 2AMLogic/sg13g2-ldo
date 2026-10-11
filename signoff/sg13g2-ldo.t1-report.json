@@ -216,7 +216,7 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:92f80fd38651caa5d7771ab2c139bb61636fd61d4640c0265bb611a62a1ae3b6",
+        "content_hash": "sha256:bba71fdcc2297c0c83c246e547844e7ac08c20a5b68051b8dda91ce04c3d6963",
         "input_verified": null,
         "exit_status": 0
       }
@@ -236,7 +236,7 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:6688930b7d447414ef6921ef3b4cb4faf62ea8e4e522b08d42be68a4b74b36d6",
+        "content_hash": "sha256:c8463793f033e97a8b2f502f3ac476030e7c598e9ed537e01f34ffae919bfe35",
         "input_verified": true,
         "exit_status": 0,
         "artifact_binding": {
@@ -245,7 +245,7 @@
             "path": "signoff/evidence/item9-testbenches.inventory.json",
             "scope": "repo"
           },
-          "content_hash": "sha256:6688930b7d447414ef6921ef3b4cb4faf62ea8e4e522b08d42be68a4b74b36d6",
+          "content_hash": "sha256:c8463793f033e97a8b2f502f3ac476030e7c598e9ed537e01f34ffae919bfe35",
           "input_verified": true,
           "summary": "The shipped ngspice testbenches/templates, their cold-start entry points (run_*.sh) and experiment READMEs are committed; every constituent hash matches the inventory and each README names its entry point. Testbenches are NOT re-run by this attestation and no measurement result is claimed.",
           "source": "signoff/evidence/item9-testbenches.inventory.json"
