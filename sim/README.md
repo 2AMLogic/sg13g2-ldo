@@ -33,8 +33,26 @@ Three different things are easy to conflate here, so they are kept apart:
 The fleet facts below are read from the committed `klt sim` reports
 (`environment.remote`, `environment.staged_model_inputs`) and the experiments'
 `runner-preamble.cir`, not inferred. Every fleet report in this tree records
-`runner_klt_version: 0.5.0`, `runner_compatibility: mismatch`, ngspice 46
-(`/usr/bin/ngspice`) and AMI `ami-0e40e3245f1923ac8`. The reports do **not**
+`runner_klt_version: 0.5.0`, `runner_compatibility: mismatch` and AMI
+`ami-0e40e3245f1923ac8` (for the Monte Carlo aggregate, in each
+`remote.fleet[]` entry). The recorded ngspice is not uniform:
+
+- Most fleet reports record `engine_version: 46` and
+  `ngspice_binary: /usr/bin/ngspice`.
+- The 56 reports of the two `ldo-cmos5l-pvt-sweep/` startup campaigns
+  [`startup/20261010-075612-91e92aa/`](ldo-cmos5l-pvt-sweep/startup/20261010-075612-91e92aa/)
+  (13 reports) and
+  [`startup/20261010-104827-91e92aa/`](ldo-cmos5l-pvt-sweep/startup/20261010-104827-91e92aa/)
+  (43 reports) record `ngspice_binary: /home/ubuntu/.local/bin/ngspice`.
+  All 43 in `20261010-104827-91e92aa` and 5 of the 13 in
+  `20261010-075612-91e92aa` record `engine_version: 46`. The other 8 record
+  `engine_version: null`: `grid/` g000, g001, g002 and g004,
+  `grid-attempt1-aborted/` g000 and g002, and `probe/report2.json` and
+  `report4.json`. The reports do not establish which ngspice binary the runner
+  actually executed for these 56, or which version it was for those 8
+  (unknown).
+
+The reports do **not**
 record a PDK commit or release for the runner's baked tree, or for the local
 checkout that model cards were staged from; they record only sha256 values of
 the staged files. Where a revision is not recorded it is stated as unknown.
@@ -42,9 +60,9 @@ the staged files. Where a revision is not recorded it is stated as unknown.
 | Experiment | Design branch | Intended local PDK pin | Recorded model provenance |
 |---|---|---|---|
 | [`pass-device-screening/`](pass-device-screening/README.md) | SG13G2 (`sg13_hv_pmos`) | [`pdk.json`](pdk.json): IHP-Open-PDK `v0.3.0` | Local ngspice-46 run against a local `ihp-sg13g2` install with locally built OSDI (record `20260909-220347-ed18110`). No fleet involvement. |
-| [`ldo-cmos5l-pvt-sweep/`](ldo-cmos5l-pvt-sweep/README.md) | SG13CMOS5L | [`pdk-cmos5l.json`](pdk-cmos5l.json): `ihp-sg13cmos5l` commit `607e18d4` | Mixed. Records `20260916-083154-7aa1d3f`, `20260916-112842-c25ff53`, `20260916-210331-9d3ace1`, `20260917-023832-7061e8f` and the local probe `20261010-032206-4d45f5d` ran on local ngspice-46 against the pinned checkout. Records from `20261010-025634-60a3e81` onward (grid, dynamic DoE, dropout, startup, `20261011-051956-eda9285`, `20261011-070111-5391c68`) ran on the fleet via `run_sweep.sh --batch`: model cards staged from the local PDK install (sha256 in each `report.json`), all six OSDI binaries staged from the local build and loaded by `pre_osdi`. Runner klt `0.5.0`; client klt varies per record (`0.7.0+g5e5b55992a7f`, `+g8eec069c7576`, `+gca3089cd4b9f`, `+g0d0312b30708`). The local checkout's commit is not recorded in the fleet reports (unknown; intended `607e18d4`). |
+| [`ldo-cmos5l-pvt-sweep/`](ldo-cmos5l-pvt-sweep/README.md) | SG13CMOS5L | [`pdk-cmos5l.json`](pdk-cmos5l.json): `ihp-sg13cmos5l` commit `607e18d4` | Mixed. Records `20260916-083154-7aa1d3f`, `20260916-112842-c25ff53`, `20260916-210331-9d3ace1`, `20260917-023832-7061e8f` ran on local ngspice-46; each record names `ngspice-46` and states that commit `607e18d` was re-verified against the checkout. The local debug probe `20261010-032206-4d45f5d` ran locally against the local `ihp-sg13cmos5l` install (`/home/ubuntu/share/pdk/ihp-sg13cmos5l`, per its netlist snapshots) with locally built OSDI. Its ngspice version and that checkout's commit were not recorded (unknown). Records from `20261010-025634-60a3e81` onward (grid, dynamic DoE, dropout, startup, `20261011-051956-eda9285`, `20261011-070111-5391c68`) ran on the fleet via `run_sweep.sh --batch`: model cards staged from the local PDK install (sha256 in each `report.json`), all six OSDI binaries staged from the local build and loaded by `pre_osdi`. Runner klt `0.5.0`; client klt varies per record (`0.7.0+g5e5b55992a7f`, `+g8eec069c7576`, `+gca3089cd4b9f`, `+g0d0312b30708`). The local checkout's commit is not recorded in the fleet reports (unknown; intended `607e18d4`). |
 | [`ldo-cmos5l-enable/`](ldo-cmos5l-enable/README.md) | SG13CMOS5L (EN-bearing core) | [`pdk-cmos5l.json`](pdk-cmos5l.json) (`PDK=ihp-sg13cmos5l source sim/env.sh`) | Fleet only (`run_smoke.sh`, `klt sim --backend batch`). Model cards staged from the local PDK install (sha256 recorded). OSDI is the **runner's baked** `/opt/pdk/ihp-sg13g2/libs.tech/ngspice/osdi/{psp103,psp103_nqs,mosvar,r3_cmc}.osdi` via [`runner-preamble.cir`](ldo-cmos5l-enable/runner-preamble.cir); the image has no `cap_cmomi`, so `Cc` is a linear stand-in. Runner klt `0.5.0`; client klt `0.7.0+g5e5b55992a7f` (record `20261010-023648-4d45f5d`) and `0.7.0+g0d0312b30708` (`20261011-031743-df3f802`). The baked tree's revision is unknown from the reports; the experiment README and `runner-preamble.cir` cite 2am `batch-image-pins.env` (`BAKED_PDK_ROOT=/opt/pdk`), which is a claim, not something the reports verify. |
-| [`ldo-cmos5l-monte-carlo/`](ldo-cmos5l-monte-carlo/README.md) | SG13CMOS5L (five-port core, historical record) | [`pdk-cmos5l.json`](pdk-cmos5l.json) for staged model cards (the experiment names no `models.pdk`) | Fleet only (`klt sim --backend batch`, `remote.hosts: 5`). Model cards (`row2-corners.lib` closure) staged from the local PDK install; OSDI is the runner's baked `/opt/pdk/ihp-sg13g2` binaries via the shared `runner-preamble.cir`, no `cap_cmomi` (DC-only stand-in). Runner klt `0.5.0`, client klt `0.7.0+g4cbdfa769875`. The experiment README states the image pins ihp-sg13g2 0.3.0 and ngspice 46; the reports confirm ngspice 46 but record no PDK revision, so the baked tree's version is unverified here. |
+| [`ldo-cmos5l-monte-carlo/`](ldo-cmos5l-monte-carlo/README.md) | SG13CMOS5L (five-port core for record `20261009-003009-3ee8306`; six-port EN smoke in evidence `20261010-193208-028a3f8-en-smoke`) | [`pdk-cmos5l.json`](pdk-cmos5l.json) for staged model cards (the experiment names no `models.pdk`) | Fleet only (`klt sim --backend batch`). The request [`request-row2-mc.json`](ldo-cmos5l-monte-carlo/request-row2-mc.json) sets `remote.hosts: 5`, and the `row2-mc` aggregate report's `remote.fleet[]` has 5 entries. Model cards (`row2-corners.lib` closure) staged from the local PDK install; OSDI is the runner's baked `/opt/pdk/ihp-sg13g2` binaries via the shared `runner-preamble.cir`, no `cap_cmomi` (DC-only stand-in). Runner klt `0.5.0`. Client klt `0.7.0+g4cbdfa769875` (record `20261009-003009-3ee8306`, five-port `tb_row2_*`) and `0.7.0+g39f6da54ae4c` (evidence [`20261010-193208-028a3f8-en-smoke/`](ldo-cmos5l-monte-carlo/evidence/20261010-193208-028a3f8-en-smoke/), six-port `tb_row2_accuracy_en.spice`). The experiment README states the image pins ihp-sg13g2 0.3.0 and ngspice 46. The reports record ngspice 46 (`/usr/bin/ngspice`) but no PDK revision, so the baked tree's version is unverified here. |
 
 Notes:
 
