@@ -17,11 +17,11 @@
   ],
   "selection": {
     "file": "sim/characterization/selection.json",
-    "sha256": "ae8e02248f10fccdf9fd3eefacabe45cb643a629d3ce0ad3a01da7ae6d74b383",
+    "sha256": "b37468621d92cb8e8b315d3206677b44b480afbd495de0937cacc9d95aaf8881",
     "circuit_record_id": "20261011-051956-eda9285",
     "experiment": "ldo-cmos5l-pvt-sweep",
     "device_context_record_id": "20260909-220347-ed18110",
-    "startup_record_id": "20261011-031426-df3f802",
+    "startup_record_id": "20261011-070146-0c95530",
     "startup_stage": "grid",
     "policy": "Explicit selection only. The generator never discovers records by directory listing or filesystem order: the circuit record below is named here, its bytes are pinned by sha256, and a record that is missing or whose bytes differ from its pin is a hard generator error. Moving to a newer record is a deliberate edit to this file in the same change that regenerates the report. Historical records (other ids under sim/*/records/) are never read except where listed under superseded_evidence, and then only as a quoted, clearly-labelled statement about an older design, never as a current measurement."
   },
@@ -130,26 +130,26 @@
     },
     {
       "role": "startup_grid_csv",
-      "path": "sim/ldo-cmos5l-pvt-sweep/records/20261011-031426-df3f802-startup-grid.csv",
-      "sha256": "c433ef8fad4951d66d41a7f8be577409edd27349b4c0dbc058268caea6912c7c",
+      "path": "sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.csv",
+      "sha256": "bc4ea61162a51f3b7ecbefad4c82663f6928139d64f3ba09875c22fe7d2df3d1",
       "pinned": true
     },
     {
       "role": "startup_manifest_json",
-      "path": "sim/ldo-cmos5l-pvt-sweep/records/20261011-031426-df3f802-startup-grid.manifest.json",
-      "sha256": "b2735018e1a1c56b65829ad6c4bb98fd0a2b5e4891c0cc2d17ad938297412c6d",
+      "path": "sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.manifest.json",
+      "sha256": "3ec537f955f03dbd081870a068d01825106a886cd0f5ac0698289932cf5a7c95",
       "pinned": true
     },
     {
       "role": "startup_record_md",
-      "path": "sim/ldo-cmos5l-pvt-sweep/records/20261011-031426-df3f802-startup-grid.md",
-      "sha256": "91d97e67e2d6cd99294e281a52521be0c77504db792b4e428dc3c459cd6f5f8e",
+      "path": "sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.md",
+      "sha256": "908c108fd44b729846b51c0d9a75b35daf3dee4d7bc4c9fab3f091d8a06b307c",
       "pinned": true
     },
     {
       "role": "superseded_evidence_statement",
       "path": "sim/ldo-cmos5l-pvt-sweep/README.md",
-      "sha256": "5c4884dd5b5b14eff4486ae50d3a597063d22da3dd9ada53afe1b73b284acc3d",
+      "sha256": "8494cd9a71c1b3ad4ca9745fede5e0928189fd9a5499f6220d61978da9cce2d4",
       "pinned": false
     },
     {
@@ -1075,7 +1075,7 @@
           "n_censored_upper_bound": 0,
           "n_ambiguous": 0,
           "worst_case": {
-            "value": 0.00044099942,
+            "value": 0.000440999416,
             "at": {
               "point": "st_ff_125c_rwcs_v3630mv_i1ma_c1000nf_e0mohm_t1000ns",
               "corner": "ff",
@@ -1091,7 +1091,7 @@
           "verdict": "pass",
           "conditions": "EN-bearing core (DR-0008), EN = VIN * CTL step at t = 1 ms, schematic level; grid process {tt,ss,ff,sf,fs} x temperature {-40,27,125} C x resistor corner {typ,bcs,wcs} x Vin {2.97,3.30,3.63} V; resistive load 1 mA (1.8 kohm), Cout 1 uF, ESR 0, Cc nominal; ideal 0.90 V reference; 135 requested points. Time zero is the EN = VIN/2 crossing; PROPOSED methodology (DR-0009), not ratified",
           "source": {
-            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261011-031426-df3f802-startup-grid.csv",
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.csv",
             "column": "start_settle_time_s"
           },
           "note": "Numeric settling success does not override the monotonicity and overshoot metrics below; each is scored independently and any failure fails the row. A point that never settled is scored at its observation length (a lower bound)."
@@ -1126,7 +1126,7 @@
           "verdict": "fail",
           "conditions": "EN-bearing core (DR-0008), EN = VIN * CTL step at t = 1 ms, schematic level; grid process {tt,ss,ff,sf,fs} x temperature {-40,27,125} C x resistor corner {typ,bcs,wcs} x Vin {2.97,3.30,3.63} V; resistive load 1 mA (1.8 kohm), Cout 1 uF, ESR 0, Cc nominal; ideal 0.90 V reference; 135 requested points. Time zero is the EN = VIN/2 crossing; PROPOSED methodology (DR-0009), not ratified",
           "source": {
-            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261011-031426-df3f802-startup-grid.csv",
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.csv",
             "column": "start_peak_vout_v"
           }
         },
@@ -1160,7 +1160,7 @@
           "verdict": "fail",
           "conditions": "EN-bearing core (DR-0008), EN = VIN * CTL step at t = 1 ms, schematic level; grid process {tt,ss,ff,sf,fs} x temperature {-40,27,125} C x resistor corner {typ,bcs,wcs} x Vin {2.97,3.30,3.63} V; resistive load 1 mA (1.8 kohm), Cout 1 uF, ESR 0, Cc nominal; ideal 0.90 V reference; 135 requested points. Time zero is the EN = VIN/2 crossing; PROPOSED methodology (DR-0009), not ratified",
           "source": {
-            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261011-031426-df3f802-startup-grid.csv",
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.csv",
             "column": "start_max_down_excursion_v"
           }
         },
@@ -1194,7 +1194,7 @@
           "verdict": "fail",
           "conditions": "EN-bearing core (DR-0008), EN = VIN * CTL step at t = 1 ms, schematic level; grid process {tt,ss,ff,sf,fs} x temperature {-40,27,125} C x resistor corner {typ,bcs,wcs} x Vin {2.97,3.30,3.63} V; resistive load 1 mA (1.8 kohm), Cout 1 uF, ESR 0, Cc nominal; ideal 0.90 V reference; 135 requested points. Time zero is the EN = VIN/2 crossing; PROPOSED methodology (DR-0009), not ratified",
           "source": {
-            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261011-031426-df3f802-startup-grid.csv",
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.csv",
             "column": "reen_peak_vout_v"
           }
         },
@@ -1212,7 +1212,7 @@
           "n_censored_upper_bound": 0,
           "n_ambiguous": 0,
           "worst_case": {
-            "value": 0.413312079,
+            "value": 0.41331208,
             "at": {
               "point": "st_ff_-40c_rwcs_v3630mv_i1ma_c1000nf_e0mohm_t1000ns",
               "corner": "ff",
@@ -1228,18 +1228,18 @@
           "verdict": "fail",
           "conditions": "EN-bearing core (DR-0008), EN = VIN * CTL step at t = 1 ms, schematic level; grid process {tt,ss,ff,sf,fs} x temperature {-40,27,125} C x resistor corner {typ,bcs,wcs} x Vin {2.97,3.30,3.63} V; resistive load 1 mA (1.8 kohm), Cout 1 uF, ESR 0, Cc nominal; ideal 0.90 V reference; 135 requested points. Time zero is the EN = VIN/2 crossing; PROPOSED methodology (DR-0009), not ratified",
           "source": {
-            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261011-031426-df3f802-startup-grid.csv",
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.csv",
             "column": "reen_max_down_excursion_v"
           }
         }
       ],
       "stretch_note": null,
       "notes": [
-        "Measured: 135 of 135 requested points evaluated, 135 fail, 0 pass, 0 insufficient, 0 missing (sim/ldo-cmos5l-pvt-sweep/records/20261011-031426-df3f802-startup-grid.csv). 135 of 135 points that settle within 3 ms still fail the proposed overshoot / monotonicity checks.",
+        "Measured: 135 of 135 requested points evaluated, 135 fail, 0 pass, 0 insufficient, 0 missing (sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.csv). 135 of 135 points that settle within 3 ms still fail the proposed overshoot / monotonicity checks.",
         "Proposed methodology, not ratified: DR-0007 row 9 stays Open; no ratification and no whole-spec pass is inferred."
       ],
       "startup_campaign": {
-        "record_id": "20261011-031426-df3f802",
+        "record_id": "20261011-070146-0c95530",
         "stage": "grid",
         "requested_points": 135,
         "result_rows": 135,
@@ -1263,7 +1263,7 @@
         "design_freshness": {
           "state": "current",
           "stale_components": [],
-          "basis": "The core hash is the one the campaign manifest records in source_sha256 (the generator requires the manifest value, this pin and the current file to agree). The campaign manifest does not record an error-amplifier hash, so that pin is the hash of ldo_erramp_cmos5l.spice at the time of the campaign: the campaign (issue #89) was run after the G1 disable pull-down changed that file (DR-0008 addendum), from commit df3f802, and it is the same byte content that the selected legacy circuit_record pins. It replaces 20261010-104827-91e92aa, which ran against the six-pin amplifier and is now historical. If either netlist changes the startup evidence is classified stale against the design and the envelope turns fail until a new campaign is selected.",
+          "basis": "The core hash is the one the campaign manifest records in source_sha256 (the generator requires the manifest value, this pin and the current file to agree). The campaign manifest does not record an error-amplifier hash, so that pin is the hash of ldo_erramp_cmos5l.spice at the time of the campaign: the campaign (issue #89) was run after the G1 disable pull-down changed that file (DR-0008 addendum), from commit df3f802, and it is the same byte content that the selected legacy circuit_record pins. It replaces 20261010-104827-91e92aa, which ran against the six-pin amplifier and is now historical. If either netlist changes the startup evidence is classified stale against the design and the envelope turns fail until a new campaign is selected. Record 20261011-070146-0c95530 (issue #130) is a re-collection, with the amended cold-start disabled-window evaluator, of the committed traces of 20261011-031426-df3f802 (no new simulation); the netlist hashes above are those of that source campaign, and its manifest carries them unchanged in source_sha256. 20261011-031426-df3f802 is retained, unmodified, as the earlier record.",
           "components": {
             "core": {
               "path": "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice",
@@ -1291,13 +1291,17 @@
           ],
           "settle_limit_s": 0.003,
           "monotonic_tolerance_v": 0.001,
-          "note": "Overshoot is read as peak VOUT above the +2 % band edge (1.836 V) and monotonicity as maximum downward excursion <= 1 mV before settling. 'controlled ramp' has no numeric bound in the target text and is not graded."
+          "note": "Overshoot is read as peak VOUT above the +2 % band edge (1.836 V) and monotonicity as maximum downward excursion <= 1 mV before settling. 'controlled ramp' has no numeric bound in the target text and is not graded. Cold-start disabled window (DR-0009 amendment, issue #130): the contiguous initial EN <= 1 mV plateau before the first rising ramp; off_supply_current_a is -ivin at its last sample. Selected record 20261011-070146-0c95530 re-collects 20261011-031426-df3f802's traces with that evaluator (the evaluator and campaign sha256 are in its manifest source_sha256).",
+          "supersedes_selection": {
+            "id": "20261011-031426-df3f802",
+            "reason": "its off_supply_current_a was sampled inside the EN edge (issue #130); traces unchanged and referenced in place by the selected record"
+          }
         },
         "ratification": "none inferred: row 9 stays Open (DR-0007); proposed methodology only",
         "extrema": {
           "start overshoot above 1.8 V [V]": {
             "min": {
-              "value": 0.0583932788,
+              "value": 0.05839328,
               "at": {
                 "point": "st_ss_-40c_rtyp_v2970mv_i1ma_c1000nf_e0mohm_t1000ns",
                 "corner": "ss",
@@ -1311,7 +1315,7 @@
               "n_points_at_this_value": 1
             },
             "max": {
-              "value": 0.538851771,
+              "value": 0.53885177,
               "at": {
                 "point": "st_ff_125c_rwcs_v3630mv_i1ma_c1000nf_e0mohm_t1000ns",
                 "corner": "ff",
@@ -1357,7 +1361,7 @@
           },
           "start settle time [s]": {
             "min": {
-              "value": 2.84714387e-05,
+              "value": 2.84714411e-05,
               "at": {
                 "point": "st_ss_-40c_rtyp_v2970mv_i1ma_c1000nf_e0mohm_t1000ns",
                 "corner": "ss",
@@ -1371,7 +1375,7 @@
               "n_points_at_this_value": 1
             },
             "max": {
-              "value": 0.00044099942,
+              "value": 0.000440999416,
               "at": {
                 "point": "st_ff_125c_rwcs_v3630mv_i1ma_c1000nf_e0mohm_t1000ns",
                 "corner": "ff",
@@ -1387,7 +1391,7 @@
           },
           "start max downward excursion [V]": {
             "min": {
-              "value": 0.0224069814,
+              "value": 0.02240698,
               "at": {
                 "point": "st_ss_-40c_rtyp_v2970mv_i1ma_c1000nf_e0mohm_t1000ns",
                 "corner": "ss",
@@ -1417,7 +1421,7 @@
           },
           "re-enable overshoot [V]": {
             "min": {
-              "value": 0.0449093242,
+              "value": 0.04490932,
               "at": {
                 "point": "st_ss_125c_rwcs_v2970mv_i1ma_c1000nf_e0mohm_t1000ns",
                 "corner": "ss",
@@ -1431,7 +1435,7 @@
               "n_points_at_this_value": 1
             },
             "max": {
-              "value": 0.449051574,
+              "value": 0.44905157,
               "at": {
                 "point": "st_ff_-40c_rwcs_v3630mv_i1ma_c1000nf_e0mohm_t1000ns",
                 "corner": "ff",
@@ -1447,7 +1451,7 @@
           },
           "re-enable max downward excursion [V]": {
             "min": {
-              "value": 0.00927083746,
+              "value": 0.00927083,
               "at": {
                 "point": "st_ss_125c_rwcs_v2970mv_i1ma_c1000nf_e0mohm_t1000ns",
                 "corner": "ss",
@@ -1461,7 +1465,7 @@
               "n_points_at_this_value": 1
             },
             "max": {
-              "value": 0.413312079,
+              "value": 0.41331208,
               "at": {
                 "point": "st_ff_-40c_rwcs_v3630mv_i1ma_c1000nf_e0mohm_t1000ns",
                 "corner": "ff",
@@ -1488,8 +1492,8 @@
           "pdk_installed_commit": "607e18d4bd9214a52575c194b4181ef449f9252f"
         },
         "source": {
-          "record_md": "sim/ldo-cmos5l-pvt-sweep/records/20261011-031426-df3f802-startup-grid.md",
-          "csv": "sim/ldo-cmos5l-pvt-sweep/records/20261011-031426-df3f802-startup-grid.csv"
+          "record_md": "sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.md",
+          "csv": "sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.csv"
         }
       }
     },
