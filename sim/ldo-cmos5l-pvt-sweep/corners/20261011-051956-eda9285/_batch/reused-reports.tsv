@@ -1,0 +1,5 @@
+group	reused_report
+g00_dcsweep_tt_-40c_rtyp	/tmp/ldo-cmos5l-pvt-batch.KHoorJ/g00_dcsweep_tt_-40c_rtyp/report.json
+g01_loopgain_tt_-40c_rtyp	/tmp/ldo-cmos5l-pvt-batch.KHoorJ/g01_loopgain_tt_-40c_rtyp/report.json
+g02_loopgain_ressens_bcs_tt_27c	/tmp/ldo-cmos5l-pvt-batch.KHoorJ/g02_loopgain_ressens_bcs_tt_27c/report.json
+g21_loopgain_divattr_tt_-40c_rtyp	/tmp/ldo-cmos5l-pvt-batch.KHoorJ/g21_loopgain_divattr_tt_-40c_rtyp/report.json
