@@ -1,0 +1,141 @@
+{
+ "rid": "20261011-031426-df3f802",
+ "stage": "grid",
+ "requested": 135,
+ "rows": 135,
+ "evaluated": 135,
+ "insufficient": 0,
+ "pass": 0,
+ "fail": 135,
+ "engines": [
+  "ngspice-46"
+ ],
+ "runner_klt": [
+  "0.5.0"
+ ],
+ "client_klt": "klt 0.7.0+g0d0312b30708",
+ "jobs": [
+  {
+   "group": "g000_ff_rbcs_i1ma_c1000nf_e0mohm_t1000ns",
+   "job_id": "klt-sim-6bcec6c4c99a",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot"
+  },
+  {
+   "group": "g001_ff_rtyp_i1ma_c1000nf_e0mohm_t1000ns",
+   "job_id": "klt-sim-afdda9b97532",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot"
+  },
+  {
+   "group": "g002_ff_rwcs_i1ma_c1000nf_e0mohm_t1000ns",
+   "job_id": "klt-sim-d7c01fd58b17",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot"
+  },
+  {
+   "group": "g003_fs_rbcs_i1ma_c1000nf_e0mohm_t1000ns",
+   "job_id": "klt-sim-134da8210e57",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot"
+  },
+  {
+   "group": "g004_fs_rtyp_i1ma_c1000nf_e0mohm_t1000ns",
+   "job_id": "klt-sim-93950de1724f",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot"
+  },
+  {
+   "group": "g005_fs_rwcs_i1ma_c1000nf_e0mohm_t1000ns",
+   "job_id": "klt-sim-bd1fc714865f",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot"
+  },
+  {
+   "group": "g006_sf_rbcs_i1ma_c1000nf_e0mohm_t1000ns",
+   "job_id": "klt-sim-cea44cf69765",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot"
+  },
+  {
+   "group": "g007_sf_rtyp_i1ma_c1000nf_e0mohm_t1000ns",
+   "job_id": "klt-sim-5bd75527be20",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot"
+  },
+  {
+   "group": "g008_sf_rwcs_i1ma_c1000nf_e0mohm_t1000ns",
+   "job_id": "klt-sim-880962901689",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot"
+  },
+  {
+   "group": "g009_ss_rbcs_i1ma_c1000nf_e0mohm_t1000ns",
+   "job_id": "klt-sim-b8f9213868bb",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot"
+  },
+  {
+   "group": "g010_ss_rtyp_i1ma_c1000nf_e0mohm_t1000ns",
+   "job_id": "klt-sim-d32bb6df5663",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot"
+  },
+  {
+   "group": "g011_ss_rwcs_i1ma_c1000nf_e0mohm_t1000ns",
+   "job_id": "klt-sim-0303fd104a34",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot"
+  },
+  {
+   "group": "g012_tt_rbcs_i1ma_c1000nf_e0mohm_t1000ns",
+   "job_id": "klt-sim-602e9aa51f40",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot"
+  },
+  {
+   "group": "g013_tt_rtyp_i1ma_c1000nf_e0mohm_t1000ns",
+   "job_id": "klt-sim-5f44d4cddc26",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot"
+  },
+  {
+   "group": "g014_tt_rwcs_i1ma_c1000nf_e0mohm_t1000ns",
+   "job_id": "klt-sim-5b993c0a647b",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot"
+  }
+ ],
+ "osdi_sha256": {
+  "cap_cmomf.osdi": "006ebb9bb05729e408966da04b3c02391ef3e460666e3a59ec2900c8089ea6cc",
+  "cap_cmomi.osdi": "9e16967935d9a69f5a18629f83be8bbd7d3d50ac6dae230f8e00b369ba969b04",
+  "mosvar.osdi": "25e64a374ab523dbfeb7ffed75dcb8b086ee10f06120a9074bd68b92d7b0fb41",
+  "psp103.osdi": "2e4299c4683997e26469410dc1ab36b02ced924b1ac0972d6c4eae360e1fc796",
+  "psp103_nqs.osdi": "839b164483205601c09032951f6c41d3580f15e506dc40a7202950d3afbdfc7d",
+  "r3_cmc.osdi": "4fead17bc2e9cbfe3df6f106e9dbd6f2cdcd48c002af9c56c2ca0b0712fce350"
+ },
+ "pdk_pinned_commit": "607e18d4bd9214a52575c194b4181ef449f9252f",
+ "pdk_installed_commit": "607e18d4bd9214a52575c194b4181ef449f9252f",
+ "source_sha256": {
+  "sim/ldo-cmos5l-pvt-sweep/testbench/tb_startup_cmos5l.spice.tmpl": "ad9e077575a7b7db5ccc928a17f68d04b4372e1815cfc363c55a3ec062458cde",
+  "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice": "08a7b857e1fad43dd7af1f575de97853a058e85541601ecc47567fbc28dbae57",
+  "sim/ldo-cmos5l-pvt-sweep/startup_eval.py": "db64505547fccf6a6dfbe68320ebdc08ffda79e1b025282d371c67a698c1b811",
+  "sim/ldo-cmos5l-pvt-sweep/startup_campaign.py": "fe2b908faf95d41109524608ace411250de2847febb64e40f4438b1472df1e73"
+ },
+ "csv": "sim/ldo-cmos5l-pvt-sweep/records/20261011-031426-df3f802-startup-grid.csv"
+}
