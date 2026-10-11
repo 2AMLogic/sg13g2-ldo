@@ -1,5 +1,5 @@
 {
-  "netlist": "tb_loopgain_en.spice",
+  "netlist": "tb_loopgain_en_g1pd.spice",
   "backend": "batch",
   "batch": {
     "runner_version_check": "warn",

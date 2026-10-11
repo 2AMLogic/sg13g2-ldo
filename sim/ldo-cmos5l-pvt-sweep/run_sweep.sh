@@ -135,12 +135,16 @@ DESIGN_NETLIST="${REPO_ROOT}/design/sg13cmos5l/netlist/ldo_core_cmos5l.spice"
 # normalised before (b) compares, and Vbreak's own connectivity is
 # asserted separately, so the loop break cannot silently move or vanish.
 # This block deliberately needs neither a PDK nor ngspice, so
-# --check-topology-guard (the negative controls) runs anywhere. ---
+# --check-topology-guard (the negative controls) runs anywhere.
+# Since issue #89 Xamp carries EN as its seventh pin (the amplifier's own G1
+# disable pull-down, DR-0008 addendum), so the expected body and both
+# copies name EN on Xamp too; a template that still instantiates the
+# six-pin amplifier is rejected by the negative controls below. ---
 LOOPGAIN_MIRRORED_RE='^(XMpass|XRtop|XRbot|Xamp|XMen|XMbdis) '
 LOOPGAIN_EXPECTED_BODY='XMpass VOUT EAOUT VIN VIN sg13_hv_pmos w=2800u l=0.5u ng=1 m=1
 XRtop VOUT FB VSS rhigh w=1e-6 l=25.43e-6 m=1 b=7
 XRbot FB VSS VSS rhigh w=1e-6 l=25.43e-6 m=1 b=7
-Xamp FB VREF EAOUT VIN VSS IBIAS ldo_erramp_cmos5l
+Xamp FB VREF EAOUT VIN VSS IBIAS EN ldo_erramp_cmos5l
 XMen EAOUT EN VIN VIN sg13_hv_pmos w=40u l=0.5u ng=1 m=1
 XMbdis IBIAS EN VIN VIN sg13_hv_pmos w=5u l=0.5u ng=1 m=1'
 
@@ -227,6 +231,9 @@ check_topology_guard() {
   neg "netlist omits XMen"                  '/^XMen /d'                                netlist
   neg "netlist XMen gate moved to VIN"      's/^XMen EAOUT EN /XMen EAOUT VIN /'       netlist
   neg "netlist EN port dropped from header" 's/^(\.subckt ldo_core_cmos5l .*) EN$/\1/' netlist
+  neg "template Xamp EN pin dropped (six-pin amp)" 's/^(Xamp FBAMP VREF EAOUT VIN VSS IBIAS) EN /\1 /' template
+  neg "template Xamp EN pin tied to VIN"    's/^(Xamp FBAMP VREF EAOUT VIN VSS IBIAS) EN /\1 VIN /' template
+  neg "netlist Xamp EN pin dropped"         's/^(Xamp FB VREF EAOUT VIN VSS IBIAS) EN /\1 /' netlist
   rm -rf "${tmp}"
   return ${rc}
 }
@@ -372,11 +379,22 @@ RES_LABELS=(typ bcs wcs)
 # It uses the same benches (EN tied to VIN reproduces the pre-#67
 # connectivity) and the same full 45-point grid, so the delta table isolates
 # what the enable devices change.
-BASELINE_CSV="${RECORDS_DIR}/20260917-023832-7061e8f.csv"
+#
+# RE-BASELINED BY #89, from the #35 record to the #67 one
+# (20261010-025634-60a3e81, PR #87). That is the last main-grid record
+# before the G1 disable pull-down (DR-0008 addendum), run on the batch fleet
+# against the six-pin-Xamp netlist (core sha256 7953b25b...222cc1). Same
+# benches (EN tied to VIN), same full 45-point grid, so the delta table
+# isolates what the three added amplifier devices change in the enabled
+# state.
+BASELINE_CSV="${RECORDS_DIR}/20261010-025634-60a3e81.csv"
 # The newest committed main-grid record (issue #67, EN design, batch fleet).
 # The dynamic DoE (issue #64) compares its legacy 1 mA / 1 uF / 0 ohm point
-# against BOTH this and BASELINE_CSV.
+# against BOTH this and the pre-EN #35 record. #89 moved BASELINE_CSV to the
+# #67 record, so the DoE keeps naming the #35 record explicitly (its
+# comparison is unchanged by that re-baselining).
 CURRENT_RECORD_CSV="${RECORDS_DIR}/20261010-025634-60a3e81.csv"
+DOE_LEGACY_BASELINE_CSV="${RECORDS_DIR}/20260917-023832-7061e8f.csv"
 
 total=0
 passed=0
@@ -611,7 +629,7 @@ if [[ ${DOE_GENERATE} -eq 1 ]]; then
   [[ -n "${DOE_EXTRA}" ]] && doe_args+=(--extra "${DOE_EXTRA}")
   doe_rc=0
   python3 "${SCRIPT_DIR}/dynamic_doe.py" analyse "${doe_dirs[@]}" "${doe_args[@]}" \
-    --legacy-record "${BASELINE_CSV}" \
+    --legacy-record "${DOE_LEGACY_BASELINE_CSV}" \
     --legacy-record "${CURRENT_RECORD_CSV}" \
     --out-prefix "${RECORDS_DIR}/${RECORD_ID}.dynamic-doe" || doe_rc=$?
   python3 "${SCRIPT_DIR}/dynamic_doe.py" refine "${doe_dirs[@]}" "${doe_args[@]}" \
