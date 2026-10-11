@@ -68,16 +68,50 @@ import sys
 
 OSDI_ORDER = ["psp103", "psp103_nqs", "mosvar", "r3_cmc", "cap_cmomi", "cap_cmomf"]
 
-# The only `let` blocks run_sweep.sh's templates contain. Matched verbatim.
+# The only `let` blocks run_sweep.sh's and run_loopgain2.sh's templates
+# contain. Matched verbatim. The two-injection benches (issue #135) export
+# the RAW COMPLEX probe responses (real/imag parts) instead of a reduced
+# ratio: the reconstruction in loopgain2.py needs them. `wrdata_rows`
+# rebuilds those columns from the corner's rawfile vectors directly.
 KNOWN_LETS = {
     "loopgain": [
         "let loopgain = -v(fb)/v(fbamp)",
         "let loopgain_db = db(loopgain)",
         "let loopgain_deg = ph(loopgain)*180/3.14159265358979",
     ],
+    # voltage-injection half: v(fb) and v(fbamp) as real/imag pairs. wrdata
+    # layout: f, re fb, f, im fb, f, re fbamp, f, im fbamp (8 columns).
+    "loopgain2v": [
+        "let vfb_re = real(v(fb))",
+        "let vfb_im = imag(v(fb))",
+        "let vfbamp_re = real(v(fbamp))",
+        "let vfbamp_im = imag(v(fbamp))",
+    ],
+    # current-injection half: i(vmeas) = i_l (divider side -> load side
+    # through the 0 V ammeter) as a real/imag pair. wrdata layout: f, re il,
+    # f, im il (4 columns).
+    "loopgain2i": [
+        "let il_re = real(i(vmeas))",
+        "let il_im = imag(i(vmeas))",
+    ],
     "psrr": ["let psrr_db = -db(v(vout)/v(vin))"],
 }
+# the wrdata vector names each bench's template must name, in order
+KNOWN_WRDATA = {
+    "loopgain": ["loopgain_db", "loopgain_deg"],
+    "loopgain2v": ["vfb_re", "vfb_im", "vfbamp_re", "vfbamp_im"],
+    "loopgain2i": ["il_re", "il_im"],
+    "psrr": ["psrr_db"],
+}
+# the rawfile vectors each new bench's reconstruction reads (bench ->
+# [(name in rawfile, column role)]); None for the legacy reduced benches,
+# which keep their verbatim-let rebuild below.
+COMPLEX_EXPORT = {
+    "loopgain2v": ["v(fb)", "v(fbamp)"],
+    "loopgain2i": ["i(vmeas)"],
+}
 PI_TEMPLATE = 3.14159265358979  # the literal the loopgain template uses
+
 
 LIVENESS_MEAS = {
     "dc": ".meas dc liveness_vout FIND v(vout) AT=3.3",
@@ -163,8 +197,8 @@ def parse_deck(path, variant_re=None):
         elif s.startswith("wrdata "):
             parts = s.split()
             wrdata = parts[2:]
-        elif s == "op" or s.startswith('echo "LOOPGAIN_VOUT_OP'):
-            # informational operating-point echo in the loopgain template;
+        elif s == "op" or re.match(r'^echo "LOOPGAIN(2V|2I)?_VOUT_OP ', s):
+            # informational operating-point echo in the loop-gain templates;
             # nothing downstream reads it.
             continue
         else:
@@ -182,7 +216,9 @@ def parse_deck(path, variant_re=None):
 
 
 def bench_of(point_id):
-    for b in ("dcsweep", "loopgain", "psrr"):
+    # order matters only for readability: the prefixes are mutually exclusive
+    # ("loopgain2v_"/"loopgain2i_" do not start with "loopgain_").
+    for b in ("dcsweep", "loopgain2v", "loopgain2i", "loopgain", "psrr"):
         if point_id.startswith(b + "_"):
             return b
     raise BackendError(f"cannot tell the bench of point {point_id}")
@@ -260,17 +296,32 @@ def wrdata_rows(bench, parsed, names, data, cplx):
         if cplx:
             raise BackendError("dcsweep rawfile is complex")
         cols = [vec(data, w) for w in want]
+    elif bench in COMPLEX_EXPORT:
+        # issue #135: the two-injection benches export the RAW COMPLEX probe
+        # responses as real/imag column pairs; loopgain2.py reconstructs the
+        # loop gain from them. Fail closed unless the let block AND the
+        # wrdata vector list match the known template exactly AND every
+        # probe vector the reconstruction reads is present in the rawfile.
+        if cplx is False:
+            raise BackendError(f"{bench} rawfile is not complex")
+        if parsed["lets"] != KNOWN_LETS[bench] or want != KNOWN_WRDATA[bench]:
+            raise BackendError(f"{bench} .control differs from the known template: {parsed['lets']} {want}")
+        cols = []
+        for probe in COMPLEX_EXPORT[bench]:
+            v = vec(data, probe)
+            for part in (lambda z: z.real, lambda z: z.imag):
+                cols.append([part(z) for z in v])
     elif bench == "loopgain":
         if cplx is False:
             raise BackendError("loopgain rawfile is not complex")
-        if parsed["lets"] != KNOWN_LETS["loopgain"] or want != ["loopgain_db", "loopgain_deg"]:
+        if parsed["lets"] != KNOWN_LETS["loopgain"] or want != KNOWN_WRDATA["loopgain"]:
             raise BackendError(f"loopgain .control differs from the known template: {parsed['lets']} {want}")
         fb, fbamp = vec(data, "v(fb)"), vec(data, "v(fbamp)")
         lg = [-a / b for a, b in zip(fb, fbamp)]
         cols = [[db(z) for z in lg],
                 [math.atan2(z.imag, z.real) * 180 / PI_TEMPLATE for z in lg]]
     elif bench == "psrr":
-        if parsed["lets"] != KNOWN_LETS["psrr"] or want != ["psrr_db"]:
+        if parsed["lets"] != KNOWN_LETS["psrr"] or want != KNOWN_WRDATA["psrr"]:
             raise BackendError(f"psrr .control differs from the known template: {parsed['lets']} {want}")
         vo, vi = vec(data, "v(vout)"), vec(data, "v(vin)")
         cols = [[-db(a / b) for a, b in zip(vo, vi)]]

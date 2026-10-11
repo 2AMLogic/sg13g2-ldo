@@ -124,6 +124,114 @@ point.
 and aborts loudly if a future schematic edit changes that connectivity, so
 this bench cannot silently go stale.
 
+## Loop-gain measurement method -- two-injection (Middlebrook) reconstruction
+
+The single-injection reading above is exact **only if `FBAMP` draws zero AC
+current**. That holds at DC and low frequency (a MOSFET gate), but at
+hundreds of MHz the input-pair gate capacitance (and Cgd feed-through to
+the amplifier output) is no longer negligible, so the broken bench drives
+that capacitance from an ideal source while the real divider node does not
+-- the two circuits differ, and a voltage injection that sees a nonzero
+return current does not yield the true loop gain. Issue #135 measures the
+same break a second, independent way and lets the two answers disagree or
+agree as they will. Primary reference: R. D. Middlebrook, "Measurement of
+loop gain in feedback systems", Int. J. Electronics 38(4):485-512 (1975)
+-- the two-experiment (voltage + current injection) formulation; the
+single-structure variant is Tian et al., "Striving for small-signal
+stability in loop-gain simulations", IEEE TCAS-I 48(6) (2001), which
+carries the same information. The combination formula below is derived
+here from the break's Thevenin model (not quoted), and is validated
+against an analytic feedback fixture with finite loading and a reversed
+probe polarity (`test_loopgain2.py`) before any silicon-model result is
+read.
+
+**Model.** Cut the `FB -> FBAMP` wire. Looking from the cut into the
+divider side is a Thevenin source `Vt = T'(s) * V_B` behind `Zt` (the true
+loop transfer `T'` times the amplifier-input voltage; `T'` includes the
+negative-feedback sign, so `T'` is negative here and `L = -T'` is the
+positive-DC convention above). Looking into the amplifier side is the load
+`Zl` (the input-pair gate). Write `u(s) = Zt/Zl` for the **loading ratio**
+-- the single-injection method is exact exactly as `u -> 0`.
+
+**Voltage experiment** (`tb_loopgain2v_cmos5l.spice.tmpl`): the same
+circuit as `tb_loopgain_cmos5l` -- one `Vbreak FB FBAMP 0 ac 1` series
+break, so `v(fb) - v(fbamp) = 1` -- but exporting the raw complex probes
+`v(fb)`, `v(fbamp)` instead of their ratio. Solving KCL on both sides of
+the injection (the injected source carries the gate current `v(fbamp)/Zl`,
+which loads the divider side through `Zt`) gives
+
+```
+Hv(s) = v(fbamp)/v(fb) = 1/(T' - u)
+```
+
+so `Hv` alone equals `1/T'` only when `u = 0`: **the single-injection
+method's assumption made visible**. (Equivalently the bench reads
+`L_single = -v(fb)/v(fbamp) = u - T'`: it over-reads the loop gain by
+exactly the loading ratio.)
+
+**Current experiment** (`tb_loopgain2i_cmos5l.spice.tmpl`): the loop is
+left **intact** -- a 0 V ammeter `Vmeas FB FBAMP 0 dc 0` bridges the former
+break (FB and FBAMP sit at the same potential, DC and AC, so the operating
+point and AC loading are the unbroken circuit's) -- and a shunt source
+`Iinx 0 FBAMP dc 0 ac 1` pushes `ix = 1 A` (AC) into the driven side. The
+injected current splits between `Zl` and `Zt`, which is what makes the
+experiment carry information the voltage injection cannot. The ammeter
+reads the **bridge** current `i_m` (positive FB -> FBAMP, ngspice's `n+ ->
+n-` branch convention); KCL on the two nodes gives the load current
+`i_l = ix + i_m` and the current returning around the loop
+`i_s = -i_m`, so
+
+```
+Hi(s) = i_s/i_l = -i_m/(1 + i_m) = (1 - T')/u
+```
+
+`Hi` vanishes as `u -> 0`, exactly where the voltage reading is already
+exact; it grows where that reading's premise fails.
+
+**Combination** (per frequency, complex arithmetic; derived by eliminating
+`T'` and `u` between the two experiment equations):
+
+```
+T'(s) = (1 + Hi/Hv) / (1 + Hi),      loop gain L(s) = -T'(s)
+```
+
+This is the two-run Middlebrook combination. It is exact for any `u`
+(including the `u -> 0` limit, where it collapses onto `1/Hv` -- the
+single-injection answer), and is ill-conditioned only where `|1 + Hi| -> 0`
+(the shunt injection seeing a near-open circuit, `T' ~= 1 + u`); every
+frequency's `|1 + Hi|` is checked (`MIN_DENOM = 1e-4`) and a failing
+frequency fails the point loudly -- no silently wrong trace is written.
+
+**Loading ratio and the difference identity.** Eliminating `T'` instead
+gives `u` from the raw pair, `u = (Hv - 1)/(Hv (1 + Hi))`, and subtracting
+the two reduced readings gives the exact identity
+`L_single - L_two = u(s)`: **the difference between the two methods IS the
+loading ratio the single-injection bench ignores.**
+
+**Stated tolerances** (fixed before any silicon-model result was
+interpreted; enforced per point by `loopgain2.py`, which raises instead of
+writing a trace it could not validate):
+
+| Check | Tolerance | Meaning |
+|---|---|---|
+| deck identity (2v vs control) | 1e-6 relative, complex, below the first 0 dB crossing | the 2v circuit IS the control circuit; a larger deviation is a plumbing bug, not physics |
+| loading premise | `u(1 Hz) < 1e-3` | the amplifier input is a high-Z load at low frequency -- the premise that makes the in-band single-injection record meaningful |
+| loading-explain bound | below f_ugf/10: `abs(L2 - L1) <= 3abs(u) + 1e-6abs(L1)` | below the crossing the methods may differ only by the measured loading; anything else must be investigated, not averaged away |
+| conditioning floor | `abs(1 + Hi) >= 1e-4` | the combination is genuinely undetermined below this |
+| orientation check | `abs(phase(L at 1 Hz)) <= 45 deg` | a healthy negative-feedback loop has L(1 Hz) large and positive-real; a swapped probe or flipped injection lands near +-180 deg and fails here |
+
+**Bench hygiene.** All three loop-gain templates (single-injection, 2v,
+2i) are covered by `run_sweep.sh`'s topology-sync guard, including
+negative controls specific to the two-injection benches (ammeter removed,
+ammeter given an AC injection, shunt source moved to the divider side,
+shunt polarity flipped, ammeter nodes swapped, a `Vbreak` smuggled into the
+intact-loop deck). `batch_backend.py` accepts only the exact `let` blocks
+and wrdata vector lists above, rebuilds the export columns from the
+rawfile's complex vectors (`v(fb)`, `v(fbamp)`, `i(vmeas)`), and fails
+closed on any other `.control` shape. The campaign driver is
+`run_loopgain2.sh` (batch fleet only; `--validate` runs exactly three
+tt/27C decks locally as a pre-flight debug probe).
+
 ## Why Vin=3.63V for load regulation
 
 The schematic's provisional `Mpass` sizing (`w=300u l=0.5u`,

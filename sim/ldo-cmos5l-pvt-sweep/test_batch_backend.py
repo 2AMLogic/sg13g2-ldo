@@ -321,5 +321,155 @@ class ReuseReport(unittest.TestCase):
         self.assertIsNone(self.reuse())
 
 
+LG2V_LETS = ["let vfb_re = real(v(fb))",
+             "let vfb_im = imag(v(fb))",
+             "let vfbamp_re = real(v(fbamp))",
+             "let vfbamp_im = imag(v(fbamp))"]
+LG2I_LETS = ["let il_re = real(i(vmeas))",
+             "let il_im = imag(i(vmeas))"]
+
+
+def lg2_deck(pid, lets, wrdata_vectors):
+    return f"""* tb for {pid}
+.lib "/pdk/cornerMOShv.lib" mos_tt
+.lib "/pdk/cornerRES.lib" res_typ
+.lib "/pdk/cornerCAP.lib" cap_typ
+.options temp=27 tnom=27
+.include "/design/ldo.spice"
+Vin VIN 0 dc 3.30
+.control
+pre_osdi /o/psp103.osdi
+pre_osdi /o/psp103_nqs.osdi
+pre_osdi /o/mosvar.osdi
+pre_osdi /o/r3_cmc.osdi
+pre_osdi /o/cap_cmomi.osdi
+pre_osdi /o/cap_cmomf.osdi
+op
+echo "LOOPGAIN_VOUT_OP 1.8"
+ac dec 20 1 1e10
+{chr(10).join(lets)}
+wrdata /x/{pid}_ac.csv {wrdata_vectors}
+.endc
+.end
+"""
+
+
+def complex_rawfile(probes, points):
+    """A minimal ASCII ngspice AC rawfile: freq + the named complex probes."""
+    names = ["freq"] + [p for p, _ in probes]
+    lines = ["Title: fixture", "Date: fixture", "Plotname: AC Analysis",
+             "Flags: complex", f"No. Variables: {len(names)}",
+             f"No. Points: {len(points)}", "Variables:"]
+    for k, n in enumerate(names):
+        kind = "frequency" if k == 0 else "node-or-branch"
+        lines.append(f"\t{k}\t{n}\t{kind}")
+    lines.append("Values:")
+    for i, row in enumerate(points):        # row = [freq, v1, v2, ...] complex
+        lines.append(f"{i}\t{row[0].real:.8e},{row[0].imag:.8e}")
+        for z in row[1:]:
+            lines.append(f"\t{z.real:.8e},{z.imag:.8e}")
+    return "\n".join(lines) + "\n"
+
+
+class TwoInjectionExport(unittest.TestCase):
+    """issue #135: the raw-complex-export benches reconstruct their wrdata
+    columns from the rawfile's complex vectors, and refuse anything else."""
+
+    @staticmethod
+    def _data(temps=(27,)):
+        fb = [complex(2.0, 0.1), complex(1.0, -0.5)]
+        fbamp = [complex(-0.02, 0.003), complex(0.01, 0.02)]
+        imeas = [complex(-0.9999, 1e-5), complex(-0.5, -0.25)]
+        freqs = [complex(1.0, 0.0), complex(10.0, 0.0)]
+        return (["freq", "v(fb)", "v(fbamp)", "vmeas#branch"],
+                {"freq": freqs, "v(fb)": fb, "v(fbamp)": fbamp,
+                 "vmeas#branch": imeas}, True)
+
+    def test_voltage_bench_exports_re_and_im_columns(self):
+        names, data, cplx = self._data()
+        with tempfile.NamedTemporaryFile("w", suffix=".spice", delete=False) as fh:
+            fh.write(lg2_deck("loopgain2v_tt_27c_rtyp", LG2V_LETS,
+                              "vfb_re vfb_im vfbamp_re vfbamp_im"))
+            deck = fh.name
+        try:
+            parsed = bb.parse_deck(deck)
+            rows = bb.wrdata_rows("loopgain2v", parsed, names, data, cplx)
+        finally:
+            os.remove(deck)
+        self.assertEqual(len(rows), 2)
+        for r, f, fb, fbamp in zip(rows, data["freq"], data["v(fb)"],
+                                   data["v(fbamp)"]):
+            vals = [float(x) for x in r.split()]
+            self.assertEqual(len(vals), 8)
+            self.assertAlmostEqual(vals[0], f.real)
+            self.assertAlmostEqual(vals[1], fb.real, places=7)
+            self.assertAlmostEqual(vals[3], fb.imag, places=7)
+            self.assertAlmostEqual(vals[5], fbamp.real, places=7)
+            self.assertAlmostEqual(vals[7], fbamp.imag, places=7)
+
+    def test_current_bench_exports_the_ammeter_pair(self):
+        names, data, cplx = self._data()
+        with tempfile.NamedTemporaryFile("w", suffix=".spice", delete=False) as fh:
+            fh.write(lg2_deck("loopgain2i_tt_27c_rtyp", LG2I_LETS,
+                              "il_re il_im"))
+            deck = fh.name
+        try:
+            parsed = bb.parse_deck(deck)
+            rows = bb.wrdata_rows("loopgain2i", parsed, names, data, cplx)
+        finally:
+            os.remove(deck)
+        for r, z in zip(rows, data["vmeas#branch"]):
+            vals = [float(x) for x in r.split()]
+            self.assertEqual(len(vals), 4)
+            self.assertAlmostEqual(vals[1], z.real, places=7)
+            self.assertAlmostEqual(vals[3], z.imag, places=7)
+
+    def test_voltage_bench_rejects_unknown_control(self):
+        names, data, cplx = self._data()
+        with tempfile.NamedTemporaryFile("w", suffix=".spice", delete=False) as fh:
+            fh.write(lg2_deck("loopgain2v_tt_27c_rtyp", LG2V_LETS[:2] + LG2I_LETS,
+                              "vfb_re vfb_im il_re il_im"))
+            deck = fh.name
+        try:
+            parsed = bb.parse_deck(deck)
+            with self.assertRaisesRegex(bb.BackendError, "differs from the known template"):
+                bb.wrdata_rows("loopgain2v", parsed, names, data, cplx)
+        finally:
+            os.remove(deck)
+
+    def test_voltage_bench_rejects_a_real_rawfile(self):
+        names, data, _ = self._data()
+        with tempfile.NamedTemporaryFile("w", suffix=".spice", delete=False) as fh:
+            fh.write(lg2_deck("loopgain2v_tt_27c_rtyp", LG2V_LETS,
+                              "vfb_re vfb_im vfbamp_re vfbamp_im"))
+            deck = fh.name
+        try:
+            parsed = bb.parse_deck(deck)
+            with self.assertRaisesRegex(bb.BackendError, "not complex"):
+                bb.wrdata_rows("loopgain2v", parsed, names, data, False)
+        finally:
+            os.remove(deck)
+
+    def test_current_bench_rejects_a_missing_probe(self):
+        names, data, cplx = self._data()
+        del data["vmeas#branch"]
+        with tempfile.NamedTemporaryFile("w", suffix=".spice", delete=False) as fh:
+            fh.write(lg2_deck("loopgain2i_tt_27c_rtyp", LG2I_LETS, "il_re il_im"))
+            deck = fh.name
+        try:
+            parsed = bb.parse_deck(deck)
+            with self.assertRaisesRegex(bb.BackendError, "not in rawfile"):
+                bb.wrdata_rows("loopgain2i", parsed, names, data, cplx)
+        finally:
+            os.remove(deck)
+
+    def test_bench_of_the_new_prefixes(self):
+        self.assertEqual(bb.bench_of("loopgain2v_tt_27c_rtyp"), "loopgain2v")
+        self.assertEqual(bb.bench_of("loopgain2i_ss_-40c_rwcs"), "loopgain2i")
+        self.assertEqual(bb.bench_of("loopgain_ctl_ff_125c_rbcs"), "loopgain")
+        with self.assertRaises(bb.BackendError):
+            bb.bench_of("loopgain2x_tt_27c_rtyp")
+
+
 if __name__ == "__main__":
     unittest.main()
