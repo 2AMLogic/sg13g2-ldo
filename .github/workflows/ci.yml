@@ -498,6 +498,11 @@ jobs:
         # does not classify as a fail.
         run: python3 sim/ldo-cmos5l-pvt-sweep/row10_margins.py --check
 
+      - name: Row-10 margin classification of later 45-point records (row10_record.py wrapper, #89)
+        # Same classifier, run on records row10_margins.py does not name
+        # (it is hash-pinned in its own landed outputs, so it is not edited).
+        run: python3 sim/ldo-cmos5l-pvt-sweep/row10_record.py --check
+
       - name: Manifest item-8 pin matches the committed report hash
         run: |
           python3 - <<'PY'

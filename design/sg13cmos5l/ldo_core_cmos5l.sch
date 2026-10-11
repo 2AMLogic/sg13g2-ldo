@@ -222,6 +222,15 @@ v {xschem version=3.4.7 file_version=1.3
 * discharge and no soft start are included. Valid levels, bias handling,
 * stress and the off-state leakage measurement conditions: DR-0008.
 *
+* EN ALSO REACHES Xamp (issue #89, DR-0008 addendum "G1 disable pull-down").
+* With the bias cut, the amplifier's second-stage gate node G1 used to float
+* at DC, so Mn3 conducted from EAOUT into VSS and Men supplied that current
+* (~73 uA of disabled supply current at VIN = 3.30 V, tt/27C). Xamp now takes
+* EN as a seventh pin (INP INN OUT VDD VSS IBIAS EN) and holds G1 at VSS
+* itself when EN is low, through a local inverter and a small NMOS
+* pull-down (sizes and the option analysis: ldo_erramp_cmos5l.sch's header
+* and the DR-0008 addendum). This core's own port list is unchanged.
+*
 * NO CURRENT LIMIT, NO SOFT START, NO OUTPUT CAP, NO LOAD. Same scope
 * boundary as the SG13G2 branch. Verification of the EN change is
 * schematic-level only (see DR-0008); no layout/DRC/LVS exists for it
@@ -269,6 +278,8 @@ N 440 820 440 760 {}
 C {lab_pin.sym} 440 760 0 0 {name=l13 lab=IBIAS}
 N 400 980 400 1040 {}
 C {lab_pin.sym} 400 1040 0 0 {name=l14 lab=VSS}
+N 440 980 440 1040 {}
+C {lab_pin.sym} 440 1040 0 0 {name=l23 lab=EN}
 C {iopin.sym} -200 100 0 0 {name=p1 lab=VIN}
 C {iopin.sym} -200 200 0 0 {name=p2 lab=VOUT}
 C {iopin.sym} -200 300 0 0 {name=p3 lab=VSS}

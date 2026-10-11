@@ -40,3 +40,8 @@ for cid in ea:
 for k, d in worst.items(): print(f"{k:10s} max|delta| {d:.3g}")
 print("== disabled: pass-device leakage, VOUT clamped to 0 V ==")
 for k, v in one("enable-leak").items(): print(k, v)
+# Issue #89 (G1 disable pull-down): printed only for records that ran the
+# disabled-g1 request, so records made before it reproduce unchanged.
+if os.path.exists(os.path.join(raw, "disabled-g1.sim.json")):
+    print("== disabled, VOUT floating: amplifier internal nodes (issue #89) ==")
+    for k, v in one("disabled-g1").items(): print(k, v)

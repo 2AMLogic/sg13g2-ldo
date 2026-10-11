@@ -244,10 +244,45 @@ v {xschem version=3.4.7 file_version=1.3
 * record (sim/ldo-cmos5l-pvt-sweep/README.md, "Results (issue #35)").
 * That Iq headroom is also what bounds the bias lever in item 1 above.
 *
-* NO ENABLE, NO CURRENT LIMIT, NO SOFT START, NO START-UP CIRCUIT. Same
-* scope boundary the SG13G2 branch drew; phases 3/4 and later increments
-* own those. DR-0001's carried-forward |Vsg| <= 3.3 V constraint binds
-* whatever current-limit loop this branch eventually grows, not this cell.
+* 5. EN AND THE G1 DISABLE PULL-DOWN (issue #89; DR-0008 addendum "G1
+*    disable pull-down"). The core's enable (DR-0008) cuts this cell's bias
+*    from outside (Mbdis pulls IBIAS to VDD, so Mtail and Mload2 turn off).
+*    With no tail current, nothing defined G1 at DC any more: Mn3's gate
+*    floated, Mn3 conducted from OUT into VSS, and the core's Men pull-up
+*    supplied that current (~73 uA of disabled supply current at
+*    VDD = 3.30 V, tt/27C, DR-0008). This cell therefore takes the core's EN
+*    as a seventh pin and holds G1 at VSS itself while EN is low:
+*
+*        VDD --[Minvp]--+--[Minvn]-- VSS     inverter, both gates EN
+*                       |
+*                      ENB
+*                       |
+*        G1 ----------[Mpd]--------- VSS     pull-down, gate ENB
+*
+*      Minvp  sg13_hv_pmos w=1u l=1u  S/B VDD, G EN, D ENB
+*      Minvn  sg13_hv_nmos w=1u l=1u  S/B VSS, G EN, D ENB
+*      Mpd    sg13_hv_nmos w=1u l=1u  S/B VSS, G ENB, D G1
+*
+*    EN = VDD (enabled): ENB = VSS, Mpd has Vgs = 0 and only adds its drain
+*    junction/overlap capacitance (~fF, against the ~5.5 pF Miller Cc on the
+*    same node) and its off-state leakage to G1. The inverter draws only
+*    leakage. EN low (disabled): ENB = VDD, Mpd pulls G1 to VSS and Mn3 is
+*    off. The pull-down only has to sink leakage (no tail current flows
+*    when disabled), so the minimum-sized device is enough; l=1u keeps this
+*    cell's "L >= 1 um on every device" rule (item 4) and halves the
+*    pull-down's off-state leakage against the l=0.5u the core's enable
+*    devices use. EN is a VDD-domain, rail-to-rail signal, so the inverter
+*    inherits DR-0008's stress note (Vsg(Minvp) and Vgs(Minvn, Mpd) reach
+*    VDD = 3.63 V at the top of the Input row, over the 3.3 V VGS rating).
+*    The inverter sits here rather than in the core (DR-0008 addendum,
+*    options 1-3) so every user of this cell gets a defined disabled state
+*    from the enable alone, and the flattened core copies (loop-gain bench,
+*    LVS reference) only gain one pin on Xamp.
+*
+* NO CURRENT LIMIT, NO SOFT START, NO START-UP CIRCUIT. Same scope boundary
+* the SG13G2 branch drew; phases 3/4 and later increments own those.
+* DR-0001's carried-forward |Vsg| <= 3.3 V constraint binds whatever
+* current-limit loop this branch eventually grows, not this cell.
 }
 G {}
 K {}
@@ -336,9 +371,37 @@ N 1700 970 1700 910 {}
 C {lab_pin.sym} 1700 910 0 0 {name=l35 lab=MZ}
 N 1700 1030 1700 1090 {}
 C {lab_pin.sym} 1700 1090 0 0 {name=l36 lab=G1}
+C {sg13cmos5l_pr/sg13_hv_pmos.sym} 2000 200 0 0 {name=Minvp model=sg13_hv_pmos w=1u l=1u ng=1 m=1}
+N 2020 170 2020 110 {}
+C {lab_pin.sym} 2020 110 0 0 {name=l37 lab=VDD}
+N 2020 230 2020 290 {}
+C {lab_pin.sym} 2020 290 0 0 {name=l38 lab=ENB}
+N 1980 200 1940 200 {}
+C {lab_pin.sym} 1940 200 0 0 {name=l39 lab=EN}
+N 2020 200 2070 200 {}
+C {lab_pin.sym} 2070 200 0 0 {name=l40 lab=VDD}
+C {sg13cmos5l_pr/sg13_hv_nmos.sym} 2000 600 0 0 {name=Minvn model=sg13_hv_nmos w=1u l=1u ng=1 m=1}
+N 2020 570 2020 510 {}
+C {lab_pin.sym} 2020 510 0 0 {name=l41 lab=ENB}
+N 2020 630 2020 690 {}
+C {lab_pin.sym} 2020 690 0 0 {name=l42 lab=VSS}
+N 1980 600 1940 600 {}
+C {lab_pin.sym} 1940 600 0 0 {name=l43 lab=EN}
+N 2020 600 2070 600 {}
+C {lab_pin.sym} 2070 600 0 0 {name=l44 lab=VSS}
+C {sg13cmos5l_pr/sg13_hv_nmos.sym} 2000 1000 0 0 {name=Mpd model=sg13_hv_nmos w=1u l=1u ng=1 m=1}
+N 2020 970 2020 910 {}
+C {lab_pin.sym} 2020 910 0 0 {name=l45 lab=G1}
+N 2020 1030 2020 1090 {}
+C {lab_pin.sym} 2020 1090 0 0 {name=l46 lab=VSS}
+N 1980 1000 1940 1000 {}
+C {lab_pin.sym} 1940 1000 0 0 {name=l47 lab=ENB}
+N 2020 1000 2070 1000 {}
+C {lab_pin.sym} 2070 1000 0 0 {name=l48 lab=VSS}
 C {ipin.sym} -400 100 0 0 {name=p1 lab=INP}
 C {ipin.sym} -400 200 0 0 {name=p2 lab=INN}
 C {opin.sym} -400 300 0 0 {name=p3 lab=OUT}
 C {iopin.sym} -400 400 0 0 {name=p4 lab=VDD}
 C {iopin.sym} -400 500 0 0 {name=p5 lab=VSS}
 C {iopin.sym} -400 600 0 0 {name=p6 lab=IBIAS}
+C {ipin.sym} -400 700 0 0 {name=p7 lab=EN}

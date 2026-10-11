@@ -109,6 +109,8 @@ ITEMS = {
             f"{_SIM}/testbench/tb_startup_cmos5l.spice.tmpl",
             f"{_SIM}/startup_campaign.py",
             f"{_SIM}/startup_eval.py",
+            # issue #89: off-state supply current read from committed startup traces
+            f"{_SIM}/startup_offstate.py",
             # issue #70: row-4 dropout bench (DR-0012), its batch driver and reducer
             f"{_SIM}/testbench/tb_dropout_cmos5l.spice.tmpl",
             f"{_SIM}/dropout_campaign.py",
@@ -149,11 +151,14 @@ ITEMS = {
             "sim/ldo-cmos5l-enable/tb_enable_rload.spice",
             "sim/ldo-cmos5l-enable/tb_loopgain_baseline.spice",
             "sim/ldo-cmos5l-enable/tb_loopgain_en.spice",
+            # issue #89: versioned loop-gain deck (seven-pin Xamp) and the G1 probe request
+            "sim/ldo-cmos5l-enable/tb_loopgain_en_g1pd.spice",
             "sim/ldo-cmos5l-enable/tb_psrr_baseline.spice",
             "sim/ldo-cmos5l-enable/tb_psrr_en.spice",
             "sim/ldo-cmos5l-enable/request-baseline-loopgain.json",
             "sim/ldo-cmos5l-enable/request-baseline-psrr.json",
             "sim/ldo-cmos5l-enable/request-baseline-reg.json",
+            "sim/ldo-cmos5l-enable/request-disabled-g1.json",
             "sim/ldo-cmos5l-enable/request-disabled-reg.json",
             "sim/ldo-cmos5l-enable/request-disabled-rload.json",
             "sim/ldo-cmos5l-enable/request-enable-ensweep.json",

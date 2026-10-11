@@ -205,13 +205,15 @@ class GeneratedReportTests(unittest.TestCase):
     def test_iq_unit_conversion_and_missing_full_load(self):
         m = self.rows[7]["metrics"][0]
         self.assertEqual(m["unit"], "uA")
-        # Selected record 20261010-025634-60a3e81 (EN design, PR #87):
-        # iq_a 2.47221613e-05 A at ss/125C/res_bcs. The pre-EN record
-        # 20260917-023832-7061e8f had 2.47222854e-05 A at the same point.
-        self.assertAlmostEqual(m["worst_case"]["value"], 24.7221613, places=6)
+        # Selected record 20261011-051956-eda9285 (G1 pull-down design, #89):
+        # iq_a 2.47221724e-05 A at ss/125C/res_bcs. The #67 record
+        # 20261010-025634-60a3e81 had 2.47221613e-05 A and the pre-EN record
+        # 20260917-023832-7061e8f 2.47222854e-05 A at the same point.
+        self.assertAlmostEqual(m["worst_case"]["value"], 24.7221724, places=6)
         fl = self.rows[7]["metrics"][1]
         self.assertEqual((fl["unit"], fl["verdict"], fl["n_points"], fl["n_invalid"]), ("uA", "pass", 45, 0))
-        self.assertAlmostEqual(fl["worst_case"]["value"], 24.8873, places=6)
+        # #89 record; the #67 record had 24.8873 (one 1e-10 A quantization step).
+        self.assertAlmostEqual(fl["worst_case"]["value"], 24.8874, places=6)
         self.assertEqual(fl["worst_case"]["at"], {"corner": "ff", "temp_c": 125, "res_section": "res_bcs"})
         self.assertIn("quantized at 1e-10 A", fl["note"])
         self.assertIn("NOT used", fl["note"])
@@ -227,10 +229,12 @@ class GeneratedReportTests(unittest.TestCase):
         for m in line + load:
             self.assertEqual((m["n_points"], m["n_invalid"], m["n_ambiguous"]), (45, 0, 0))
         w0 = ms["line regulation at 0 mA load (Vin 2.97-3.63 V)"]["worst_case"]
-        self.assertAlmostEqual(w0["value"], 0.245757576, places=8)
+        # #89 record; the #67 record had 0.245757576 at the same point.
+        self.assertAlmostEqual(w0["value"], 0.245772727, places=8)
         self.assertEqual(w0["at"], {"corner": "ff", "temp_c": 125, "res_section": "res_wcs"})
         w = ms["load regulation 0-50 mA at Vin = 2.97 V"]["worst_case"]
-        self.assertAlmostEqual(w["value"], 0.0228481926, places=8)
+        # #89 record; the #67 record had 0.0228481926.
+        self.assertAlmostEqual(w["value"], 0.0228476479, places=8)
         self.assertIn("legacy", [n for n in ms][0])
         self.assertEqual(self.rows[5]["ratification"]["state"], "open_unratified")
         self.assertEqual(self.rows[5]["verdict"], "pass_partial_coverage")
@@ -429,8 +433,12 @@ class NegativeControls(unittest.TestCase):
 
     def edit_summary(self, fn):
         s = self.dc_summary()
-        lines = s.read_text().splitlines(keepends=True)
-        s.write_text("".join(fn(lines)))
+        before = s.read_text()
+        after = "".join(fn(before.splitlines(keepends=True)))
+        # A mutation that matches nothing (e.g. a literal from an older selected
+        # record) would make the negative control vacuous.
+        self.assertNotEqual(after, before, "summary mutation changed nothing")
+        s.write_text(after)
         self.repin_dc()
 
     def assert_rejected(self, text):
@@ -510,7 +518,7 @@ class NegativeControls(unittest.TestCase):
         self.assert_rejected("columns differ")
 
     def test_dc_disagreement_with_pvt_csv_rejected(self):
-        self.edit_summary(lambda ls: [ls[0], ls[1].replace(",2.24488955e-05,", ",2.34488955e-05,", 1)] + ls[2:])
+        self.edit_summary(lambda ls: [ls[0], ls[1].replace(",2.24488956e-05,", ",2.34488956e-05,", 1)] + ls[2:])
         self.assert_rejected("disagrees with the pinned PVT csv")
 
     def test_dc_invalid_point_is_counted_never_dropped(self):

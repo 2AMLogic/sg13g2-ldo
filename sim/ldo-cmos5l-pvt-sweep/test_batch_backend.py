@@ -222,5 +222,104 @@ class CapRetry(unittest.TestCase):
         self.assertEqual(calls, [1])
 
 
+class ReuseReport(unittest.TestCase):
+    """--reuse-work (issue #89): only a byte-identical request with a complete
+    earlier report is reused; anything else is submitted again."""
+
+    def setUp(self):
+        self.root = tempfile.mkdtemp()
+        self.old, self.new = os.path.join(self.root, "old"), os.path.join(self.root, "new")
+        # Shared inputs the deck names by path: the design netlist (which
+        # itself includes a sub-file), a model card and an OSDI binary.
+        self.design = os.path.join(self.root, "design.spice")
+        self.sub = os.path.join(self.root, "sub.spice")
+        self.model = os.path.join(self.root, "models.lib")
+        self.osdi = os.path.join(self.root, "psp103.osdi")
+        open(self.design, "w").write(f'.include "{self.sub}"\nR2 b 0 2k\n')
+        open(self.sub, "w").write("R3 c 0 3k\n")
+        open(self.model, "w").write(".lib tt\n.endl tt\n")
+        open(self.osdi, "wb").write(b"osdi-binary")
+        for w in (self.old, self.new):
+            os.makedirs(os.path.join(w, "g00"))
+            pre = os.path.join(w, "osdi-preamble.cir")
+            open(pre, "w").write("* preamble\n")
+            open(os.path.join(w, "g00", "request.json"), "w").write('{"netlist": "tb.spice"}\n')
+            open(os.path.join(w, "g00", "corners.lib"), "w").write(f'.lib a\n.lib "{self.model}" tt\n.endl a\n')
+            open(os.path.join(w, "g00", "tb.spice"), "w").write(
+                f'.include "{pre}"\n.include "{self.design}"\nR1 a 0 1k\n')
+            self.inventory(w)
+        self.raw = os.path.join(self.old, "g00", "c.raw")
+        open(self.raw, "w").write("raw")
+        self.write_report([{"artifacts": {"raw": self.raw}}, {"artifacts": {"raw": self.raw}}])
+
+    def inventory(self, w):
+        bb.write_inventory(os.path.join(w, "g00"), {"options": {"osdi_preload": [self.osdi]}},
+                           skip={os.path.normpath(os.path.join(w, "osdi-preamble.cir"))})
+
+    def tearDown(self):
+        shutil.rmtree(self.root)
+
+    def write_report(self, corners):
+        open(os.path.join(self.old, "g00", "report.json"), "w").write(json.dumps({"corners": corners}))
+
+    def reuse(self, n=2):
+        return bb.reusable_report(os.path.join(self.old, "g00"), os.path.join(self.new, "g00"),
+                                  self.old, self.new, n)
+
+    def test_identical_complete_request_is_reused(self):
+        self.assertEqual(self.reuse(), os.path.join(self.old, "g00", "report.json"))
+
+    def test_changed_body_is_not_reused(self):
+        open(os.path.join(self.new, "g00", "tb.spice"), "a").write("R2 a 0 2k\n")
+        self.assertIsNone(self.reuse())
+
+    def test_changed_request_or_corner_lib_is_not_reused(self):
+        open(os.path.join(self.new, "g00", "corners.lib"), "a").write("* x\n")
+        self.assertIsNone(self.reuse())
+
+    def test_incomplete_or_empty_report_is_not_reused(self):
+        self.assertIsNone(self.reuse(n=3))
+        open(os.path.join(self.old, "g00", "report.json"), "w").write("")
+        self.assertIsNone(self.reuse())
+
+    def test_inventory_covers_the_whole_include_closure(self):
+        inv = json.load(open(os.path.join(self.new, "g00", bb.INVENTORY)))
+        self.assertEqual(sorted(inv), sorted([self.design, self.sub, self.model, self.osdi]))
+        self.assertTrue(all(len(h) == 64 for h in inv.values()))
+
+    def test_in_place_edit_of_an_included_input_is_not_reused(self):
+        """The four compared text files stay byte-identical; only a file they
+        name by path changes. Each kind of input is a negative control."""
+        for path, data in ((self.design, 'R2 b 0 9k\n'), (self.sub, "R3 c 0 9k\n"),
+                           (self.model, ".lib tt\n* x\n.endl tt\n")):
+            with self.subTest(path=os.path.basename(path)):
+                orig = open(path).read()
+                open(path, "w").write(data)
+                self.inventory(self.new)  # the new group is written from current bytes
+                self.assertIsNone(self.reuse())
+                open(path, "w").write(orig)
+                self.inventory(self.new)
+                self.assertIsNotNone(self.reuse())
+
+    def test_replaced_osdi_binary_is_not_reused(self):
+        open(self.osdi, "wb").write(b"another-binary")
+        self.inventory(self.new)
+        self.assertIsNone(self.reuse())
+
+    def test_missing_original_inventory_fails_closed(self):
+        os.remove(os.path.join(self.old, "g00", bb.INVENTORY))
+        self.assertIsNone(self.reuse())
+
+    def test_unresolved_include_fails_closed(self):
+        os.remove(self.sub)
+        for w in (self.old, self.new):
+            self.inventory(w)
+        self.assertIsNone(self.reuse())
+
+    def test_missing_rawfile_is_not_reused(self):
+        os.remove(self.raw)
+        self.assertIsNone(self.reuse())
+
+
 if __name__ == "__main__":
     unittest.main()

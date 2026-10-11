@@ -208,3 +208,244 @@ Carlo bench. It covers the bench migration only.
   `sim/ldo-cmos5l-monte-carlo/evidence/20261010-193208-028a3f8-en-smoke/`.
 - **No row-2 claim changes.** Row 2 stays Open. Its Monte Carlo evidence is
   still the pre-EN record until a new campaign record exists on the EN design.
+
+## Addendum: G1 disable pull-down inside the error amplifier (#89)
+
+This addendum supersedes the "Disabled supply current is not clean" bullet
+of the Results section and the disabled-state half of the PR #87 addendum's
+"Still not claimed" bullet. The sections above are left as written. **No
+target-spec row is ratified, relaxed or added: there is still no
+shutdown-current row, and the numbers below are measurements, not targets.**
+
+### Problem
+
+With `EN` low, `Mbdis` cuts the bias, so `Mtail` carries no current and
+nothing defines the amplifier's first-stage output `G1` at DC. `G1` is the
+gate of the second-stage NMOS `Mn3`. Its value came from the DC solution of a
+floating node, so `Mn3` conducted from `EAOUT` into `VSS` by an amount the
+solver chose, and `Men` supplied it: 53.7 / 73.2 / 99.6 uA at 2.97 / 3.30 /
+3.63 V (tt, 27 C, DC smoke record `20261010-023648-4d45f5d`). The same
+quantity in the transient startup bench of record `20261010-104827-91e92aa`
+(end of the 1 ms off state, before the `EN` edge) was 2.00 uA to 358 uA
+across the 135 points, and 2.61 uA at tt / 27 C / 3.30 V. The two benches
+disagree at the same corner, which is what a floating node does.
+
+### Decision
+
+**Option 1 of #89: a new `EN` pin on `ldo_erramp_cmos5l` with a local
+inverter driving a small NMOS pull-down on `G1`.**
+
+- Port list: `INP INN OUT VDD VSS IBIAS EN` (`EN` appended last, so the first
+  six pins keep their positions). The core connects its own `EN` port to it:
+  `Xamp FB VREF EAOUT VIN VSS IBIAS EN ldo_erramp_cmos5l`. The core's six-port
+  interface is unchanged.
+- Topology, all three devices inside the amplifier:
+
+  | Device | Type | `w` / `l` | D | G | S / B | Job |
+  |---|---|---|---|---|---|---|
+  | `Minvp` | `sg13_hv_pmos` | 1 u / 1 u | `ENB` | `EN` | `VDD` | inverter pull-up |
+  | `Minvn` | `sg13_hv_nmos` | 1 u / 1 u | `ENB` | `EN` | `VSS` | inverter pull-down |
+  | `Mpd` | `sg13_hv_nmos` | 1 u / 1 u | `G1` | `ENB` | `VSS` | holds `G1` at `VSS` when `EN` is low |
+
+- **Sizing.** With `EN` low the tail is off, so `Mpd` only has to sink
+  leakage into `G1`; the smallest regular device is enough. `l = 1 u` keeps
+  the amplifier's own "L >= 1 um on every device" rule and gives a lower
+  off-state leakage on `G1` (enabled state) than the `l = 0.5 u` the core's
+  enable devices use. The inverter drives one gate, so it is minimum size
+  too. No device is sized for speed: the `EN` edge behaviour stays
+  uncharacterized (DR-0008, #62).
+- **Enabled state.** `EN = VIN` gives `ENB = VSS`: `Mpd` sits at `Vgs = 0`
+  and adds only its drain junction and overlap capacitance (fF, against the
+  ~5.5 pF Miller `Cc` on the same node) and its off-state leakage to `G1`.
+  The inverter draws only leakage (`Minvn` on, `Minvp` off).
+- **Stress.** `EN` is still a `VIN`-domain, rail-to-rail signal. `Vsg(Minvp)`
+  with `EN = 0`, `Vgs(Minvn)` with `EN = VIN`, and `Vgs(Mpd)` (= `ENB` = `VIN`)
+  with `EN = 0` all reach `VIN`, i.e. 3.63 V at the top of the Input row,
+  over the 3.3 V `VGS` rating. That is the same condition this record
+  already states for `Men`/`Mbdis`; it is recorded, not fixed here.
+
+### Options not taken
+
+- **Option 2 (`ENB` port, inverter in `ldo_core_cmos5l`).** Same device
+  count and the same pull-down, but it splits one function across two
+  cells: the amplifier's disabled state would depend on a complement that
+  every other instantiation (an amplifier-only bench, or any later reuse)
+  has to generate correctly. It also puts two more devices in the core
+  body, which the loop-gain bench's hand-flattened core copy, its topology
+  guard (`run_sweep.sh`) and the layout's core-level floorplan would all
+  have to mirror. With option 1 the only core-level change is one pin on
+  `Xamp`, so the flattened copies change by one token.
+- **Option 3 (series switch in `Mn3`'s source).** Rejected on analysis, not
+  measured. A switch in the second stage's source degenerates `Mn3`
+  (lower `gm3`, so lower second-stage gain, loop gain and PSRR) and costs
+  `Vds` headroom on the node that must pull `EAOUT` low enough to drive
+  `Mpass` at full load and dropout. It also does not define `G1`: it removes
+  the current path but leaves the node floating.
+- **Gating a pull-down from `IBIAS`.** Not used and not measured. When
+  enabled `IBIAS` sits one `Vsg(Mb0)` below `VIN`, i.e. about 2 V above
+  `VSS`, well above an NMOS threshold, so an `IBIAS`-gated NMOS would conduct
+  in the enabled state.
+
+### Results: disabled state (`EN = 0`)
+
+DC smoke record `sim/ldo-cmos5l-enable/records/20261011-031743-df3f802/`
+(batch fleet, ngspice 46, tt / 27 C, `IBIAS` 2 uA sink, `VREF` 0.90 V,
+`VOUT` floating unless stated). Same decks and conditions as the
+`20261010-023648-4d45f5d` figures in the Results section above, so each row
+is a like-for-like replacement:
+
+| Quantity (EN = 0, tt / 27 C) | 2.97 V | 3.30 V | 3.63 V |
+|---|---|---|---|
+| Supply current, `VOUT` floating (was 53.7 / 73.2 / 99.6 uA) | 2.0003 uA | 2.0006 uA | 2.0012 uA |
+| Supply current, 1.8 k load | 2.0003 uA | 2.0006 uA | 2.0012 uA |
+| `V(G1)` = `Vgs(Mn3)` | 3.2 nV | 7.0 nV | 14.3 nV |
+| `V(ENB)` | 2.97 V | 3.30 V | 3.63 V |
+| `EAOUT` | 2.97 V | 3.30 V | 3.63 V |
+| `Vsg(Mpass)` (was 8.4 / 10.7 / 13.7 mV) | 31 pV | 33 pV | 35 pV |
+| `VOUT`, floating (was 0.20 / 0.39 / 0.78 mV) | 0.19 mV | 0.38 mV | 0.77 mV |
+| Pass leakage, `VOUT` = 0 V clamp (was 0.32 / 0.63 / 1.24 nA) | 0.30 nA | 0.61 nA | 1.23 nA |
+
+- `G1` now has a DC path to `VSS` through `Mpd`, and `Mn3` is off: its gate
+  sits within 15 nV of its source. Of the ~2.0006 uA at 3.30 V, 2 uA is the
+  external bias sink serviced through `Mbdis`; the remainder (0.3 to 1.2 nA
+  across the three supplies) is leakage. `Men` no longer sinks anything, so
+  `Vsg(Mpass)` drops from about 11 mV to picovolts.
+- **Across PVT** (not a new simulation; read from the committed traces of
+  the new startup record `20261011-031426-df3f802`, `EN = 0`, 1.8 k load,
+  1 uF, at t = 1 ms just before the `EN` edge, with
+  `python3 sim/ldo-cmos5l-pvt-sweep/startup_offstate.py <run id>`): 2.000 uA
+  to 2.264 uA over all 135 process x temperature x resistor x Vin points
+  (median 2.0012 uA; maximum at ff / 125 C / 3.63 V). The same read-out of
+  the previous record gives 2.000 uA to 358 uA (median 32.3 uA).
+- That record's own `off_supply_current_a` column is not an off-state value:
+  `startup_eval.py` samples it at the last point before the `EN = VIN/2`
+  crossing, which lies inside the 1 us edge. For this design it therefore
+  includes the inverter's crowbar current during the edge (6.0 to 28.3 uA in
+  the column). The evaluator and the column are left unchanged (pinned
+  methodology); the fix is #130.
+- The `EN` sweep at `VIN = 3.30 V` (1.8 k, DC) is still not a characterized
+  threshold. It now regulates from `EN = 2.5 V` up with no off-again point,
+  and with `EN` between about 1.0 and 2.4 V the supply current includes the
+  inverter's through-current (13 uA at 1.0 V, 78 uA at 2.0 V). No threshold,
+  hysteresis or edge behaviour is claimed.
+
+### Results: enabled state
+
+Record `sim/ldo-cmos5l-pvt-sweep/records/20261011-051956-eda9285` (full
+process x temperature x resistor grid plus the Cc and resistor sensitivity
+points, `EN` tied to `VIN`, 214/214 points, completeness OK,
+`run_sweep.sh --batch` on the EDA batch fleet, real `cap_cmomi` model).
+Its delta table (`.delta.csv`, 540 rows, and per-metric tables in the record
+`.md`) compares every one of the 45 points against record
+`20261010-025634-60a3e81` (the #67 record), same point on both sides.
+Extremes over the 45 points, per metric that record reports:
+
+| Metric (direction that is worse) | Worst case, #67 -> #89 (point) | Per-point delta range | Points worse / better / equal |
+|---|---|---|---|
+| Phase margin (lower) | 53.8710 -> 53.8708 deg (ss/125C/res_bcs) | -0.0021 .. -0.0002 deg | 45 / 0 / 0 |
+| Gain margin (lower) | 13.8526 -> 13.8449 dB (ff/-40C/res_wcs) | -0.0086 .. -0.0060 dB | 45 / 0 / 0 |
+| Unity-gain frequency | 39111.28 -> 39111.29 Hz (min); 172879.7 -> 172887.7 Hz (max) | +0.009 .. +8.0 Hz | n/a |
+| DC loop gain (lower) | 121.41929 -> 121.41927 dB (ff/125C/res_bcs) | -2.0e-5 .. +1.2e-5 dB | 19 / 1 / 25 |
+| PSRR @ 1 kHz (lower) | 53.642887 -> 53.642879 dB (ss/125C/res_wcs) | -1.1e-5 .. +7.1e-5 dB | 44 / 1 / 0 |
+| PSRR @ 100 kHz (lower) | 33.23419 -> 33.23409 dB (ff/27C/res_bcs) | -1.6e-4 .. -4.8e-5 dB | 45 / 0 / 0 |
+| Iq, no load (higher) | 24.722161 -> 24.722172 uA (ss/125C/res_bcs) | 0 .. +0.043 nA | 33 / 0 / 12 |
+| Dropout @ 50 mA (higher) | 0.24 -> 0.24 V (ss/125C/res_wcs) | 0 | 0 / 0 / 45 |
+| Line regulation (higher) | 0.2457576 -> 0.2457727 mV/V (ff/125C/res_wcs) | -1.5e-5 .. +1.5e-5 mV/V | 3 / 8 / 34 |
+| Load regulation (higher) | 0.02537509 -> 0.02537566 % (ff/125C/res_wcs) | -5.6e-7 .. +5.7e-7 % | 13 / 4 / 28 |
+| VOUT, no load (further from 1.8 V) | 1.80065464 -> 1.80065381 V (ff/125C/res_wcs) | -0.84 uV .. 0 | 0 / 15 / 30 |
+| Divider standing current | 4.8168367 -> 4.8168344 uA (max) | -2.2e-6 uA .. 0 | n/a |
+
+- **This is not a zero delta, and it is not reported as one.** Phase margin,
+  gain margin and PSRR @ 100 kHz are lower at every point, and no-load Iq is
+  higher or unchanged at every point. That is the expected direction for a
+  device added to `G1` (its drain capacitance and leakage) and an inverter on
+  the supply (its leakage). The largest adverse move on each row is -0.0021
+  deg of PM, -0.0086 dB of GM, -1.6e-4 dB of PSRR @ 100 kHz, -1.1e-5 dB of
+  PSRR @ 1 kHz and +0.043 nA of Iq. Each is more than two orders of magnitude
+  below that row's worst-case margin to its target (PM 8.87 deg, GM 3.84 dB,
+  PSRR 3.64 / 13.23 dB, Iq 5.28 uA). The closest is gain margin, where the
+  shift is 0.22 % of the margin.
+- **What "no regression" means here.** #89 asks for no regression on every
+  metric the record reports. This addendum reads that the way the PR #87
+  addendum above did. There, phase margin -0.015 deg and gain margin
+  -0.023 dB against `7061e8f` were called "no regression" because no
+  verdict, pass count or binding corner moved. It does not mean a zero
+  delta. The deltas here are smaller than the #87 ones (PM about 7x, GM
+  about 3x), and the same invariants hold, as the next bullet lists. The
+  adverse direction is still reported as adverse, as above.
+- **What does not change.** These are two separate readings, and neither
+  changes.
+  - *The record's own spec comparison* (the legacy single-crossing scalars
+    in `20261011-051956-eda9285.md`): all 45 points meet every row there,
+    as before. That includes PM >= 45 deg and GM >= 10 dB read from the first
+    crossing.
+  - *The characterization report under DR-0014 (proposed)*: row 10 is not a
+    pass. Phase margin and gain margin are each **0/45 pass, 0 fail,
+    45 ambiguous**. Every point has the reason `ceiling_unbounded`, because
+    no trace bounds the 100 MHz sweep ceiling. That is the same result as for
+    `20261010-025634-60a3e81`, from
+    `sim/ldo-cmos5l-pvt-sweep/evidence/20261011-051956-eda9285/row10-margins.*`
+    (written by `row10_record.py`, which runs `row10_margins.py`'s unchanged
+    classifier on this record).
+  - The same 15 points have more than one 0 dB crossing. Under DR-0014 they
+    classify exactly as before, with the same per-point verdicts and reasons.
+  - Each row's worst case is at the same (corner, temperature, resistor)
+    point.
+  - The `Cc` tolerance window is unchanged at `110e-6`..`259e-6`
+    (x0.65..x1.52), and dropout is identical at every point.
+  - In the characterization report, no row's verdict, coverage or freshness
+    state changes. Row 10 stays `ambiguous`, and DR-0007 keeps it Open.
+
+  The full-load Iq worst case moves by one 1e-10 A
+  quantization step (24.8873 -> 24.8874 uA), and the 2.97 V load-regulation
+  worst case improves slightly (0.0228482 -> 0.0228476 %).
+- **Smoke cross-check** (tt / 27 C, linear 5.47 pF `Cc` stand-in, against the
+  pre-#67 baseline, record `20261011-031743-df3f802`): phase margin -0.0067
+  deg (was -0.0062 deg for the #67 design alone), PSRR @ 100 kHz -8.1e-4 dB
+  (was -6.9e-4 dB), DC operating point within 1 nV / 0.21 pA.
+- **Provenance note.** The first submission of this grid lost its client after
+  21 of its 22 fleet requests had completed: one request never returned, and
+  the submitting process was stopped at its wall-clock limit. No record was
+  written. The grid was then re-run in full through `run_sweep.sh --batch`.
+  Four requests whose decks were byte-identical to completed requests of the
+  first run (the main-grid DC and loop-gain groups, the `res_bcs`
+  resistor-sensitivity group and the divider-attribution group) reuse those fleet reports through the new
+  `SWEEP_BATCH_REUSE_WORK` / `batch_backend.py --reuse-work` option, listed
+  in `corners/20261011-051956-eda9285/_batch/reused-reports.tsv`. The other
+  18 were submitted afresh. Nothing ran on the dispatch host.
+
+### Startup campaign
+
+The startup bench drives `EN` low for the first millisecond, so the pull-down
+changes what it measures and the previous startup record is stale against the
+new netlist. It was re-run in full on the batch fleet (`startup_campaign.py`
+grid stage, 135 points in 15 jobs): record `20261011-031426-df3f802`, 135/135
+evaluated. The verdicts are unchanged in kind. All 135 points fail on
+overshoot and the 1 mV monotonicity check, as before, because there is still
+no soft start (start peak 1.858 to 2.339 V, was 1.868 to 2.339 V). Every
+start still settles inside the band within 3 ms (28 to 441 us). Row 9 stays
+Open, and the methodology is still DR-0009's proposal.
+
+### Layout
+
+The layout is regenerated with the three devices drawn (`layout/README.md`):
+`Minvp` in the enable NWell (body `VIN`), `Minvn` and `Mpd` beside it with a
+second substrate tie bar, and a new `ENB` track. Both DRC decks are clean,
+LVS matches with 17 compared devices (the MoM cap is compared by name, as
+before), all six LVS negative controls mismatch (new: `Mpd` deleted from the
+reference), and the ERC supply check is clean with three checked ties. This
+is schematic-equals-layout evidence only. There is no extraction-based
+(post-layout) performance claim.
+
+### What this does not claim
+
+- No shutdown-current or leakage target. The disabled supply current is a
+  measurement at the stated conditions.
+- The disabled state is measured at tt / 27 C in DC, and across PVT only as
+  the off-state sample of the startup bench (1.8 k load). No disabled-state
+  DC sweep across PVT and no `EN`-edge characterization was run.
+- Monte Carlo row-2 evidence is unchanged and still pre-EN (#88).
+  `tb_row2_accuracy_en.spice` instantiates only the core, whose ports did
+  not change, so it needed no edit. It was not re-run, and no new Monte
+  Carlo campaign exists on this design.
+- Layout parasitics: none. The layout evidence is DRC/LVS/ERC only.
