@@ -43,6 +43,32 @@ one quoted sentence from `sim/ldo-cmos5l-pvt-sweep/README.md` that is shown as
 bare pass-device screen is used only as labelled device context on the Input
 row, never as a closed-loop measurement.
 
+## Informational DC evidence for rows 5 and 7 (issue #123)
+
+`selection.json` also pins, under `dc_informational_evidence`, the item-5
+derivation outputs for the **same** circuit record: the
+`dc-informational-summary.csv` and its provenance `coverage-inventory.json`
+(both under `sim/ldo-cmos5l-pvt-sweep/evidence/<record-id>/`). The generator
+consumes them offline (no simulator, no new sweep) and fails closed unless:
+
+- both files match their pins and sit under the selected record id;
+- the inventory names the pinned PVT csv and record md, the pinned design
+  netlists and the pinned `item5_evidence.py` bytes, and all 45 raw DC grids it
+  lists match their recorded hashes;
+- the summary has exactly the expected columns (units are in the column names),
+  45 corners once each (no duplicate or missing corner), finite numbers,
+  `True`/`False` validity fields, and agrees with the PVT csv where they overlap.
+
+Row 5 then reports line regulation at each swept load (0, 12.5, 25, 37.5,
+50 mA) and load regulation at each measured supply (2.97, 3.30, 3.63 V); row 7
+reports full-load Iq with the load current excluded. The legacy record-column
+metrics stay beside them, labelled `legacy`. Points the summary marks invalid
+are counted as ambiguous and never dropped, so a bad point blocks a clean
+verdict instead of disappearing. The measurements are discrete samples on a
+45-corner grid with an ideal reference; full-load Iq keeps its published
+precision caveat (a difference of two ~50 mA currents, quantized at 1e-10 A).
+Rows 5 and 7 stay Open/unratified and this is not T1 item-5 grading evidence.
+
 ## What the envelope verdict means (and does not)
 
 `status: pass` means the **artifact is complete and fresh**:

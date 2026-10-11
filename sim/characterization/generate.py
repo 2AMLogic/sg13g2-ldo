@@ -85,6 +85,12 @@ CORNERS = ["tt", "ss", "ff", "sf", "fs"]
 TEMPS = [-40, 27, 125]
 RES = ["res_typ", "res_bcs", "res_wcs"]
 
+DC_COND_LINE = ("line regulation |dVOUT/dVin| over Vin 2.97-3.63 V at the labelled load; "
+                "ideal 0.90 V reference; 45-point corner grid")
+DC_COND_LOAD = ("load regulation (V(0 mA) - V(50 mA)) / V(0 mA) at the labelled fixed Vin; "
+                "ideal 0.90 V reference; 45-point corner grid")
+DC_COND_IQ = "50 mA load, Vin = 3.30 V, |i(Vin)| - Iload; ideal 0.90 V reference and 2 uA Ibias sink; 45-point corner grid"
+
 PVT_NUMERIC = [
     "iq_a", "vout_no_load_v", "line_reg_mv_per_v", "dropout_v_50ma",
     "dropout_v_50ma_floor", "vout_at_vinmax_50ma_v", "load_reg_pct",
@@ -346,6 +352,135 @@ def cc_window(rows: list[dict]) -> dict:
             "res_sections": sorted(by_res)}
 
 
+
+# --------------------------------------------------------------------------- #
+# informational DC evidence (rows 5 and 7)
+# --------------------------------------------------------------------------- #
+
+DC_LOADS = [("0mA", "0 mA"), ("12p5mA", "12.5 mA"), ("25mA", "25 mA"),
+            ("37p5mA", "37.5 mA"), ("50mA", "50 mA")]
+DC_VINS = [("2p97", "2.97 V"), ("3p30", "3.30 V"), ("3p63", "3.63 V")]
+
+
+def dc_expected_columns() -> list[str]:
+    cols = ["corner", "temp_c", "res_section", "grid_ok", "iq_noload_a",
+            "iq_fullload_excl_load_a", "iq_fullload_valid", "iq_fullload_noise_proxy_a"]
+    cols += [f"line_reg_mv_per_v_{k}" for k, _ in DC_LOADS]
+    cols += [f"line_reg_valid_{k}" for k, _ in DC_LOADS]
+    for k, _ in DC_VINS:
+        cols += [f"load_reg_pct_vin{k}", f"load_reg_valid_vin{k}", f"vout_50mA_vin{k}_v"]
+    cols += ["dropout_legacy_v", "dropout_status", "dropout_vin_minus_vout_candidate_v"]
+    return cols
+
+
+def _boolfield(row: dict, key: str, ctx: str) -> bool:
+    v = row.get(key)
+    if v not in ("True", "False"):
+        raise GenError(f"{ctx}: validity field '{key}' must be True/False, got {v!r}")
+    return v == "True"
+
+
+def load_dc_informational(root: Path, sel: dict, rec: dict, pvt_rows: list[dict],
+                          sources: list) -> dict:
+    """Validate and return the pinned informational DC summary for the selected
+    record. Every failure is a hard GenError (fail-closed): nothing is skipped
+    or repaired, and a point that is invalid stays in the data as invalid."""
+    dc = sel.get("dc_informational_evidence")
+    if not isinstance(dc, dict):
+        raise GenError("selection.json has no dc_informational_evidence block")
+    if dc.get("circuit_record_id") != rec["id"]:
+        raise GenError(
+            f"dc_informational_evidence is for record {dc.get('circuit_record_id')!r}, "
+            f"selected circuit record is {rec['id']!r}")
+    sum_path = pinned(root, dc["files"]["summary_csv"], "dc_informational_summary_csv", sources)
+    inv_path = pinned(root, dc["files"]["coverage_inventory_json"],
+                      "dc_coverage_inventory_json", sources)
+    for p in (dc["files"]["summary_csv"]["path"], dc["files"]["coverage_inventory_json"]["path"]):
+        if f"/{rec['id']}/" not in p:
+            raise GenError(f"DC evidence path {p} is not under the selected record id {rec['id']}")
+
+    # --- provenance inventory: must describe THIS record and design ---------
+    try:
+        inv = json.loads(inv_path.read_text(encoding="utf-8"))
+        ins = inv["inputs"]
+        gen = inv["generator"]
+        grid = inv["grid"]
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        raise GenError(f"DC coverage inventory unreadable or malformed: {exc!r}") from exc
+    for role in ("record_csv", "record_md"):
+        want = rec["files"]["pvt_csv" if role == "record_csv" else "record_md"]
+        got = ins.get(role) or {}
+        if got.get("path") != want["path"] or got.get("sha256") != want["sha256"]:
+            raise GenError(
+                f"DC inventory {role} does not match the selected record's pinned {role}: "
+                f"{got.get('path')!r} {got.get('sha256')!r}")
+    pins = {p["path"]: p["sha256"] for p in rec["design_freshness_pins"]}
+    if ins.get("design_netlists") != pins:
+        raise GenError("DC inventory design_netlists differ from the selection's design freshness pins")
+    if grid.get("points") != 45 or grid.get("reproduces_record_csv") is not True:
+        raise GenError("DC inventory does not state a 45-point grid that reproduces the record csv")
+    gen_p = root / gen["path"]
+    if not gen_p.is_file() or sha256_file(gen_p) != gen["sha256"]:
+        raise GenError(f"DC inventory generator {gen.get('path')} missing or differs from its recorded sha256")
+    raw = ins.get("raw_dc_grids")
+    if not isinstance(raw, dict) or len(raw) != 45:
+        raise GenError(f"DC inventory lists {len(raw) if isinstance(raw, dict) else 'no'} raw DC grids, expected 45")
+    for rel, h in sorted(raw.items()):
+        if f"/{rec['id']}/" not in rel:
+            raise GenError(f"raw DC grid {rel} is not under the selected record id")
+        rp = root / rel
+        if not rp.is_file():
+            raise GenError(f"raw DC grid missing: {rel}")
+        if sha256_file(rp) != h:
+            raise GenError(f"raw DC grid bytes differ from the inventory hash: {rel}")
+
+    # --- summary: complete grid, finite values, True/False validity ---------
+    srows = read_csv(sum_path)
+    try:
+        with sum_path.open(newline="", encoding="utf-8") as fh:
+            header = next(csv.reader(fh))
+    except (OSError, StopIteration) as exc:
+        raise GenError(f"cannot read DC summary header: {exc!r}") from exc
+    if header != dc_expected_columns():
+        raise GenError(f"DC summary columns differ from the expected schema/units: {header}")
+    keys = [(r["corner"], r["temp_c"], r["res_section"]) for r in srows]
+    if len(set(keys)) != len(keys):
+        dup = sorted(k for k in set(keys) if keys.count(k) > 1)
+        raise GenError(f"DC summary has duplicate corner rows: {dup[:3]}")
+    want = {(c, str(t), s) for c in CORNERS for t in TEMPS for s in RES}
+    if set(keys) != want or len(keys) != 45:
+        raise GenError(
+            f"DC summary corner set incomplete or malformed: {len(keys)} rows, "
+            f"missing {sorted(want - set(keys))[:3]}, unexpected {sorted(set(keys) - want)[:3]}")
+    by_key = {}
+    num_cols = [c for c in dc_expected_columns()
+                if c not in ("corner", "temp_c", "res_section", "grid_ok", "dropout_status")
+                and "_valid" not in c]
+    for i, r in enumerate(srows):
+        ctx = f"DC summary row {i + 2} ({r['corner']}/{r['temp_c']}/{r['res_section']})"
+        if not _boolfield(r, "grid_ok", ctx):
+            raise GenError(f"{ctx}: grid_ok is False; the raw grid was not complete")
+        vals = {c: num(r, c, ctx) for c in num_cols}
+        valid = {c: _boolfield(r, c, ctx) for c in dc_expected_columns() if "_valid" in c}
+        by_key[(r["corner"], r["temp_c"], r["res_section"])] = (vals, valid)
+
+    # --- agree with the pinned PVT csv where the two overlap ---------------
+    for i, pr in enumerate(pvt_rows):
+        k = (pr["corner"], pr["temp_c"], pr["res_section"])
+        vals, _ = by_key[k]
+        for pc, dc_col in (("iq_a", "iq_noload_a"), ("line_reg_mv_per_v", "line_reg_mv_per_v_0mA"),
+                           ("load_reg_pct", "load_reg_pct_vin3p63"),
+                           ("vout_at_vinmax_50ma_v", "vout_50mA_vin3p63_v")):
+            a, b = float(pr[pc]), vals[dc_col]
+            if abs(a - b) > 1e-6 * max(abs(a), 1e-12):
+                raise GenError(
+                    f"DC summary disagrees with the pinned PVT csv at {k}: "
+                    f"{dc_col}={b} vs {pc}={a}")
+    return {"by_key": by_key, "summary_path": dc["files"]["summary_csv"]["path"],
+            "inventory_path": dc["files"]["coverage_inventory_json"]["path"],
+            "n_raw_grids": len(raw)}
+
+
 # --------------------------------------------------------------------------- #
 # the report
 # --------------------------------------------------------------------------- #
@@ -410,6 +545,19 @@ def build(root: Path) -> tuple[dict, dict, str]:
             raise GenError(f"pvt row {i + 2}: line_reg_in_regulation not True/False")
     pvt_rel = rec["files"]["pvt_csv"]["path"]
     pid = [point_id(r) for r in prow]
+    dcev = load_dc_informational(root, sel, rec, prow, sources)
+    dc_rel = dcev["summary_path"]
+
+    def dc_col(name, scale=1.0, valid=None):
+        """(values, ambiguous-index-set) over the pvt row order. Invalid points
+        stay in the data and are returned as the ambiguous set."""
+        pts, bad = [], set()
+        for i, r in enumerate(prow):
+            vals, vflags = dcev["by_key"][(r["corner"], r["temp_c"], r["res_section"])]
+            pts.append((vals[name] * scale, pid[i]))
+            if valid is not None and not vflags[valid]:
+                bad.add(i)
+        return pts, bad
 
     def col(k):
         return [(num(r, k, "pvt"), pid[i]) for i, r in enumerate(prow)]
@@ -540,14 +688,32 @@ def build(root: Path) -> tuple[dict, dict, str]:
     lr = col("line_reg_mv_per_v")
     ld = col("load_reg_pct")
     not_in_reg = {i for i, r in enumerate(prow) if r["line_reg_in_regulation"] != "True"}
-    m5a = metric("line regulation", "mV/V", "lt", 5.0, "line_reg_mv_per_v", pvt_rel, lr,
-                 bc["line_regulation"], ambiguous=not_in_reg)
-    m5b = metric("load regulation", "%", "lt", 1.0, "load_reg_pct", pvt_rel, ld,
-                 bc["load_regulation"])
-    add(R[5], [m5a, m5b], "partial", [
-        "line regulation measured at no load only",
-        "load regulation measured at Vin = 3.63 V only; not at 3.30/2.97 V",
-        "'inside the accuracy window' (Vin window) not covered for either metric (#55)",
+    m5a = metric("line regulation, legacy record column (no load)", "mV/V", "lt", 5.0,
+                 "line_reg_mv_per_v", pvt_rel, lr, bc["line_regulation"], ambiguous=not_in_reg)
+    m5b = metric("load regulation, legacy record column (Vin = 3.63 V)", "%", "lt", 1.0,
+                 "load_reg_pct", pvt_rel, ld, bc["load_regulation"])
+    m5 = [m5a, m5b]
+    dc_note = ("Informational DC summary (derived offline from the committed raw DC grids, "
+               "no new simulation). A point is valid only if both end points are within 1 % of "
+               "1.8 V; invalid points are counted as ambiguous and never dropped. Discrete "
+               "sampled loads/supplies only: not a continuous-window claim.")
+    for key, label in DC_LOADS:
+        pts, bad = dc_col(f"line_reg_mv_per_v_{key}", valid=f"line_reg_valid_{key}")
+        m = metric(f"line regulation at {label} load (Vin 2.97-3.63 V)", "mV/V", "lt", 5.0,
+                   f"line_reg_mv_per_v_{key}", dc_rel, pts, DC_COND_LINE, ambiguous=bad, note=dc_note)
+        m["n_invalid"] = len(bad)
+        m5.append(m)
+    for key, label in DC_VINS:
+        pts, bad = dc_col(f"load_reg_pct_vin{key}", valid=f"load_reg_valid_vin{key}")
+        m = metric(f"load regulation 0-50 mA at Vin = {label}", "%", "lt", 1.0,
+                   f"load_reg_pct_vin{key}", dc_rel, pts, DC_COND_LOAD, ambiguous=bad, note=dc_note)
+        m["n_invalid"] = len(bad)
+        m5.append(m)
+    add(R[5], m5, "partial", [
+        "line regulation sampled at 5 discrete loads (0, 12.5, 25, 37.5, 50 mA) over Vin 2.97-3.63 V; "
+        "load regulation sampled at 3 discrete supplies (2.97, 3.30, 3.63 V) -- not continuous coverage of the window",
+        "'inside the accuracy window' (coupling with the statistical VOUT row, #56) not covered for either metric",
+        "ideal 0.90 V reference: reference error is excluded; corner grid only, no Monte Carlo",
     ], evidence_state)
 
     # 6 PSRR --------------------------------------------------------------
@@ -579,17 +745,29 @@ def build(root: Path) -> tuple[dict, dict, str]:
         raise GenError(f"superseded evidence quote not found in {sup['statement_source']}")
     sources.append({"role": "superseded_evidence_statement", "path": sup["statement_source"],
                     "sha256": sha256_file(sup_text), "pinned": False})
-    mfl = unavailable("Iq at full load", "uA", "not_measured",
-                      "The selected record reports no full-load Iq. An older record's full-load "
-                      f"figure ({sup['quoted_substring']}) is on a superseded design and is NOT "
-                      "used as current evidence.",
-                      source={"superseded_statement": sup["statement_source"],
-                              "describes": sup["describes"]})
+    fl_pts, fl_bad = dc_col("iq_fullload_excl_load_a", 1e6, valid="iq_fullload_valid")
+    proxy = [v for v, _ in dc_col("iq_fullload_noise_proxy_a", 1e6)[0]]
+    mfl = metric("Iq at full load (50 mA), load current excluded", "uA", "lt", 30.0,
+                 "iq_fullload_excl_load_a", dc_rel, fl_pts, DC_COND_IQ, ambiguous=fl_bad,
+                 note="Derived offline as |i(Vin)| - Iload from the committed raw DC grid (column in A, "
+                      "converted to uA). Precision caveat: the grid is printed to 9 significant digits, "
+                      "so a ~22 uA difference of two ~50 mA currents is quantized at 1e-10 A (0.0001 uA); "
+                      "solver noise beyond that floor is not bounded by this data. Invalid points are "
+                      "counted as ambiguous, never dropped. An older record's full-load figure "
+                      f"({sup['quoted_substring']}) is on a superseded design and is NOT used.")
+    mfl["n_invalid"] = len(fl_bad)
+    mfl["precision_floor_uA"] = rnd(max(proxy))
+    mfl["superseded_statement"] = {"source": sup["statement_source"], "describes": sup["describes"]}
     add(R[7], [m7, mfl], "partial", [
-        "full-load half of the row has no current-design measurement",
-    ], "current_partial_superseded_other_half" if not stale else evidence_state,
-        stretch_note=f"stretch < 10 uA not met: max observed Iq {m7['worst_case']['value']:.4g} uA.")
-    rows[-1]["verdict"] = "fail" if m7["verdict"] == "fail" else "pass_partial_coverage"
+        "Iq at full load is measured at Vin = 3.30 V only (no other supplies)",
+        "full-load Iq is a difference of two ~50 mA currents; quantized at 1e-10 A, solver noise not bounded beyond that",
+        "ideal 0.90 V reference and ideal Ibias sink: reference/bias-generator current excluded; corner grid only",
+    ], evidence_state,
+        stretch_note=f"stretch < 10 uA not met: max observed no-load Iq {m7['worst_case']['value']:.4g} uA"
+                     + (f", max full-load Iq {mfl['worst_case']['value']:.4g} uA." if mfl["worst_case"] else "."))
+    rows[-1]["verdict"] = ("fail" if "fail" in (m7["verdict"], mfl["verdict"])
+                           else "ambiguous" if mfl["verdict"] == "ambiguous"
+                           else "pass_partial_coverage")
 
     # 8, 9 not implemented -----------------------------------------------
     add(R[8], [unavailable("current limit window", "mA", "not_implemented",
@@ -639,6 +817,8 @@ def build(root: Path) -> tuple[dict, dict, str]:
     chk("README target table: 10 rows, expected names and target text", True)
     chk("DR-0007 ratification table covers rows 1-10 exactly once and agrees with README", True)
     chk("PVT grid complete (5 process x 3 temperature x 3 resistor corner = 45 points, all numeric fields finite)", True)
+    chk("DC informational summary: pinned, same record, 45 corners once each, finite, validity fields True/False, "
+        "raw grids match inventory hashes", True)
     chk("every target row appears exactly once", sorted(r["id"] for r in rows) == list(range(1, 11)),
         f"rows: {[r['id'] for r in rows]}")
     chk("every row carries an allowed verdict", all(r["verdict"] in ROW_VERDICTS for r in rows))
@@ -680,6 +860,11 @@ def build(root: Path) -> tuple[dict, dict, str]:
                              "pins": fresh_checks},
         "bench_conditions": bc,
         "cc_tolerance_window": ccw,
+        "dc_informational_evidence": {
+            "summary": dc_rel, "inventory": dcev["inventory_path"],
+            "raw_dc_grids_verified": dcev["n_raw_grids"], "points": 45,
+            "status": "informational only; rows 5 and 7 remain Open/unratified; not item-5 grading evidence",
+        },
         "rows": rows,
         "summary": {
             "rows_total": len(rows),
@@ -820,6 +1005,11 @@ def render_md(rep: dict, env: dict) -> str:
                     z = m["ambiguous_phase_margin_worst_deg_range"]
                     w(f"  - at those points: first-crossing PM {a['min']}..{a['max']} deg, "
                       f"record phase_margin_worst_deg {z['min']}..{z['max']} deg (unresolved)")
+            if "n_invalid" in m:
+                w(f"  - validity: {m['n_points'] - m['n_invalid']} valid, {m['n_invalid']} invalid "
+                  "(invalid points are counted, not dropped)")
+            if m.get("precision_floor_uA") is not None:
+                w(f"  - precision floor: print quantum 1e-10 A; solver-noise proxy {m['precision_floor_uA']} uA")
             if m.get("note"):
                 w(f"  - note: {m['note']}")
     w("")

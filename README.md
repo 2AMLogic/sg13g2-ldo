@@ -64,9 +64,9 @@ changed by the record.
 | Output | 1.8 V ±2% (fixed) | programmable variants deferred | OPEN — unratified (statistical; Monte Carlo missing) |
 | Load | 0–50 mA (no external preload assumed) | 100 mA | OPEN — unratified (no 0 mA dynamic evidence) |
 | Dropout @ 50 mA | < 300 mV worst corner | < 200 mV | RATIFIED (stretch not ratified) |
-| Line / load regulation | < 5 mV/V; < 1% over full load, inside the accuracy window | — | OPEN — unratified (loaded line / multi-Vin load regulation missing) |
+| Line / load regulation | < 5 mV/V; < 1% over full load, inside the accuracy window | — | OPEN — unratified (informational loaded line / multi-Vin load regulation measured at discrete points; not ratified) |
 | PSRR | > 50 dB @ 1 kHz, > 20 dB @ 100 kHz | > 60 dB @ 1 kHz | OPEN — unratified (1 mA / 1 µF only; `Cc` un-cornered) |
-| Iq (excluding load) | < 30 µA at no load and at full load | < 10 µA | OPEN — unratified (no current full-load record) |
+| Iq (excluding load) | < 30 µA at no load and at full load | < 10 µA | OPEN — unratified (informational full-load Iq measured at Vin = 3.30 V only; not ratified) |
 | Current limit | 65–80 mA brickwall over PVT; short-survivable | — | OPEN — unratified (not implemented; statistical) |
 | Startup | monotonic, controlled ramp, inside ±2% within 3 ms of enable | — | OPEN — unratified (not implemented) |
 | Stability | 0–50 mA, C_out 0.33–4.7 µF effective, ESR 0–500 mΩ; PM ≥ 45°, GM ≥ 10 dB worst corner | capless variant (separate fork) | OPEN — unratified (one load/C_out/ESR point only) |
