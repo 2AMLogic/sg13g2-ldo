@@ -250,12 +250,12 @@ assertion.
 
 ## Results (issue #89, G1 disable pull-down -- current)
 
-Record cited: [`records/20261011-051956-eda9285.md`](records/20261011-051956-eda9285.md),
-with its [`.csv`](records/20261011-051956-eda9285.csv),
-[`.sensitivity.csv`](records/20261011-051956-eda9285.sensitivity.csv),
-[`.cc-tolerance.csv`](records/20261011-051956-eda9285.cc-tolerance.csv),
-[`.delta.csv`](records/20261011-051956-eda9285.delta.csv) and
-[`.divider-attribution.csv`](records/20261011-051956-eda9285.divider-attribution.csv).
+Record cited: [`records/20261011-060305-bcc60e2.md`](records/20261011-060305-bcc60e2.md),
+with its [`.csv`](records/20261011-060305-bcc60e2.csv),
+[`.sensitivity.csv`](records/20261011-060305-bcc60e2.sensitivity.csv),
+[`.cc-tolerance.csv`](records/20261011-060305-bcc60e2.cc-tolerance.csv),
+[`.delta.csv`](records/20261011-060305-bcc60e2.delta.csv) and
+[`.divider-attribution.csv`](records/20261011-060305-bcc60e2.divider-attribution.csv).
 `214/214` points passed and the completeness matrix is OK, all on the EDA
 batch fleet. The design under test adds an `EN` pin to `ldo_erramp_cmos5l`
 and an inverter plus a 1 x 1 um NMOS pull-down on `G1`, so `Mn3` is off
@@ -287,16 +287,33 @@ record's own spec comparison table. That table uses the legacy first-crossing
 PM/GM scalars, and it is not the row-10 verdict. Under DR-0014 (proposed),
 row 10 PM and GM are each 45 `ambiguous`, 0 pass and 0 fail (reason
 `ceiling_unbounded`), the same as for `60a3e81`. The evidence is
-`evidence/20261011-051956-eda9285/row10-margins.*`, written by
+`evidence/20261011-060305-bcc60e2/row10-margins.*`, written by
 `row10_record.py`. Each row's worst case is at the same point as
 before, the same 15 points have more than one 0 dB crossing, and the `Cc`
 tolerance window is unchanged at `110e-6`-`259e-6`. The worst gain margin
 is now 13.84 dB (was 13.85) and the worst phase margin 53.87 deg.
 
-Four of the 22 fleet requests reuse byte-identical completed reports from
-an interrupted first submission (`SWEEP_BATCH_REUSE_WORK`, listed in
-`corners/20261011-051956-eda9285/_batch/reused-reports.tsv`). The other 18
-were resubmitted.
+Provenance (#89 review). An earlier record of this design,
+[`records/20261011-051956-eda9285.md`](records/20261011-051956-eda9285.md), reused four of
+its 22 fleet reports (the main-grid DC and loop-gain groups, the `res_bcs`
+resistor-sensitivity group and the divider-attribution group) from an
+interrupted first submission (`SWEEP_BATCH_REUSE_WORK`, listed in
+`corners/20261011-051956-eda9285/_batch/reused-reports.tsv`). `--reuse-work`
+then compared only the request text, and that text names the design
+netlist, the model libraries and the OSDI binaries by path, so nothing
+committed tied those four reports to the bytes they ran against. Two
+things changed. `--reuse-work` now also needs a verified sha256 inventory
+of every referenced file (see "Batch backend" below) and refuses reuse
+without one. And the cited record `20261011-060305-bcc60e2` re-ran the whole grid
+with all 22 requests submitted afresh: no `--reuse-work`, job ids in its
+`_batch/backend.json`, and each `_batch/<group>/inputs.sha256.json` records
+the design netlist (core `08a7b857...bae57` for the main grid), the model
+include closure and the OSDI binaries, re-hashed after the report came back.
+Its 214 per-point CSVs and all five record CSVs (`.csv`, `.sensitivity.csv`,
+`.cc-tolerance.csv`, `.delta.csv`, `.divider-attribution.csv`) are
+byte-identical to those of `20261011-051956-eda9285`. So the four reused reports did
+measure this design, and every number in this section holds for both
+records. `20261011-051956-eda9285` and its evidence are kept unchanged as history.
 
 The disabled state is not part of this grid. It is in
 `sim/ldo-cmos5l-enable/` (DC smoke, tt/27C) and in the off-state samples of
@@ -401,6 +418,27 @@ request (214 points in 22 requests).
   each point ran. Rawfiles (~1 MB per corner) are not committed.
   `SWEEP_BATCH_PLAN_ONLY=1 run_sweep.sh --batch` prints the request plan
   without submitting anything.
+- **Input inventory (#89 review).** The request files name the design
+  netlist, the model libraries and the OSDI binaries by path. So each request
+  directory also gets `inputs.sha256.json`: the sha256 of every file that
+  `tb.spice` and `corners.lib` reference, transitively (`.include`/`.inc` and
+  `.lib <file> <section>`, so the design netlist and the whole model include
+  closure), plus the six staged OSDI binaries. It is re-hashed after the
+  report comes back and marked `verified_after_report` only if nothing
+  changed. If an input changed while the request was in flight, the group
+  fails. Records from `20261011-060305-bcc60e2` on carry these files.
+- **Reusing reports (`SWEEP_BATCH_REUSE_WORK`, #89).** A client that was
+  interrupted after most jobs finished can point at its earlier work dir,
+  and a group is not resubmitted only if all of these hold: its request
+  text is byte-identical there, the earlier verified inventory has the same
+  file set, every file in it still hashes to the recorded sha256, and the
+  earlier report is complete. A missing, unverified or unreadable inventory,
+  or a referenced file that does not exist, is never reused. That covers
+  every work dir written before the inventory existed. Reused groups are
+  listed in `_batch/reused-reports.tsv` and `backend.json`. The negative
+  controls in `test_batch_backend.py` (`ReuseReport`) change the design
+  netlist in place while all four request files stay identical, and assert
+  that the report is not reused.
 
 ## Results (issue #35, `Cc` re-compensation -- superseded by #67 above, numerically unchanged)
 
@@ -1463,12 +1501,14 @@ edited to add a record. `row10_record.py` (the same thin-wrapper pattern as
 layout, cross-checks, no-loosening guard and output format, on another
 45-point record. It also pins itself in the output's `classifier` block:
 
-    python3 sim/ldo-cmos5l-pvt-sweep/row10_record.py --record 20261011-051956-eda9285
+    python3 sim/ldo-cmos5l-pvt-sweep/row10_record.py --record 20261011-060305-bcc60e2
     python3 sim/ldo-cmos5l-pvt-sweep/row10_record.py --check   # CI: every output it wrote
 
-For record `20261011-051956-eda9285` (the G1 pull-down design) the result is
+For record `20261011-060305-bcc60e2` (the G1 pull-down design) the result is
 the same as for `20261010-025634-60a3e81`. PM and GM are `ambiguous` at all
 45 points, all with reason `ceiling_unbounded`. 30 points have one 0 dB
 crossing and 15 have two, and those 15 are the same points as before. The
 in-band GM is 13.84 to 29.87 dB, and no committed trace bounds the 100 MHz
-ceiling (-1.164 to +0.528 dB there, and rising). Tests: `test_row10_record.py`.
+ceiling (-1.164 to +0.528 dB there, and rising). The output for the earlier
+record of the same design, `20261011-051956-eda9285`, is kept and differs only
+in its paths. Tests: `test_row10_record.py`.

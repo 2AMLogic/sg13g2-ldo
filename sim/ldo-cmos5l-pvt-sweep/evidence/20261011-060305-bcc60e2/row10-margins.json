@@ -1,0 +1,147 @@
+{
+  "schema_version": 1,
+  "rule": "DR-0014 (proposed; row 10 stays Open, nothing ratified)",
+  "decision_record": "spec/decision-records/DR-0014-row10-stability-margin-classification.md",
+  "dataset": "legacy",
+  "record": {
+    "id": "20261011-060305-bcc60e2",
+    "csv": "sim/ldo-cmos5l-pvt-sweep/records/20261011-060305-bcc60e2.csv",
+    "sha256": "2777f91561a26877ceeb650aa18bb42f45e91d719ab0e0d7ad1bcaaf7edbcc3c",
+    "conditions": "Vin 3.30 V, 1 mA, Cout 1 uF, ESR 0, Cc nominal; 45-point PVT grid"
+  },
+  "bounds": {
+    "pm_deg": 45.0,
+    "gm_db": 10.0,
+    "ceiling_floor_db": -10.0
+  },
+  "classifier": {
+    "sim/ldo-cmos5l-pvt-sweep/ac_metrics.py": "6e96859b839bcb19aaa702eb20a593bfc8914b7b388a8783298e416e65fefd5e",
+    "sim/ldo-cmos5l-pvt-sweep/dc_metrics.py": "782319eb4ef619b040f3a4001af67a10def775c9cf17e37fe15b4dd8f3340c81",
+    "sim/ldo-cmos5l-pvt-sweep/row10_margins.py": "a6f6d1129095b2fcb73c8c9462eb54b7588259d4118aa932d86c5b01f2a227f7",
+    "sim/ldo-cmos5l-pvt-sweep/row10_record.py": "3632a86707f7cf793715667581407b5547511ea2b734dd24503a001df371dcab"
+  },
+  "traces_verified": 45,
+  "cross_checks": "every trace reproduces its record's 0 dB crossing count, first-crossing PM, recorded worst-crossing PM and first -180 deg GM; every recorded PM/GM miss classifies as fail (no-loosening guard)",
+  "csv": {
+    "path": "sim/ldo-cmos5l-pvt-sweep/evidence/20261011-060305-bcc60e2/row10-margins.csv",
+    "sha256": "5f13200bb452cd223fb5393fe4f29aafc21ed1cd44bef2fa2d6eeb506cda771f"
+  },
+  "summary_all": {
+    "points": 45,
+    "pm_verdicts": {
+      "ambiguous": 45
+    },
+    "gm_verdicts": {
+      "ambiguous": 45
+    },
+    "pm_reasons": {
+      "ceiling_unbounded": 45
+    },
+    "gm_reasons": {
+      "ceiling_unbounded": 45
+    },
+    "nyquist_class": {
+      "undetermined": 45
+    },
+    "n_zero_db_crossings": {
+      "1": 30,
+      "2": 15
+    },
+    "n_critical_crossings": {
+      "1": 45
+    },
+    "pm_deg_range": {
+      "min": 53.870824,
+      "max": 76.9311254
+    },
+    "first_crossing_margin_deg_range": {
+      "min": 53.870824,
+      "max": 76.9311254
+    },
+    "later_crossing_margin_deg_range": {
+      "min": 158.009677,
+      "max": 166.168467
+    },
+    "gm_db_range": {
+      "min": 13.8448895,
+      "max": 29.8654458
+    },
+    "low_end_ok": 45,
+    "low_end_gain_db_range": {
+      "min": 121.419267,
+      "max": 124.703169
+    },
+    "ceiling_bounded": 0,
+    "ceiling_gain_db_range": {
+      "min": -1.16447532,
+      "max": 0.528365412
+    },
+    "ceiling_last_decade_change_db_range": {
+      "min": 5.3337022,
+      "max": 12.4742983
+    }
+  },
+  "subset": {
+    "name": "multi_crossing_points",
+    "definition": "points the record lists with more than one 0 dB crossing (reported ambiguous by the characterization report before DR-0014)",
+    "summary": {
+      "points": 15,
+      "pm_verdicts": {
+        "ambiguous": 15
+      },
+      "gm_verdicts": {
+        "ambiguous": 15
+      },
+      "pm_reasons": {
+        "ceiling_unbounded": 15
+      },
+      "gm_reasons": {
+        "ceiling_unbounded": 15
+      },
+      "nyquist_class": {
+        "undetermined": 15
+      },
+      "n_zero_db_crossings": {
+        "2": 15
+      },
+      "n_critical_crossings": {
+        "1": 15
+      },
+      "pm_deg_range": {
+        "min": 74.338521,
+        "max": 76.7950852
+      },
+      "first_crossing_margin_deg_range": {
+        "min": 74.338521,
+        "max": 76.7950852
+      },
+      "later_crossing_margin_deg_range": {
+        "min": 158.009677,
+        "max": 166.168467
+      },
+      "gm_db_range": {
+        "min": 13.8448895,
+        "max": 20.2778925
+      },
+      "low_end_ok": 15,
+      "low_end_gain_db_range": {
+        "min": 123.48276,
+        "max": 124.703169
+      },
+      "ceiling_bounded": 0,
+      "ceiling_gain_db_range": {
+        "min": 0.034449849,
+        "max": 0.528365412
+      },
+      "ceiling_last_decade_change_db_range": {
+        "min": 5.3337022,
+        "max": 8.68251148
+      }
+    }
+  },
+  "not_claimed": [
+    "no new simulation; no historical record edited",
+    "no ratification: DR-0014 is proposed and row 10 stays Open (DR-0007)",
+    "no claim about frequencies above the sweep ceiling or between sampled operating points"
+  ]
+}

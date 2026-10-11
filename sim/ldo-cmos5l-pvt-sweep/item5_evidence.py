@@ -41,7 +41,7 @@ REPO = os.path.abspath(os.path.join(HERE, "..", ".."))
 sys.path.insert(0, HERE)
 import dc_metrics as dcm  # noqa: E402
 
-RECORD_ID = "20261011-051956-eda9285"
+RECORD_ID = "20261011-060305-bcc60e2"
 RECORD_CSV = f"sim/ldo-cmos5l-pvt-sweep/records/{RECORD_ID}.csv"
 RECORD_MD = f"sim/ldo-cmos5l-pvt-sweep/records/{RECORD_ID}.md"
 CORNERS_DIR = f"sim/ldo-cmos5l-pvt-sweep/corners/{RECORD_ID}"
@@ -499,7 +499,7 @@ def main():
             "raw_dc_grids": raw_hashes,
         },
         "provenance_caveats": [
-            "Record 20261011-051956-eda9285 was made by run_sweep.sh --batch at issue #89 branch commit eda9285, which may not resolve after a squash merge. Four of its 22 fleet requests reuse the byte-identical, completed reports of an interrupted first run of the same commit's design (corners/20261011-051956-eda9285/_batch/reused-reports.tsv); the other 18 were submitted afresh. Its netlist snapshots .include the design by an absolute worktree path, but the record md states the sha256 of both design netlists it ran against, and those equal the pins here, so netlist freshness is recorded rather than inferred.",
+            "Record 20261011-060305-bcc60e2 was made by run_sweep.sh --batch at issue #89 branch commit bcc60e2, which may not resolve after a squash merge. All 22 of its fleet requests were submitted afresh (no --reuse-work), and each corners/20261011-060305-bcc60e2/_batch/<group>/inputs.sha256.json records the sha256 of every file the request referenced (design netlist, model include closure, OSDI binaries), re-hashed after the report came back. Its 214 per-point CSVs and its record CSVs are byte-identical to those of 20261011-051956-eda9285, the earlier record of the same design, four of whose 22 requests had reused reports of an interrupted run. Its netlist snapshots .include the design by an absolute worktree path, but the record md and the inventories state the sha256 of the design netlists it ran against, and those equal the pins here, so netlist freshness is recorded rather than inferred.",
             "Every point ran on the EDA batch fleet (runner klt 0.5.0, ngspice-46) at PDK commit 607e18d (sim/pdk-cmos5l.json). The six OSDI binaries, including cap_cmomi, were staged from the submitting host's build, and their sha256 appears in every per-point log. The rawfile-to-wrdata reduction reproduced six points of the local ngspice-46 record 20260917-023832-7061e8f byte-for-byte (sim/ldo-cmos5l-pvt-sweep/backend-validation/20261010-025044/).",
             "The design under test carries the #67 EN interface (DR-0008) and the #89 G1 disable pull-down inside the error amplifier (DR-0008 addendum), with EN tied to VIN in every bench, so the pull-down is off. The disabled state is not part of this grid.",
             "Cap model: cornerCAP.lib maps every section to one nominal cap_cmomi, so Cc has no process-corner spread; this affects the AC rows (6, 10) not the DC grid used here.",

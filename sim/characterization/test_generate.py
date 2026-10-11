@@ -205,7 +205,8 @@ class GeneratedReportTests(unittest.TestCase):
     def test_iq_unit_conversion_and_missing_full_load(self):
         m = self.rows[7]["metrics"][0]
         self.assertEqual(m["unit"], "uA")
-        # Selected record 20261011-051956-eda9285 (G1 pull-down design, #89):
+        # Selected record 20261011-060305-bcc60e2 (G1 pull-down design, #89;
+        # its CSVs are byte-identical to 20261011-051956-eda9285's):
         # iq_a 2.47221724e-05 A at ss/125C/res_bcs. The #67 record
         # 20261010-025634-60a3e81 had 2.47221613e-05 A and the pre-EN record
         # 20260917-023832-7061e8f 2.47222854e-05 A at the same point.

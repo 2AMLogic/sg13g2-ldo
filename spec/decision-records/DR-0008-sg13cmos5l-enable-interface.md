@@ -331,10 +331,14 @@ is a like-for-like replacement:
 
 ### Results: enabled state
 
-Record `sim/ldo-cmos5l-pvt-sweep/records/20261011-051956-eda9285` (full
+Record `sim/ldo-cmos5l-pvt-sweep/records/20261011-060305-bcc60e2` (full
 process x temperature x resistor grid plus the Cc and resistor sensitivity
 points, `EN` tied to `VIN`, 214/214 points, completeness OK,
-`run_sweep.sh --batch` on the EDA batch fleet, real `cap_cmomi` model).
+`run_sweep.sh --batch` on the EDA batch fleet, every request submitted
+afresh, real `cap_cmomi` model). Its per-point and record CSVs are
+byte-identical to those of the earlier record of the same design,
+`20261011-051956-eda9285` (see the provenance note below), so every number here
+holds for both.
 Its delta table (`.delta.csv`, 540 rows, and per-metric tables in the record
 `.md`) compares every one of the 45 points against record
 `20261010-025634-60a3e81` (the #67 record), same point on both sides.
@@ -376,7 +380,7 @@ Extremes over the 45 points, per metric that record reports:
 - **What does not change.** These are two separate readings, and neither
   changes.
   - *The record's own spec comparison* (the legacy single-crossing scalars
-    in `20261011-051956-eda9285.md`): all 45 points meet every row there,
+    in `20261011-060305-bcc60e2.md`): all 45 points meet every row there,
     as before. That includes PM >= 45 deg and GM >= 10 dB read from the first
     crossing.
   - *The characterization report under DR-0014 (proposed)*: row 10 is not a
@@ -384,7 +388,7 @@ Extremes over the 45 points, per metric that record reports:
     45 ambiguous**. Every point has the reason `ceiling_unbounded`, because
     no trace bounds the 100 MHz sweep ceiling. That is the same result as for
     `20261010-025634-60a3e81`, from
-    `sim/ldo-cmos5l-pvt-sweep/evidence/20261011-051956-eda9285/row10-margins.*`
+    `sim/ldo-cmos5l-pvt-sweep/evidence/20261011-060305-bcc60e2/row10-margins.*`
     (written by `row10_record.py`, which runs `row10_margins.py`'s unchanged
     classifier on this record).
   - The same 15 points have more than one 0 dB crossing. Under DR-0014 they
@@ -406,13 +410,25 @@ Extremes over the 45 points, per metric that record reports:
 - **Provenance note.** The first submission of this grid lost its client after
   21 of its 22 fleet requests had completed: one request never returned, and
   the submitting process was stopped at its wall-clock limit. No record was
-  written. The grid was then re-run in full through `run_sweep.sh --batch`.
-  Four requests whose decks were byte-identical to completed requests of the
-  first run (the main-grid DC and loop-gain groups, the `res_bcs`
-  resistor-sensitivity group and the divider-attribution group) reuse those fleet reports through the new
-  `SWEEP_BATCH_REUSE_WORK` / `batch_backend.py --reuse-work` option, listed
-  in `corners/20261011-051956-eda9285/_batch/reused-reports.tsv`. The other
-  18 were submitted afresh. Nothing ran on the dispatch host.
+  written. The grid was then re-run through `run_sweep.sh --batch` as record
+  `20261011-051956-eda9285`. Four requests whose decks were byte-identical to completed
+  requests of the first run (the main-grid DC and loop-gain groups, the
+  `res_bcs` resistor-sensitivity group and the divider-attribution group)
+  reused those fleet reports through the new `SWEEP_BATCH_REUSE_WORK` /
+  `batch_backend.py --reuse-work` option, listed in
+  `corners/20261011-051956-eda9285/_batch/reused-reports.tsv`. The other 18 were
+  submitted afresh. Review found that the option compared only request text,
+  which names the design netlist, models and OSDI binaries by path, so
+  nothing committed tied the four reused reports to the netlist bytes. Two
+  changes followed. `--reuse-work` now needs a verified sha256 inventory of
+  every referenced file (`_batch/<group>/inputs.sha256.json`) and fails
+  closed without one. And the whole grid was re-run with no reuse as record
+  `20261011-060305-bcc60e2`: all 22 requests were submitted afresh, and each group's
+  inventory records the netlist, model and OSDI bytes it ran against. Its
+  214 per-point CSVs and all five record CSVs are byte-identical to
+  `20261011-051956-eda9285`'s, so the four reused reports did measure this design. The
+  selection moves to `20261011-060305-bcc60e2`. `20261011-051956-eda9285` is kept unchanged as history.
+  Nothing ran on the dispatch host.
 
 ### Startup campaign
 

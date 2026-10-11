@@ -13,7 +13,10 @@ sys.path.insert(0, HERE)
 import row10_margins as rm  # noqa: E402
 import row10_record as rr  # noqa: E402
 
-RID = "20261011-051956-eda9285"
+# The selected record (#89 review re-run, every request submitted afresh) and
+# the earlier record of the same design, whose landed output is kept as is.
+RID = "20261011-060305-bcc60e2"
+EARLIER = "20261011-051956-eda9285"
 
 
 class Committed(unittest.TestCase):
@@ -23,7 +26,7 @@ class Committed(unittest.TestCase):
         cls.out = rr.build(RID, cls.found[RID])
 
     def test_discovers_only_wrapper_outputs(self):
-        self.assertEqual(set(self.found), {RID})
+        self.assertEqual(set(self.found), {RID, EARLIER})
         for cfg in rm.DATASETS.values():
             self.assertNotIn(cfg["record_id"], self.found)
 
@@ -44,6 +47,13 @@ class Committed(unittest.TestCase):
         self.assertEqual(doc["summary_all"]["ceiling_bounded"], 0)
         for r in self.out["row10-margins.csv"].decode().splitlines()[1:]:
             self.assertIn(f"/corners/{RID}/", r)
+
+    def test_earlier_record_still_reproduces(self):
+        out = rr.build(EARLIER, self.found[EARLIER])
+        d = os.path.join(rm.REPO, rm.SIM, "evidence", EARLIER)
+        for name, data in out.items():
+            with open(os.path.join(d, name), "rb") as fh:
+                self.assertEqual(fh.read(), data, name)
 
     def test_legacy_dataset_restored(self):
         self.assertEqual(rm.DATASETS["legacy"]["record_id"], "20261010-025634-60a3e81")
