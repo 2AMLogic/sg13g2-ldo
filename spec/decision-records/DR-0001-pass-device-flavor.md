@@ -252,6 +252,10 @@ if a closer match is wanted; the numeric content above is independent of
 that shape and traces entirely to `sim/pass-device-screening/records/
 20260909-220347-ed18110.{md,csv}`.
 
+- [`DR-0001a`](DR-0001a-hbt-pass-device-screening.md) — addendum (issue
+  #139): the HBT screening deck's result for the bipolar ruling above. It
+  adds evidence and does not edit this record.
+
 ## References
 
 - `spec/porting-plan.md` §2.1 ("Pass-device choice"), §4 item 1.

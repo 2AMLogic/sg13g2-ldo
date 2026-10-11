@@ -1,0 +1,4260 @@
+{
+  "schema_version": 3,
+  "netlist": {
+    "path": "sim/pass-device-screening-hbt/decks/tb_pnpMPA_vcesweep.spice",
+    "scope": "repo"
+  },
+  "status": "error",
+  "corner_count": 9,
+  "passed": 0,
+  "failed": 0,
+  "errored": 9,
+  "inconclusive": 0,
+  "diagnostic_counts": {
+    "by_code": {
+      "measurement": 136
+    },
+    "by_severity": {
+      "error": 136
+    },
+    "corners_with_diagnostics": 9
+  },
+  "metrics": {
+    "sim__corner__count": 9,
+    "sim__corner__passed_count": 0,
+    "sim__corner__failed_count": 0,
+    "sim__corner__errored_count": 9,
+    "sim__corner__inconclusive_count": 0
+  },
+  "environment": {
+    "engine": "ngspice",
+    "engine_version": "46",
+    "ngspice_binary": "/home/ubuntu/.local/bin/ngspice",
+    "models_lib": {
+      "path": "sim/pass-device-screening-hbt/decks/hbt-corners.lib",
+      "scope": "repo"
+    },
+    "models_lib_sha256": "fa66c1ef13d89f6dba5465c657df196d2c34d965d8fafc73f49a537f7fb67add",
+    "netlist_sha256": "6752cae26308fa40f2a8e40c66487d04cef952d04eab8c68f2f51f7e3122850c",
+    "netlist_closure": [
+      {
+        "path": "sim/pass-device-screening-hbt/decks/tb_pnpMPA_vcesweep.spice",
+        "scope": "repo",
+        "sha256": "6752cae26308fa40f2a8e40c66487d04cef952d04eab8c68f2f51f7e3122850c"
+      },
+      {
+        "path": "sim/pass-device-screening-hbt/decks/runner-preamble.cir",
+        "scope": "repo",
+        "sha256": "8bd6883d9e30cc1d8d8c903a5e531454aecb0cecf820be8f892bac9cdadd40d9"
+      }
+    ],
+    "staged_model_inputs": [
+      {
+        "name": "hbt-corners.lib",
+        "field": "models.lib",
+        "kind": "library",
+        "sha256": "1110b1a227461ddd17383f2ec3bd139d2b19a7670362fe7b628de1af76f6323f",
+        "rewritten": true
+      },
+      {
+        "name": "cornerHBT.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "347635434f475a17ec4fe1d9cf904b4d4a98d4a35bb8b4a0cbd8cdfd1b4e5278",
+        "rewritten": true
+      },
+      {
+        "name": "sg13g2_hbt_mod.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "ae9288f885dd30fab24b07ed1e7e02e69eac9154022a0a6da576985183b0bd79",
+        "rewritten": false
+      },
+      {
+        "name": "sg13g2_hbt_mod_mismatch.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "1e493f25150b25b64985acd3f1e7ed2eb2e6ca4b712adf45b2de2ce2ba1a0eb2",
+        "rewritten": false
+      },
+      {
+        "name": "sg13g2_hbt_stat.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "80d1893eb06a3417d05400335d8e58c8309b9c80061ca96ceff8f8fd68c9a7db",
+        "rewritten": false
+      }
+    ],
+    "remote": {
+      "provider": "aws-batch-fleet",
+      "job_id": "klt-sim-8b662f1b3485",
+      "bucket": "2am-batch-jobs-221082181346",
+      "region": "us-east-1",
+      "instance_id": "i-0a14e6bfcf0a2f13b",
+      "instance_type": "m6i.4xlarge",
+      "availability_zone": "us-east-1b",
+      "ami_id": "ami-0e40e3245f1923ac8",
+      "lifecycle": "spot",
+      "spot": true,
+      "state": "failed",
+      "exit_code": "4",
+      "concurrency": "1",
+      "physical_cores": "8",
+      "elapsed_seconds": 7,
+      "runner_klt_version": "0.5.0",
+      "client_klt_version": "0.7.0+g122d607d5c52",
+      "runner_compatibility": "mismatch",
+      "runner_compatibility_warning": "the fleet runner ran klt 0.5.0 but the submitting client is 0.7.0+g122d607d5c52; request options the runner does not know may have been ignored -- update the runner image or use a compatible client"
+    }
+  },
+  "coverage": {
+    "corners_simulated": 9,
+    "measurements_declared": 24,
+    "measurements_with_limits": 0,
+    "unrecognized_limit_keys": [],
+    "schema_version": 1,
+    "known": true,
+    "checked": [
+      "measurement:[0,\"bcs/novdd/-40C\",\"icmax_l100_b1\"]/observation",
+      "measurement:[0,\"bcs/novdd/-40C\",\"icmax_l100_b10\"]/observation",
+      "measurement:[0,\"bcs/novdd/-40C\",\"icmax_l100_b20\"]/observation",
+      "measurement:[0,\"bcs/novdd/-40C\",\"icmax_l100_b50\"]/observation",
+      "measurement:[0,\"bcs/novdd/-40C\",\"icmax_l50_b1\"]/observation",
+      "measurement:[0,\"bcs/novdd/-40C\",\"icmax_l50_b10\"]/observation",
+      "measurement:[0,\"bcs/novdd/-40C\",\"icmax_l50_b20\"]/observation",
+      "measurement:[0,\"bcs/novdd/-40C\",\"icmax_l50_b50\"]/observation",
+      "measurement:[1,\"bcs/novdd/27C\",\"icmax_l100_b1\"]/observation",
+      "measurement:[1,\"bcs/novdd/27C\",\"icmax_l100_b10\"]/observation",
+      "measurement:[1,\"bcs/novdd/27C\",\"icmax_l100_b20\"]/observation",
+      "measurement:[1,\"bcs/novdd/27C\",\"icmax_l100_b50\"]/observation",
+      "measurement:[1,\"bcs/novdd/27C\",\"icmax_l50_b1\"]/observation",
+      "measurement:[1,\"bcs/novdd/27C\",\"icmax_l50_b10\"]/observation",
+      "measurement:[1,\"bcs/novdd/27C\",\"icmax_l50_b20\"]/observation",
+      "measurement:[1,\"bcs/novdd/27C\",\"icmax_l50_b50\"]/observation",
+      "measurement:[2,\"bcs/novdd/125C\",\"icmax_l100_b1\"]/observation",
+      "measurement:[2,\"bcs/novdd/125C\",\"icmax_l100_b10\"]/observation",
+      "measurement:[2,\"bcs/novdd/125C\",\"icmax_l100_b20\"]/observation",
+      "measurement:[2,\"bcs/novdd/125C\",\"icmax_l100_b50\"]/observation",
+      "measurement:[2,\"bcs/novdd/125C\",\"icmax_l50_b1\"]/observation",
+      "measurement:[2,\"bcs/novdd/125C\",\"icmax_l50_b10\"]/observation",
+      "measurement:[2,\"bcs/novdd/125C\",\"icmax_l50_b20\"]/observation",
+      "measurement:[2,\"bcs/novdd/125C\",\"icmax_l50_b50\"]/observation",
+      "measurement:[2,\"bcs/novdd/125C\",\"vb_l100_b1\"]/observation",
+      "measurement:[2,\"bcs/novdd/125C\",\"vb_l50_b1\"]/observation",
+      "measurement:[2,\"bcs/novdd/125C\",\"vce_l100_b1\"]/observation",
+      "measurement:[2,\"bcs/novdd/125C\",\"vce_l50_b1\"]/observation",
+      "measurement:[3,\"typ/novdd/-40C\",\"icmax_l100_b1\"]/observation",
+      "measurement:[3,\"typ/novdd/-40C\",\"icmax_l100_b10\"]/observation",
+      "measurement:[3,\"typ/novdd/-40C\",\"icmax_l100_b20\"]/observation",
+      "measurement:[3,\"typ/novdd/-40C\",\"icmax_l100_b50\"]/observation",
+      "measurement:[3,\"typ/novdd/-40C\",\"icmax_l50_b1\"]/observation",
+      "measurement:[3,\"typ/novdd/-40C\",\"icmax_l50_b10\"]/observation",
+      "measurement:[3,\"typ/novdd/-40C\",\"icmax_l50_b20\"]/observation",
+      "measurement:[3,\"typ/novdd/-40C\",\"icmax_l50_b50\"]/observation",
+      "measurement:[4,\"typ/novdd/27C\",\"icmax_l100_b1\"]/observation",
+      "measurement:[4,\"typ/novdd/27C\",\"icmax_l100_b10\"]/observation",
+      "measurement:[4,\"typ/novdd/27C\",\"icmax_l100_b20\"]/observation",
+      "measurement:[4,\"typ/novdd/27C\",\"icmax_l100_b50\"]/observation",
+      "measurement:[4,\"typ/novdd/27C\",\"icmax_l50_b1\"]/observation",
+      "measurement:[4,\"typ/novdd/27C\",\"icmax_l50_b10\"]/observation",
+      "measurement:[4,\"typ/novdd/27C\",\"icmax_l50_b20\"]/observation",
+      "measurement:[4,\"typ/novdd/27C\",\"icmax_l50_b50\"]/observation",
+      "measurement:[5,\"typ/novdd/125C\",\"icmax_l100_b1\"]/observation",
+      "measurement:[5,\"typ/novdd/125C\",\"icmax_l100_b10\"]/observation",
+      "measurement:[5,\"typ/novdd/125C\",\"icmax_l100_b20\"]/observation",
+      "measurement:[5,\"typ/novdd/125C\",\"icmax_l100_b50\"]/observation",
+      "measurement:[5,\"typ/novdd/125C\",\"icmax_l50_b1\"]/observation",
+      "measurement:[5,\"typ/novdd/125C\",\"icmax_l50_b10\"]/observation",
+      "measurement:[5,\"typ/novdd/125C\",\"icmax_l50_b20\"]/observation",
+      "measurement:[5,\"typ/novdd/125C\",\"icmax_l50_b50\"]/observation",
+      "measurement:[5,\"typ/novdd/125C\",\"vb_l100_b1\"]/observation",
+      "measurement:[5,\"typ/novdd/125C\",\"vb_l50_b1\"]/observation",
+      "measurement:[5,\"typ/novdd/125C\",\"vce_l100_b1\"]/observation",
+      "measurement:[5,\"typ/novdd/125C\",\"vce_l50_b1\"]/observation",
+      "measurement:[6,\"wcs/novdd/-40C\",\"icmax_l100_b1\"]/observation",
+      "measurement:[6,\"wcs/novdd/-40C\",\"icmax_l100_b10\"]/observation",
+      "measurement:[6,\"wcs/novdd/-40C\",\"icmax_l100_b20\"]/observation",
+      "measurement:[6,\"wcs/novdd/-40C\",\"icmax_l100_b50\"]/observation",
+      "measurement:[6,\"wcs/novdd/-40C\",\"icmax_l50_b1\"]/observation",
+      "measurement:[6,\"wcs/novdd/-40C\",\"icmax_l50_b10\"]/observation",
+      "measurement:[6,\"wcs/novdd/-40C\",\"icmax_l50_b20\"]/observation",
+      "measurement:[6,\"wcs/novdd/-40C\",\"icmax_l50_b50\"]/observation",
+      "measurement:[7,\"wcs/novdd/27C\",\"icmax_l100_b1\"]/observation",
+      "measurement:[7,\"wcs/novdd/27C\",\"icmax_l100_b10\"]/observation",
+      "measurement:[7,\"wcs/novdd/27C\",\"icmax_l100_b20\"]/observation",
+      "measurement:[7,\"wcs/novdd/27C\",\"icmax_l100_b50\"]/observation",
+      "measurement:[7,\"wcs/novdd/27C\",\"icmax_l50_b1\"]/observation",
+      "measurement:[7,\"wcs/novdd/27C\",\"icmax_l50_b10\"]/observation",
+      "measurement:[7,\"wcs/novdd/27C\",\"icmax_l50_b20\"]/observation",
+      "measurement:[7,\"wcs/novdd/27C\",\"icmax_l50_b50\"]/observation",
+      "measurement:[8,\"wcs/novdd/125C\",\"icmax_l100_b1\"]/observation",
+      "measurement:[8,\"wcs/novdd/125C\",\"icmax_l100_b10\"]/observation",
+      "measurement:[8,\"wcs/novdd/125C\",\"icmax_l100_b20\"]/observation",
+      "measurement:[8,\"wcs/novdd/125C\",\"icmax_l100_b50\"]/observation",
+      "measurement:[8,\"wcs/novdd/125C\",\"icmax_l50_b1\"]/observation",
+      "measurement:[8,\"wcs/novdd/125C\",\"icmax_l50_b10\"]/observation",
+      "measurement:[8,\"wcs/novdd/125C\",\"icmax_l50_b20\"]/observation",
+      "measurement:[8,\"wcs/novdd/125C\",\"icmax_l50_b50\"]/observation"
+    ],
+    "skipped": [
+      {
+        "id": "measurement:[0,\"bcs/novdd/-40C\",\"vb_l100_b1\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[0,\"bcs/novdd/-40C\",\"vb_l100_b10\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[0,\"bcs/novdd/-40C\",\"vb_l100_b20\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[0,\"bcs/novdd/-40C\",\"vb_l100_b50\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[0,\"bcs/novdd/-40C\",\"vb_l50_b1\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[0,\"bcs/novdd/-40C\",\"vb_l50_b10\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[0,\"bcs/novdd/-40C\",\"vb_l50_b20\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[0,\"bcs/novdd/-40C\",\"vb_l50_b50\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[0,\"bcs/novdd/-40C\",\"vce_l100_b1\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[0,\"bcs/novdd/-40C\",\"vce_l100_b10\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[0,\"bcs/novdd/-40C\",\"vce_l100_b20\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[0,\"bcs/novdd/-40C\",\"vce_l100_b50\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[0,\"bcs/novdd/-40C\",\"vce_l50_b1\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[0,\"bcs/novdd/-40C\",\"vce_l50_b10\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[0,\"bcs/novdd/-40C\",\"vce_l50_b20\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[0,\"bcs/novdd/-40C\",\"vce_l50_b50\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[1,\"bcs/novdd/27C\",\"vb_l100_b1\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[1,\"bcs/novdd/27C\",\"vb_l100_b10\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[1,\"bcs/novdd/27C\",\"vb_l100_b20\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[1,\"bcs/novdd/27C\",\"vb_l100_b50\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[1,\"bcs/novdd/27C\",\"vb_l50_b1\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[1,\"bcs/novdd/27C\",\"vb_l50_b10\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[1,\"bcs/novdd/27C\",\"vb_l50_b20\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[1,\"bcs/novdd/27C\",\"vb_l50_b50\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[1,\"bcs/novdd/27C\",\"vce_l100_b1\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[1,\"bcs/novdd/27C\",\"vce_l100_b10\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[1,\"bcs/novdd/27C\",\"vce_l100_b20\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[1,\"bcs/novdd/27C\",\"vce_l100_b50\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[1,\"bcs/novdd/27C\",\"vce_l50_b1\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[1,\"bcs/novdd/27C\",\"vce_l50_b10\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[1,\"bcs/novdd/27C\",\"vce_l50_b20\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[1,\"bcs/novdd/27C\",\"vce_l50_b50\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[2,\"bcs/novdd/125C\",\"vb_l100_b10\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[2,\"bcs/novdd/125C\",\"vb_l100_b20\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[2,\"bcs/novdd/125C\",\"vb_l100_b50\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[2,\"bcs/novdd/125C\",\"vb_l50_b10\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[2,\"bcs/novdd/125C\",\"vb_l50_b20\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[2,\"bcs/novdd/125C\",\"vb_l50_b50\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[2,\"bcs/novdd/125C\",\"vce_l100_b10\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[2,\"bcs/novdd/125C\",\"vce_l100_b20\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[2,\"bcs/novdd/125C\",\"vce_l100_b50\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[2,\"bcs/novdd/125C\",\"vce_l50_b10\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[2,\"bcs/novdd/125C\",\"vce_l50_b20\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[2,\"bcs/novdd/125C\",\"vce_l50_b50\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[3,\"typ/novdd/-40C\",\"vb_l100_b1\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[3,\"typ/novdd/-40C\",\"vb_l100_b10\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[3,\"typ/novdd/-40C\",\"vb_l100_b20\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[3,\"typ/novdd/-40C\",\"vb_l100_b50\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[3,\"typ/novdd/-40C\",\"vb_l50_b1\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[3,\"typ/novdd/-40C\",\"vb_l50_b10\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[3,\"typ/novdd/-40C\",\"vb_l50_b20\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[3,\"typ/novdd/-40C\",\"vb_l50_b50\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[3,\"typ/novdd/-40C\",\"vce_l100_b1\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[3,\"typ/novdd/-40C\",\"vce_l100_b10\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[3,\"typ/novdd/-40C\",\"vce_l100_b20\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[3,\"typ/novdd/-40C\",\"vce_l100_b50\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[3,\"typ/novdd/-40C\",\"vce_l50_b1\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[3,\"typ/novdd/-40C\",\"vce_l50_b10\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[3,\"typ/novdd/-40C\",\"vce_l50_b20\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[3,\"typ/novdd/-40C\",\"vce_l50_b50\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[4,\"typ/novdd/27C\",\"vb_l100_b1\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[4,\"typ/novdd/27C\",\"vb_l100_b10\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[4,\"typ/novdd/27C\",\"vb_l100_b20\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[4,\"typ/novdd/27C\",\"vb_l100_b50\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[4,\"typ/novdd/27C\",\"vb_l50_b1\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[4,\"typ/novdd/27C\",\"vb_l50_b10\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[4,\"typ/novdd/27C\",\"vb_l50_b20\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[4,\"typ/novdd/27C\",\"vb_l50_b50\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[4,\"typ/novdd/27C\",\"vce_l100_b1\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[4,\"typ/novdd/27C\",\"vce_l100_b10\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[4,\"typ/novdd/27C\",\"vce_l100_b20\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[4,\"typ/novdd/27C\",\"vce_l100_b50\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[4,\"typ/novdd/27C\",\"vce_l50_b1\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[4,\"typ/novdd/27C\",\"vce_l50_b10\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[4,\"typ/novdd/27C\",\"vce_l50_b20\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[4,\"typ/novdd/27C\",\"vce_l50_b50\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[5,\"typ/novdd/125C\",\"vb_l100_b10\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[5,\"typ/novdd/125C\",\"vb_l100_b20\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[5,\"typ/novdd/125C\",\"vb_l100_b50\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[5,\"typ/novdd/125C\",\"vb_l50_b10\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[5,\"typ/novdd/125C\",\"vb_l50_b20\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[5,\"typ/novdd/125C\",\"vb_l50_b50\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[5,\"typ/novdd/125C\",\"vce_l100_b10\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[5,\"typ/novdd/125C\",\"vce_l100_b20\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[5,\"typ/novdd/125C\",\"vce_l100_b50\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[5,\"typ/novdd/125C\",\"vce_l50_b10\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[5,\"typ/novdd/125C\",\"vce_l50_b20\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[5,\"typ/novdd/125C\",\"vce_l50_b50\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[6,\"wcs/novdd/-40C\",\"vb_l100_b1\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[6,\"wcs/novdd/-40C\",\"vb_l100_b10\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[6,\"wcs/novdd/-40C\",\"vb_l100_b20\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[6,\"wcs/novdd/-40C\",\"vb_l100_b50\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[6,\"wcs/novdd/-40C\",\"vb_l50_b1\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[6,\"wcs/novdd/-40C\",\"vb_l50_b10\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[6,\"wcs/novdd/-40C\",\"vb_l50_b20\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[6,\"wcs/novdd/-40C\",\"vb_l50_b50\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[6,\"wcs/novdd/-40C\",\"vce_l100_b1\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[6,\"wcs/novdd/-40C\",\"vce_l100_b10\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[6,\"wcs/novdd/-40C\",\"vce_l100_b20\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[6,\"wcs/novdd/-40C\",\"vce_l100_b50\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[6,\"wcs/novdd/-40C\",\"vce_l50_b1\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[6,\"wcs/novdd/-40C\",\"vce_l50_b10\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[6,\"wcs/novdd/-40C\",\"vce_l50_b20\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[6,\"wcs/novdd/-40C\",\"vce_l50_b50\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[7,\"wcs/novdd/27C\",\"vb_l100_b1\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[7,\"wcs/novdd/27C\",\"vb_l100_b10\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[7,\"wcs/novdd/27C\",\"vb_l100_b20\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[7,\"wcs/novdd/27C\",\"vb_l100_b50\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[7,\"wcs/novdd/27C\",\"vb_l50_b1\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[7,\"wcs/novdd/27C\",\"vb_l50_b10\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[7,\"wcs/novdd/27C\",\"vb_l50_b20\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[7,\"wcs/novdd/27C\",\"vb_l50_b50\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[7,\"wcs/novdd/27C\",\"vce_l100_b1\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[7,\"wcs/novdd/27C\",\"vce_l100_b10\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[7,\"wcs/novdd/27C\",\"vce_l100_b20\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[7,\"wcs/novdd/27C\",\"vce_l100_b50\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[7,\"wcs/novdd/27C\",\"vce_l50_b1\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[7,\"wcs/novdd/27C\",\"vce_l50_b10\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[7,\"wcs/novdd/27C\",\"vce_l50_b20\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[7,\"wcs/novdd/27C\",\"vce_l50_b50\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[8,\"wcs/novdd/125C\",\"vb_l100_b1\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[8,\"wcs/novdd/125C\",\"vb_l100_b10\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[8,\"wcs/novdd/125C\",\"vb_l100_b20\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[8,\"wcs/novdd/125C\",\"vb_l100_b50\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[8,\"wcs/novdd/125C\",\"vb_l50_b1\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[8,\"wcs/novdd/125C\",\"vb_l50_b10\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[8,\"wcs/novdd/125C\",\"vb_l50_b20\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[8,\"wcs/novdd/125C\",\"vb_l50_b50\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[8,\"wcs/novdd/125C\",\"vce_l100_b1\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[8,\"wcs/novdd/125C\",\"vce_l100_b10\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[8,\"wcs/novdd/125C\",\"vce_l100_b20\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[8,\"wcs/novdd/125C\",\"vce_l100_b50\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[8,\"wcs/novdd/125C\",\"vce_l50_b1\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[8,\"wcs/novdd/125C\",\"vce_l50_b10\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[8,\"wcs/novdd/125C\",\"vce_l50_b20\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[8,\"wcs/novdd/125C\",\"vce_l50_b50\"]/observation",
+        "reason": "unavailable_measurement"
+      }
+    ],
+    "inapplicable": [
+      {
+        "id": "measurement:[0,\"bcs/novdd/-40C\",\"icmax_l100_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"bcs/novdd/-40C\",\"icmax_l100_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"bcs/novdd/-40C\",\"icmax_l100_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"bcs/novdd/-40C\",\"icmax_l100_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"bcs/novdd/-40C\",\"icmax_l50_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"bcs/novdd/-40C\",\"icmax_l50_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"bcs/novdd/-40C\",\"icmax_l50_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"bcs/novdd/-40C\",\"icmax_l50_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"bcs/novdd/-40C\",\"vb_l100_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"bcs/novdd/-40C\",\"vb_l100_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"bcs/novdd/-40C\",\"vb_l100_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"bcs/novdd/-40C\",\"vb_l100_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"bcs/novdd/-40C\",\"vb_l50_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"bcs/novdd/-40C\",\"vb_l50_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"bcs/novdd/-40C\",\"vb_l50_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"bcs/novdd/-40C\",\"vb_l50_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"bcs/novdd/-40C\",\"vce_l100_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"bcs/novdd/-40C\",\"vce_l100_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"bcs/novdd/-40C\",\"vce_l100_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"bcs/novdd/-40C\",\"vce_l100_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"bcs/novdd/-40C\",\"vce_l50_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"bcs/novdd/-40C\",\"vce_l50_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"bcs/novdd/-40C\",\"vce_l50_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"bcs/novdd/-40C\",\"vce_l50_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"bcs/novdd/27C\",\"icmax_l100_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"bcs/novdd/27C\",\"icmax_l100_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"bcs/novdd/27C\",\"icmax_l100_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"bcs/novdd/27C\",\"icmax_l100_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"bcs/novdd/27C\",\"icmax_l50_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"bcs/novdd/27C\",\"icmax_l50_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"bcs/novdd/27C\",\"icmax_l50_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"bcs/novdd/27C\",\"icmax_l50_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"bcs/novdd/27C\",\"vb_l100_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"bcs/novdd/27C\",\"vb_l100_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"bcs/novdd/27C\",\"vb_l100_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"bcs/novdd/27C\",\"vb_l100_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"bcs/novdd/27C\",\"vb_l50_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"bcs/novdd/27C\",\"vb_l50_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"bcs/novdd/27C\",\"vb_l50_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"bcs/novdd/27C\",\"vb_l50_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"bcs/novdd/27C\",\"vce_l100_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"bcs/novdd/27C\",\"vce_l100_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"bcs/novdd/27C\",\"vce_l100_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"bcs/novdd/27C\",\"vce_l100_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"bcs/novdd/27C\",\"vce_l50_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"bcs/novdd/27C\",\"vce_l50_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"bcs/novdd/27C\",\"vce_l50_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"bcs/novdd/27C\",\"vce_l50_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"bcs/novdd/125C\",\"icmax_l100_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"bcs/novdd/125C\",\"icmax_l100_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"bcs/novdd/125C\",\"icmax_l100_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"bcs/novdd/125C\",\"icmax_l100_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"bcs/novdd/125C\",\"icmax_l50_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"bcs/novdd/125C\",\"icmax_l50_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"bcs/novdd/125C\",\"icmax_l50_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"bcs/novdd/125C\",\"icmax_l50_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"bcs/novdd/125C\",\"vb_l100_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"bcs/novdd/125C\",\"vb_l100_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"bcs/novdd/125C\",\"vb_l100_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"bcs/novdd/125C\",\"vb_l100_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"bcs/novdd/125C\",\"vb_l50_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"bcs/novdd/125C\",\"vb_l50_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"bcs/novdd/125C\",\"vb_l50_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"bcs/novdd/125C\",\"vb_l50_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"bcs/novdd/125C\",\"vce_l100_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"bcs/novdd/125C\",\"vce_l100_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"bcs/novdd/125C\",\"vce_l100_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"bcs/novdd/125C\",\"vce_l100_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"bcs/novdd/125C\",\"vce_l50_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"bcs/novdd/125C\",\"vce_l50_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"bcs/novdd/125C\",\"vce_l50_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"bcs/novdd/125C\",\"vce_l50_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"typ/novdd/-40C\",\"icmax_l100_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"typ/novdd/-40C\",\"icmax_l100_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"typ/novdd/-40C\",\"icmax_l100_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"typ/novdd/-40C\",\"icmax_l100_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"typ/novdd/-40C\",\"icmax_l50_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"typ/novdd/-40C\",\"icmax_l50_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"typ/novdd/-40C\",\"icmax_l50_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"typ/novdd/-40C\",\"icmax_l50_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"typ/novdd/-40C\",\"vb_l100_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"typ/novdd/-40C\",\"vb_l100_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"typ/novdd/-40C\",\"vb_l100_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"typ/novdd/-40C\",\"vb_l100_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"typ/novdd/-40C\",\"vb_l50_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"typ/novdd/-40C\",\"vb_l50_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"typ/novdd/-40C\",\"vb_l50_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"typ/novdd/-40C\",\"vb_l50_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"typ/novdd/-40C\",\"vce_l100_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"typ/novdd/-40C\",\"vce_l100_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"typ/novdd/-40C\",\"vce_l100_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"typ/novdd/-40C\",\"vce_l100_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"typ/novdd/-40C\",\"vce_l50_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"typ/novdd/-40C\",\"vce_l50_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"typ/novdd/-40C\",\"vce_l50_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"typ/novdd/-40C\",\"vce_l50_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"typ/novdd/27C\",\"icmax_l100_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"typ/novdd/27C\",\"icmax_l100_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"typ/novdd/27C\",\"icmax_l100_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"typ/novdd/27C\",\"icmax_l100_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"typ/novdd/27C\",\"icmax_l50_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"typ/novdd/27C\",\"icmax_l50_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"typ/novdd/27C\",\"icmax_l50_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"typ/novdd/27C\",\"icmax_l50_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"typ/novdd/27C\",\"vb_l100_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"typ/novdd/27C\",\"vb_l100_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"typ/novdd/27C\",\"vb_l100_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"typ/novdd/27C\",\"vb_l100_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"typ/novdd/27C\",\"vb_l50_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"typ/novdd/27C\",\"vb_l50_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"typ/novdd/27C\",\"vb_l50_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"typ/novdd/27C\",\"vb_l50_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"typ/novdd/27C\",\"vce_l100_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"typ/novdd/27C\",\"vce_l100_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"typ/novdd/27C\",\"vce_l100_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"typ/novdd/27C\",\"vce_l100_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"typ/novdd/27C\",\"vce_l50_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"typ/novdd/27C\",\"vce_l50_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"typ/novdd/27C\",\"vce_l50_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"typ/novdd/27C\",\"vce_l50_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"typ/novdd/125C\",\"icmax_l100_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"typ/novdd/125C\",\"icmax_l100_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"typ/novdd/125C\",\"icmax_l100_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"typ/novdd/125C\",\"icmax_l100_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"typ/novdd/125C\",\"icmax_l50_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"typ/novdd/125C\",\"icmax_l50_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"typ/novdd/125C\",\"icmax_l50_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"typ/novdd/125C\",\"icmax_l50_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"typ/novdd/125C\",\"vb_l100_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"typ/novdd/125C\",\"vb_l100_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"typ/novdd/125C\",\"vb_l100_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"typ/novdd/125C\",\"vb_l100_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"typ/novdd/125C\",\"vb_l50_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"typ/novdd/125C\",\"vb_l50_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"typ/novdd/125C\",\"vb_l50_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"typ/novdd/125C\",\"vb_l50_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"typ/novdd/125C\",\"vce_l100_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"typ/novdd/125C\",\"vce_l100_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"typ/novdd/125C\",\"vce_l100_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"typ/novdd/125C\",\"vce_l100_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"typ/novdd/125C\",\"vce_l50_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"typ/novdd/125C\",\"vce_l50_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"typ/novdd/125C\",\"vce_l50_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"typ/novdd/125C\",\"vce_l50_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"wcs/novdd/-40C\",\"icmax_l100_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"wcs/novdd/-40C\",\"icmax_l100_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"wcs/novdd/-40C\",\"icmax_l100_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"wcs/novdd/-40C\",\"icmax_l100_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"wcs/novdd/-40C\",\"icmax_l50_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"wcs/novdd/-40C\",\"icmax_l50_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"wcs/novdd/-40C\",\"icmax_l50_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"wcs/novdd/-40C\",\"icmax_l50_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"wcs/novdd/-40C\",\"vb_l100_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"wcs/novdd/-40C\",\"vb_l100_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"wcs/novdd/-40C\",\"vb_l100_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"wcs/novdd/-40C\",\"vb_l100_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"wcs/novdd/-40C\",\"vb_l50_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"wcs/novdd/-40C\",\"vb_l50_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"wcs/novdd/-40C\",\"vb_l50_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"wcs/novdd/-40C\",\"vb_l50_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"wcs/novdd/-40C\",\"vce_l100_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"wcs/novdd/-40C\",\"vce_l100_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"wcs/novdd/-40C\",\"vce_l100_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"wcs/novdd/-40C\",\"vce_l100_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"wcs/novdd/-40C\",\"vce_l50_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"wcs/novdd/-40C\",\"vce_l50_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"wcs/novdd/-40C\",\"vce_l50_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"wcs/novdd/-40C\",\"vce_l50_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"wcs/novdd/27C\",\"icmax_l100_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"wcs/novdd/27C\",\"icmax_l100_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"wcs/novdd/27C\",\"icmax_l100_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"wcs/novdd/27C\",\"icmax_l100_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"wcs/novdd/27C\",\"icmax_l50_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"wcs/novdd/27C\",\"icmax_l50_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"wcs/novdd/27C\",\"icmax_l50_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"wcs/novdd/27C\",\"icmax_l50_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"wcs/novdd/27C\",\"vb_l100_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"wcs/novdd/27C\",\"vb_l100_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"wcs/novdd/27C\",\"vb_l100_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"wcs/novdd/27C\",\"vb_l100_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"wcs/novdd/27C\",\"vb_l50_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"wcs/novdd/27C\",\"vb_l50_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"wcs/novdd/27C\",\"vb_l50_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"wcs/novdd/27C\",\"vb_l50_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"wcs/novdd/27C\",\"vce_l100_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"wcs/novdd/27C\",\"vce_l100_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"wcs/novdd/27C\",\"vce_l100_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"wcs/novdd/27C\",\"vce_l100_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"wcs/novdd/27C\",\"vce_l50_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"wcs/novdd/27C\",\"vce_l50_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"wcs/novdd/27C\",\"vce_l50_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"wcs/novdd/27C\",\"vce_l50_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"wcs/novdd/125C\",\"icmax_l100_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"wcs/novdd/125C\",\"icmax_l100_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"wcs/novdd/125C\",\"icmax_l100_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"wcs/novdd/125C\",\"icmax_l100_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"wcs/novdd/125C\",\"icmax_l50_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"wcs/novdd/125C\",\"icmax_l50_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"wcs/novdd/125C\",\"icmax_l50_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"wcs/novdd/125C\",\"icmax_l50_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"wcs/novdd/125C\",\"vb_l100_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"wcs/novdd/125C\",\"vb_l100_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"wcs/novdd/125C\",\"vb_l100_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"wcs/novdd/125C\",\"vb_l100_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"wcs/novdd/125C\",\"vb_l50_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"wcs/novdd/125C\",\"vb_l50_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"wcs/novdd/125C\",\"vb_l50_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"wcs/novdd/125C\",\"vb_l50_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"wcs/novdd/125C\",\"vce_l100_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"wcs/novdd/125C\",\"vce_l100_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"wcs/novdd/125C\",\"vce_l100_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"wcs/novdd/125C\",\"vce_l100_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"wcs/novdd/125C\",\"vce_l50_b1\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"wcs/novdd/125C\",\"vce_l50_b10\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"wcs/novdd/125C\",\"vce_l50_b20\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"wcs/novdd/125C\",\"vce_l50_b50\"]/limits",
+        "reason": "characterization_without_limits"
+      }
+    ],
+    "unknown": [],
+    "nothing_checked": false,
+    "nothing_checked_reasons": []
+  },
+  "provenance": {
+    "klt_version": "0.7.0+g122d607d5c52",
+    "klayout_version": "0.30.12",
+    "pdk": null,
+    "deck": {
+      "name": "hbt-corners.lib",
+      "content_hash": "sha256:fa66c1ef13d89f6dba5465c657df196d2c34d965d8fafc73f49a537f7fb67add",
+      "released": false
+    },
+    "input": {
+      "content_hash": "sha256:6752cae26308fa40f2a8e40c66487d04cef952d04eab8c68f2f51f7e3122850c",
+      "role": "netlist"
+    }
+  },
+  "measurements": [
+    {
+      "name": "vce_l50_b1",
+      "unit": "V",
+      "limits": null,
+      "status": "error",
+      "worst_case": {
+        "corner_id": "bcs/novdd/-40C",
+        "value": null,
+        "margin": null
+      }
+    },
+    {
+      "name": "vb_l50_b1",
+      "unit": "V",
+      "limits": null,
+      "status": "error",
+      "worst_case": {
+        "corner_id": "bcs/novdd/-40C",
+        "value": null,
+        "margin": null
+      }
+    },
+    {
+      "name": "icmax_l50_b1",
+      "unit": "A",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "bcs/novdd/-40C",
+        "value": 0.02149760087,
+        "margin": null
+      }
+    },
+    {
+      "name": "vce_l50_b10",
+      "unit": "V",
+      "limits": null,
+      "status": "error",
+      "worst_case": {
+        "corner_id": "bcs/novdd/-40C",
+        "value": null,
+        "margin": null
+      }
+    },
+    {
+      "name": "vb_l50_b10",
+      "unit": "V",
+      "limits": null,
+      "status": "error",
+      "worst_case": {
+        "corner_id": "bcs/novdd/-40C",
+        "value": null,
+        "margin": null
+      }
+    },
+    {
+      "name": "icmax_l50_b10",
+      "unit": "A",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "bcs/novdd/-40C",
+        "value": 0.003475811665,
+        "margin": null
+      }
+    },
+    {
+      "name": "vce_l50_b20",
+      "unit": "V",
+      "limits": null,
+      "status": "error",
+      "worst_case": {
+        "corner_id": "bcs/novdd/-40C",
+        "value": null,
+        "margin": null
+      }
+    },
+    {
+      "name": "vb_l50_b20",
+      "unit": "V",
+      "limits": null,
+      "status": "error",
+      "worst_case": {
+        "corner_id": "bcs/novdd/-40C",
+        "value": null,
+        "margin": null
+      }
+    },
+    {
+      "name": "icmax_l50_b20",
+      "unit": "A",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "bcs/novdd/-40C",
+        "value": 0.001787928807,
+        "margin": null
+      }
+    },
+    {
+      "name": "vce_l50_b50",
+      "unit": "V",
+      "limits": null,
+      "status": "error",
+      "worst_case": {
+        "corner_id": "bcs/novdd/-40C",
+        "value": null,
+        "margin": null
+      }
+    },
+    {
+      "name": "vb_l50_b50",
+      "unit": "V",
+      "limits": null,
+      "status": "error",
+      "worst_case": {
+        "corner_id": "bcs/novdd/-40C",
+        "value": null,
+        "margin": null
+      }
+    },
+    {
+      "name": "icmax_l50_b50",
+      "unit": "A",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "bcs/novdd/-40C",
+        "value": 0.0007284000869,
+        "margin": null
+      }
+    },
+    {
+      "name": "vce_l100_b1",
+      "unit": "V",
+      "limits": null,
+      "status": "error",
+      "worst_case": {
+        "corner_id": "bcs/novdd/-40C",
+        "value": null,
+        "margin": null
+      }
+    },
+    {
+      "name": "vb_l100_b1",
+      "unit": "V",
+      "limits": null,
+      "status": "error",
+      "worst_case": {
+        "corner_id": "bcs/novdd/-40C",
+        "value": null,
+        "margin": null
+      }
+    },
+    {
+      "name": "icmax_l100_b1",
+      "unit": "A",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "bcs/novdd/-40C",
+        "value": 0.04299520175,
+        "margin": null
+      }
+    },
+    {
+      "name": "vce_l100_b10",
+      "unit": "V",
+      "limits": null,
+      "status": "error",
+      "worst_case": {
+        "corner_id": "bcs/novdd/-40C",
+        "value": null,
+        "margin": null
+      }
+    },
+    {
+      "name": "vb_l100_b10",
+      "unit": "V",
+      "limits": null,
+      "status": "error",
+      "worst_case": {
+        "corner_id": "bcs/novdd/-40C",
+        "value": null,
+        "margin": null
+      }
+    },
+    {
+      "name": "icmax_l100_b10",
+      "unit": "A",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "bcs/novdd/-40C",
+        "value": 0.00695162333,
+        "margin": null
+      }
+    },
+    {
+      "name": "vce_l100_b20",
+      "unit": "V",
+      "limits": null,
+      "status": "error",
+      "worst_case": {
+        "corner_id": "bcs/novdd/-40C",
+        "value": null,
+        "margin": null
+      }
+    },
+    {
+      "name": "vb_l100_b20",
+      "unit": "V",
+      "limits": null,
+      "status": "error",
+      "worst_case": {
+        "corner_id": "bcs/novdd/-40C",
+        "value": null,
+        "margin": null
+      }
+    },
+    {
+      "name": "icmax_l100_b20",
+      "unit": "A",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "bcs/novdd/-40C",
+        "value": 0.003575857615,
+        "margin": null
+      }
+    },
+    {
+      "name": "vce_l100_b50",
+      "unit": "V",
+      "limits": null,
+      "status": "error",
+      "worst_case": {
+        "corner_id": "bcs/novdd/-40C",
+        "value": null,
+        "margin": null
+      }
+    },
+    {
+      "name": "vb_l100_b50",
+      "unit": "V",
+      "limits": null,
+      "status": "error",
+      "worst_case": {
+        "corner_id": "bcs/novdd/-40C",
+        "value": null,
+        "margin": null
+      }
+    },
+    {
+      "name": "icmax_l100_b50",
+      "unit": "A",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "bcs/novdd/-40C",
+        "value": 0.001456800174,
+        "margin": null
+      }
+    }
+  ],
+  "corners": [
+    {
+      "corner_id": "bcs/novdd/-40C",
+      "process": "bcs",
+      "supply_v": {},
+      "temperature_c": -40,
+      "status": "error",
+      "runtime_s": 0.426,
+      "measurements": [
+        {
+          "name": "vce_l50_b1",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l50_b1",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l50_b1",
+          "value": 0.02149760087,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l50_b10",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l50_b10",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l50_b10",
+          "value": 0.003475811665,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l50_b20",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l50_b20",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l50_b20",
+          "value": 0.001787928807,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l50_b50",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l50_b50",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l50_b50",
+          "value": 0.0007284000869,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l100_b1",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l100_b1",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l100_b1",
+          "value": 0.04299520175,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l100_b10",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l100_b10",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l100_b10",
+          "value": 0.00695162333,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l100_b20",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l100_b20",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l100_b20",
+          "value": 0.003575857615,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l100_b50",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l100_b50",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l100_b50",
+          "value": 0.001456800174,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l50_b1' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l50_b1' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l50_b10' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l50_b10' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l50_b20' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l50_b20' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l50_b50' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l50_b50' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l100_b1' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l100_b1' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l100_b10' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l100_b10' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l100_b20' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l100_b20' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l100_b50' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l100_b50' produced no value"
+        }
+      ],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "bcs/novdd/27C",
+      "process": "bcs",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "error",
+      "runtime_s": 0.426,
+      "measurements": [
+        {
+          "name": "vce_l50_b1",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l50_b1",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l50_b1",
+          "value": 0.03745770635,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l50_b10",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l50_b10",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l50_b10",
+          "value": 0.006184915162,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l50_b20",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l50_b20",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l50_b20",
+          "value": 0.003240877863,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l50_b50",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l50_b50",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l50_b50",
+          "value": 0.001337954905,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l100_b1",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l100_b1",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l100_b1",
+          "value": 0.0749154127,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l100_b10",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l100_b10",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l100_b10",
+          "value": 0.01236983032,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l100_b20",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l100_b20",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l100_b20",
+          "value": 0.006481755725,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l100_b50",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l100_b50",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l100_b50",
+          "value": 0.002675909809,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l50_b1' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l50_b1' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l50_b10' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l50_b10' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l50_b20' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l50_b20' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l50_b50' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l50_b50' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l100_b1' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l100_b1' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l100_b10' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l100_b10' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l100_b20' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l100_b20' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l100_b50' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l100_b50' produced no value"
+        }
+      ],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "bcs/novdd/125C",
+      "process": "bcs",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "error",
+      "runtime_s": 0.426,
+      "measurements": [
+        {
+          "name": "vce_l50_b1",
+          "value": 0.8970698084,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vb_l50_b1",
+          "value": -0.1108233399,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "icmax_l50_b1",
+          "value": 0.06507883747,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l50_b10",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l50_b10",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l50_b10",
+          "value": 0.01146521918,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l50_b20",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l50_b20",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l50_b20",
+          "value": 0.006195361768,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l50_b50",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l50_b50",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l50_b50",
+          "value": 0.002624666547,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l100_b1",
+          "value": 0.8970698084,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vb_l100_b1",
+          "value": -0.1108233399,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "icmax_l100_b1",
+          "value": 0.1301576749,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l100_b10",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l100_b10",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l100_b10",
+          "value": 0.02293043837,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l100_b20",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l100_b20",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l100_b20",
+          "value": 0.01239072354,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l100_b50",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l100_b50",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l100_b50",
+          "value": 0.005249333094,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l50_b10' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l50_b10' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l50_b20' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l50_b20' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l50_b50' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l50_b50' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l100_b10' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l100_b10' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l100_b20' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l100_b20' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l100_b50' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l100_b50' produced no value"
+        }
+      ],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "typ/novdd/-40C",
+      "process": "typ",
+      "supply_v": {},
+      "temperature_c": -40,
+      "status": "error",
+      "runtime_s": 0.426,
+      "measurements": [
+        {
+          "name": "vce_l50_b1",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l50_b1",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l50_b1",
+          "value": 0.02017271475,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l50_b10",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l50_b10",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l50_b10",
+          "value": 0.002833184541,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l50_b20",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l50_b20",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l50_b20",
+          "value": 0.001450283272,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l50_b50",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l50_b50",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l50_b50",
+          "value": 0.0005889052575,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l100_b1",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l100_b1",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l100_b1",
+          "value": 0.0403454295,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l100_b10",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l100_b10",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l100_b10",
+          "value": 0.005666369081,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l100_b20",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l100_b20",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l100_b20",
+          "value": 0.002900566544,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l100_b50",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l100_b50",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l100_b50",
+          "value": 0.001177810515,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l50_b1' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l50_b1' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l50_b10' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l50_b10' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l50_b20' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l50_b20' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l50_b50' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l50_b50' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l100_b1' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l100_b1' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l100_b10' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l100_b10' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l100_b20' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l100_b20' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l100_b50' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l100_b50' produced no value"
+        }
+      ],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "typ/novdd/27C",
+      "process": "typ",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "error",
+      "runtime_s": 0.425,
+      "measurements": [
+        {
+          "name": "vce_l50_b1",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l50_b1",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l50_b1",
+          "value": 0.03415169645,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l50_b10",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l50_b10",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l50_b10",
+          "value": 0.005075188131,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l50_b20",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l50_b20",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l50_b20",
+          "value": 0.002639481102,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l50_b50",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l50_b50",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l50_b50",
+          "value": 0.001083705119,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l100_b1",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l100_b1",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l100_b1",
+          "value": 0.06830339291,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l100_b10",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l100_b10",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l100_b10",
+          "value": 0.01015037626,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l100_b20",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l100_b20",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l100_b20",
+          "value": 0.005278962205,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l100_b50",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l100_b50",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l100_b50",
+          "value": 0.002167410237,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l50_b1' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l50_b1' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l50_b10' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l50_b10' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l50_b20' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l50_b20' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l50_b50' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l50_b50' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l100_b1' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l100_b1' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l100_b10' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l100_b10' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l100_b20' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l100_b20' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l100_b50' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l100_b50' produced no value"
+        }
+      ],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "typ/novdd/125C",
+      "process": "typ",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "error",
+      "runtime_s": 0.425,
+      "measurements": [
+        {
+          "name": "vce_l50_b1",
+          "value": 0.9399688472,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vb_l50_b1",
+          "value": -0.07248619568,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "icmax_l50_b1",
+          "value": 0.05642649383,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l50_b10",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l50_b10",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l50_b10",
+          "value": 0.009507696657,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l50_b20",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l50_b20",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l50_b20",
+          "value": 0.005082042799,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l50_b50",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l50_b50",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l50_b50",
+          "value": 0.002133348468,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l100_b1",
+          "value": 0.9399688472,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vb_l100_b1",
+          "value": -0.07248619568,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "icmax_l100_b1",
+          "value": 0.1128529877,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l100_b10",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l100_b10",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l100_b10",
+          "value": 0.01901539331,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l100_b20",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l100_b20",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l100_b20",
+          "value": 0.0101640856,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l100_b50",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l100_b50",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l100_b50",
+          "value": 0.004266696937,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l50_b10' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l50_b10' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l50_b20' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l50_b20' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l50_b50' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l50_b50' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l100_b10' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l100_b10' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l100_b20' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l100_b20' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l100_b50' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l100_b50' produced no value"
+        }
+      ],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "wcs/novdd/-40C",
+      "process": "wcs",
+      "supply_v": {},
+      "temperature_c": -40,
+      "status": "error",
+      "runtime_s": 0.425,
+      "measurements": [
+        {
+          "name": "vce_l50_b1",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l50_b1",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l50_b1",
+          "value": 0.01726439237,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l50_b10",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l50_b10",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l50_b10",
+          "value": 0.002177267845,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l50_b20",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l50_b20",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l50_b20",
+          "value": 0.001108828978,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l50_b50",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l50_b50",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l50_b50",
+          "value": 0.0004487352888,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l100_b1",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l100_b1",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l100_b1",
+          "value": 0.03452878473,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l100_b10",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l100_b10",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l100_b10",
+          "value": 0.004354535691,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l100_b20",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l100_b20",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l100_b20",
+          "value": 0.002217657956,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l100_b50",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l100_b50",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l100_b50",
+          "value": 0.0008974705776,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l50_b1' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l50_b1' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l50_b10' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l50_b10' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l50_b20' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l50_b20' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l50_b50' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l50_b50' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l100_b1' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l100_b1' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l100_b10' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l100_b10' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l100_b20' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l100_b20' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l100_b50' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l100_b50' produced no value"
+        }
+      ],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "wcs/novdd/27C",
+      "process": "wcs",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "error",
+      "runtime_s": 0.425,
+      "measurements": [
+        {
+          "name": "vce_l50_b1",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l50_b1",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l50_b1",
+          "value": 0.02811782521,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l50_b10",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l50_b10",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l50_b10",
+          "value": 0.003928491347,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l50_b20",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l50_b20",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l50_b20",
+          "value": 0.002026573088,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l50_b50",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l50_b50",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l50_b50",
+          "value": 0.0008273029089,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l100_b1",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l100_b1",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l100_b1",
+          "value": 0.05623565043,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l100_b10",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l100_b10",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l100_b10",
+          "value": 0.007856982695,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l100_b20",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l100_b20",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l100_b20",
+          "value": 0.004053146175,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l100_b50",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l100_b50",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l100_b50",
+          "value": 0.001654605818,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l50_b1' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l50_b1' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l50_b10' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l50_b10' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l50_b20' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l50_b20' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l50_b50' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l50_b50' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l100_b1' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l100_b1' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l100_b10' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l100_b10' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l100_b20' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l100_b20' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l100_b50' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l100_b50' produced no value"
+        }
+      ],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "wcs/novdd/125C",
+      "process": "wcs",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "error",
+      "runtime_s": 0.018,
+      "measurements": [
+        {
+          "name": "vce_l50_b1",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l50_b1",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l50_b1",
+          "value": 0.04679716219,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l50_b10",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l50_b10",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l50_b10",
+          "value": 0.007447910131,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l50_b20",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l50_b20",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l50_b20",
+          "value": 0.003932329231,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l50_b50",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l50_b50",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l50_b50",
+          "value": 0.001634573247,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l100_b1",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l100_b1",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l100_b1",
+          "value": 0.09359432438,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l100_b10",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l100_b10",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l100_b10",
+          "value": 0.01489582026,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l100_b20",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l100_b20",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l100_b20",
+          "value": 0.007864658462,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vce_l100_b50",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vb_l100_b50",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "icmax_l100_b50",
+          "value": 0.003269146494,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l50_b1' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l50_b1' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l50_b10' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l50_b10' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l50_b20' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l50_b20' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l50_b50' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l50_b50' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l100_b1' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l100_b1' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l100_b10' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l100_b10' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l100_b20' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l100_b20' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vce_l100_b50' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vb_l100_b50' produced no value"
+        }
+      ],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    }
+  ]
+}

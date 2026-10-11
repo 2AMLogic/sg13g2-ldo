@@ -1,0 +1,24 @@
+* sg13g2-ldo -- HBT screening corner bundles (issue #139).
+*
+* klt sim takes ONE models.lib per request and selects one named section per
+* corner; the PDK ships the HBT process corners as sections of its own
+* cornerHBT.lib (hbt_bcs / hbt_typ / hbt_wcs). Each section below is one named
+* corner that selects the matching PDK section. The PDK file is NOT edited,
+* only selected. $PDK_ROOT is expanded on the SUBMITTING host (run_sweep.sh
+* exports it); the client stages the files and their .include closure with the
+* job (options.stage_model_inputs) and the report pins each staged file's
+* sha256 in environment.staged_model_inputs.
+*
+* bcs / wcs are the PDK's own best/worst-case-speed HBT corners (VBIC: Is, Ibei,
+* resistances, caps scaled together; pnpMPA: is, bf, re, rb, rc, caps). The
+* statistical (_stat) and mismatch sections are NOT used here: this is a
+* deterministic corner screen. Temperature is the klt sim axis.
+.lib bcs
+.lib "$PDK_ROOT/ihp-sg13g2/libs.tech/ngspice/models/cornerHBT.lib" hbt_bcs
+.endl bcs
+.lib typ
+.lib "$PDK_ROOT/ihp-sg13g2/libs.tech/ngspice/models/cornerHBT.lib" hbt_typ
+.endl typ
+.lib wcs
+.lib "$PDK_ROOT/ihp-sg13g2/libs.tech/ngspice/models/cornerHBT.lib" hbt_wcs
+.endl wcs
