@@ -9,12 +9,12 @@ and fails on any byte of drift against the committed files, so a hand edit of
 a generated deck cannot go unnoticed (stdlib only, offline).
 
 Benches
-  ibsweep   base-current sweep (log10 Ib/A, -8 .. -2.3 for NPN, -8 .. -0.7 for the PNP) at a set of FIXED
-            collector-emitter voltages; each `.meas` finds the base current
-            and base voltage at which the collector current hits a target.
-            Gives beta vs Ic, quasi-saturation (beta at the dropout Vce vs
-            beta at active-region Vce), Early voltage (beta ratio at two
-            Vce), and base current against the Iq budget.
+  servo     one DC point per group: a high-gain servo sets the base current so the
+            collector current equals a target at a FIXED, ideal Vce; `.meas` reads the
+            base current, achieved Ic and base-emitter voltage.  Gives beta vs Ic,
+            quasi-saturation (beta at the 0.30 V dropout Vce vs beta at active-region
+            Vce), Early voltage (beta ratio at two Vce), reachability, and base
+            current against the Iq budget.
   vcesweep  Vce sweep (0.02 .. 1.8 V) at a FIXED base current Ib = Ic/beta_f;
             each `.meas` finds the Vce at which Ic first reaches the target:
             the Vce(sat) / dropout the device needs at that forced beta.
@@ -39,7 +39,7 @@ CELLS = {50: 2, 100: 4}
 VCES = {"v030": 0.30, "v100": 1.00, "v150": 1.50, "v183": 1.83}
 # beta_forced values for vcesweep (Ib = Ic / beta_f).
 BETAS = (1, 10, 20, 50)
-# Single-cell beta-vs-Ic ladder (A), at Vce = 1.0 V.
+# Single-cell beta-vs-Ic ladder (A), at Vce = 1.0 V (one group per rung).
 CELL_IC = {"i100u": 100e-6, "i1m": 1e-3, "i10m": 10e-3, "i25m": 25e-3}
 
 # selft=0: the PDK's VBIC subckt defaults to selft=1 (self-heating on); with an
@@ -56,14 +56,14 @@ DEVICES = {
     "pnpMPA": ("pnp", "pnpMPA a=100p p=40u"),
 }
 HAND_WRITTEN = ("runner-preamble.cir", "hbt-corners.lib")
-BENCHES = ("ibsweep", "vcesweep")
+BENCHES = ("servo", "vcesweep")
+SERVO_GAIN = 20
+NPN_IBMAX_FRAC = 0.1   # Ib clamp = T/10 (beta >= 10 resolvable)
+PNP_IBMAX_FRAC = 1.5   # Ib clamp = 1.5*T (the pnpMPA model has bf ~ 1.1)
 PROCESS = ["bcs", "typ", "wcs"]
 TEMPS_C = [-40, 27, 125]
 
-# NPN: 10 nA .. 5 mA of base current (beta ~1e3 puts the 100 uA rung of the
-# ladder at ~100 nA of Ib; the upper end stays far below thermal/Ic blow-up).
-# PNP: up to 200 mA, because the pnpMPA model's bf is ~1.1 (Ib ~ Ic).
-IB_SWEEP = {"npn": "Vs -8 -2.3 0.02", "pnp": "Vs -8 -0.7 0.02"}
+DUMMY_SWEEP = "Vz 0 1 1"
 VCE_SWEEP = "Vsw 0.02 1.8 0.01"
 
 
@@ -91,45 +91,57 @@ def xline(name, pol, spec, nodes, m):
     return f"X{name} {c} {b} {e} {sub} {params} m={m}"
 
 
-def ibsweep(dev, pol, spec):
-    """Groups: <load>_<vce> for both loads, plus the single-cell ladder."""
-    L = header(dev, "ibsweep", pol)
+def servo(dev, pol, spec):
+    """Groups: <load>_<vce> for both loads, plus one single-cell group per ladder rung.
+
+    Every group is an independent DUT at a FIXED ideal Vce whose base current is
+    a high-gain DC servo: Ib = clamp(G*(T - Ic), 0, Ib_max), T = that group's
+    target collector current.  The single DC solution is the base current (and
+    base-emitter voltage) at which Ic = T at exactly that Vce; if even Ib_max
+    cannot deliver T the clamp holds and the achieved Ic < T is the result
+    (unreachable).  A current-driven base sweep was tried first and was
+    abandoned: an ideal fixed-Vce collector lets Ic run to amperes as the sweep
+    overshoots, which the VBIC solve does not survive at the cold/slow corner.
+    """
+    L = header(dev, "servo", pol)
     L += [
-        "* Swept source Vs carries log10(Ib/A); Bibn mirrors Ib as a node voltage so",
-        "* `.meas` can FIND it.  Every group is an independent DUT with its own",
-        "* fixed-Vce source and its own copy of the base current (Bib_*).",
-        "Vs vs 0 dc -3",
-        "Bibn ibn 0 V = 10^V(vs)",
+        "* One DC point (dummy source Vz is only there to give `dc` something to step).",
+        "* Group k: Ib_k = clamp(G*(T-Ic), 0, Ibmax); Bibn_k mirrors it as a node voltage",
+        "* so `.meas` can FIND it. i(vc_k) = +Ic (sense source in series with the collector",
+        "* rail for the NPN, with the collector for the PNP).",
+        "Vz z 0 dc 0",
+        "Rz z 0 1k",
     ]
     meas = []
-    sgn = -1 if pol == "npn" else 1  # current sign through the collector sense source
 
-    def group(tag, vce, m, targets):
+    def group(tag, vce, m, target):
         c, b, e = f"c_{tag}", f"b_{tag}", f"e_{tag}"
+        ibmax = target * (NPN_IBMAX_FRAC if pol == "npn" else PNP_IBMAX_FRAC)
+        L.append(f"* group {tag}: Vce={g(vce)} V, target Ic={g(target)} A, m={m}, Ib clamp {g(ibmax)} A")
         if pol == "npn":
-            L.append(f"* group {tag}: Vce={g(vce)} V, m={m}")
-            L.append(f"Vc_{tag} {c} 0 dc {g(vce)}")
-            L.append(f"Bib_{tag} 0 {b} I = 10^V(vs)")
+            ex = f"max(0, min({g(ibmax)}, {SERVO_GAIN}*({g(target)}-i(vc_{tag}))))"
+            L.append(f"Vsup_{tag} sup_{tag} 0 dc {g(vce)}")
+            L.append(f"Vc_{tag} sup_{tag} {c} dc 0")
+            L.append(f"Bib_{tag} 0 {b} I = {ex}")
             L.append(xline(f"q_{tag}", pol, spec, (c, b, "0"), m))
+            vexpr = f"v({b})"
         else:
-            L.append(f"* group {tag}: Vec={g(vce)} V, m={m}")
+            ex = f"max(0, min({g(ibmax)}, {SERVO_GAIN}*({g(target)}-i(vc_{tag}))))"
             L.append(f"Ve_{tag} {e} 0 dc {g(vce)}")
             L.append(f"Vc_{tag} {c} 0 dc 0")
-            L.append(f"Bib_{tag} {b} 0 I = 10^V(vs)")
+            L.append(f"Bib_{tag} {b} 0 I = {ex}")
             L.append(xline(f"q_{tag}", pol, spec, (c, b, e), m))
-        for tname, ic in targets:
-            cond = f"i(vc_{tag})={g(sgn * ic)}"
-            meas.append((f"ib_{tname}", f".meas dc ib_{tname} FIND v(ibn) WHEN {cond}", "A"))
-            meas.append((f"vb_{tname}", f".meas dc vb_{tname} FIND v({b}) WHEN {cond}", "V"))
-        # Reachability witness: the largest collector current the group delivered.
-        ext = "MIN" if pol == "npn" else "MAX"
-        meas.append((f"icext_{tag}", f".meas dc icext_{tag} {ext} i(vc_{tag})", "A"))
+            vexpr = f"par('v({e})-v({b})')"
+        L.append(f"Bibn_{tag} ibn_{tag} 0 V = {ex}")
+        meas.append((f"ib_{tag}", f".meas dc ib_{tag} FIND v(ibn_{tag}) AT=0", "A"))
+        meas.append((f"ic_{tag}", f".meas dc ic_{tag} FIND i(vc_{tag}) AT=0", "A"))
+        meas.append((f"vb_{tag}", f".meas dc vb_{tag} FIND {vexpr} AT=0", "V"))
 
     for load in LOADS_MA:
         for vk, vce in VCES.items():
-            tag = f"l{load}_{vk}"
-            group(tag, vce, CELLS[load], [(tag, load * 1e-3)])
-    group("cell", 1.0, 1, [(f"cell_{k}", ic) for k, ic in CELL_IC.items()])
+            group(f"l{load}_{vk}", vce, CELLS[load], load * 1e-3)
+    for k, ic in CELL_IC.items():
+        group(f"cell_{k}", 1.0, 1, ic)
     return "\n".join(L) + "\n", meas
 
 
@@ -167,7 +179,7 @@ def vcesweep(dev, pol, spec):
 
 
 def request(dev, pol, bench, meas):
-    sweep = IB_SWEEP[pol] if bench == "ibsweep" else VCE_SWEEP
+    sweep = DUMMY_SWEEP if bench == "servo" else VCE_SWEEP
     return {
         "netlist": f"tb_{dev}_{bench}.spice",
         "backend": "batch",
@@ -184,7 +196,7 @@ def generate():
     files = {}
     for dev, (pol, spec) in DEVICES.items():
         for bench in BENCHES:
-            text, meas = (ibsweep if bench == "ibsweep" else vcesweep)(dev, pol, spec)
+            text, meas = (servo if bench == "servo" else vcesweep)(dev, pol, spec)
             files[f"tb_{dev}_{bench}.spice"] = text
             files[f"request-{dev}-{bench}.json"] = json.dumps(request(dev, pol, bench, meas), indent=2) + "\n"
     return files

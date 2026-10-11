@@ -28,7 +28,7 @@ set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DECKS="${HERE}/decks"
 DEVICES=(npn13G2 npn13G2l npn13G2v pnpMPA)
-BENCHES=(ibsweep vcesweep)
+BENCHES=(servo vcesweep)
 
 usage() { sed -n '2,22p' "${BASH_SOURCE[0]}" >&2; exit 2; }
 [[ $# -ge 1 ]] || usage
