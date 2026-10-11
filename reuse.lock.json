@@ -4,7 +4,7 @@
     {
       "block": "error amplifier",
       "sibling": "2AMLogic/sg13g2-opamp",
-      "status": "evaluate"
+      "status": "kept"
     }
   ]
 }
