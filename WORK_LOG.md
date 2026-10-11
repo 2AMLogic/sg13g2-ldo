@@ -2,6 +2,44 @@
 
 Chronological record of recently merged pull requests and closed issues, maintained by the Loom Guide role.
 
+### 2026-10-11
+
+- **PR #152**: layout: add an SG13G2 HBT vendor-fixture extraction/LVS probe witnessing the upstream bipolar gap
+- **PR #151**: sim: two-injection (Middlebrook) loop-gain bench and 45-point fleet comparison (#135)
+- **PR #149**: spec: DR-0016 keep in-tree error amplifier; reuse.lock evaluate -> kept
+- **PR #148**: docs: complete README repo-layout block (#147)
+- **PR #145**: sim: import fresh fleet rerun bcc60e2 evidence for the four reused groups (#132)
+- **PR #144**: sim: HBT pass-device screening deck, record and DR-0001a addendum (#139)
+- **PR #143**: docs: explicit PDK/model provenance table in sim/README (#141)
+- **PR #142**: ci: run each sim/tools test suite once under its matching step
+- **PR #140**: spec: add proposed DR-0015 — dynamic-window stability diagnosis and remedy ranking
+- **PR #137**: test+CI: gate startup_offstate.py so the DR-0008 disabled-state current stays reproducible
+- **PR #136**: sim: extend the loop-gain AC sweep to 10 GHz on the 45-point grid; row 10 stays ambiguous (#128)
+- **PR #134**: startup_eval: sample off-state current in the disabled plateau, not the EN edge (#130)
+- **PR #131**: SG13CMOS5L erramp: pull down the floating Mn3 gate (G1) when EN is low (#89)
+- **PR #129**: spec+sim: classify row-10 margins under proposed DR-0014
+- **PR #127**: characterization: integrate measured startup failures into the row-9 report (#112)
+- **PR #124**: Characterization: consume pinned loaded DC evidence for rows 5 and 7
+- **PR #122**: sim: validate complete DC grids before live sweep summaries
+- **Issue #150** (closed): layout: add an SG13G2 HBT extraction/LVS probe that witnesses the upstream bipolar gaps
+- **Issue #147** (closed): docs: README repo-layout block omits signoff/, ratification/, docs/ and root planning files
+- **Issue #146** (closed): Decision record: close reuse.lock.json error-amplifier 'evaluate' (keep in-tree vs adopt sg13g2-opamp)
+- **Issue #141** (closed): Docs: distinguish design branch and fleet PDK provenance in the simulation guide
+- **Issue #139** (closed): BiCMOS: screen SG13G2 HBTs as pass device to back (or revisit) DR-0001's unmeasured bipolar ruling
+- **Issue #138** (closed): CI: sim/tools unittest discovery runs twice in two jobs under mismatched step names
+- **Issue #135** (closed): sim: two-injection (Middlebrook/Tian) loop-gain bench to resolve the 10 GHz plateau left by #128
+- **Issue #133** (closed): test+CI: gate startup_offstate.py so the DR-0008 disabled-state current stays reproducible
+- **Issue #132** (closed): Resubmit the 4 reused fleet groups of record 20261011-051956-eda9285 to prove their input bytes (follow-up to PR #131)
+- **Issue #130** (closed): startup_eval: off_supply_current_a is sampled inside the EN edge, not in the off state
+- **Issue #128** (closed): sim: resolve DR-0014 ceiling_unbounded row-10 points (extend loop-gain sweep ceiling or two-injection bench)
+- **Issue #126** (closed): spec: define how row 10 margins are measured (multi-crossing PM, no -180 deg crossing GM) and classify existing traces
+- **Issue #125** (closed): SG13CMOS5L stability: bounded offline diagnosis and compensation remedy proposal
+- **Issue #123** (closed): Characterization: consume existing loaded DC evidence for rows 5 and 7
+- **Issue #120** (closed): sim: validate complete DC grids before live sweep summaries
+- **Issue #119** (closed): Guard decision review: keep gh-api-rawfield-body-literal-at flagged
+- **Issue #112** (closed): Characterization: integrate measured startup failures into the row-9 report
+- **Issue #89** (closed): SG13CMOS5L erramp: pull down the floating Mn3 gate when EN is low (disabled supply current)
+
 ### 2026-10-10
 
 - **PR #118**: test: direct contract tests with negative controls for ac_metrics.py
