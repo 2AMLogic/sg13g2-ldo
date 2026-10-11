@@ -43,8 +43,8 @@
 | startup_grid_csv | `sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.csv` | `bc4ea61162a51f3b7ecbefad4c82663f6928139d64f3ba09875c22fe7d2df3d1` | yes |
 | startup_manifest_json | `sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.manifest.json` | `3ec537f955f03dbd081870a068d01825106a886cd0f5ac0698289932cf5a7c95` | yes |
 | startup_record_md | `sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.md` | `908c108fd44b729846b51c0d9a75b35daf3dee4d7bc4c9fab3f091d8a06b307c` | yes |
-| superseded_evidence_statement | `sim/ldo-cmos5l-pvt-sweep/README.md` | `80f4a7105e65e3d6a389ba1b80061e4323afa3e976f1b4c18d220d9131b57534` | recorded |
-| target_table | `README.md` | `7aa5ec43fdffbdd3ff9db9c8fffbffd7a03a0f9d145ff6796b86633138e6fd71` | recorded |
+| superseded_evidence_statement | `sim/ldo-cmos5l-pvt-sweep/README.md` | `08bf85bca9cfac6b5d834c267484bf12464bc11b155ad32f0135293ace22a9ed` | recorded |
+| target_table | `README.md` | `baf7bacdaa45c69c1d0be0c6ac42365cef2434ee64f958d9c2c3ae3a851d7e57` | recorded |
 
 ## Per-row summary
 

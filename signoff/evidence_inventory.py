@@ -47,6 +47,7 @@ SCOPE = (
 _SIM = "sim/ldo-cmos5l-pvt-sweep"
 _MC = "sim/ldo-cmos5l-monte-carlo"
 _PD = "sim/pass-device-screening"
+_HBT = "sim/pass-device-screening-hbt"
 _L = "layout/sg13cmos5l-ldo_core_cmos5l"
 
 ITEMS = {
@@ -134,6 +135,30 @@ ITEMS = {
             f"{_PD}/run_sweep.sh",
             f"{_PD}/testbench/tb_dropout_pmos.spice.tmpl",
             f"{_PD}/testbench/tb_stress_pmos.spice.tmpl",
+            # issue #139: HBT (npn13G2 family / pnpMPA) screening deck
+            f"{_HBT}/README.md",
+            f"{_HBT}/run_sweep.sh",
+            f"{_HBT}/gen_decks.py",
+            f"{_HBT}/record.py",
+            f"{_HBT}/test_record.py",
+            f"{_HBT}/decks/hbt-corners.lib",
+            f"{_HBT}/decks/runner-preamble.cir",
+            f"{_HBT}/decks/tb_npn13G2_servo.spice",
+            f"{_HBT}/decks/tb_npn13G2_vcesweep.spice",
+            f"{_HBT}/decks/request-npn13G2-servo.json",
+            f"{_HBT}/decks/request-npn13G2-vcesweep.json",
+            f"{_HBT}/decks/tb_npn13G2l_servo.spice",
+            f"{_HBT}/decks/tb_npn13G2l_vcesweep.spice",
+            f"{_HBT}/decks/request-npn13G2l-servo.json",
+            f"{_HBT}/decks/request-npn13G2l-vcesweep.json",
+            f"{_HBT}/decks/tb_npn13G2v_servo.spice",
+            f"{_HBT}/decks/tb_npn13G2v_vcesweep.spice",
+            f"{_HBT}/decks/request-npn13G2v-servo.json",
+            f"{_HBT}/decks/request-npn13G2v-vcesweep.json",
+            f"{_HBT}/decks/tb_pnpMPA_servo.spice",
+            f"{_HBT}/decks/tb_pnpMPA_vcesweep.spice",
+            f"{_HBT}/decks/request-pnpMPA-servo.json",
+            f"{_HBT}/decks/request-pnpMPA-vcesweep.json",
             # issue #67: enable-interface smoke decks (sim/ldo-cmos5l-enable/)
             "sim/ldo-cmos5l-enable/README.md",
             "sim/ldo-cmos5l-enable/run_smoke.sh",
@@ -176,6 +201,7 @@ ITEMS = {
             "sim/**/tb_*.spice.tmpl",
             "sim/**/run_*.sh",
             f"{_MC}/request-*.json",
+            f"{_HBT}/decks/request-*.json",
         ],
     },
     10: {
@@ -202,6 +228,7 @@ ENTRY_POINTS = {
     _SIM: "run_sweep.sh",
     _MC: "run_campaign.sh",
     _PD: "run_sweep.sh",
+    _HBT: "run_sweep.sh",
     "sim/ldo-cmos5l-enable": "run_smoke.sh",
 }
 

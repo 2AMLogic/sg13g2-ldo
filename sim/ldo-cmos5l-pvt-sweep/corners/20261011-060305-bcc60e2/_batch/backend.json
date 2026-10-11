@@ -1,0 +1,477 @@
+{
+ "backend": "batch",
+ "client_klt": "klt 0.7.0+g0d0312b30708",
+ "runner_klt": [
+  "0.5.0"
+ ],
+ "engines": [
+  "ngspice-46"
+ ],
+ "staged_osdi_sha256": {
+  "psp103": "2e4299c4683997e26469410dc1ab36b02ced924b1ac0972d6c4eae360e1fc796",
+  "psp103_nqs": "839b164483205601c09032951f6c41d3580f15e506dc40a7202950d3afbdfc7d",
+  "mosvar": "25e64a374ab523dbfeb7ffed75dcb8b086ee10f06120a9074bd68b92d7b0fb41",
+  "r3_cmc": "4fead17bc2e9cbfe3df6f106e9dbd6f2cdcd48c002af9c56c2ca0b0712fce350",
+  "cap_cmomi": "9e16967935d9a69f5a18629f83be8bbd7d3d50ac6dae230f8e00b369ba969b04",
+  "cap_cmomf": "006ebb9bb05729e408966da04b3c02391ef3e460666e3a59ec2900c8089ea6cc"
+ },
+ "reused_reports": {},
+ "jobs": [
+  {
+   "group": "g00_dcsweep_tt_-40c_rtyp",
+   "job_id": "klt-sim-caf90ab0666c",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "m7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 45,
+   "requested": 45,
+   "points": [
+    "dcsweep_tt_-40c_rtyp",
+    "dcsweep_tt_-40c_rbcs",
+    "dcsweep_tt_-40c_rwcs",
+    "dcsweep_tt_27c_rtyp",
+    "dcsweep_tt_27c_rbcs",
+    "dcsweep_tt_27c_rwcs",
+    "dcsweep_tt_125c_rtyp",
+    "dcsweep_tt_125c_rbcs",
+    "dcsweep_tt_125c_rwcs",
+    "dcsweep_ss_-40c_rtyp",
+    "dcsweep_ss_-40c_rbcs",
+    "dcsweep_ss_-40c_rwcs",
+    "dcsweep_ss_27c_rtyp",
+    "dcsweep_ss_27c_rbcs",
+    "dcsweep_ss_27c_rwcs",
+    "dcsweep_ss_125c_rtyp",
+    "dcsweep_ss_125c_rbcs",
+    "dcsweep_ss_125c_rwcs",
+    "dcsweep_ff_-40c_rtyp",
+    "dcsweep_ff_-40c_rbcs",
+    "dcsweep_ff_-40c_rwcs",
+    "dcsweep_ff_27c_rtyp",
+    "dcsweep_ff_27c_rbcs",
+    "dcsweep_ff_27c_rwcs",
+    "dcsweep_ff_125c_rtyp",
+    "dcsweep_ff_125c_rbcs",
+    "dcsweep_ff_125c_rwcs",
+    "dcsweep_sf_-40c_rtyp",
+    "dcsweep_sf_-40c_rbcs",
+    "dcsweep_sf_-40c_rwcs",
+    "dcsweep_sf_27c_rtyp",
+    "dcsweep_sf_27c_rbcs",
+    "dcsweep_sf_27c_rwcs",
+    "dcsweep_sf_125c_rtyp",
+    "dcsweep_sf_125c_rbcs",
+    "dcsweep_sf_125c_rwcs",
+    "dcsweep_fs_-40c_rtyp",
+    "dcsweep_fs_-40c_rbcs",
+    "dcsweep_fs_-40c_rwcs",
+    "dcsweep_fs_27c_rtyp",
+    "dcsweep_fs_27c_rbcs",
+    "dcsweep_fs_27c_rwcs",
+    "dcsweep_fs_125c_rtyp",
+    "dcsweep_fs_125c_rbcs",
+    "dcsweep_fs_125c_rwcs"
+   ]
+  },
+  {
+   "group": "g01_loopgain_tt_-40c_rtyp",
+   "job_id": "klt-sim-9d6f8be563eb",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "m7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 45,
+   "requested": 45,
+   "points": [
+    "loopgain_tt_-40c_rtyp",
+    "loopgain_tt_-40c_rbcs",
+    "loopgain_tt_-40c_rwcs",
+    "loopgain_tt_27c_rtyp",
+    "loopgain_tt_27c_rbcs",
+    "loopgain_tt_27c_rwcs",
+    "loopgain_tt_125c_rtyp",
+    "loopgain_tt_125c_rbcs",
+    "loopgain_tt_125c_rwcs",
+    "loopgain_ss_-40c_rtyp",
+    "loopgain_ss_-40c_rbcs",
+    "loopgain_ss_-40c_rwcs",
+    "loopgain_ss_27c_rtyp",
+    "loopgain_ss_27c_rbcs",
+    "loopgain_ss_27c_rwcs",
+    "loopgain_ss_125c_rtyp",
+    "loopgain_ss_125c_rbcs",
+    "loopgain_ss_125c_rwcs",
+    "loopgain_ff_-40c_rtyp",
+    "loopgain_ff_-40c_rbcs",
+    "loopgain_ff_-40c_rwcs",
+    "loopgain_ff_27c_rtyp",
+    "loopgain_ff_27c_rbcs",
+    "loopgain_ff_27c_rwcs",
+    "loopgain_ff_125c_rtyp",
+    "loopgain_ff_125c_rbcs",
+    "loopgain_ff_125c_rwcs",
+    "loopgain_sf_-40c_rtyp",
+    "loopgain_sf_-40c_rbcs",
+    "loopgain_sf_-40c_rwcs",
+    "loopgain_sf_27c_rtyp",
+    "loopgain_sf_27c_rbcs",
+    "loopgain_sf_27c_rwcs",
+    "loopgain_sf_125c_rtyp",
+    "loopgain_sf_125c_rbcs",
+    "loopgain_sf_125c_rwcs",
+    "loopgain_fs_-40c_rtyp",
+    "loopgain_fs_-40c_rbcs",
+    "loopgain_fs_-40c_rwcs",
+    "loopgain_fs_27c_rtyp",
+    "loopgain_fs_27c_rbcs",
+    "loopgain_fs_27c_rwcs",
+    "loopgain_fs_125c_rtyp",
+    "loopgain_fs_125c_rbcs",
+    "loopgain_fs_125c_rwcs"
+   ]
+  },
+  {
+   "group": "g02_loopgain_ressens_bcs_tt_27c",
+   "job_id": "klt-sim-8a3dc509fbf2",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 3,
+   "requested": 3,
+   "points": [
+    "loopgain_ressens_bcs_tt_27c",
+    "loopgain_ressens_typ_tt_27c",
+    "loopgain_ressens_wcs_tt_27c"
+   ]
+  },
+  {
+   "group": "g03_psrr_tt_-40c_rtyp",
+   "job_id": "klt-sim-cb123a6f159b",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 45,
+   "requested": 45,
+   "points": [
+    "psrr_tt_-40c_rtyp",
+    "psrr_tt_-40c_rbcs",
+    "psrr_tt_-40c_rwcs",
+    "psrr_tt_27c_rtyp",
+    "psrr_tt_27c_rbcs",
+    "psrr_tt_27c_rwcs",
+    "psrr_tt_125c_rtyp",
+    "psrr_tt_125c_rbcs",
+    "psrr_tt_125c_rwcs",
+    "psrr_ss_-40c_rtyp",
+    "psrr_ss_-40c_rbcs",
+    "psrr_ss_-40c_rwcs",
+    "psrr_ss_27c_rtyp",
+    "psrr_ss_27c_rbcs",
+    "psrr_ss_27c_rwcs",
+    "psrr_ss_125c_rtyp",
+    "psrr_ss_125c_rbcs",
+    "psrr_ss_125c_rwcs",
+    "psrr_ff_-40c_rtyp",
+    "psrr_ff_-40c_rbcs",
+    "psrr_ff_-40c_rwcs",
+    "psrr_ff_27c_rtyp",
+    "psrr_ff_27c_rbcs",
+    "psrr_ff_27c_rwcs",
+    "psrr_ff_125c_rtyp",
+    "psrr_ff_125c_rbcs",
+    "psrr_ff_125c_rwcs",
+    "psrr_sf_-40c_rtyp",
+    "psrr_sf_-40c_rbcs",
+    "psrr_sf_-40c_rwcs",
+    "psrr_sf_27c_rtyp",
+    "psrr_sf_27c_rbcs",
+    "psrr_sf_27c_rwcs",
+    "psrr_sf_125c_rtyp",
+    "psrr_sf_125c_rbcs",
+    "psrr_sf_125c_rwcs",
+    "psrr_fs_-40c_rtyp",
+    "psrr_fs_-40c_rbcs",
+    "psrr_fs_-40c_rwcs",
+    "psrr_fs_27c_rtyp",
+    "psrr_fs_27c_rbcs",
+    "psrr_fs_27c_rwcs",
+    "psrr_fs_125c_rtyp",
+    "psrr_fs_125c_rbcs",
+    "psrr_fs_125c_rwcs"
+   ]
+  },
+  {
+   "group": "g04_loopgain_ccsens_0.5x_tt_27c",
+   "job_id": "klt-sim-dc4a3d15acd4",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 1,
+   "requested": 1,
+   "points": [
+    "loopgain_ccsens_0.5x_tt_27c"
+   ]
+  },
+  {
+   "group": "g05_loopgain_ccsens_1x_tt_27c",
+   "job_id": "klt-sim-423a68ab2557",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 1,
+   "requested": 1,
+   "points": [
+    "loopgain_ccsens_1x_tt_27c"
+   ]
+  },
+  {
+   "group": "g06_loopgain_ccsens_2x_tt_27c",
+   "job_id": "klt-sim-02e284458883",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 1,
+   "requested": 1,
+   "points": [
+    "loopgain_ccsens_2x_tt_27c"
+   ]
+  },
+  {
+   "group": "g07_loopgain_cctol_85e-6_ss_125c_rbcs",
+   "job_id": "klt-sim-82dadccf7103",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 2,
+   "requested": 2,
+   "points": [
+    "loopgain_cctol_85e-6_ss_125c_rbcs",
+    "loopgain_cctol_85e-6_ss_125c_rwcs"
+   ]
+  },
+  {
+   "group": "g08_psrr_cctol_85e-6_ss_125c_rbcs",
+   "job_id": "klt-sim-1086006e16e5",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 2,
+   "requested": 2,
+   "points": [
+    "psrr_cctol_85e-6_ss_125c_rbcs",
+    "psrr_cctol_85e-6_ss_125c_rwcs"
+   ]
+  },
+  {
+   "group": "g09_loopgain_cctol_110e-6_ss_125c_rbcs",
+   "job_id": "klt-sim-74871d4a9225",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 2,
+   "requested": 2,
+   "points": [
+    "loopgain_cctol_110e-6_ss_125c_rbcs",
+    "loopgain_cctol_110e-6_ss_125c_rwcs"
+   ]
+  },
+  {
+   "group": "g10_psrr_cctol_110e-6_ss_125c_rbcs",
+   "job_id": "klt-sim-eb20af257776",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 2,
+   "requested": 2,
+   "points": [
+    "psrr_cctol_110e-6_ss_125c_rbcs",
+    "psrr_cctol_110e-6_ss_125c_rwcs"
+   ]
+  },
+  {
+   "group": "g11_loopgain_cctol_130e-6_ss_125c_rbcs",
+   "job_id": "klt-sim-2fca1ae67360",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 2,
+   "requested": 2,
+   "points": [
+    "loopgain_cctol_130e-6_ss_125c_rbcs",
+    "loopgain_cctol_130e-6_ss_125c_rwcs"
+   ]
+  },
+  {
+   "group": "g12_psrr_cctol_130e-6_ss_125c_rbcs",
+   "job_id": "klt-sim-30c94f42c1d6",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 2,
+   "requested": 2,
+   "points": [
+    "psrr_cctol_130e-6_ss_125c_rbcs",
+    "psrr_cctol_130e-6_ss_125c_rwcs"
+   ]
+  },
+  {
+   "group": "g13_loopgain_cctol_170e-6_ss_125c_rbcs",
+   "job_id": "klt-sim-7d45d35fb3ed",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 2,
+   "requested": 2,
+   "points": [
+    "loopgain_cctol_170e-6_ss_125c_rbcs",
+    "loopgain_cctol_170e-6_ss_125c_rwcs"
+   ]
+  },
+  {
+   "group": "g14_psrr_cctol_170e-6_ss_125c_rbcs",
+   "job_id": "klt-sim-fb1e1a479340",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 2,
+   "requested": 2,
+   "points": [
+    "psrr_cctol_170e-6_ss_125c_rbcs",
+    "psrr_cctol_170e-6_ss_125c_rwcs"
+   ]
+  },
+  {
+   "group": "g15_loopgain_cctol_220e-6_ss_125c_rbcs",
+   "job_id": "klt-sim-d26462bac51a",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 2,
+   "requested": 2,
+   "points": [
+    "loopgain_cctol_220e-6_ss_125c_rbcs",
+    "loopgain_cctol_220e-6_ss_125c_rwcs"
+   ]
+  },
+  {
+   "group": "g16_psrr_cctol_220e-6_ss_125c_rbcs",
+   "job_id": "klt-sim-85e670fbb5e6",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 2,
+   "requested": 2,
+   "points": [
+    "psrr_cctol_220e-6_ss_125c_rbcs",
+    "psrr_cctol_220e-6_ss_125c_rwcs"
+   ]
+  },
+  {
+   "group": "g17_loopgain_cctol_259e-6_ss_125c_rbcs",
+   "job_id": "klt-sim-4bb85688770f",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 2,
+   "requested": 2,
+   "points": [
+    "loopgain_cctol_259e-6_ss_125c_rbcs",
+    "loopgain_cctol_259e-6_ss_125c_rwcs"
+   ]
+  },
+  {
+   "group": "g18_psrr_cctol_259e-6_ss_125c_rbcs",
+   "job_id": "klt-sim-16456cc0ba69",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 2,
+   "requested": 2,
+   "points": [
+    "psrr_cctol_259e-6_ss_125c_rbcs",
+    "psrr_cctol_259e-6_ss_125c_rwcs"
+   ]
+  },
+  {
+   "group": "g19_loopgain_cctol_340e-6_ss_125c_rbcs",
+   "job_id": "klt-sim-e254eafd3a89",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 2,
+   "requested": 2,
+   "points": [
+    "loopgain_cctol_340e-6_ss_125c_rbcs",
+    "loopgain_cctol_340e-6_ss_125c_rwcs"
+   ]
+  },
+  {
+   "group": "g20_psrr_cctol_340e-6_ss_125c_rbcs",
+   "job_id": "klt-sim-fedec43dcc41",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 2,
+   "requested": 2,
+   "points": [
+    "psrr_cctol_340e-6_ss_125c_rbcs",
+    "psrr_cctol_340e-6_ss_125c_rwcs"
+   ]
+  },
+  {
+   "group": "g21_loopgain_divattr_tt_-40c_rtyp",
+   "job_id": "klt-sim-ea2a27022477",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 45,
+   "requested": 45,
+   "points": [
+    "loopgain_divattr_tt_-40c_rtyp",
+    "loopgain_divattr_tt_-40c_rbcs",
+    "loopgain_divattr_tt_-40c_rwcs",
+    "loopgain_divattr_tt_27c_rtyp",
+    "loopgain_divattr_tt_27c_rbcs",
+    "loopgain_divattr_tt_27c_rwcs",
+    "loopgain_divattr_tt_125c_rtyp",
+    "loopgain_divattr_tt_125c_rbcs",
+    "loopgain_divattr_tt_125c_rwcs",
+    "loopgain_divattr_ss_-40c_rtyp",
+    "loopgain_divattr_ss_-40c_rbcs",
+    "loopgain_divattr_ss_-40c_rwcs",
+    "loopgain_divattr_ss_27c_rtyp",
+    "loopgain_divattr_ss_27c_rbcs",
+    "loopgain_divattr_ss_27c_rwcs",
+    "loopgain_divattr_ss_125c_rtyp",
+    "loopgain_divattr_ss_125c_rbcs",
+    "loopgain_divattr_ss_125c_rwcs",
+    "loopgain_divattr_ff_-40c_rtyp",
+    "loopgain_divattr_ff_-40c_rbcs",
+    "loopgain_divattr_ff_-40c_rwcs",
+    "loopgain_divattr_ff_27c_rtyp",
+    "loopgain_divattr_ff_27c_rbcs",
+    "loopgain_divattr_ff_27c_rwcs",
+    "loopgain_divattr_ff_125c_rtyp",
+    "loopgain_divattr_ff_125c_rbcs",
+    "loopgain_divattr_ff_125c_rwcs",
+    "loopgain_divattr_sf_-40c_rtyp",
+    "loopgain_divattr_sf_-40c_rbcs",
+    "loopgain_divattr_sf_-40c_rwcs",
+    "loopgain_divattr_sf_27c_rtyp",
+    "loopgain_divattr_sf_27c_rbcs",
+    "loopgain_divattr_sf_27c_rwcs",
+    "loopgain_divattr_sf_125c_rtyp",
+    "loopgain_divattr_sf_125c_rbcs",
+    "loopgain_divattr_sf_125c_rwcs",
+    "loopgain_divattr_fs_-40c_rtyp",
+    "loopgain_divattr_fs_-40c_rbcs",
+    "loopgain_divattr_fs_-40c_rwcs",
+    "loopgain_divattr_fs_27c_rtyp",
+    "loopgain_divattr_fs_27c_rbcs",
+    "loopgain_divattr_fs_27c_rwcs",
+    "loopgain_divattr_fs_125c_rtyp",
+    "loopgain_divattr_fs_125c_rbcs",
+    "loopgain_divattr_fs_125c_rwcs"
+   ]
+  }
+ ]
+}

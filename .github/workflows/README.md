@@ -29,6 +29,16 @@ Runs on every push to `main`, every pull request, and on manual
   sweep and never mints a `sim/pass-device-screening/records/` entry — see
   "What it does NOT check (known gaps)" below and `sim/README.md`'s "CI:
   syntax/`--check-env` only, never a `records/` entry".
+- **`sim/pass-device-screening-hbt/run_sweep.sh --check-env`** (same job,
+  issue #139) — the HBT (`npn13G2` family / `pnpMPA`) screening deck. Its
+  bipolar models are native ngspice, so no OSDI build; it needs `klt`
+  (installed from the pinned `klayout-tools` checkout) and runs one real
+  `typ`/27°C corner of each of the 8 requests through `klt sim --backend
+  local`. It is **not** the 72-unit matrix (that runs on the batch fleet) and
+  never mints a `sim/pass-device-screening-hbt/records/` entry. The committed
+  record is re-verified offline, byte for byte, by the
+  `characterization-report` job's "HBT screening decks and record reproduce"
+  step.
 
 To do any of that, the job needs `xschem >= 3.4.7` on `PATH` and a real
 `ihp-sg13g2` PDK install — `design/netlist.py --check` isn't a syntax check,
@@ -93,7 +103,8 @@ with `actions/cache` absorbing the repeat-fetch cost instead.
   {-40,27,125}°C` grid and never mints a `sim/pass-device-screening/records/`
   entry. Per `sim/README.md` "CI: syntax/`--check-env` only, never a
   `records/` entry", minting actual evidence stays a human/agent action run
-  locally against a real PDK + OSDI install. If/when another `sim/`
+  locally against a real PDK + OSDI install (the HBT deck's batch matrix
+  likewise: `--check-env` only in CI). If/when another `sim/`
   experiment lands, add an equivalent `--check-env`-style CI step for it too.
 - **No linter/formatter.** `package.json`'s `lint` and `check:ci` scripts
   are honest "not configured" placeholders. Add a CI job for either if/when

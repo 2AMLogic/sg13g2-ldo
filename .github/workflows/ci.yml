@@ -12,8 +12,12 @@ name: CI
 #                                 .sch sources, xschem's ERC is clean, and
 #                                 the pinout invariants hold. Needs xschem
 #                                 plus the ihp-sg13g2 AND ihp-sg13cmos5l PDKs.
-#   pass-device-screening-check   sim/pass-device-screening run_sweep.sh
-#                                 --check-env (ngspice + ihp-sg13g2 PDK).
+#   pass-device-screening-check   sim/pass-device-screening AND
+#                                 sim/pass-device-screening-hbt run_sweep.sh
+#                                 --check-env (ngspice + ihp-sg13g2 PDK; the
+#                                 HBT deck also needs klt for its klt-sim
+#                                 preflight and no OSDI build -- its bipolar
+#                                 models are native ngspice).
 #   signoff-t1-report             re-grades signoff/sg13g2-ldo.json with a
 #                                 pinned klt and fails on T1 report drift.
 #                                 No PDK, no simulator.
@@ -58,6 +62,13 @@ name: CI
 # the fetch script refuses to run without the sibling. ihp-sg13g2 alone does
 # not suffice: `--design sg13cmos5l` resolves its symbols against
 # ihp-sg13cmos5l (design/netlist.py's DESIGNS table).
+#
+# sim/ pass-device-screening-hbt (issue #139): same discipline. CI runs only
+# its `run_sweep.sh --check-env` -- one real corner (typ/27C) of every
+# request through `klt sim --backend local`, never the 72-unit grid and
+# never a records/ entry. The committed record's raw `klt sim` reports are
+# re-verified offline (byte-for-byte derivation) by the
+# characterization-report job.
 #
 # sim/ pass-device-screening (issue #13): CI runs only its
 # `run_sweep.sh --check-env` mode -- a syntax check of one generated netlist
@@ -230,7 +241,7 @@ jobs:
         run: python3 design/netlist.py --design sg13cmos5l --check -v
 
   pass-device-screening-check:
-    name: sim/pass-device-screening run_sweep.sh --check-env (ngspice + ihp-sg13g2 PDK)
+    name: sim/pass-device-screening{,-hbt} run_sweep.sh --check-env (ngspice + ihp-sg13g2 PDK + klt)
     runs-on: ubuntu-latest
     steps:
       - name: Check out sg13g2-ldo
@@ -312,6 +323,26 @@ jobs:
           PDK_ROOT: ${{ github.workspace }}/klayout-tools/pdks/ihp-open-pdk
           PDK: ihp-sg13g2
         run: sim/pass-device-screening/run_sweep.sh --check-env
+
+      # sim/pass-device-screening-hbt (issue #139): same job because it needs
+      # exactly what is built above (ngspice 46 + the pinned PDK), plus klt:
+      # its preflight drives `klt sim --backend local`. Its bipolar models are
+      # native ngspice (VBIC level 9 / Gummel-Poon), so no OSDI build is
+      # involved. klt is installed from the already-checked-out pinned ref
+      # (KLAYOUT_TOOLS_REF); this deck only needs a working `klt sim`, not the
+      # clean-tree version stamp the signoff job's clone+checkout preserves.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install klt (pinned klayout-tools checkout) for the HBT deck's klt sim preflight
+        run: pip install ./klayout-tools
+
+      - name: sim/pass-device-screening-hbt run_sweep.sh --check-env
+        env:
+          PDK_ROOT: ${{ github.workspace }}/klayout-tools/pdks/ihp-open-pdk
+          PDK: ihp-sg13g2
+        run: sim/pass-device-screening-hbt/run_sweep.sh --check-env
 
   signoff-t1-report:
     name: signoff/ klt signoff --manifest (regenerate + gate the committed T1 report)
@@ -481,6 +512,22 @@ jobs:
 
       - name: Regenerate and assert no drift
         run: python3 sim/characterization/generate.py --check
+
+      - name: HBT screening decks and record reproduce (issue #139; offline, no PDK / no simulator)
+        # Same discipline as the enable-record and monte-carlo-record jobs:
+        # the generated decks must match gen_decks.py, and every committed
+        # record under sim/pass-device-screening-hbt/records/ must regenerate
+        # byte-for-byte (CSV and MD, including the behavioural PASS lines)
+        # from its committed raw klt sim reports. stdlib-only.
+        run: |
+          set -e
+          python3 -m unittest discover -s sim/pass-device-screening-hbt -p 'test_*.py' -v
+          recs=$(ls -d sim/pass-device-screening-hbt/records/*/)
+          test -n "${recs}" || { echo "no HBT screening record committed" >&2; exit 1; }
+          for rec in ${recs}; do
+            echo "checking ${rec}"
+            sim/pass-device-screening-hbt/run_sweep.sh check "${rec%/}"
+          done
 
       - name: Item 5 coverage inventory (fixtures, then byte-check against committed raw DC data)
         # Offline, stdlib-only (#55): no simulator and no PDK. Not the full sweep.
