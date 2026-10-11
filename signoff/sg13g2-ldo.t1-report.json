@@ -33,7 +33,7 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:2a2fb30a7c8aa59a2dc93f75c3b15949ec77f0c274cc89a5468e8f8ae10713a8",
+        "content_hash": "sha256:4318fbf8bdf9e45f643b5930073e9d4197eeee3c61472b7e99527dea7103ff2c",
         "input_verified": true,
         "exit_status": 0,
         "artifact_binding": {
@@ -42,7 +42,7 @@
             "path": "signoff/evidence/item1-design-sources.inventory.json",
             "scope": "repo"
           },
-          "content_hash": "sha256:2a2fb30a7c8aa59a2dc93f75c3b15949ec77f0c274cc89a5468e8f8ae10713a8",
+          "content_hash": "sha256:4318fbf8bdf9e45f643b5930073e9d4197eeee3c61472b7e99527dea7103ff2c",
           "input_verified": true,
           "summary": "SG13CMOS5L schematics/symbols, their generator and the regenerated ngspice netlists are committed; every constituent hash matches the inventory. Freshness/identity only, not a design-correctness or performance claim.",
           "source": "signoff/evidence/item1-design-sources.inventory.json"
@@ -64,7 +64,7 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:a1ea56d88075ad763f7b62ffe8ede8bf03c666b6da0b784d1497b2be7e9cc0ef",
+        "content_hash": "sha256:cf16f7a0301595433c0107a28f790573ed65cd788cc046646b8e04c65baa411b",
         "input_verified": true,
         "exit_status": 0,
         "artifact_binding": {
@@ -73,7 +73,7 @@
             "path": "signoff/evidence/item2-layout.inventory.json",
             "scope": "repo"
           },
-          "content_hash": "sha256:a1ea56d88075ad763f7b62ffe8ede8bf03c666b6da0b784d1497b2be7e9cc0ef",
+          "content_hash": "sha256:cf16f7a0301595433c0107a28f790573ed65cd788cc046646b8e04c65baa411b",
           "input_verified": true,
           "summary": "The SG13CMOS5L layout GDS stream and its generator are committed; every constituent hash matches the inventory. Freshness/identity only: DRC/LVS/ERC are the separate item 3/4/11 citations.",
           "source": "signoff/evidence/item2-layout.inventory.json"
@@ -95,7 +95,7 @@
         "command": null,
         "kind": "drc",
         "check_status": "clean",
-        "content_hash": "sha256:7fdbe0e9ab0e812d348b432a72c18b31f5ecef592bfac5d7a93658c69827ee27",
+        "content_hash": "sha256:06d92e1aadb8b51614016f2f5d953c8bd0674380267f8ab90c2b0cca59576629",
         "input_verified": true,
         "exit_status": 0,
         "coverage": {
@@ -156,7 +156,7 @@
         "command": null,
         "kind": "lvs",
         "check_status": "match",
-        "content_hash": "sha256:72d952c209c13c9b2d5d91038514a11e9a302569c1cf47f097c6429e692ace55",
+        "content_hash": "sha256:5a9350b5a94e129ff4b69cf96a65475587f21d9ba270cba9d3c1a962fc1dece4",
         "input_verified": true,
         "exit_status": 0
       }
@@ -216,7 +216,7 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:080a06e2ae8e7f3b4e6af4403e38208d81fba14823e78d78a8cf87d86f61f565",
+        "content_hash": "sha256:51f982cb77c575acd5940ddb022b469cb19306389561e10da9a00f51635ede95",
         "input_verified": null,
         "exit_status": 0
       }
@@ -236,7 +236,7 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:e8ba9da07b764bd8fed7354a43f69557d2550928949aed75878c6f8474fbb87f",
+        "content_hash": "sha256:723d91108ec2738e17bddcb3b0e1635cea04069117db68110b816feda327a2cc",
         "input_verified": true,
         "exit_status": 0,
         "artifact_binding": {
@@ -245,7 +245,7 @@
             "path": "signoff/evidence/item9-testbenches.inventory.json",
             "scope": "repo"
           },
-          "content_hash": "sha256:e8ba9da07b764bd8fed7354a43f69557d2550928949aed75878c6f8474fbb87f",
+          "content_hash": "sha256:723d91108ec2738e17bddcb3b0e1635cea04069117db68110b816feda327a2cc",
           "input_verified": true,
           "summary": "The shipped ngspice testbenches/templates, their cold-start entry points (run_*.sh) and experiment READMEs are committed; every constituent hash matches the inventory and each README names its entry point. Testbenches are NOT re-run by this attestation and no measurement result is claimed.",
           "source": "signoff/evidence/item9-testbenches.inventory.json"
@@ -300,7 +300,7 @@
         "command": null,
         "kind": "erc",
         "check_status": "not_checked",
-        "content_hash": "sha256:7fdbe0e9ab0e812d348b432a72c18b31f5ecef592bfac5d7a93658c69827ee27",
+        "content_hash": "sha256:06d92e1aadb8b51614016f2f5d953c8bd0674380267f8ab90c2b0cca59576629",
         "input_verified": true,
         "exit_status": 0,
         "parts": [
@@ -309,7 +309,7 @@
             "command": null,
             "kind": "erc",
             "check_status": "not_checked",
-            "content_hash": "sha256:7fdbe0e9ab0e812d348b432a72c18b31f5ecef592bfac5d7a93658c69827ee27",
+            "content_hash": "sha256:06d92e1aadb8b51614016f2f5d953c8bd0674380267f8ab90c2b0cca59576629",
             "input_verified": true,
             "exit_status": 0
           },
@@ -318,7 +318,7 @@
             "command": null,
             "kind": "lvs",
             "check_status": "match",
-            "content_hash": "sha256:72d952c209c13c9b2d5d91038514a11e9a302569c1cf47f097c6429e692ace55",
+            "content_hash": "sha256:5a9350b5a94e129ff4b69cf96a65475587f21d9ba270cba9d3c1a962fc1dece4",
             "input_verified": true,
             "exit_status": 0
           }

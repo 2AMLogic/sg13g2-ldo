@@ -248,7 +248,57 @@ characterization -- but the qualitative verdict does not depend on that
 caveat, and now has a measured tolerance band attached to it rather than an
 assertion.
 
-## Results (issue #67, `EN` interface -- current)
+## Results (issue #89, G1 disable pull-down -- current)
+
+Record cited: [`records/20261011-051956-eda9285.md`](records/20261011-051956-eda9285.md),
+with its [`.csv`](records/20261011-051956-eda9285.csv),
+[`.sensitivity.csv`](records/20261011-051956-eda9285.sensitivity.csv),
+[`.cc-tolerance.csv`](records/20261011-051956-eda9285.cc-tolerance.csv),
+[`.delta.csv`](records/20261011-051956-eda9285.delta.csv) and
+[`.divider-attribution.csv`](records/20261011-051956-eda9285.divider-attribution.csv).
+`214/214` points passed and the completeness matrix is OK, all on the EDA
+batch fleet. The design under test adds an `EN` pin to `ldo_erramp_cmos5l`
+and an inverter plus a 1 x 1 um NMOS pull-down on `G1`, so `Mn3` is off
+when disabled (DR-0008 addendum "G1 disable pull-down"). Core sha256
+`08a7b857...bae57`, erramp `75ee39ce...56fb4`; both are stated in the record
+md. `EN` is tied to `VIN`, so the pull-down is off in every bench.
+`BASELINE_CSV` moved to the #67 record `20261010-025634-60a3e81`, so the
+delta table isolates the three added devices.
+
+The added devices change the enabled state by small amounts, all in the
+expected direction. Phase margin, gain margin and PSRR @ 100 kHz fall at
+every point and no-load Iq rises or stays the same. The largest change per
+metric:
+
+| Metric | Largest change vs 60a3e81 | Point |
+|---|---|---|
+| Phase margin | -0.0021 deg | `sf`/-40C/`res_wcs` |
+| Gain margin | -0.0086 dB | `ss`/-40C/`res_wcs` |
+| Unity-gain frequency | +8.0 Hz | `ff`/-40C/`res_wcs` |
+| DC loop gain | -2.0e-5 dB | `ff`/125C/`res_wcs` |
+| PSRR @ 1kHz | -1.1e-5 dB | `fs`/-40C/`res_typ` |
+| PSRR @ 100kHz | -1.6e-4 dB | `sf`/125C/`res_wcs` |
+| Iq, no load | +0.043 nA | `ff`/125C/`res_wcs` |
+| VOUT, no load | -0.84 uV | `ff`/125C/`res_typ` |
+
+Dropout is identical at every point. Line and load regulation move by at
+most 1.5e-5 mV/V and 5.7e-7 %. All 45 points still meet every row in the
+spec comparison table. Each row's worst case is at the same point as
+before, the same 15 points have more than one 0 dB crossing, and the `Cc`
+tolerance window is unchanged at `110e-6`-`259e-6`. The worst gain margin
+is now 13.84 dB (was 13.85) and the worst phase margin 53.87 deg.
+
+Four of the 22 fleet requests reuse byte-identical completed reports from
+an interrupted first submission (`SWEEP_BATCH_REUSE_WORK`, listed in
+`corners/20261011-051956-eda9285/_batch/reused-reports.tsv`). The other 18
+were resubmitted.
+
+The disabled state is not part of this grid. It is in
+`sim/ldo-cmos5l-enable/` (DC smoke, tt/27C) and in the off-state samples of
+the startup record `20261011-031426-df3f802` (`startup_offstate.py`, all 135
+points); see the DR-0008 addendum.
+
+## Results (issue #67, `EN` interface -- superseded by #89 above)
 
 Record cited: [`records/20261010-025634-60a3e81.md`](records/20261010-025634-60a3e81.md),
 with its [`.csv`](records/20261010-025634-60a3e81.csv),
@@ -1165,7 +1215,19 @@ decisions are written up in
 | `startup/<run>/<stage>/<request>/` | Request artifacts: `request.json`, `tb.spice`, `corners.lib`, klt `report.json` (per-corner artifacts, about 2 MB rawfiles each, are git-ignored; their sha256 is in the record CSV). |
 | `records/<run>-startup-<stage>.{md,csv,manifest.json}` and `.traces/` | Append-only records: coverage, per-point metrics, trace files with sha256, source/tool/PDK hashes. |
 
-Run `20261010-104827-91e92aa` is the record set. `startup/20261010-075612-91e92aa/`
+Run `20261011-031426-df3f802` (grid stage only, issue #89) is the record
+selected for the characterization report. It is the same campaign re-run on
+the G1 disable pull-down design (DR-0008 addendum): 135/135 evaluated, all
+fail on overshoot and monotonicity as before, every start settles in
+28-441 us. Its `off_supply_current_a` column is sampled inside the `EN`
+edge, so for this design it includes the amplifier inverter's crowbar
+current. The true off-state supply current (last `EN = 0` sample before the
+edge, 2.000-2.264 uA over the 135 points) is read from the committed traces
+by `startup_offstate.py <run id>`. The evaluator fix is #130. The numbers
+and binding points in the subsections below are those of the earlier run.
+
+Run `20261010-104827-91e92aa` is the record set the subsections below
+describe (the six-pin amplifier). `startup/20261010-075612-91e92aa/`
 and the `records/20261010-075612-91e92aa-startup-nominal.*` files are the
 earlier diagnostic run (first nominal, two lost grid attempts, probe requests);
 they are kept as evidence and are superseded by the later run.

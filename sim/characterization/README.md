@@ -72,7 +72,8 @@ Rows 5 and 7 stay Open/unratified and this is not T1 item-5 grading evidence.
 ## Startup evidence for row 9 (issue #112)
 
 `selection.json` pins, under `startup_evidence`, one committed startup
-campaign by id and stage (`20261010-104827-91e92aa` / `grid`, issue #69): the
+campaign by id and stage (`20261011-031426-df3f802` / `grid`: the issue #69
+campaign re-run on the issue #89 design; `20261010-104827-91e92aa` before it): the
 record `.md`, the per-point `.csv` and the `.manifest.json`, each by sha256,
 plus the requested grid (5 process x 3 temperature x 3 resistor corner x 3 Vin
 = 135 points). The record is chosen explicitly; a newer startup directory is

@@ -614,8 +614,8 @@ which #35's wider `Cc` is what closes
   deferral.
 - **No current limit, soft start, output capacitor, load, or
   start-up circuit.** `EN` has existed since issue #67 (DR-0008), and a
-  committed startup campaign (record `20261010-104827-91e92aa`, issue #69)
-  measures it; its proposed-methodology failures are reported in row 9 of
+  committed startup campaign (issue #69; record `20261011-031426-df3f802`,
+  re-run for #89's G1 disable pull-down) measures it; its proposed-methodology failures are reported in row 9 of
   [`sim/characterization/characterization-report.md`](../sim/characterization/characterization-report.md).
   Row 9 stays Open. The rest is the same scope boundary as the SG13G2 branch. Note that a
   self-biased mirror needs no start-up circuit only because `IBIAS` is
