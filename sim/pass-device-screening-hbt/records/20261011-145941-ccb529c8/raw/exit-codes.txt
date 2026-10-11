@@ -1,0 +1,8 @@
+npn13G2-servo: klt sim exit 0
+npn13G2-vcesweep: klt sim exit 0
+npn13G2l-servo: klt sim exit 0
+npn13G2l-vcesweep: klt sim exit 0
+npn13G2v-servo: klt sim exit 0
+npn13G2v-vcesweep: klt sim exit 4
+pnpMPA-servo: klt sim exit 0
+pnpMPA-vcesweep: klt sim exit 4
