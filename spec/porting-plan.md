@@ -335,6 +335,10 @@ topology:
    "decided implicitly by whoever designs the amplifier" (survey §3.3).
 
 **Sibling-canary dependency: `sg13g2-opamp` (declared, not yet adopted).**
+*Update: [`DR-0016`](decision-records/DR-0016-error-amplifier-sibling-reuse-verdict.md)
+(Proposed) closes the `evaluate` entry as `kept` (in-tree OTA retained). The
+text below is the history it resolves and is left as written.*
+
 The fleet manifest already records this repo's error-amp dependency:
 `2AMLogic/2am`'s `repos.yml` lists `consumes: [sg13g2-opamp,
 sg13g2-bandgap]` for `sg13g2-ldo` — "error amp is an ideal placeholder
@@ -557,6 +561,8 @@ in a committed filename order:
    (≤ 119.7 µA incl. `ibias`) and offset (+21.9 mV systematic ratified /
    46.7 mV mismatch-inclusive unratified) argued against this repo's own
    rows — before `evaluate` can move to `adopted` or `kept`.
+   *Update: `DR-0016` (Proposed) moves it to `kept`; this item remains about
+   the input-stage and reference-interface choice.*
 6. **Current-limit window** (§2.3) — sized against SG13G2's own resistor-
    flavor process spread (`rsil`/`rhigh`/`rppd`, whichever the sense path
    uses) from the start, informed by gf180's `DR-0005` negative-result
