@@ -222,5 +222,53 @@ class CapRetry(unittest.TestCase):
         self.assertEqual(calls, [1])
 
 
+class ReuseReport(unittest.TestCase):
+    """--reuse-work (issue #89): only a byte-identical request with a complete
+    earlier report is reused; anything else is submitted again."""
+
+    def setUp(self):
+        self.root = tempfile.mkdtemp()
+        self.old, self.new = os.path.join(self.root, "old"), os.path.join(self.root, "new")
+        for w in (self.old, self.new):
+            os.makedirs(os.path.join(w, "g00"))
+            open(os.path.join(w, "osdi-preamble.cir"), "w").write("* preamble\n")
+            open(os.path.join(w, "g00", "request.json"), "w").write('{"netlist": "tb.spice"}\n')
+            open(os.path.join(w, "g00", "corners.lib"), "w").write(".lib a\n.endl a\n")
+            open(os.path.join(w, "g00", "tb.spice"), "w").write(f'.include "{w}/osdi-preamble.cir"\nR1 a 0 1k\n')
+        self.raw = os.path.join(self.old, "g00", "c.raw")
+        open(self.raw, "w").write("raw")
+        self.write_report([{"artifacts": {"raw": self.raw}}, {"artifacts": {"raw": self.raw}}])
+
+    def tearDown(self):
+        shutil.rmtree(self.root)
+
+    def write_report(self, corners):
+        open(os.path.join(self.old, "g00", "report.json"), "w").write(json.dumps({"corners": corners}))
+
+    def reuse(self, n=2):
+        return bb.reusable_report(os.path.join(self.old, "g00"), os.path.join(self.new, "g00"),
+                                  self.old, self.new, n)
+
+    def test_identical_complete_request_is_reused(self):
+        self.assertEqual(self.reuse(), os.path.join(self.old, "g00", "report.json"))
+
+    def test_changed_body_is_not_reused(self):
+        open(os.path.join(self.new, "g00", "tb.spice"), "a").write("R2 a 0 2k\n")
+        self.assertIsNone(self.reuse())
+
+    def test_changed_request_or_corner_lib_is_not_reused(self):
+        open(os.path.join(self.new, "g00", "corners.lib"), "a").write("* x\n")
+        self.assertIsNone(self.reuse())
+
+    def test_incomplete_or_empty_report_is_not_reused(self):
+        self.assertIsNone(self.reuse(n=3))
+        open(os.path.join(self.old, "g00", "report.json"), "w").write("")
+        self.assertIsNone(self.reuse())
+
+    def test_missing_rawfile_is_not_reused(self):
+        os.remove(self.raw)
+        self.assertIsNone(self.reuse())
+
+
 if __name__ == "__main__":
     unittest.main()

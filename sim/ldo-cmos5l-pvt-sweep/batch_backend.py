@@ -463,6 +463,46 @@ def submit(gdir, cap_wait_s=0.0, sleep=None, clock=None):
         n += 1
 
 
+def reusable_report(old_gdir, gdir, old_work, work, n_members):
+    """Return the path of a completed report in an earlier work dir that can
+    stand in for submitting this group again, or None.
+
+    Only a byte-identical request is reused: request.json and corners.lib
+    must match exactly, tb.spice must match once the earlier work dir's path
+    (the OSDI preamble include) is replaced by this one's, and so must the
+    OSDI preamble itself. The earlier report must parse, cover every member
+    point and point at rawfiles that still exist. Anything else is
+    submitted to the fleet as usual. It is never a local run."""
+    def read(path):
+        try:
+            with open(path, encoding="utf-8") as f:
+                return f.read()
+        except OSError:
+            return None
+    for fn in ("request.json", "corners.lib"):
+        a = read(os.path.join(old_gdir, fn))
+        if a is None or a != read(os.path.join(gdir, fn)):
+            return None
+    tb_old = read(os.path.join(old_gdir, "tb.spice"))
+    if tb_old is None or tb_old.replace(old_work, work) != read(os.path.join(gdir, "tb.spice")):
+        return None
+    if read(os.path.join(old_work, "osdi-preamble.cir")) != read(os.path.join(work, "osdi-preamble.cir")):
+        return None
+    rp = os.path.join(old_gdir, "report.json")
+    try:
+        rep = json.loads(read(rp) or "")
+    except ValueError:
+        return None
+    corners = rep.get("corners") or []
+    if len(corners) != n_members:
+        return None
+    for c in corners:
+        raw = (c.get("artifacts") or {}).get("raw")
+        if not raw or not os.path.isfile(raw):
+            return None
+    return rp
+
+
 def collect(g, gdir, corners_out, record_meta):
     rep = json.load(open(os.path.join(gdir, "report.json")))
     remote = rep.get("environment", {}).get("remote") or {}
@@ -556,8 +596,25 @@ def cmd_run(a):
                 f.write(f"{pid}\t{g['name']}\t{corner_name(p)}\t{num(p['temp'])}\n")
 
     rcs = {}
+    reused = {}
+    if a.reuse_work:
+        old_work = os.path.abspath(a.reuse_work)
+        for g in groups:
+            rp = reusable_report(os.path.join(old_work, g["name"]), gdirs[g["name"]],
+                                 old_work, work, len(g["members"]))
+            if rp:
+                shutil.copyfile(rp, os.path.join(gdirs[g["name"]], "report.json"))
+                reused[g["name"]] = rp
+                rcs[g["name"]] = 0
+                print(f"batch_backend: {g['name']}: reusing the completed fleet report {rp} "
+                      "(byte-identical request; nothing submitted)", file=sys.stderr)
+        with open(os.path.join(work, "reused-reports.tsv"), "w") as f:
+            f.write("group\treused_report\n")
+            for name in sorted(reused):
+                f.write(f"{name}\t{reused[name]}\n")
+    todo = [g for g in groups if g["name"] not in reused]
     with concurrent.futures.ThreadPoolExecutor(max_workers=a.submit_concurrency) as ex:
-        futs = {ex.submit(submit, gdirs[g["name"]], a.cap_wait_s): g["name"] for g in groups}
+        futs = {ex.submit(submit, gdirs[g["name"]], a.cap_wait_s): g["name"] for g in todo}
         for fu in concurrent.futures.as_completed(futs):
             name = futs[fu]
             rcs[name] = fu.result()
@@ -580,6 +637,8 @@ def cmd_run(a):
     os.makedirs(prov, exist_ok=True)
     shutil.copyfile(preamble, os.path.join(prov, "osdi-preamble.cir"))
     shutil.copyfile(os.path.join(work, "points.tsv"), os.path.join(prov, "points.tsv"))
+    if a.reuse_work:
+        shutil.copyfile(os.path.join(work, "reused-reports.tsv"), os.path.join(prov, "reused-reports.tsv"))
     for g in groups:
         src, dst = gdirs[g["name"]], os.path.join(prov, g["name"])
         os.makedirs(dst, exist_ok=True)
@@ -594,6 +653,7 @@ def cmd_run(a):
         json.dump({"backend": "batch", "client_klt": subprocess.run(
             ["klt", "--version"], capture_output=True, text=True).stdout.strip(),
             "runner_klt": runner, "engines": engines, "staged_osdi_sha256": staged,
+            "reused_reports": {n: os.path.dirname(r) for n, r in sorted(reused.items())},
             "jobs": sorted(meta["jobs"], key=lambda j: j["group"])}, f, indent=1)
         f.write("\n")
     with open(os.path.join(prov, "backend.env"), "w") as f:
@@ -624,6 +684,11 @@ def main():
                    help="move body lines matching REGEX into each point's own "
                         "corners.lib section, so decks differing only in them share "
                         "one request (issue #64 DoE: the Iload/Cout/Resr lines)")
+    r.add_argument("--reuse-work", metavar="DIR",
+                   help="an earlier --work dir: a group whose request is byte-identical "
+                        "there (and whose report there is complete) reuses that fleet "
+                        "report instead of being submitted again; recorded in "
+                        "_batch/reused-reports.tsv and backend.json")
     r.add_argument("--plan-only", action="store_true",
                    help="parse and group the queue, print the plan, submit nothing")
     a = ap.parse_args()

@@ -527,6 +527,11 @@ screen_point() {
 # main grid and the --doe-generate --batch campaign, issue #64).
 # SWEEP_BATCH_CONCURRENCY (default 2) bounds how many klt sim requests are
 # in flight at once; it is fleet-side work, the submitting host only waits.
+# SWEEP_BATCH_REUSE_WORK=<earlier batch work dir> (issue #89) reuses the
+# completed fleet report of any group whose request there is byte-identical
+# (batch_backend.py --reuse-work), so a run whose client was interrupted
+# after most jobs finished does not resubmit them. Reused groups are listed
+# in corners/<id>/_batch/reused-reports.tsv. Nothing ever runs locally.
 run_batch_queue() {
   # Run every queued point on the fleet. batch_backend.py writes the same
   # <point_id>.log and *_dc/_ac.csv files the local loop writes. A failed
@@ -538,6 +543,7 @@ run_batch_queue() {
     --work "${BATCH_WORK}" --osdi-dir "${OSDI_DIR}" \
     --submit-concurrency "${SWEEP_BATCH_CONCURRENCY:-2}" \
     "${BATCH_EXTRA_ARGS[@]}" \
+    ${SWEEP_BATCH_REUSE_WORK:+--reuse-work "${SWEEP_BATCH_REUSE_WORK}"} \
     ${SWEEP_BATCH_PLAN_ONLY:+--plan-only} || batch_rc=$?
   if [[ -n "${SWEEP_BATCH_PLAN_ONLY:-}" ]]; then
     echo "run_sweep.sh: SWEEP_BATCH_PLAN_ONLY set -- plan printed, nothing submitted;" >&2
