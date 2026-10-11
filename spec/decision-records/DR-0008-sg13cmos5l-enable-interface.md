@@ -365,13 +365,38 @@ Extremes over the 45 points, per metric that record reports:
   below that row's worst-case margin to its target (PM 8.87 deg, GM 3.84 dB,
   PSRR 3.64 / 13.23 dB, Iq 5.28 uA). The closest is gain margin, where the
   shift is 0.22 % of the margin.
-- **What does not change.** All 45 points meet every row of the record's spec
-  comparison, as before. Each row's worst case is at the same
-  (corner, temperature, resistor) point. The same 15 points have more than
-  one 0 dB crossing. The `Cc` tolerance window is unchanged at
-  `110e-6`..`259e-6` (x0.65..x1.52), and dropout is identical at every point.
-  In the characterization report no row's verdict, coverage or freshness
-  state changes. The full-load Iq worst case moves by one 1e-10 A
+- **What "no regression" means here.** #89 asks for no regression on every
+  metric the record reports. This addendum reads that the way the PR #87
+  addendum above did. There, phase margin -0.015 deg and gain margin
+  -0.023 dB against `7061e8f` were called "no regression" because no
+  verdict, pass count or binding corner moved. It does not mean a zero
+  delta. The deltas here are smaller than the #87 ones (PM about 7x, GM
+  about 3x), and the same invariants hold, as the next bullet lists. The
+  adverse direction is still reported as adverse, as above.
+- **What does not change.** These are two separate readings, and neither
+  changes.
+  - *The record's own spec comparison* (the legacy single-crossing scalars
+    in `20261011-051956-eda9285.md`): all 45 points meet every row there,
+    as before. That includes PM >= 45 deg and GM >= 10 dB read from the first
+    crossing.
+  - *The characterization report under DR-0014 (proposed)*: row 10 is not a
+    pass. Phase margin and gain margin are each **0/45 pass, 0 fail,
+    45 ambiguous**. Every point has the reason `ceiling_unbounded`, because
+    no trace bounds the 100 MHz sweep ceiling. That is the same result as for
+    `20261010-025634-60a3e81`, from
+    `sim/ldo-cmos5l-pvt-sweep/evidence/20261011-051956-eda9285/row10-margins.*`
+    (written by `row10_record.py`, which runs `row10_margins.py`'s unchanged
+    classifier on this record).
+  - The same 15 points have more than one 0 dB crossing. Under DR-0014 they
+    classify exactly as before, with the same per-point verdicts and reasons.
+  - Each row's worst case is at the same (corner, temperature, resistor)
+    point.
+  - The `Cc` tolerance window is unchanged at `110e-6`..`259e-6`
+    (x0.65..x1.52), and dropout is identical at every point.
+  - In the characterization report, no row's verdict, coverage or freshness
+    state changes. Row 10 stays `ambiguous`, and DR-0007 keeps it Open.
+
+  The full-load Iq worst case moves by one 1e-10 A
   quantization step (24.8873 -> 24.8874 uA), and the 2.97 V load-regulation
   worst case improves slightly (0.0228482 -> 0.0228476 %).
 - **Smoke cross-check** (tt / 27 C, linear 5.47 pF `Cc` stand-in, against the

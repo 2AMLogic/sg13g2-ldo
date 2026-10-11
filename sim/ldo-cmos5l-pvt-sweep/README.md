@@ -283,7 +283,12 @@ metric:
 
 Dropout is identical at every point. Line and load regulation move by at
 most 1.5e-5 mV/V and 5.7e-7 %. All 45 points still meet every row in the
-spec comparison table. Each row's worst case is at the same point as
+record's own spec comparison table. That table uses the legacy first-crossing
+PM/GM scalars, and it is not the row-10 verdict. Under DR-0014 (proposed),
+row 10 PM and GM are each 45 `ambiguous`, 0 pass and 0 fail (reason
+`ceiling_unbounded`), the same as for `60a3e81`. The evidence is
+`evidence/20261011-051956-eda9285/row10-margins.*`, written by
+`row10_record.py`. Each row's worst case is at the same point as
 before, the same 15 points have more than one 0 dB crossing, and the `Cc`
 tolerance window is unchanged at `110e-6`-`259e-6`. The worst gain margin
 is now 13.84 dB (was 13.85) and the worst phase margin 53.87 deg.
@@ -1416,3 +1421,54 @@ dropout artifacts in this directory that say `DR-0009` keep that legacy label:
 `dropout_metrics.py` and `dropout_campaign.py`. They are append-only evidence or
 hash-pinned. They belong to DR-0012, not to DR-0009 (the startup measurement
 methodology, see "Startup campaign" above).
+
+## Row-10 margins under DR-0014 (issue #126, PROPOSED)
+
+[`DR-0014`](../../spec/decision-records/DR-0014-row10-stability-margin-classification.md)
+(`proposed`, not ratified; the `PM >= 45 deg` / `GM >= 10 dB` targets are
+unchanged) defines how the phase and gain margins are read from a loop-gain
+trace when it has more than one 0 dB crossing or no -180 deg crossing. In
+short: every crossing in the sweep counts, and the scored margin is the
+minimum. A PM crossing's margin is its angular distance from the critical
+point, made negative after an in-band encirclement. A miss inside the sweep
+is a fail. A pass also needs the loop gain at the 100 MHz ceiling to be at
+least 10 dB below unity and non-increasing over the last decade. Everything
+else is `ambiguous`, with a reason.
+
+`ac_metrics.classify_margins` implements it. `loopgain_metrics`, which minted
+every record here, is unchanged. The recorded `phase_margin_worst_deg` is
+`180 + unwrapped phase`, not a margin; DR-0014 explains the difference.
+
+Offline reclassification of the committed traces (no simulator, no PDK, no
+new record):
+
+    python3 sim/ldo-cmos5l-pvt-sweep/row10_margins.py           # (re)write
+    python3 sim/ldo-cmos5l-pvt-sweep/row10_margins.py --check   # CI: byte-compare
+
+It writes `evidence/<record-id>/row10-margins.{csv,json,md}` for the
+45-point record `20261010-025634-60a3e81` and for the #64 combined record
+`20261010-101245-6df50fd` (536 rows). Before it writes anything, every trace
+must reproduce the record minted from it, and every recorded PM or GM miss
+must classify as `fail`. Result: no committed trace bounds the 100 MHz
+ceiling (the loop gain there is -1.17 to +0.53 dB and rising), so no PM or
+GM pass can be scored. The 15 legacy two-crossing points and the 46 `failed`
+#64 rows are `ambiguous` on GM. On PM, the 15 legacy points are `ambiguous`,
+39 of the 46 rows `fail` and 7 are `ambiguous`. The #64 PM and GM misses (210,
+90) are unchanged. Tests: `test_ac_metrics.py`, `test_row10_margins.py`.
+
+Later 45-point records (#89). `row10_margins.py` is pinned by sha256 inside
+its own landed outputs and names its two datasets in code, so it is not
+edited to add a record. `row10_record.py` (the same thin-wrapper pattern as
+`item5_grid.py`) runs its unchanged `legacy` logic, with the same trace
+layout, cross-checks, no-loosening guard and output format, on another
+45-point record. It also pins itself in the output's `classifier` block:
+
+    python3 sim/ldo-cmos5l-pvt-sweep/row10_record.py --record 20261011-051956-eda9285
+    python3 sim/ldo-cmos5l-pvt-sweep/row10_record.py --check   # CI: every output it wrote
+
+For record `20261011-051956-eda9285` (the G1 pull-down design) the result is
+the same as for `20261010-025634-60a3e81`. PM and GM are `ambiguous` at all
+45 points, all with reason `ceiling_unbounded`. 30 points have one 0 dB
+crossing and 15 have two, and those 15 are the same points as before. The
+in-band GM is 13.84 to 29.87 dB, and no committed trace bounds the 100 MHz
+ceiling (-1.164 to +0.528 dB there, and rising). Tests: `test_row10_record.py`.

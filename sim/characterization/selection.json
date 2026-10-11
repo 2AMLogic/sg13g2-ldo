@@ -156,5 +156,20 @@
       "monotonic_tolerance_v": 0.001,
       "note": "Overshoot is read as peak VOUT above the +2 % band edge (1.836 V) and monotonicity as maximum downward excursion <= 1 mV before settling. 'controlled ramp' has no numeric bound in the target text and is not graded."
     }
+  },
+  "row10_margin_evidence": {
+    "circuit_record_id": "20261011-051956-eda9285",
+    "decision_record": "spec/decision-records/DR-0014-row10-stability-margin-classification.md",
+    "policy": "Row 10 PM/GM verdicts follow the PROPOSED DR-0014 classification of the SAME circuit record's committed loop-gain traces, derived offline by sim/ldo-cmos5l-pvt-sweep/row10_margins.py's classifier, run on this record through the row10_record.py wrapper (#89; no simulation). Both files are pinned. The generator also requires: the classification names the pinned PVT csv; its classifier sources still hash to the bytes it records; every one of the 45 traces it lists sits under corners/<record-id>/ and matches its sha256; the 45 corners appear once each; its record_* columns equal the PVT csv; every pass/fail agrees with its own number against the unchanged 45 deg / 10 dB bounds; and every point the PVT csv shows below a bound is a fail (no miss is upgraded). Any violation is a hard generator error. DR-0014 is proposed and row 10 stays Open (DR-0007).",
+    "files": {
+      "classification_csv": {
+        "path": "sim/ldo-cmos5l-pvt-sweep/evidence/20261011-051956-eda9285/row10-margins.csv",
+        "sha256": "7c496b2df140f74429f89b636c32c8aacddaa064136a6628a74e8c216255edfd"
+      },
+      "classification_json": {
+        "path": "sim/ldo-cmos5l-pvt-sweep/evidence/20261011-051956-eda9285/row10-margins.json",
+        "sha256": "3b6dd123d362cc8c4822ae7cd021af986947d579d9ea54203524560cd09a2e4d"
+      }
+    }
   }
 }
