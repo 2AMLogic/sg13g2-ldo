@@ -124,6 +124,281 @@ point.
 and aborts loudly if a future schematic edit changes that connectivity, so
 this bench cannot silently go stale.
 
+## Loop-gain measurement method -- two-injection (Middlebrook) reconstruction
+
+The single-injection reading above is exact **only if `FBAMP` draws zero AC
+current**. That holds at DC and low frequency (a MOSFET gate). At higher
+frequency the input-pair gate capacitance, and any Cgd feed-through to the
+amplifier output, is no longer negligible. Issue #135 measures the same
+break a second way and lets the two answers agree or disagree as they will.
+
+**Method and references.** We use Middlebrook's **general (bilateral)**
+two-injection result: R. D. Middlebrook, "Measurement of loop gain in
+feedback systems", Int. J. Electronics 38(4):485-512 (1975). Tian,
+Visvanathan, Hantgan and Kundert, "Striving for small-signal stability",
+IEEE Circuits & Devices 17(1):31-41 (2001), reach the same `T` from a
+single test structure. We use the two-run form because the existing break
+geometry (`FB -> FBAMP`, a MOSFET gate) already hosts the voltage
+injection verbatim. We do not rely on either citation for correctness. The
+formula is derived below from the break's two-port, and
+`test_loopgain2.py` checks it against a small circuit solved directly by
+nodal analysis.
+
+**Two-port at the break.** Cut the `FB -> FBAMP` wire. Port A = `FB` (the
+divider node, the *return* side) and port B = `FBAMP` (the amplifier input,
+the *forward* side), both against ground. The rest of the circuit is a
+linear two-port, with currents flowing *into* it:
+
+```
+i_A = y11 v_A + y12 v_B,        i_B = y21 v_A + y22 v_B
+```
+
+No assumption is made about `y21` (reverse transmission, e.g. Cgd
+feed-through) or about `y22` (the gate loading).
+
+- **Voltage experiment** (`tb_loopgain2v_cmos5l.spice.tmpl`). This is the
+  `tb_loopgain_cmos5l` circuit, with `Vbreak FB FBAMP 0 ac 1`, so
+  `v_A - v_B = 1` and `i_A + i_B = 0`. It exports the raw complex `v(fb)`
+  and `v(fbamp)`. Middlebrook's `Tv = -v_y/v_x`:
+  `Tv = -v(fb)/v(fbamp) = (y12 + y22)/(y11 + y21)`. **`Tv` is exactly the
+  single-injection `L`.** The polarity of `Vbreak` cancels in the ratio.
+- **Current experiment** (`tb_loopgain2i_cmos5l.spice.tmpl`). The loop is
+  left **intact** behind a 0 V ammeter `Vmeas FB FBAMP 0 dc 0`, so the
+  operating point and the AC loading are those of the unbroken circuit. A
+  shunt source `Iinx 0 FBAMP dc 0 ac 1` pushes `ix = 1 A` (AC) into
+  `FBAMP`. The ammeter reads the **bridge** current `i_m = i(vmeas)`,
+  positive `FB -> FBAMP` (ngspice reports `n+ -> n-` through the source).
+  KCL gives the amplifier-side (forward) current `i_x = i_B = 1 + i_m` and
+  the forward-oriented return current `i_y = i_m` (`i_A = -i_m`).
+  Middlebrook's `Ti = -i_y/i_x`:
+  `Ti = -i_m/(1 + i_m) = (y11 + y12)/(y21 + y22)`. The exported vectors
+  keep their historical `il_*` names, but the value is `i_m`.
+- **Combination** (per frequency, complex):
+
+  ```
+  T = (Tv Ti - 1)/(Tv + Ti + 2) = (y12 - y21)/(y11 + y22 + 2 y21)
+  1 + T = (y11 + y12 + y21 + y22)/(y11 + y22 + 2 y21)
+  ```
+
+  The numerator of `1 + T` is the driving-point admittance of the rejoined
+  node, so **`1 + T` vanishes at the closed-loop natural frequencies**. `T`
+  counts only the **non-reciprocal** part `y12 - y21` of the transmission
+  across the cut. Reciprocal (passive) coupling, such as resistors or
+  capacitors bridging the cut, contributes nothing to `T`.
+- **Sign.** At DC, `Tv` is large and positive-real for this
+  negative-feedback loop, and `Ti` is larger still. `T` therefore needs no
+  flip: the repo's convention is `L = T`.
+- **Unilateral special case.** Take `y21 = 0`, model the divider side as a
+  Thevenin source `T' v_B` behind `Zt`, and the amplifier side as a load
+  `Zl`, with `u = Zt/Zl`. Then `T = -T'/(1 + u)`, the **loaded** return
+  ratio, and `Tv = u - T'`. The fixture checks that this `T` equals Bode's
+  return ratio of the amplifier's controlled source.
+- **Bilateral case.** At a bilateral break, `T` is *not* the return ratio of
+  any single transistor's gm. The loop gain at such a break is not unique,
+  and the fixture shows the difference. `T` is the break-point loop gain
+  whose `1 + T` zeros are the closed-loop poles. DR-0014's open-loop
+  stability premise applies to `T`'s poles (the zeros of
+  `y11 + y22 + 2 y21`). That premise is stated, not verified, as for the
+  single-injection traces.
+
+**What the first revision of this PR got wrong (withdrawn).** It published
+`L = -T' = -(1 + Hi/Hv)/(1 + Hi)` as "the true loop transfer". That is the
+**unloaded** open-circuit transfer: `1 - T'` does not vanish at the
+closed-loop poles (`1 - T' + u = 0` there). It also presented
+"`L_single - L_two = u`" and a loading-explain bound `|L2 - L1| <= 3|u|` as
+evidence. Both hold for any data, because `u` was computed from the same
+pair and `u + L_two = -1/Hv = L_single` identically, so they could not
+fail. Both are removed. In the fixture, the old formula misses Bode's
+return ratio by more than 10 % and fails the closed-loop-pole test
+(`test_loopgain2.py`).
+
+**Resolution (export rounding).** The fleet exports carry 9 significant
+digits (`%.8e`). Each exported complex value `z` in `{v(fb), v(fbamp),
+i(vmeas)}` is therefore exact to `|dz| <= 5e-9 |z|`. Write
+`T = (a m - b n)/(2bn - an - bm)`, with `a = v(fb)`, `b = v(fbamp)`,
+`m = i_m` and `n = 1 + m`. Per frequency, `loopgain2.py` computes the
+first-order bound `res = 5e-9 * sum |dT/dx| |x|`. A sample is **resolved**
+iff `|T| >= 10 res` (error <= 10 %, i.e. <= 0.83 dB and <= 5.8 deg). The
+fixture checks that the bound covers the actual `%.8e`-vs-`%.17g`
+difference.
+
+Above the loop's crossing, `T` is a near-exact cancellation: `Tv Ti -> 1`
+wherever the cut network is reciprocal. Rounding dominates there. The
+reconstructed trace that `loopgain2.py` writes for the classifier is
+therefore the **resolved prefix only**: 1 Hz up to, not including, the
+first unresolved sample. Nothing is clamped or invented.
+
+Above the cut, each point reports two numbers:
+
+- `n_resolved_above_cut`: any resolved sample there would be a real
+  feature that the cut hides.
+- `bound_db_above_cut = max 20 log10(|T| + res)`: an upper bound on `|T|`
+  under the rounding model, not a measured level.
+
+ngspice's own solve error is not exported and is assumed to be below the
+9-digit rounding.
+
+**Stated tolerances** (enforced per point by `loopgain2.py`, which raises
+instead of writing a trace it could not validate):
+
+| Check | Tolerance | What could make it fail |
+|---|---|---|
+| deck identity: `Tv` (2v deck) vs the control trace (separate deck) | 1e-6 relative, complex, below the control's first 0 dB crossing | a plumbing bug: the 2v circuit IS the control circuit |
+| low-frequency agreement: `T` vs the control | `<= res + 1e-2` relative, below f_ugf/10 | `T - Tv = -(1 + Tv)^2/(Tv + Ti + 2)`: it holds only if the independent 2i deck sees `|Ti| >> |Tv|` (a high-Z gate). A wiring/polarity fault or a leaky input gives an O(1) miss (fixture: a resistive input fails it). This tolerance was set in this revision, after the first fleet data had been seen; the observed value is reported |
+| orientation | `phase(T at 1 Hz)` within 45 deg of 0 | a reversed shunt source or ammeter lands near 180 deg (fixture) |
+| resolution | `abs(T) >= 10 res` per sample | not a pass/fail check: it decides which samples are written |
+
+**Independent fixture** (`test_loopgain2.py`, stdlib only). The circuit is
+a gm stage with input capacitance (finite loading), an optional Cgd-like
+feed-through capacitor (bilateral), an output pole, and a resistive divider
+back to the input. It is solved by modified nodal analysis at any complex
+`s`. Its exports are produced the way the fleet benches produce theirs, and
+written in the fleet's `%.8e` format. Its truths involve no injection: the
+cut network's y-parameters, the closed-loop poles (roots of the intact
+nodal determinant), and Bode's return ratio of the gm source. The tests
+assert:
+
+- in the loaded unilateral case, reconstructed `T` = return ratio within
+  `2 res` at every resolved sample, while `Tv` and the old `-T'` both miss
+  it by more than 10 %;
+- in the bilateral case, `T` = `(y12 - y21)/(y11 + y22 + 2 y21)`, and `T`
+  differs from the return ratio;
+- `1 + T` has a simple zero at each closed-loop pole (approached along a
+  ray, since `T` is 0/0 exactly at the pole);
+- with heavy loading, the fixture's own single injection shows a spurious
+  second 0 dB crossing, which the return ratio and the reconstruction do
+  not;
+- a reversed shunt source or ammeter fails the orientation check; a
+  reversed `Vbreak` is harmless; swapped voltage probes fail the deck
+  identity; a leaky input fails the low-frequency agreement.
+
+Replacing the formula with the previous revision's `-T'` fails the three
+truth tests.
+
+**Bench hygiene.** All three loop-gain templates (single-injection, 2v,
+2i) are covered by `run_sweep.sh`'s topology-sync guard. That guard
+includes negative controls specific to the two-injection benches:
+
+- ammeter removed;
+- ammeter given an AC injection;
+- shunt source moved to the divider side;
+- shunt polarity flipped;
+- ammeter nodes swapped;
+- a `Vbreak` smuggled into the intact-loop deck.
+
+`batch_backend.py` accepts only the exact `let` blocks and wrdata vector
+lists. It rebuilds the export columns from the rawfile's complex vectors,
+and fails closed on any other `.control` shape. The campaign driver is
+`run_loopgain2.sh`. It runs on the batch fleet only; `--validate` runs
+exactly three tt/27C decks locally as a pre-flight debug probe.
+
+### Result of the two-injection comparison (issue #135, record `20261011-165616-eabde108`)
+
+Diagnostic, schematic-level evidence. Row 10 stays Open and DR-0014 is
+unchanged.
+
+**Coverage and provenance.** This is the full 45-point grid (not a
+subset), with a 10 GHz ceiling: 135 klt corners in 3 batch requests.
+
+| request | job id |
+|---|---|
+| control | `klt-sim-22027d34f9eb` |
+| voltage injection | `klt-sim-9898ed9d25e0` |
+| current injection | `klt-sim-e332268bdc00` |
+
+The three jobs completed in an earlier invocation of the same campaign.
+Its post-processing stopped on a `run_loopgain2.sh` bench-name bug, and the
+byte-identical requests were re-imported via `--reuse-work`
+(`corners/20261011-165616-eabde108/_batch/reused-reports.tsv`). No corner
+was simulated locally.
+
+The like-for-like control on today's design bytes matches the historical
+single-injection traces of `20261011-070111-5391c68` to 0 dB at all 45
+points (`evidence/20261011-165616-eabde108/ctl-vs-baseline.json`).
+
+Artifacts:
+
+- comparison: `records/20261011-165616-eabde108.loopgain2.csv`
+- record: `records/20261011-165616-eabde108.loopgain2.md`
+- classification: `evidence/20261011-165616-eabde108/row10-margins.{csv,json,md}`
+
+**Supersession within this PR.** The raw fleet exports are unchanged. This
+record's *derived* artifacts were regenerated with the corrected method
+before merge: the reconstructed `corners/.../loopgain2_*_ac.csv` traces,
+the comparison CSV and JSON, the record md and the row-10 classification.
+The first revision's numbers came from the unloaded `-T'` with a -300 dB
+clamp. They are withdrawn: two-injection PM 53.91 to 77.03 deg, GM 20.56
+to 39.13 dB, and 31 pass / 14 ambiguous verdicts. The record never landed
+on `main`.
+
+The `netlist-snapshots/` decks the fleet ran were rendered before the
+template header comments were corrected. Their circuit and `.control` lines
+are byte-identical to today's templates.
+
+| quantity (45 points) | single injection (control, `Tv`) | Middlebrook `T` |
+|---|---|---|
+| PM, first crossing [deg] | 53.87 .. 76.93 (worst ss/125C/res_bcs) | 53.87 .. 76.78 (same worst point) |
+| GM [dB] | 13.84 .. 29.87 (worst ff/-40C/res_wcs) | 18.41 .. 38.26 (same worst point) |
+| 0 dB crossings | 2 at every point | 1 at every point (resolved band) |
+| second 0 dB crossing [Hz] | 5.94e7 .. 1.79e8 | none in the resolved band |
+| last resolved frequency of `T` [Hz] | -- | 6.31e7 .. 7.94e7 |
+| loop gain at that frequency [dB] | -2.26 .. +0.22 | -145.4 .. -140.8 |
+| loop gain at 1 GHz / 10 GHz [dB] | +0.90 .. +1.65 / +0.40 .. +1.17 | unresolved; `abs(T) <= -144.6` dB (bound) above the cut |
+| resolved samples above the cut | -- | 0 at every point |
+
+**Reading.** Each statement below names the evidence that could have
+contradicted it.
+
+- **In band, the methods agree.** Below f_ugf/10, `T` and the control
+  agree to 6.6e-5 .. 8.3e-4 relative (tolerance 1e-2). `Tv` matches the
+  control deck to 5.3e-8 .. 6.1e-8. PM differs by -0.34 .. -0.01 deg.
+- **GM is where the gate current matters.** Each method's GM is read at its
+  own first -180 deg crossing: 0.78 .. 0.97 MHz for the control, 1.15 ..
+  1.78 MHz for `T`. There, `T` is 4.6 .. 8.6 dB further below unity than
+  the single injection. The single-injection GM is the conservative
+  (smaller) one at every point. This is a measured difference (the 2i deck
+  supplies it), not an attribution.
+- **No plateau in `T` where it can be resolved.** Up to its cut (63 .. 79
+  MHz), `T` falls to -141 .. -145 dB with one 0 dB crossing and no second
+  crossing, while the control at the same frequency sits at -2.3 .. +0.2
+  dB, heading into its plateau. Above the cut no sample of `T` is resolved
+  at any point, and `abs(T) <= -144.6` dB there. A plateau near 0 dB in
+  `T` would sit about 145 dB above that bound and would have been resolved.
+  So the single-injection plateau and second crossing are absent from
+  Middlebrook's loop gain at this break.
+- **The fixture shows the same mechanism in a known circuit.** With heavy
+  input loading, the single injection reads a spurious second crossing that
+  the return ratio does not have.
+- **Not claimed:**
+  - which physical path makes the single injection read about +1 dB above
+    100 MHz. The gate-loading hypothesis is consistent with the data but
+    was not separately tested (e.g. against an op-point gate-capacitance
+    estimate);
+  - anything above 1 GHz (model range unvalidated);
+  - `T` above the cut, which is a rounding bound, not a level.
+
+**DR-0014 classification** (`row10_loopgain2.py`, rules unchanged). The
+classifier sees only the resolved prefix, so it would judge the ceiling
+premise at about 70 MHz rather than 10 GHz. The wrapper therefore reports
+every point whose reconstruction is truncated below the sweep ceiling as
+`ambiguous`, with reason `reconstruction_unresolved_above_cut`: a pass
+becomes ambiguous, and a fail would stay a fail. It also withdraws the GM
+above-ceiling bound and leaves the Nyquist bookkeeping `undetermined`.
+Result: PM `ambiguous` 45 / 45 and GM `ambiguous` 45 / 45. Still ambiguous
+is the honest outcome. No rule, threshold or floor was changed, and no
+point was re-judged. Row 10 stays Open, the characterization selection is
+untouched (this campaign is not a selection input), and exit 3 remains the
+honest non-T1 result.
+
+**Not a tool gap.** The klt client does not leave `report.json` missing: a
+missing file cannot come from klt. `batch_backend.py`'s `submit_once`
+creates `report.json` and `klt-sim.stderr` itself before klt starts. The
+related refusal-wait gap is already filed upstream as klayout-tools #2917.
+`cap_refused()` now treats a missing file as a refusal and re-submits to
+the fleet. If the first submission had in fact reached the fleet, this can
+double-submit. That cost is bounded by the retry budget, and nothing ever
+falls back to a local run.
+
 ## Why Vin=3.63V for load regulation
 
 The schematic's provisional `Mpass` sizing (`w=300u l=0.5u`,

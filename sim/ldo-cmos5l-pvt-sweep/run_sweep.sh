@@ -94,6 +94,7 @@ set -euo pipefail
 
 CHECK_ENV=0
 CHECK_GUARD=0
+CHECK_TOPOLOGY=0
 DOE_GENERATE=0
 DOE_EXTRA=""
 DOE_ONLY_EXTRA=0
@@ -116,6 +117,7 @@ for arg in "$@"; do
   case "${arg}" in
     --check-env) CHECK_ENV=1 ;;
     --check-topology-guard) CHECK_GUARD=1 ;;
+    --check-topology) CHECK_TOPOLOGY=1 ;;
     --doe-generate) DOE_GENERATE=1 ;;   # issue #64: netlists + manifest only, no simulation
     --doe-extra=*) DOE_EXTRA="${arg#--doe-extra=}" ;;
     --doe-only-extra) DOE_ONLY_EXTRA=1 ;;   # with --doe-extra: simulate only the refinement points
@@ -170,10 +172,14 @@ Xamp FB VREF EAOUT VIN VSS IBIAS EN ldo_erramp_cmos5l
 XMen EAOUT EN VIN VIN sg13_hv_pmos w=40u l=0.5u ng=1 m=1
 XMbdis IBIAS EN VIN VIN sg13_hv_pmos w=5u l=0.5u ng=1 m=1'
 
-# topology_sync_problem <netlist> <template>: prints a diagnostic and returns
-# 1 on any mismatch, 0 when every comparison agrees.
+# topology_sync_problem <netlist> <template> [variant]: prints a diagnostic
+# and returns 1 on any mismatch, 0 when every comparison agrees. variant
+# selects the loop-break assertion: "vbreak" (default -- the series-break
+# benches tb_loopgain_cmos5l and, since issue #135, its circuit-identical
+# twin tb_loopgain2v) or "shunt" (tb_loopgain2i's intact-loop shunt
+# injection, also issue #135).
 topology_sync_problem() {
-  local netlist="$1" template="$2" body mirrored breaks
+  local netlist="$1" template="$2" variant="${3:-vbreak}" body mirrored breaks vmeas iinx
   body="$(awk '/^\.subckt ldo_core_cmos5l /,/^\.ends/' "${netlist}" | grep -E "${LOOPGAIN_MIRRORED_RE}" || true)"
   if [[ "${body}" != "${LOOPGAIN_EXPECTED_BODY}" ]]; then
     echo "run_sweep.sh: generated netlist ${netlist}: ldo_core_cmos5l's top-level instantiation lines differ from the expected body." >&2
@@ -191,78 +197,174 @@ topology_sync_problem() {
     diff <(echo "${LOOPGAIN_EXPECTED_BODY}") <(echo "${mirrored}") >&2 || true
     return 1
   fi
-  if ! grep -qE '^Xamp FBAMP ' "${template}"; then
-    echo "run_sweep.sh: ${template}: Xamp is not driven from FBAMP (loop break missing)." >&2
-    return 1
-  fi
-  breaks="$(grep -cE '^Vbreak FB FBAMP 0 ac 1$' "${template}" || true)"
-  if [[ "${breaks}" != "1" ]]; then
-    echo "run_sweep.sh: ${template}: expected exactly one 'Vbreak FB FBAMP 0 ac 1' loop break, found ${breaks}." >&2
-    return 1
-  fi
+  case "${variant}" in
+    vbreak)
+      # The series-break benches: exactly one ideal AC source between FB and
+      # FBAMP. (tb_loopgain2v's circuit is byte-identical to tb_loopgain's;
+      # only its .control export differs -- see the template headers.)
+      if ! grep -qE '^Xamp FBAMP ' "${template}"; then
+        echo "run_sweep.sh: ${template}: Xamp is not driven from FBAMP (loop break missing)." >&2
+        return 1
+      fi
+      breaks="$(grep -cE '^Vbreak FB FBAMP 0 ac 1$' "${template}" || true)"
+      if [[ "${breaks}" != "1" ]]; then
+        echo "run_sweep.sh: ${template}: expected exactly one 'Vbreak FB FBAMP 0 ac 1' loop break, found ${breaks}." >&2
+        return 1
+      fi
+      ;;
+    shunt)
+      # tb_loopgain2i (issue #135): the loop is INTACT -- a 0 V ammeter
+      # Vmeas bridges FB to FBAMP and a shunt AC current source Iinx injects
+      # into the driven side (FBAMP), so both the source and the load
+      # impedance are seen. A series AC source here would be a second,
+      # unintended injection: explicitly rejected.
+      if ! grep -qE '^Xamp FBAMP ' "${template}"; then
+        echo "run_sweep.sh: ${template}: Xamp is not driven from FBAMP (measurement point missing)." >&2
+        return 1
+      fi
+      vmeas="$(grep -cE '^Vmeas FB FBAMP 0 dc 0$' "${template}" || true)"
+      if [[ "${vmeas}" != "1" ]]; then
+        echo "run_sweep.sh: ${template}: expected exactly one 'Vmeas FB FBAMP 0 dc 0' ammeter, found ${vmeas}." >&2
+        return 1
+      fi
+      iinx="$(grep -cE '^Iinx 0 FBAMP dc 0 ac 1$' "${template}" || true)"
+      if [[ "${iinx}" != "1" ]]; then
+        echo "run_sweep.sh: ${template}: expected exactly one 'Iinx 0 FBAMP dc 0 ac 1' shunt injection, found ${iinx}." >&2
+        return 1
+      fi
+      if grep -qE '^Vbreak ' "${template}"; then
+        echo "run_sweep.sh: ${template}: the current-injection bench must NOT break the loop (found a Vbreak line)." >&2
+        return 1
+      fi
+      ;;
+    *)
+      echo "run_sweep.sh: unknown topology variant '${variant}'" >&2
+      return 1
+      ;;
+  esac
   return 0
 }
 
 assert_loopgain_topology_sync() {
-  if ! topology_sync_problem "${DESIGN_NETLIST}" "${SCRIPT_DIR}/testbench/tb_loopgain_cmos5l.spice.tmpl"; then
-    echo "run_sweep.sh: FATAL -- loop-gain bench topology is out of sync with ldo_core_cmos5l." >&2
-    echo "run_sweep.sh: update tb_loopgain_cmos5l.spice.tmpl's flattened copy (and LOOPGAIN_EXPECTED_BODY) to match, then re-run." >&2
-    exit 4
-  fi
+  local tmpl variant rc=0
+  for tmpl in loopgain loopgain2v loopgain2i; do
+    case "${tmpl}" in
+      loopgain2i) variant=shunt ;;
+      *)          variant=vbreak ;;
+    esac
+    if ! topology_sync_problem "${DESIGN_NETLIST}" \
+        "${SCRIPT_DIR}/testbench/tb_${tmpl}_cmos5l.spice.tmpl" "${variant}"; then
+      echo "run_sweep.sh: FATAL -- tb_${tmpl}_cmos5l bench topology is out of sync with ldo_core_cmos5l." >&2
+      echo "run_sweep.sh: update tb_${tmpl}_cmos5l.spice.tmpl's flattened copy (and LOOPGAIN_EXPECTED_BODY) to match, then re-run." >&2
+      rc=1
+    fi
+  done
+  [[ ${rc} -eq 0 ]] || exit 4
 }
 
 # Negative controls for the guard above: each mutation of the real netlist or
-# template MUST be rejected. Run with --check-topology-guard.
+# template MUST be rejected. Run with --check-topology-guard. Three suites:
+# tb_loopgain_cmos5l (the series-break bench, issues #21/#67/#89),
+# tb_loopgain2v (issue #135: circuit-identical twin, its own file guarded)
+# and tb_loopgain2i (issue #135: the intact-loop shunt-injection variant).
+# Each mutation line is "name<TAB>sed-expression<TAB>target(netlist|template)".
 check_topology_guard() {
   local tmp rc=0
   tmp="$(mktemp -d)"
-  local tmpl="${SCRIPT_DIR}/testbench/tb_loopgain_cmos5l.spice.tmpl"
-  if ! topology_sync_problem "${DESIGN_NETLIST}" "${tmpl}" 2>"${tmp}/base.err"; then
-    echo "run_sweep.sh: --check-topology-guard: the UNMUTATED pair is already rejected:" >&2
-    cat "${tmp}/base.err" >&2
-    rm -rf "${tmp}"
-    return 1
-  fi
-  echo "run_sweep.sh: guard accepts the real netlist/template pair."
-  neg() { # name sed-expr target(netlist|template)
-    local name="$1" expr="$2" target="$3" n="${tmp}/ldo.spice" t="${tmp}/tb.tmpl"
-    cp "${DESIGN_NETLIST}" "${n}"
-    cp "${tmpl}" "${t}"
-    if [[ "${target}" == netlist ]]; then sed -i -E "${expr}" "${n}"; else sed -i -E "${expr}" "${t}"; fi
-    if cmp -s "${n}" "${DESIGN_NETLIST}" && cmp -s "${t}" "${tmpl}"; then
-      echo "run_sweep.sh: NEGATIVE CONTROL INEFFECTIVE (mutation changed nothing): ${name}" >&2
+  guard_suite() {
+    local tmpl_base="$1" variant="$2"
+    local tmpl="${SCRIPT_DIR}/testbench/tb_${tmpl_base}_cmos5l.spice.tmpl"
+    if ! topology_sync_problem "${DESIGN_NETLIST}" "${tmpl}" "${variant}" 2>"${tmp}/base.err"; then
+      echo "run_sweep.sh: --check-topology-guard: the UNMUTATED ${tmpl_base} pair is already rejected:" >&2
+      cat "${tmp}/base.err" >&2
       rc=1
-    elif topology_sync_problem "${n}" "${t}" 2>/dev/null; then
-      echo "run_sweep.sh: NEGATIVE CONTROL NOT REJECTED: ${name}" >&2
-      rc=1
-    else
-      echo "run_sweep.sh: rejected (as required): ${name}"
+      return 0
     fi
+    echo "run_sweep.sh: guard accepts the real ${tmpl_base} netlist/template pair."
+    neg() { # name sed-expr target(netlist|template)
+      local name="$1" expr="$2" target="$3" n="${tmp}/ldo.spice" t="${tmp}/tb.tmpl"
+      cp "${DESIGN_NETLIST}" "${n}"
+      cp "${tmpl}" "${t}"
+      if [[ "${target}" == netlist ]]; then sed -i -E "${expr}" "${n}"; else sed -i -E "${expr}" "${t}"; fi
+      if cmp -s "${n}" "${DESIGN_NETLIST}" && cmp -s "${t}" "${tmpl}"; then
+        echo "run_sweep.sh: NEGATIVE CONTROL INEFFECTIVE (${tmpl_base}; mutation changed nothing): ${name}" >&2
+        rc=1
+      elif topology_sync_problem "${n}" "${t}" "${variant}" 2>/dev/null; then
+        echo "run_sweep.sh: NEGATIVE CONTROL NOT REJECTED (${tmpl_base}): ${name}" >&2
+        rc=1
+      else
+        echo "run_sweep.sh: rejected (${tmpl_base}, as required): ${name}"
+      fi
+    }
+    local name expr target
+    while IFS=$'\t' read -r name expr target; do
+      [[ -n "${name}" ]] || continue
+      neg "${name}" "${expr}" "${target}"
+    done
   }
-  neg "template omits XMen"                 '/^XMen /d'                                template
-  neg "template XMen gate (EN) tied to VSS" 's/^XMen EAOUT EN /XMen EAOUT VSS /'       template
-  neg "template XMen drain moved to FB"     's/^XMen EAOUT /XMen FB /'                 template
-  neg "template XMen body moved to VSS"     's/^(XMen EAOUT EN VIN) VIN /\1 VSS /'     template
-  neg "template XMen width changed"         's/^(XMen .* w=)40u/\130u/'                template
-  neg "template omits XMbdis"               '/^XMbdis /d'                              template
-  neg "template XMbdis drain moved to FB"   's/^XMbdis IBIAS /XMbdis FB /'             template
-  neg "template XMbdis gate (EN) tied to VIN" 's/^XMbdis IBIAS EN /XMbdis IBIAS VIN /' template
-  neg "netlist omits XMbdis"                '/^XMbdis /d'                              netlist
-  neg "template Xamp loop break removed"    's/^Xamp FBAMP /Xamp FB /'                 template
-  neg "template Vbreak removed"             '/^Vbreak /d'                              template
-  neg "netlist omits XMen"                  '/^XMen /d'                                netlist
-  neg "netlist XMen gate moved to VIN"      's/^XMen EAOUT EN /XMen EAOUT VIN /'       netlist
-  neg "netlist EN port dropped from header" 's/^(\.subckt ldo_core_cmos5l .*) EN$/\1/' netlist
-  neg "template Xamp EN pin dropped (six-pin amp)" 's/^(Xamp FBAMP VREF EAOUT VIN VSS IBIAS) EN /\1 /' template
-  neg "template Xamp EN pin tied to VIN"    's/^(Xamp FBAMP VREF EAOUT VIN VSS IBIAS) EN /\1 VIN /' template
-  neg "netlist Xamp EN pin dropped"         's/^(Xamp FB VREF EAOUT VIN VSS IBIAS) EN /\1 /' netlist
-  rm -rf "${tmp}"
+
+  # --- tb_loopgain_cmos5l: the series-break bench (issues #21/#67/#89) ---
+  guard_suite loopgain vbreak <<'MUTATIONS'
+template omits XMen	/^XMen /d	template
+template XMen gate (EN) tied to VSS	s/^XMen EAOUT EN /XMen EAOUT VSS /	template
+template XMen drain moved to FB	s/^XMen EAOUT /XMen FB /	template
+template XMen body moved to VSS	s/^(XMen EAOUT EN VIN) VIN /\1 VSS /	template
+template XMen width changed	s/^(XMen .* w=)40u/\130u/	template
+template omits XMbdis	/^XMbdis /d	template
+template XMbdis drain moved to FB	s/^XMbdis IBIAS /XMbdis FB /	template
+template XMbdis gate (EN) tied to VIN	s/^XMbdis IBIAS EN /XMbdis IBIAS VIN /	template
+netlist omits XMbdis	/^XMbdis /d	netlist
+template Xamp loop break removed	s/^Xamp FBAMP /Xamp FB /	template
+template Vbreak removed	/^Vbreak /d	template
+netlist omits XMen	/^XMen /d	netlist
+netlist XMen gate moved to VIN	s/^XMen EAOUT EN /XMen EAOUT VIN /	netlist
+netlist EN port dropped from header	s/^(\.subckt ldo_core_cmos5l .*) EN$/\1/	netlist
+template Xamp EN pin dropped (six-pin amp)	s/^(Xamp FBAMP VREF EAOUT VIN VSS IBIAS) EN /\1 /	template
+template Xamp EN pin tied to VIN	s/^(Xamp FBAMP VREF EAOUT VIN VSS IBIAS) EN /\1 VIN /	template
+netlist Xamp EN pin dropped	s/^(Xamp FB VREF EAOUT VIN VSS IBIAS) EN /\1 /	netlist
+MUTATIONS
+
+  # --- tb_loopgain2v (issue #135): circuit-identical twin of the break bench;
+  # the same connectivity mutations must be rejected against ITS file too,
+  # plus the break-amplitude mutation the reconstruction relies on. ---
+  guard_suite loopgain2v vbreak <<'MUTATIONS'
+template Xamp loop break removed	s/^Xamp FBAMP /Xamp FB /	template
+template Vbreak removed	/^Vbreak /d	template
+template Vbreak AC amplitude changed	s/^Vbreak FB FBAMP 0 ac 1$/Vbreak FB FBAMP 0 ac 2/	template
+template omits XMen	/^XMen /d	template
+template omits XMbdis	/^XMbdis /d	template
+MUTATIONS
+
+  # --- tb_loopgain2i (issue #135): the intact-loop shunt-injection bench. ---
+  guard_suite loopgain2i shunt <<'MUTATIONS'
+template ammeter removed (loop left open)	/^Vmeas /d	template
+template ammeter given an AC injection	s/^Vmeas FB FBAMP 0 dc 0$/Vmeas FB FBAMP 0 dc 0 ac 1/	template
+template shunt injection removed	/^Iinx /d	template
+template shunt injection moved to the divider side	s/^Iinx 0 FBAMP dc 0 ac 1$/Iinx 0 FB dc 0 ac 1/	template
+template shunt injection polarity flipped	s/^Iinx 0 FBAMP dc 0 ac 1$/Iinx FBAMP 0 dc 0 ac 1/	template
+template ammeter nodes swapped	s/^Vmeas FB FBAMP 0 dc 0$/Vmeas FBAMP FB 0 dc 0/	template
+template Vbreak smuggled in	s/^Vmeas FB FBAMP 0 dc 0$/Vbreak FB FBAMP 0 ac 1/	template
+template omits XMen	/^XMen /d	template
+template omits XMbdis	/^XMbdis /d	template
+netlist omits XMbdis	/^XMbdis /d	netlist
+template Xamp EN pin dropped (six-pin amp)	s/^(Xamp FBAMP VREF EAOUT VIN VSS IBIAS) EN /\1 /	template
+MUTATIONS
+
+    rm -rf "${tmp}"
   return ${rc}
 }
-
 if [[ ${CHECK_GUARD} -eq 1 ]]; then
   check_topology_guard
   exit $?
+fi
+
+# --check-topology (issue #135): the POSITIVE assertion only (every
+# loop-gain bench template still mirrors ldo_core_cmos5l), no PDK, no
+# ngspice, no mutations. run_loopgain2.sh calls this before rendering.
+if [[ ${CHECK_TOPOLOGY} -eq 1 ]]; then
+  assert_loopgain_topology_sync
+  echo "run_sweep.sh: all loop-gain bench templates are in sync with ldo_core_cmos5l."
+  exit 0
 fi
 
 

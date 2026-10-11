@@ -107,6 +107,12 @@ ITEMS = {
             f"{_SIM}/ac_sweep.py",
             f"{_SIM}/testbench/tb_dcsweep_cmos5l.spice.tmpl",
             f"{_SIM}/testbench/tb_loopgain_cmos5l.spice.tmpl",
+            # issue #135: two-injection (Middlebrook) loop-gain benches and campaign driver
+            f"{_SIM}/testbench/tb_loopgain2v_cmos5l.spice.tmpl",
+            f"{_SIM}/testbench/tb_loopgain2i_cmos5l.spice.tmpl",
+            f"{_SIM}/run_loopgain2.sh",
+            f"{_SIM}/loopgain2.py",
+            f"{_SIM}/row10_loopgain2.py",
             f"{_SIM}/testbench/tb_psrr_cmos5l.spice.tmpl",
             # issue #69: startup bench, its batch driver and evaluator
             f"{_SIM}/testbench/tb_startup_cmos5l.spice.tmpl",

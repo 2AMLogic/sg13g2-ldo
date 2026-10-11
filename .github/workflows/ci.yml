@@ -581,6 +581,19 @@ jobs:
         # (it is hash-pinned in its own landed outputs, so it is not edited).
         run: python3 sim/ldo-cmos5l-pvt-sweep/row10_record.py --check
 
+      - name: Two-injection loop-gain comparison record (issue #135; reconstruction + DR-0014 wrapper reproduce)
+        # Offline, stdlib-only: no simulator and no PDK. loopgain2.py check
+        # finds every two-injection record under corners/, rebuilds each
+        # reconstructed trace and the comparison CSV/JSON from the committed
+        # RAW complex probe exports and byte-compares them (the
+        # reconstruction is reproducible from committed evidence alone);
+        # row10_loopgain2.py --check re-derives the DR-0014 classification
+        # of the reconstructed traces under the unchanged rules (row 10
+        # stays Open).
+        run: |
+          python3 sim/ldo-cmos5l-pvt-sweep/loopgain2.py check --ceiling 1e10
+          python3 sim/ldo-cmos5l-pvt-sweep/row10_loopgain2.py --check
+
       - name: Manifest item-8 pin matches the committed report hash
         run: |
           python3 - <<'PY'
