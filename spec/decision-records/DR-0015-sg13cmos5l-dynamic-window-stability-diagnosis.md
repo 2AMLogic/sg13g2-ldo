@@ -105,6 +105,12 @@ From the committed record rows and the committed DR-0014 classification:
 | P5 | 17.61 / 17.61 | **fail** | 64.26 | ambiguous (`ceiling_unbounded`) | 1 052 | 1 | **43.55** / 92.53 |
 | P6 | 53.87 / 53.87 | ambiguous (`ceiling_unbounded`) | 29.87 | ambiguous (`ceiling_unbounded`) | 39.1 k | 1 | 53.65 / 34.45 |
 
+Note on sign: for P2 and P4 the worst-crossing value is quoted as the
+DR-0014 angular distance (+162.51° / +162.38°); the raw record rows store
+the same crossings with the wrapped-phase sign in
+`phase_margin_worst_deg` (−162.51° / −162.38°). P3's worst crossing is
+signed −162.43° in both places — see the Class 2 disclosure below.
+
 Critical-line (−180° mod 360) crossings, committed DR-0014 values:
 P1 113.5 kHz @ −61.7 dB; P2 114.5 kHz @ −53.1 dB; P3 **1.159 MHz @
 +9.20 dB** (above unity — the encirclement that makes P3's scored PM
@@ -128,11 +134,14 @@ of them `ambiguous` (`ceiling_unbounded`), which this record preserves.
 three reasons that hold independently: (i) DR-0014 is Proposed, not
 ratified; (ii) its ceiling premise P2 fails on **every** committed trace —
 the loop gain rises again over the last decade of every 100 MHz trace
-(P1 +60.6 dB, P2 +53.9 dB, P5 +49.2 dB over 10→100 MHz) and ends within
-−1.17…+0.53 dB of unity; (iii) the 10 GHz extension of the legacy 45-point
-grid (#128, evidence `20261011-070111-5391c68`) shows the rise turning
+(P1 +12.34 dB, P2 +5.31 dB, P5 +9.10 dB over 10→100 MHz — the
+`ceiling_last_decade_change_db` column of the committed
+`row10-margins.csv`) and ends within −1.17…+0.53 dB of unity; (iii) the
+10 GHz extension of the legacy 45-point grid (#128, evidence
+`20261011-070111-5391c68`) shows the rise turning
 over (last-decade change −0.43…−0.56 dB) but still ending +0.40…+1.17 dB
-above the −10 dB floor, so all 45 verdicts there stay
+relative to 0 dB — 10.40…11.17 dB above the −10 dB ceiling floor — so all
+45 verdicts there stay
 `ambiguous`/`ceiling_unbounded` too. Whether the high-frequency rise is
 circuit or bench artefact is DR-0014's open hypothesis (single voltage
 injection at a MOSFET gate); resolving it is a prerequisite for *any*
@@ -188,7 +197,9 @@ Demonstrated (P1/P2/P5 traces):
   every zero-load point — two poles effectively below crossover, with no
   zero in between (the −40 dB/dec band runs from ≪1 kHz to the crossing).
 - PM is **ESR-immune at zero load** across the whole committed window:
-  at P2 itself: PM 17.33° / 17.58° / 17.84° at 0 / 250 / 500 mΩ.
+  at P2 itself: PM 17.33° / 17.58° / 17.84° at 0 / 250 / 500 mΩ (the
+  500 mΩ record row's overall status is `failed` — no −180° crossing,
+  hence no GM — but its PM is recorded).
   The ESR zero sits at `f_z,esr = 1/(2π·R_esr·Cout)` ≥ 67.7 kHz (4.7 µF,
   500 mΩ) — 12×–60× above every zero-load crossover. No ESR in the row-10
   window can rescue this class.
