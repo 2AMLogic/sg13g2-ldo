@@ -605,8 +605,12 @@ which #35's wider `Cc` is what closes
   `layout/sg13cmos5l-ldo_core_cmos5l/generate.py`, and the schematic
   continues to state only the electrical total. DR-0003 records the original
   deferral.
-- **No enable, current limit, soft start, output capacitor, load, or
-  start-up circuit.** Same scope boundary as the SG13G2 branch. Note that a
+- **No current limit, soft start, output capacitor, load, or
+  start-up circuit.** `EN` has existed since issue #67 (DR-0008), and a
+  committed startup campaign (record `20261010-104827-91e92aa`, issue #69)
+  measures it; its proposed-methodology failures are reported in row 9 of
+  [`sim/characterization/characterization-report.md`](../sim/characterization/characterization-report.md).
+  Row 9 stays Open. The rest is the same scope boundary as the SG13G2 branch. Note that a
   self-biased mirror needs no start-up circuit only because `IBIAS` is
   externally driven — if the bias is ever moved on-block, start-up becomes a
   real requirement.

@@ -6,7 +6,7 @@
   "files": [
     {
       "path": "design/README.md",
-      "sha256": "sha256:854fb756f61b76d413ee13aced3454fd8ab569023f7d757e6df2a5f4944d389b"
+      "sha256": "sha256:fcc9cf91f86298a4cafa7ec35bcc3b481bfaa7303a91f219cd90b132ef3035fc"
     },
     {
       "path": "design/netlist.py",

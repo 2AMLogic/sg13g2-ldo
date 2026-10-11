@@ -75,5 +75,86 @@
       "quoted_substring": "23.05uA-23.08uA",
       "describes": "Iq at full load, from the #25 record, which was run against a superseded netlist (pre-#28 behavioural divider, pre-#35 Cc). Quoted only to show a full-load number once existed; it is NOT evidence about the current design."
     }
-  ]
+  ],
+  "startup_evidence": {
+    "experiment": "ldo-cmos5l-pvt-sweep",
+    "id": "20261010-104827-91e92aa",
+    "stage": "grid",
+    "policy": "Explicit startup selection, independent of the legacy DC/AC circuit_record: the record id, stage and every file below are named here and pinned by sha256; the generator never discovers a newer startup record by directory listing. The campaign is PROPOSED methodology (DR-0009), schematic-level, and DR-0007 row 9 stays Open: the generator reports the measurements and infers no ratification. Core and error-amplifier freshness are validated independently of design_freshness_pins on circuit_record. Per-point trace files are verified against the trace_sha256 column. A tampered or missing selected file, a duplicate or unexpected campaign point, or a stale design is a hard error or an incomplete artifact (envelope fail); a missing requested point or an insufficient trace is reported as missing/insufficient and can never be a pass.",
+    "files": {
+      "record_md": {
+        "path": "sim/ldo-cmos5l-pvt-sweep/records/20261010-104827-91e92aa-startup-grid.md",
+        "sha256": "d85433a0dd32aa9d3d1152aa32ae032fc6482d6ec28a24e214f889033e50c14b"
+      },
+      "grid_csv": {
+        "path": "sim/ldo-cmos5l-pvt-sweep/records/20261010-104827-91e92aa-startup-grid.csv",
+        "sha256": "eeabf83b88b5ae5170dab972f53634dfd4998103b4bddbd03953580fff4a80c9"
+      },
+      "manifest_json": {
+        "path": "sim/ldo-cmos5l-pvt-sweep/records/20261010-104827-91e92aa-startup-grid.manifest.json",
+        "sha256": "7a73961bfd61f72eb48670b6a66c1b5ae70981a17977ca14cf8c271f9f45f9bc"
+      }
+    },
+    "traces_dir": "sim/ldo-cmos5l-pvt-sweep/records/20261010-104827-91e92aa-startup-grid.traces",
+    "requested_grid": {
+      "process": [
+        "tt",
+        "ss",
+        "ff",
+        "sf",
+        "fs"
+      ],
+      "temp_c": [
+        -40,
+        27,
+        125
+      ],
+      "res": [
+        "typ",
+        "bcs",
+        "wcs"
+      ],
+      "vin_v": [
+        2.97,
+        3.3,
+        3.63
+      ],
+      "load_ma": [
+        1
+      ],
+      "cout_nf": [
+        1000
+      ],
+      "esr_mohm": [
+        0
+      ],
+      "tmax_ns": [
+        1000
+      ]
+    },
+    "design_freshness_pins": {
+      "core": {
+        "path": "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice",
+        "sha256": "7953b25be4cb00053f8df5f283bee0500f60a826b7a2d6519b88a8578d222cc1",
+        "recorded_in_manifest": true
+      },
+      "error_amp": {
+        "path": "design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice",
+        "sha256": "7982d728a2db933165eedcae69feaa4985dbddf54c269fc68b82d88577c8e38c",
+        "recorded_in_manifest": false
+      }
+    },
+    "design_freshness_basis": "The core hash is the one the campaign manifest records in source_sha256 (the generator requires the manifest value, this pin and the current file to agree). The campaign manifest does not record an error-amplifier hash, so that pin is the hash of ldo_erramp_cmos5l.spice at the time of the campaign: the file last changed in #40 (DR-0005), before this campaign, and it is the same byte content that the selected legacy circuit_record pins. If either netlist changes the startup evidence is classified stale against the design and the envelope turns fail until a new campaign is selected.",
+    "proposed_methodology": {
+      "reference": "spec/decision-records/DR-0009-sg13cmos5l-startup-measurement-methodology.md",
+      "evaluator": "sim/ldo-cmos5l-pvt-sweep/startup_eval.py",
+      "band_v": [
+        1.764,
+        1.836
+      ],
+      "settle_limit_s": 0.003,
+      "monotonic_tolerance_v": 0.001,
+      "note": "Overshoot is read as peak VOUT above the +2 % band edge (1.836 V) and monotonicity as maximum downward excursion <= 1 mV before settling. 'controlled ramp' has no numeric bound in the target text and is not graded."
+    }
+  }
 }
