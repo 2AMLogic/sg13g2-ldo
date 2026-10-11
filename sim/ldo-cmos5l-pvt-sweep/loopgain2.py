@@ -515,6 +515,15 @@ def point_row(corners_dir, sfx, ceiling, out_dir=None):
                     "phase_margin_deg", "phase_margin_worst_deg",
                     "n_gain_margin_crossings", "gain_margin_freq_hz", "gain_margin_db"):
             row[f"{pre}_{key}"] = None if m is None else m.get(key)
+        # The legacy loopgain_metrics counts only the FIRST unwrapped -180 deg
+        # crossing region; row10's cross_check compares against the DR-0014
+        # classifier's critical-line crossings (every 180 mod 360 crossing,
+        # including any at the -300 dB underflow floor). Record the
+        # classifier's count so the committed numbers and the classification
+        # come from one definition. The margins themselves are unchanged.
+        cm = am.classify_margins(combined_path if pre == "lg2" else ctl_csv)
+        if cm and cm.get("valid"):
+            row[f"{pre}_n_gain_margin_crossings"] = len(cm["critical_crossings"])
         row[f"{pre}_second_crossing_hz"] = second
         row[f"{pre}_db_at_1ghz"] = interp_db_at(freqs, LL, 1e9)
         row[f"{pre}_db_at_ceiling"] = db(LL[-1])
@@ -543,7 +552,7 @@ def _fmt(x):
     if x is None:
         return ""
     if isinstance(x, float):
-        return f"{x:.9g}"
+        return f"{x:.12g}"
     return str(x)
 
 
@@ -637,9 +646,9 @@ def cmd_check(a):
                 bad.append(f"{want}: missing")
             elif open(want, "rb").read() != open(got, "rb").read():
                 bad.append(f"{want}: differs from regeneration")
-        for got, want in ((out_csv, os.path.join(corners_dir, "..", "records",
+        for got, want in ((out_csv, os.path.join(corners_dir, "..", "..", "records",
                                                 os.path.basename(corners_dir) + ".loopgain2.csv")),
-                          (out_json, os.path.join(corners_dir, "..", "evidence",
+                          (out_json, os.path.join(corners_dir, "..", "..", "evidence",
                                                   os.path.basename(corners_dir),
                                                   "loopgain2-report.json"))):
             if not os.path.isfile(want):

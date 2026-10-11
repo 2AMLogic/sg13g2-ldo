@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "rule": "DR-0014 (proposed; row 10 stays Open, nothing ratified)",
+  "decision_record": "spec/decision-records/DR-0014-row10-stability-margin-classification.md",
+  "dataset": "legacy",
+  "record": {
+    "id": "20261011-165616-eabde108",
+    "csv": "sim/ldo-cmos5l-pvt-sweep/records/20261011-165616-eabde108.loopgain2.csv",
+    "sha256": "9ed0d200e98140558e597593bf9f3fa47e42878706f9e93d0e742a14efc4d736",
+    "conditions": "Vin 3.30 V, 1 mA, Cout 1 uF, ESR 0, Cc nominal; 45-point PVT grid; loop gain reconstructed from the two-injection (Middlebrook) benches tb_loopgain2v/tb_loopgain2i by loopgain2.py (issue #135)"
+  },
+  "bounds": {
+    "pm_deg": 45.0,
+    "gm_db": 10.0,
+    "ceiling_floor_db": -10.0
+  },
+  "classifier": {
+    "sim/ldo-cmos5l-pvt-sweep/ac_metrics.py": "6e96859b839bcb19aaa702eb20a593bfc8914b7b388a8783298e416e65fefd5e",
+    "sim/ldo-cmos5l-pvt-sweep/dc_metrics.py": "782319eb4ef619b040f3a4001af67a10def775c9cf17e37fe15b4dd8f3340c81",
+    "sim/ldo-cmos5l-pvt-sweep/row10_margins.py": "a6f6d1129095b2fcb73c8c9462eb54b7588259d4118aa932d86c5b01f2a227f7",
+    "sim/ldo-cmos5l-pvt-sweep/row10_loopgain2.py": "218a6ad5b87650c994e1066eea1b474364beae31c19da4a5660839607dfc4e93",
+    "sim/ldo-cmos5l-pvt-sweep/loopgain2.py": "955370e05793f9456696f2f09df783e29246722ab9230453e7cb2748faca7c36"
+  },
+  "traces_verified": 45,
+  "cross_checks": "every trace reproduces its record's 0 dB crossing count, first-crossing PM, recorded worst-crossing PM and first -180 deg GM; every recorded PM/GM miss classifies as fail (no-loosening guard)",
+  "csv": {
+    "path": "sim/ldo-cmos5l-pvt-sweep/evidence/20261011-165616-eabde108/row10-margins.csv",
+    "sha256": "e695a89e414e5a609328b8ac7ab392200cd982bfc8d1c2fe1ac7096ee0c6829b"
+  },
+  "summary_all": {
+    "points": 45,
+    "pm_verdicts": {
+      "ambiguous": 14,
+      "pass": 31
+    },
+    "gm_verdicts": {
+      "ambiguous": 14,
+      "pass": 31
+    },
+    "pm_reasons": {
+      "": 31,
+      "ceiling_unbounded": 14
+    },
+    "gm_reasons": {
+      "": 31,
+      "ceiling_unbounded": 14
+    },
+    "nyquist_class": {
+      "stable": 31,
+      "undetermined": 14
+    },
+    "n_zero_db_crossings": {
+      "1": 45
+    },
+    "n_critical_crossings": {
+      "2": 32,
+      "4": 13
+    },
+    "pm_deg_range": {
+      "min": 53.9064815,
+      "max": 77.0286541
+    },
+    "first_crossing_margin_deg_range": {
+      "min": 53.9064815,
+      "max": 77.0286541
+    },
+    "later_crossing_margin_deg_range": null,
+    "gm_db_range": {
+      "min": 20.5603024,
+      "max": 39.1327036
+    },
+    "low_end_ok": 45,
+    "low_end_gain_db_range": {
+      "min": 121.419267,
+      "max": 124.703169
+    },
+    "ceiling_bounded": 31,
+    "ceiling_gain_db_range": {
+      "min": -300.0,
+      "max": -300.0
+    },
+    "ceiling_last_decade_change_db_range": {
+      "min": -86.750203,
+      "max": 0.0
+    }
+  },
+  "subset": {
+    "name": "multi_crossing_points",
+    "definition": "points the record lists with more than one 0 dB crossing (reported ambiguous by the characterization report before DR-0014)",
+    "summary": {
+      "points": 0,
+      "pm_verdicts": {},
+      "gm_verdicts": {},
+      "pm_reasons": {},
+      "gm_reasons": {},
+      "nyquist_class": {},
+      "n_zero_db_crossings": {},
+      "n_critical_crossings": {},
+      "pm_deg_range": null,
+      "first_crossing_margin_deg_range": null,
+      "later_crossing_margin_deg_range": null,
+      "gm_db_range": null,
+      "low_end_ok": 0,
+      "low_end_gain_db_range": null,
+      "ceiling_bounded": 0,
+      "ceiling_gain_db_range": null,
+      "ceiling_last_decade_change_db_range": null
+    }
+  },
+  "not_claimed": [
+    "no new simulation; no historical record edited",
+    "no ratification: DR-0014 is proposed and row 10 stays Open (DR-0007)",
+    "no claim about frequencies above the sweep ceiling or between sampled operating points"
+  ],
+  "method": "two-injection (Middlebrook) reconstruction (loopgain2.py); classification rules unchanged (DR-0014, proposed; row 10 stays Open)"
+}

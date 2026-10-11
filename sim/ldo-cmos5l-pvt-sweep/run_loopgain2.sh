@@ -145,7 +145,7 @@ screen_point() {  # <point_id> -- exit 0 iff log clean AND export complete
   local point_id="$1" rc=0
   local log="${CORNERS_OUT}/${point_id}.log"
   local csv="${CORNERS_OUT}/${point_id}_ac.csv"
-  local bench="${point_id%%_*}"
+  local bench="${point_id%%_[a-z][a-z]_*}"
   [[ -f "${log}" ]] || return 1
   if grep -qiE "Unable to find definition of model|couldn't be loaded|Unknown model type|fatal error|gmin stepping failed|no convergence|iteration limit reached" "${log}" \
      || grep -iE "singular matrix" "${log}" | grep -qivE "^[[:space:]]*Warning:"; then

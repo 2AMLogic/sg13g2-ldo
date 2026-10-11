@@ -122,7 +122,7 @@ def build(record_id, record_sha256):
         saved_sha = row10_margins.sha256_file
 
         def sha_of(path):
-            return saved_sha(rm.REPO + real_csv) if path == mapped else saved_sha(path)
+            return saved_sha(os.path.join(rm.REPO, real_csv)) if path == mapped else saved_sha(path)
         row10_margins.sha256_file = sha_of
         try:
             with _patched(cfg, record_id):
@@ -152,7 +152,7 @@ def _other_wrappers(exclude_id):
                 doc = json.load(fh)
         except ValueError:
             continue
-        if SELF in doc.get("classifier", {}):
+        if SELF in doc.get("classifier", {}) and doc["record"]["id"] != exclude_id:
             found.append((doc["record"]["id"], doc["record"]["sha256"]))
     return found
 

@@ -190,7 +190,7 @@
     },
     {
       "path": "sim/ldo-cmos5l-pvt-sweep/README.md",
-      "sha256": "sha256:08bf85bca9cfac6b5d834c267484bf12464bc11b155ad32f0135293ace22a9ed"
+      "sha256": "sha256:6d5f86c9aa2faed15e215821aafd74f091d457a4ce81bc699673f3194ae34384"
     },
     {
       "path": "sim/ldo-cmos5l-pvt-sweep/ac_sweep.py",
@@ -198,7 +198,7 @@
     },
     {
       "path": "sim/ldo-cmos5l-pvt-sweep/batch_backend.py",
-      "sha256": "sha256:645590048afddfb354727f4182ba23bfa73da608baa25d9608be6b1c38474936"
+      "sha256": "sha256:870ab3749b8fc0d95e216b91bf8f2dda90d63ab4a4f469bafefdc6a1d0ea1893"
     },
     {
       "path": "sim/ldo-cmos5l-pvt-sweep/dropout_campaign.py",
@@ -209,8 +209,20 @@
       "sha256": "sha256:85f0c21bd3c40015ee7b409d068590fe6badc88ab27b643aebf543c07457147c"
     },
     {
+      "path": "sim/ldo-cmos5l-pvt-sweep/loopgain2.py",
+      "sha256": "sha256:955370e05793f9456696f2f09df783e29246722ab9230453e7cb2748faca7c36"
+    },
+    {
+      "path": "sim/ldo-cmos5l-pvt-sweep/row10_loopgain2.py",
+      "sha256": "sha256:218a6ad5b87650c994e1066eea1b474364beae31c19da4a5660839607dfc4e93"
+    },
+    {
+      "path": "sim/ldo-cmos5l-pvt-sweep/run_loopgain2.sh",
+      "sha256": "sha256:9a9e34dbe62ba2c59ea467d3df892408361474f6defb7b87216a25b996801101"
+    },
+    {
       "path": "sim/ldo-cmos5l-pvt-sweep/run_sweep.sh",
-      "sha256": "sha256:feb3e2d97f13d29894bcd512953490949c1fbba29ec6ed7d151f4b894fe0c245"
+      "sha256": "sha256:a0de7ecefdb0bb984cf36ed9a79bceed0b845f1c3861d429abe57044485d087a"
     },
     {
       "path": "sim/ldo-cmos5l-pvt-sweep/startup_campaign.py",
@@ -231,6 +243,14 @@
     {
       "path": "sim/ldo-cmos5l-pvt-sweep/testbench/tb_dropout_cmos5l.spice.tmpl",
       "sha256": "sha256:2751a0db725cdc17405a2003784e465785e3157525f3c4d1c8f90d64b71a0c5a"
+    },
+    {
+      "path": "sim/ldo-cmos5l-pvt-sweep/testbench/tb_loopgain2i_cmos5l.spice.tmpl",
+      "sha256": "sha256:98987747efc54dd6d93a44759afcd191a1ea83820816f0d71443fc65fc8c15d0"
+    },
+    {
+      "path": "sim/ldo-cmos5l-pvt-sweep/testbench/tb_loopgain2v_cmos5l.spice.tmpl",
+      "sha256": "sha256:faf4899fe2f444a7505737ebd7e252da00e4219f96b9d9985e3654b08109af9d"
     },
     {
       "path": "sim/ldo-cmos5l-pvt-sweep/testbench/tb_loopgain_cmos5l.spice.tmpl",

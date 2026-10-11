@@ -232,6 +232,82 @@ closed on any other `.control` shape. The campaign driver is
 `run_loopgain2.sh` (batch fleet only; `--validate` runs exactly three
 tt/27C decks locally as a pre-flight debug probe).
 
+### Result of the two-injection comparison (issue #135, record `20261011-165616-eabde108`)
+
+Diagnostic, schematic-level evidence; row 10 stays Open and DR-0014 is
+unchanged. Full 45-point grid (not a subset), ceiling 10 GHz, 135 klt
+corners in 3 batch requests: control `klt-sim-22027d34f9eb`, voltage
+injection `klt-sim-9898ed9d25e0`, current injection `klt-sim-e332268bdc00`
+(the three jobs completed in an earlier invocation of the same campaign
+whose post-processing then stopped on a `run_loopgain2.sh` bench-name bug;
+the byte-identical requests were re-imported via `--reuse-work`, see
+`corners/20261011-165616-eabde108/_batch/reused-reports.tsv`; no corner was
+simulated locally). The like-for-like control on today's design bytes
+matches the historical single-injection traces of `20261011-070111-5391c68`
+to 0 dB at all 45 points (`evidence/20261011-165616-eabde108/ctl-vs-baseline.json`),
+so that record is a valid baseline. Machine comparison:
+`records/20261011-165616-eabde108.loopgain2.csv`; narrative record:
+`records/20261011-165616-eabde108.loopgain2.md`; classification:
+`evidence/20261011-165616-eabde108/row10-margins.{csv,json,md}`.
+
+| quantity (45 points) | single injection (control) | two-injection reconstruction |
+|---|---|---|
+| PM, first crossing [deg] | 53.87 .. 76.93 (worst ss/125C/res_bcs) | 53.91 .. 77.03 (same worst point) |
+| GM [dB] | 13.84 .. 29.87 (worst ff/-40C/res_wcs) | 20.56 .. 39.13 (same worst point) |
+| 0 dB crossings | 2 at every point | 1 at every point |
+| second 0 dB crossing [Hz] | 5.94e7 .. 1.79e8 | none |
+| loop gain at 1 GHz [dB] | +0.90 .. +1.65 | <= -213 (clamped at -300 at most points) |
+| loop gain at 10 GHz [dB] | +0.40 .. +1.17 | -300 (numerical floor) |
+| loading ratio u = Zt/Zl at 1 Hz | -- | 1.9e-7 .. 5.4e-7 |
+| u at 1 GHz | -- | 1.109 .. 1.209 |
+
+Reading. In band (below the first crossing) the two methods agree: the
+deck-identity check holds to 6e-8 relative, PM differs by 0.04 to 0.27 deg
+and the first crossing is the same loop. Above the first crossing the
+single-injection trace is dominated by the loading ratio the method assumes
+to be zero: its level at 1 GHz equals `20 log10 abs(u)` of the
+reconstruction to within 2.2e-8 dB at all 45 points, as the identity
+`L_single = u - T'` predicts once `abs(T')` is small. The +1 dB plateau and
+the second rising 0 dB crossing of #128 are therefore a property of the
+single voltage injection at the gate (the divider side is unloaded in the
+broken bench while the real divider drives the input-pair gate), not of the
+loop: the reconstructed loop gain keeps falling (about -50 dB per decade
+above 1 MHz, tt/27C: -22 dB at 1 MHz, -85 dB at 16 MHz, -160 dB at 126 MHz).
+This is a measured difference quantified point by point, not inferred from
+the plot. GM differs (6.6 to 9.5 dB higher in the reconstruction); the
+control's GM is taken at a -180 deg crossing of a trace that includes the
+plateau, so this difference is attributed to the plateau only by that
+association, not separately tested.
+
+Script hashes. The record md pins the campaign scripts as they were when
+the fleet results were post-processed. Two later commits touched only the
+offline checkers (`loopgain2.py check` path resolution, `row10_loopgain2.py`
+collision test); the committed outputs are byte-reproduced by the final
+files (`loopgain2.py check`, `row10_loopgain2.py --check`).
+
+Caveats, stated rather than resolved.
+- The raw complex exports carry 9 significant digits (`batch_backend.py`
+  writes `%.8e`, the same format as the historical exports, kept so
+  existing outputs do not change). The combination cancels, so the
+  reconstruction is noise-limited at roughly -160 to -180 dB; values below
+  that, and the -300 dB clamp that `loopgain2.py` applies where the
+  combination underflows (28 to 32 of 201 frequencies per point), are a
+  numerical floor, not a physical level. The conclusion above only needs
+  `abs(L2) << 0 dB` above 100 MHz, which this resolution supports with
+  margin.
+- Under the unchanged DR-0014 rules the reconstructed traces classify
+  PM `pass` 31 / `ambiguous` 14 and GM `pass` 31 / `ambiguous` 14 (reason
+  `ceiling_unbounded`). The 14 ambiguous points are those whose last decade
+  is flat at the -300 dB clamp, which the unchanged "last decade
+  non-increasing" rule does not accept; they were not re-judged, the floor
+  was not changed, and no rule was loosened. 31 passes are a measurement
+  comparison on an unvalidated-above-1 GHz model range and are NOT a row-10
+  ratification; row 10 stays Open and exit 3 remains the honest non-T1
+  result. The characterization selection is untouched (this campaign is not
+  a selection input).
+- The gate-current cause is confirmed for the bench; whether a physical
+  feed-forward path exists below the numerical floor is not tested.
+
 ## Why Vin=3.63V for load regulation
 
 The schematic's provisional `Mpass` sizing (`w=300u l=0.5u`,
