@@ -39,6 +39,20 @@
     ],
     "design_freshness_basis": "These are the design netlist hashes the selected record ran against. The record md states both sha256 values, so freshness is recorded rather than inferred. The record was made by run_sweep.sh --batch on the EDA batch fleet (PR #87, #67) after the EN interface changed ldo_core_cmos5l.spice (DR-0008). It replaces 20260917-023832-7061e8f, which was current against the pre-EN netlist c6e630e9...f11041 and is now historical. If either netlist changes, the evidence is classified stale against the design, and the envelope verdict becomes fail until a new record is selected."
   },
+  "dc_informational_evidence": {
+    "circuit_record_id": "20261010-025634-60a3e81",
+    "policy": "Informational current-design DC summaries (item-5 derivation, issue #55) for the SAME circuit record id as above. Both files are pinned; the inventory must name the pinned PVT csv and record md, the pinned design netlists and the pinned generator bytes, and every raw DC grid it lists must match its recorded hash. The summary must cover exactly the 45 corners once each, with finite values and True/False validity fields, and must agree with the pinned PVT csv where they overlap. Any violation is a hard generator error; invalid points are counted, never dropped. These are informational measurements of Open rows 5 and 7, not item-5 grading evidence.",
+    "files": {
+      "summary_csv": {
+        "path": "sim/ldo-cmos5l-pvt-sweep/evidence/20261010-025634-60a3e81/dc-informational-summary.csv",
+        "sha256": "3c2897357e1fab51ef5e65dcc265cbd9cd5d4d12a2f3950bb175dc9106109c5e"
+      },
+      "coverage_inventory_json": {
+        "path": "sim/ldo-cmos5l-pvt-sweep/evidence/20261010-025634-60a3e81/coverage-inventory.json",
+        "sha256": "dfabbd7cd7948050f2197e9ce7a00cf05dc6f5f43b36595f68750637be8981c7"
+      }
+    }
+  },
   "device_context_record": {
     "experiment": "pass-device-screening",
     "id": "20260909-220347-ed18110",

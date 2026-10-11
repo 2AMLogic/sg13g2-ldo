@@ -15,7 +15,7 @@
   ],
   "selection": {
     "file": "sim/characterization/selection.json",
-    "sha256": "c9aca911794aa9c6aa5b73e6cff24456e35ad1d2df17171e0048812905e6e174",
+    "sha256": "3ff716a9d178ada25e311be74e5984d561dacaaf355501a81118d60dd704fc1c",
     "circuit_record_id": "20261010-025634-60a3e81",
     "experiment": "ldo-cmos5l-pvt-sweep",
     "device_context_record_id": "20260909-220347-ed18110",
@@ -47,6 +47,18 @@
       "pinned": true
     },
     {
+      "role": "dc_coverage_inventory_json",
+      "path": "sim/ldo-cmos5l-pvt-sweep/evidence/20261010-025634-60a3e81/coverage-inventory.json",
+      "sha256": "dfabbd7cd7948050f2197e9ce7a00cf05dc6f5f43b36595f68750637be8981c7",
+      "pinned": true
+    },
+    {
+      "role": "dc_informational_summary_csv",
+      "path": "sim/ldo-cmos5l-pvt-sweep/evidence/20261010-025634-60a3e81/dc-informational-summary.csv",
+      "sha256": "3c2897357e1fab51ef5e65dcc265cbd9cd5d4d12a2f3950bb175dc9106109c5e",
+      "pinned": true
+    },
+    {
       "role": "design_netlist_freshness",
       "path": "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice",
       "sha256": "7953b25be4cb00053f8df5f283bee0500f60a826b7a2d6519b88a8578d222cc1",
@@ -73,7 +85,7 @@
     {
       "role": "target_table",
       "path": "README.md",
-      "sha256": "378f8b48bc4ed7cca70a4ec79a1149e3e8d124b16a609676ed9c442674dcccc5",
+      "sha256": "bede16817e5649edb06bde786dc80e531f516ab0f8bc8c063c5224d6446d3b60",
       "pinned": false
     }
   ],
@@ -116,6 +128,13 @@
       "res_bcs",
       "res_wcs"
     ]
+  },
+  "dc_informational_evidence": {
+    "summary": "sim/ldo-cmos5l-pvt-sweep/evidence/20261010-025634-60a3e81/dc-informational-summary.csv",
+    "inventory": "sim/ldo-cmos5l-pvt-sweep/evidence/20261010-025634-60a3e81/coverage-inventory.json",
+    "raw_dc_grids_verified": 45,
+    "points": 45,
+    "status": "informational only; rows 5 and 7 remain Open/unratified; not item-5 grading evidence"
   },
   "rows": [
     {
@@ -410,7 +429,7 @@
       "stretch": "—",
       "ratification": {
         "state": "open_unratified",
-        "readme_status": "OPEN — unratified (loaded line / multi-Vin load regulation missing)",
+        "readme_status": "OPEN — unratified (informational loaded line / multi-Vin load regulation measured at discrete points; not ratified)",
         "dr0007_disposition": "Open",
         "dr0007_type": "deterministic",
         "record": "spec/decision-records/DR-0007-target-spec-row-ratification.md"
@@ -420,14 +439,14 @@
       "coverage": {
         "state": "partial",
         "gaps": [
-          "line regulation measured at no load only",
-          "load regulation measured at Vin = 3.63 V only; not at 3.30/2.97 V",
-          "'inside the accuracy window' (Vin window) not covered for either metric (#55)"
+          "line regulation sampled at 5 discrete loads (0, 12.5, 25, 37.5, 50 mA) over Vin 2.97-3.63 V; load regulation sampled at 3 discrete supplies (2.97, 3.30, 3.63 V) -- not continuous coverage of the window",
+          "'inside the accuracy window' (coupling with the statistical VOUT row, #56) not covered for either metric",
+          "ideal 0.90 V reference: reference error is excluded; corner grid only, no Monte Carlo"
         ]
       },
       "metrics": [
         {
-          "name": "line regulation",
+          "name": "line regulation, legacy record column (no load)",
           "unit": "mV/V",
           "bound": {
             "comparator": "lt",
@@ -456,7 +475,7 @@
           }
         },
         {
-          "name": "load regulation",
+          "name": "load regulation, legacy record column (Vin = 3.63 V)",
           "unit": "%",
           "bound": {
             "comparator": "lt",
@@ -483,6 +502,254 @@
             "record": "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv",
             "column": "load_reg_pct"
           }
+        },
+        {
+          "name": "line regulation at 0 mA load (Vin 2.97-3.63 V)",
+          "unit": "mV/V",
+          "bound": {
+            "comparator": "lt",
+            "value": 5.0,
+            "unit": "mV/V"
+          },
+          "n_points": 45,
+          "n_pass": 45,
+          "n_fail": 0,
+          "n_censored_upper_bound": 0,
+          "n_ambiguous": 0,
+          "worst_case": {
+            "value": 0.245757576,
+            "at": {
+              "corner": "ff",
+              "temp_c": 125,
+              "res_section": "res_wcs"
+            },
+            "n_points_at_this_value": 1
+          },
+          "verdict": "pass",
+          "conditions": "line regulation |dVOUT/dVin| over Vin 2.97-3.63 V at the labelled load; ideal 0.90 V reference; 45-point corner grid",
+          "source": {
+            "record": "sim/ldo-cmos5l-pvt-sweep/evidence/20261010-025634-60a3e81/dc-informational-summary.csv",
+            "column": "line_reg_mv_per_v_0mA"
+          },
+          "note": "Informational DC summary (derived offline from the committed raw DC grids, no new simulation). A point is valid only if both end points are within 1 % of 1.8 V; invalid points are counted as ambiguous and never dropped. Discrete sampled loads/supplies only: not a continuous-window claim.",
+          "n_invalid": 0
+        },
+        {
+          "name": "line regulation at 12.5 mA load (Vin 2.97-3.63 V)",
+          "unit": "mV/V",
+          "bound": {
+            "comparator": "lt",
+            "value": 5.0,
+            "unit": "mV/V"
+          },
+          "n_points": 45,
+          "n_pass": 45,
+          "n_fail": 0,
+          "n_censored_upper_bound": 0,
+          "n_ambiguous": 0,
+          "worst_case": {
+            "value": 0.179454545,
+            "at": {
+              "corner": "ff",
+              "temp_c": 125,
+              "res_section": "res_typ"
+            },
+            "n_points_at_this_value": 2
+          },
+          "verdict": "pass",
+          "conditions": "line regulation |dVOUT/dVin| over Vin 2.97-3.63 V at the labelled load; ideal 0.90 V reference; 45-point corner grid",
+          "source": {
+            "record": "sim/ldo-cmos5l-pvt-sweep/evidence/20261010-025634-60a3e81/dc-informational-summary.csv",
+            "column": "line_reg_mv_per_v_12p5mA"
+          },
+          "note": "Informational DC summary (derived offline from the committed raw DC grids, no new simulation). A point is valid only if both end points are within 1 % of 1.8 V; invalid points are counted as ambiguous and never dropped. Discrete sampled loads/supplies only: not a continuous-window claim.",
+          "n_invalid": 0
+        },
+        {
+          "name": "line regulation at 25 mA load (Vin 2.97-3.63 V)",
+          "unit": "mV/V",
+          "bound": {
+            "comparator": "lt",
+            "value": 5.0,
+            "unit": "mV/V"
+          },
+          "n_points": 45,
+          "n_pass": 45,
+          "n_fail": 0,
+          "n_censored_upper_bound": 0,
+          "n_ambiguous": 0,
+          "worst_case": {
+            "value": 0.176318182,
+            "at": {
+              "corner": "ff",
+              "temp_c": 125,
+              "res_section": "res_typ"
+            },
+            "n_points_at_this_value": 2
+          },
+          "verdict": "pass",
+          "conditions": "line regulation |dVOUT/dVin| over Vin 2.97-3.63 V at the labelled load; ideal 0.90 V reference; 45-point corner grid",
+          "source": {
+            "record": "sim/ldo-cmos5l-pvt-sweep/evidence/20261010-025634-60a3e81/dc-informational-summary.csv",
+            "column": "line_reg_mv_per_v_25mA"
+          },
+          "note": "Informational DC summary (derived offline from the committed raw DC grids, no new simulation). A point is valid only if both end points are within 1 % of 1.8 V; invalid points are counted as ambiguous and never dropped. Discrete sampled loads/supplies only: not a continuous-window claim.",
+          "n_invalid": 0
+        },
+        {
+          "name": "line regulation at 37.5 mA load (Vin 2.97-3.63 V)",
+          "unit": "mV/V",
+          "bound": {
+            "comparator": "lt",
+            "value": 5.0,
+            "unit": "mV/V"
+          },
+          "n_points": 45,
+          "n_pass": 45,
+          "n_fail": 0,
+          "n_censored_upper_bound": 0,
+          "n_ambiguous": 0,
+          "worst_case": {
+            "value": 0.176,
+            "at": {
+              "corner": "fs",
+              "temp_c": 125,
+              "res_section": "res_typ"
+            },
+            "n_points_at_this_value": 3
+          },
+          "verdict": "pass",
+          "conditions": "line regulation |dVOUT/dVin| over Vin 2.97-3.63 V at the labelled load; ideal 0.90 V reference; 45-point corner grid",
+          "source": {
+            "record": "sim/ldo-cmos5l-pvt-sweep/evidence/20261010-025634-60a3e81/dc-informational-summary.csv",
+            "column": "line_reg_mv_per_v_37p5mA"
+          },
+          "note": "Informational DC summary (derived offline from the committed raw DC grids, no new simulation). A point is valid only if both end points are within 1 % of 1.8 V; invalid points are counted as ambiguous and never dropped. Discrete sampled loads/supplies only: not a continuous-window claim.",
+          "n_invalid": 0
+        },
+        {
+          "name": "line regulation at 50 mA load (Vin 2.97-3.63 V)",
+          "unit": "mV/V",
+          "bound": {
+            "comparator": "lt",
+            "value": 5.0,
+            "unit": "mV/V"
+          },
+          "n_points": 45,
+          "n_pass": 45,
+          "n_fail": 0,
+          "n_censored_upper_bound": 0,
+          "n_ambiguous": 0,
+          "worst_case": {
+            "value": 0.177863636,
+            "at": {
+              "corner": "fs",
+              "temp_c": 125,
+              "res_section": "res_typ"
+            },
+            "n_points_at_this_value": 3
+          },
+          "verdict": "pass",
+          "conditions": "line regulation |dVOUT/dVin| over Vin 2.97-3.63 V at the labelled load; ideal 0.90 V reference; 45-point corner grid",
+          "source": {
+            "record": "sim/ldo-cmos5l-pvt-sweep/evidence/20261010-025634-60a3e81/dc-informational-summary.csv",
+            "column": "line_reg_mv_per_v_50mA"
+          },
+          "note": "Informational DC summary (derived offline from the committed raw DC grids, no new simulation). A point is valid only if both end points are within 1 % of 1.8 V; invalid points are counted as ambiguous and never dropped. Discrete sampled loads/supplies only: not a continuous-window claim.",
+          "n_invalid": 0
+        },
+        {
+          "name": "load regulation 0-50 mA at Vin = 2.97 V",
+          "unit": "%",
+          "bound": {
+            "comparator": "lt",
+            "value": 1.0,
+            "unit": "%"
+          },
+          "n_points": 45,
+          "n_pass": 45,
+          "n_fail": 0,
+          "n_censored_upper_bound": 0,
+          "n_ambiguous": 0,
+          "worst_case": {
+            "value": 0.0228481926,
+            "at": {
+              "corner": "ff",
+              "temp_c": 125,
+              "res_section": "res_wcs"
+            },
+            "n_points_at_this_value": 1
+          },
+          "verdict": "pass",
+          "conditions": "load regulation (V(0 mA) - V(50 mA)) / V(0 mA) at the labelled fixed Vin; ideal 0.90 V reference; 45-point corner grid",
+          "source": {
+            "record": "sim/ldo-cmos5l-pvt-sweep/evidence/20261010-025634-60a3e81/dc-informational-summary.csv",
+            "column": "load_reg_pct_vin2p97"
+          },
+          "note": "Informational DC summary (derived offline from the committed raw DC grids, no new simulation). A point is valid only if both end points are within 1 % of 1.8 V; invalid points are counted as ambiguous and never dropped. Discrete sampled loads/supplies only: not a continuous-window claim.",
+          "n_invalid": 0
+        },
+        {
+          "name": "load regulation 0-50 mA at Vin = 3.30 V",
+          "unit": "%",
+          "bound": {
+            "comparator": "lt",
+            "value": 1.0,
+            "unit": "%"
+          },
+          "n_points": 45,
+          "n_pass": 45,
+          "n_fail": 0,
+          "n_censored_upper_bound": 0,
+          "n_ambiguous": 0,
+          "worst_case": {
+            "value": 0.0237130425,
+            "at": {
+              "corner": "ff",
+              "temp_c": 125,
+              "res_section": "res_wcs"
+            },
+            "n_points_at_this_value": 1
+          },
+          "verdict": "pass",
+          "conditions": "load regulation (V(0 mA) - V(50 mA)) / V(0 mA) at the labelled fixed Vin; ideal 0.90 V reference; 45-point corner grid",
+          "source": {
+            "record": "sim/ldo-cmos5l-pvt-sweep/evidence/20261010-025634-60a3e81/dc-informational-summary.csv",
+            "column": "load_reg_pct_vin3p30"
+          },
+          "note": "Informational DC summary (derived offline from the committed raw DC grids, no new simulation). A point is valid only if both end points are within 1 % of 1.8 V; invalid points are counted as ambiguous and never dropped. Discrete sampled loads/supplies only: not a continuous-window claim.",
+          "n_invalid": 0
+        },
+        {
+          "name": "load regulation 0-50 mA at Vin = 3.63 V",
+          "unit": "%",
+          "bound": {
+            "comparator": "lt",
+            "value": 1.0,
+            "unit": "%"
+          },
+          "n_points": 45,
+          "n_pass": 45,
+          "n_fail": 0,
+          "n_censored_upper_bound": 0,
+          "n_ambiguous": 0,
+          "worst_case": {
+            "value": 0.0253750917,
+            "at": {
+              "corner": "ff",
+              "temp_c": 125,
+              "res_section": "res_wcs"
+            },
+            "n_points_at_this_value": 1
+          },
+          "verdict": "pass",
+          "conditions": "load regulation (V(0 mA) - V(50 mA)) / V(0 mA) at the labelled fixed Vin; ideal 0.90 V reference; 45-point corner grid",
+          "source": {
+            "record": "sim/ldo-cmos5l-pvt-sweep/evidence/20261010-025634-60a3e81/dc-informational-summary.csv",
+            "column": "load_reg_pct_vin3p63"
+          },
+          "note": "Informational DC summary (derived offline from the committed raw DC grids, no new simulation). A point is valid only if both end points are within 1 % of 1.8 V; invalid points are counted as ambiguous and never dropped. Discrete sampled loads/supplies only: not a continuous-window claim.",
+          "n_invalid": 0
         }
       ],
       "stretch_note": null,
@@ -581,17 +848,19 @@
       "stretch": "< 10 µA",
       "ratification": {
         "state": "open_unratified",
-        "readme_status": "OPEN — unratified (no current full-load record)",
+        "readme_status": "OPEN — unratified (informational full-load Iq measured at Vin = 3.30 V only; not ratified)",
         "dr0007_disposition": "Open",
         "dr0007_type": "deterministic",
         "record": "spec/decision-records/DR-0007-target-spec-row-ratification.md"
       },
       "verdict": "pass_partial_coverage",
-      "evidence_state": "current_partial_superseded_other_half",
+      "evidence_state": "current",
       "coverage": {
         "state": "partial",
         "gaps": [
-          "full-load half of the row has no current-design measurement"
+          "Iq at full load is measured at Vin = 3.30 V only (no other supplies)",
+          "full-load Iq is a difference of two ~50 mA currents; quantized at 1e-10 A, solver noise not bounded beyond that",
+          "ideal 0.90 V reference and ideal Ibias sink: reference/bias-generator current excluded; corner grid only"
         ]
       },
       "metrics": [
@@ -626,17 +895,43 @@
           "note": "column iq_a is in A; converted to uA (x1e6) for the row's unit"
         },
         {
-          "name": "Iq at full load",
+          "name": "Iq at full load (50 mA), load current excluded",
           "unit": "uA",
-          "verdict": "not_measured",
-          "reason": "The selected record reports no full-load Iq. An older record's full-load figure (23.05uA-23.08uA) is on a superseded design and is NOT used as current evidence.",
+          "bound": {
+            "comparator": "lt",
+            "value": 30.0,
+            "unit": "uA"
+          },
+          "n_points": 45,
+          "n_pass": 45,
+          "n_fail": 0,
+          "n_censored_upper_bound": 0,
+          "n_ambiguous": 0,
+          "worst_case": {
+            "value": 24.8873,
+            "at": {
+              "corner": "ff",
+              "temp_c": 125,
+              "res_section": "res_bcs"
+            },
+            "n_points_at_this_value": 1
+          },
+          "verdict": "pass",
+          "conditions": "50 mA load, Vin = 3.30 V, |i(Vin)| - Iload; ideal 0.90 V reference and 2 uA Ibias sink; 45-point corner grid",
           "source": {
-            "superseded_statement": "sim/ldo-cmos5l-pvt-sweep/README.md",
+            "record": "sim/ldo-cmos5l-pvt-sweep/evidence/20261010-025634-60a3e81/dc-informational-summary.csv",
+            "column": "iq_fullload_excl_load_a"
+          },
+          "note": "Derived offline as |i(Vin)| - Iload from the committed raw DC grid (column in A, converted to uA). Precision caveat: the grid is printed to 9 significant digits, so a ~22 uA difference of two ~50 mA currents is quantized at 1e-10 A (0.0001 uA); solver noise beyond that floor is not bounded by this data. Invalid points are counted as ambiguous, never dropped. An older record's full-load figure (23.05uA-23.08uA) is on a superseded design and is NOT used.",
+          "n_invalid": 0,
+          "precision_floor_uA": 0.000100000008,
+          "superseded_statement": {
+            "source": "sim/ldo-cmos5l-pvt-sweep/README.md",
             "describes": "Iq at full load, from the #25 record, which was run against a superseded netlist (pre-#28 behavioural divider, pre-#35 Cc). Quoted only to show a full-load number once existed; it is NOT evidence about the current design."
           }
         }
       ],
-      "stretch_note": "stretch < 10 uA not met: max observed Iq 24.72 uA.",
+      "stretch_note": "stretch < 10 uA not met: max observed no-load Iq 24.72 uA, max full-load Iq 24.89 uA.",
       "notes": []
     },
     {
@@ -925,7 +1220,7 @@
       {
         "check": "all selected records exist and match their sha256 pins",
         "ok": true,
-        "detail": "6 pinned sources verified"
+        "detail": "8 pinned sources verified"
       },
       {
         "check": "README target table: 10 rows, expected names and target text",
@@ -939,6 +1234,11 @@
       },
       {
         "check": "PVT grid complete (5 process x 3 temperature x 3 resistor corner = 45 points, all numeric fields finite)",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "check": "DC informational summary: pinned, same record, 45 corners once each, finite, validity fields True/False, raw grids match inventory hashes",
         "ok": true,
         "detail": ""
       },

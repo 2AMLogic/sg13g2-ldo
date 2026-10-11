@@ -43,6 +43,11 @@ def copy_inputs(dst: Path) -> None:
     rels |= {f["path"] for f in rec["files"].values()}
     rels |= {p["path"] for p in rec["design_freshness_pins"]}
     rels |= {f["path"] for f in sel["device_context_record"]["files"].values()}
+    dce = sel["dc_informational_evidence"]
+    rels |= {f["path"] for f in dce["files"].values()}
+    inv = json.loads((REPO / dce["files"]["coverage_inventory_json"]["path"]).read_text())
+    rels.add(inv["generator"]["path"])
+    rels |= set(inv["inputs"]["raw_dc_grids"])
     for r in rels:
         (dst / r).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(REPO / r, dst / r)
@@ -159,8 +164,33 @@ class GeneratedReportTests(unittest.TestCase):
         # iq_a 2.47221613e-05 A at ss/125C/res_bcs. The pre-EN record
         # 20260917-023832-7061e8f had 2.47222854e-05 A at the same point.
         self.assertAlmostEqual(m["worst_case"]["value"], 24.7221613, places=6)
-        self.assertEqual(self.rows[7]["metrics"][1]["verdict"], "not_measured")
-        self.assertIn("superseded", self.rows[7]["metrics"][1]["reason"])
+        fl = self.rows[7]["metrics"][1]
+        self.assertEqual((fl["unit"], fl["verdict"], fl["n_points"], fl["n_invalid"]), ("uA", "pass", 45, 0))
+        self.assertAlmostEqual(fl["worst_case"]["value"], 24.8873, places=6)
+        self.assertEqual(fl["worst_case"]["at"], {"corner": "ff", "temp_c": 125, "res_section": "res_bcs"})
+        self.assertIn("quantized at 1e-10 A", fl["note"])
+        self.assertIn("NOT used", fl["note"])
+        self.assertEqual(self.rows[7]["ratification"]["state"], "open_unratified")
+        self.assertEqual(self.rows[7]["verdict"], "pass_partial_coverage")
+
+    def test_row5_loaded_line_and_multi_vin_load_regulation(self):
+        ms = {m["name"]: m for m in self.rows[5]["metrics"]}
+        self.assertEqual(len(ms), 10)  # 2 legacy + 5 loads + 3 supplies
+        line = [m for n, m in ms.items() if n.startswith("line regulation at ")]
+        load = [m for n, m in ms.items() if n.startswith("load regulation 0-50 mA at Vin")]
+        self.assertEqual((len(line), len(load)), (5, 3))
+        for m in line + load:
+            self.assertEqual((m["n_points"], m["n_invalid"], m["n_ambiguous"]), (45, 0, 0))
+        w0 = ms["line regulation at 0 mA load (Vin 2.97-3.63 V)"]["worst_case"]
+        self.assertAlmostEqual(w0["value"], 0.245757576, places=8)
+        self.assertEqual(w0["at"], {"corner": "ff", "temp_c": 125, "res_section": "res_wcs"})
+        w = ms["load regulation 0-50 mA at Vin = 2.97 V"]["worst_case"]
+        self.assertAlmostEqual(w["value"], 0.0228481926, places=8)
+        self.assertIn("legacy", [n for n in ms][0])
+        self.assertEqual(self.rows[5]["ratification"]["state"], "open_unratified")
+        self.assertEqual(self.rows[5]["verdict"], "pass_partial_coverage")
+        self.assertEqual(self.rows[5]["coverage"]["state"], "partial")
+        self.assertTrue(any("not continuous coverage" in g for g in self.rows[5]["coverage"]["gaps"]))
 
     def test_stability_ambiguous_crossings_preserved(self):
         m = self.rows[10]["metrics"][0]
@@ -324,6 +354,135 @@ class NegativeControls(unittest.TestCase):
         rc, _, err = run_main("--root", str(self.tmp))
         self.assertEqual(rc, 1)
         self.assertEqual(self.env_status(), "fail")
+
+    # --- DC informational evidence (rows 5 and 7) ----------------------------
+    def selection(self):
+        p = self.tmp / "sim/characterization/selection.json"
+        return p, json.loads(p.read_text())
+
+    def dc_summary(self):
+        _, sel = self.selection()
+        return self.tmp / sel["dc_informational_evidence"]["files"]["summary_csv"]["path"]
+
+    def repin_dc(self, key="summary_csv"):
+        p, sel = self.selection()
+        f = sel["dc_informational_evidence"]["files"][key]
+        f["sha256"] = G.sha256_file(self.tmp / f["path"])
+        p.write_text(json.dumps(sel))
+
+    def edit_summary(self, fn):
+        s = self.dc_summary()
+        lines = s.read_text().splitlines(keepends=True)
+        s.write_text("".join(fn(lines)))
+        self.repin_dc()
+
+    def assert_rejected(self, text):
+        rc, _, err = run_main("--root", str(self.tmp))
+        self.assertEqual(rc, 1)
+        self.assertIn(text, err)
+        self.assertEqual(self.env_status(), "fail")
+
+    def test_dc_summary_tamper_fails_pin(self):
+        s = self.dc_summary()
+        s.write_text(s.read_text().replace("0.167272727", "0.167272728", 1))
+        self.assert_rejected("differ from pin")
+
+    def test_dc_inventory_tamper_fails_pin(self):
+        _, sel = self.selection()
+        inv = self.tmp / sel["dc_informational_evidence"]["files"]["coverage_inventory_json"]["path"]
+        inv.write_text(inv.read_text() + " ")
+        self.assert_rejected("differ from pin")
+
+    def test_dc_missing_selection_block_is_error(self):
+        p, sel = self.selection()
+        del sel["dc_informational_evidence"]
+        p.write_text(json.dumps(sel))
+        self.assert_rejected("dc_informational_evidence")
+
+    def test_dc_record_id_mismatch_rejected(self):
+        p, sel = self.selection()
+        sel["dc_informational_evidence"]["circuit_record_id"] = "20260917-023832-7061e8f"
+        p.write_text(json.dumps(sel))
+        self.assert_rejected("selected circuit record")
+
+    def test_dc_inventory_for_other_record_rejected(self):
+        _, sel = self.selection()
+        invp = self.tmp / sel["dc_informational_evidence"]["files"]["coverage_inventory_json"]["path"]
+        inv = json.loads(invp.read_text())
+        inv["inputs"]["record_csv"]["sha256"] = "0" * 64
+        invp.write_text(json.dumps(inv))
+        self.repin_dc("coverage_inventory_json")
+        self.assert_rejected("does not match the selected record")
+
+    def test_dc_inventory_design_mismatch_rejected(self):
+        _, sel = self.selection()
+        invp = self.tmp / sel["dc_informational_evidence"]["files"]["coverage_inventory_json"]["path"]
+        inv = json.loads(invp.read_text())
+        k = next(iter(inv["inputs"]["design_netlists"]))
+        inv["inputs"]["design_netlists"][k] = "0" * 64
+        invp.write_text(json.dumps(inv))
+        self.repin_dc("coverage_inventory_json")
+        self.assert_rejected("design freshness pins")
+
+    def test_dc_raw_grid_tamper_rejected(self):
+        _, sel = self.selection()
+        invp = self.tmp / sel["dc_informational_evidence"]["files"]["coverage_inventory_json"]["path"]
+        raw = next(iter(json.loads(invp.read_text())["inputs"]["raw_dc_grids"]))
+        rp = self.tmp / raw
+        rp.write_text(rp.read_text() + "\n")
+        self.assert_rejected("raw DC grid bytes differ")
+
+    def test_dc_missing_corner_rejected(self):
+        self.edit_summary(lambda ls: ls[:-1])
+        self.assert_rejected("corner set incomplete")
+
+    def test_dc_duplicate_corner_rejected(self):
+        self.edit_summary(lambda ls: ls + [ls[1]])
+        self.assert_rejected("duplicate corner")
+
+    def test_dc_non_finite_value_rejected(self):
+        self.edit_summary(lambda ls: [ls[0], ls[1].replace("2.25169e-05", "nan", 1)] + ls[2:])
+        self.assert_rejected("not finite")
+
+    def test_dc_invalid_validity_field_rejected(self):
+        self.edit_summary(lambda ls: [ls[0], ls[1].replace(",True,", ",Maybe,", 2)] + ls[2:])
+        self.assert_rejected("must be True/False")
+
+    def test_dc_wrong_units_schema_rejected(self):
+        self.edit_summary(lambda ls: [ls[0].replace("iq_fullload_excl_load_a", "iq_fullload_excl_load_ua", 1)] + ls[1:])
+        self.assert_rejected("columns differ")
+
+    def test_dc_disagreement_with_pvt_csv_rejected(self):
+        self.edit_summary(lambda ls: [ls[0], ls[1].replace(",2.24488955e-05,", ",2.34488955e-05,", 1)] + ls[2:])
+        self.assert_rejected("disagrees with the pinned PVT csv")
+
+    def test_dc_invalid_point_is_counted_never_dropped(self):
+        # Flip the first row's full-load validity flag: still a complete grid, so the
+        # run succeeds, but the point is ambiguous and blocks a clean pass.
+        def flip(ls):
+            cells = ls[1].rstrip("\n").split(",")
+            cells[6] = "False"
+            return [ls[0], ",".join(cells) + "\n"] + ls[2:]
+        self.edit_summary(flip)
+        rc, _, err = run_main("--root", str(self.tmp))
+        self.assertEqual(rc, 0, err)
+        rep = json.loads((self.out / G.REPORT_JSON).read_text())
+        r7 = next(r for r in rep["rows"] if r["id"] == 7)
+        fl = r7["metrics"][1]
+        self.assertEqual((fl["n_points"], fl["n_invalid"], fl["n_ambiguous"], fl["n_pass"]), (45, 1, 1, 44))
+        self.assertEqual(fl["verdict"], "ambiguous")
+        self.assertEqual(r7["verdict"], "ambiguous")
+
+    def test_dc_over_bound_value_is_a_fail_not_dropped(self):
+        self.edit_summary(lambda ls: [ls[0], ls[1].replace("2.25169e-05", "3.25169e-05", 1)] + ls[2:])
+        rc, _, err = run_main("--root", str(self.tmp))
+        # pvt agreement does not cover full-load Iq, so this is a valid but failing point
+        self.assertEqual(rc, 0, err)
+        rep = json.loads((self.out / G.REPORT_JSON).read_text())
+        r7 = next(r for r in rep["rows"] if r["id"] == 7)
+        self.assertEqual(r7["metrics"][1]["verdict"], "fail")
+        self.assertEqual(r7["verdict"], "fail")
+        self.assertAlmostEqual(r7["metrics"][1]["worst_case"]["value"], 32.5169, places=6)
 
 
 if __name__ == "__main__":
