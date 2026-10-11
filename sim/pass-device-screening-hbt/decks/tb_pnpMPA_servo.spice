@@ -5,6 +5,12 @@
 * .lib card (hbt-corners.lib -> the PDK's cornerHBT.lib), .temp and the analysis.
 * Methodology, topology reading and caveats: README.md.
 .include "runner-preamble.cir"
+* gminsteps=0 skips ngspice's dynamic-gmin homotopy and goes straight to source
+* stepping. Probed at pnpMPA/servo typ/125C and wcs/125C: dynamic gmin stepping
+* fails ("Warning: Dynamic gmin stepping failed") and source stepping then
+* converges to the same DC point (every printed .meas identical). NOT applied to
+* the npn13G2* decks: there it makes the solve fail (singular matrix).
+.options gminsteps=0
 * One DC point (dummy source Vz is only there to give `dc` something to step).
 * Group k: Ib_k = clamp(G*(T-Ic), 0, Ibmax); Bibn_k mirrors it as a node voltage
 * so `.meas` can FIND it. i(vc_k) = +Ic (sense source in series with the collector
