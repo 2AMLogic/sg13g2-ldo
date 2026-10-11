@@ -109,7 +109,7 @@ pre_osdi @@OSDI_DIR@@/cap_cmomf.osdi
 op
 echo "LOOPGAIN_VOUT_OP $&v(vout)"
 
-ac dec 20 1 100meg
+ac dec 20 1 @@LG_AC_MAX@@
 let loopgain = -v(fb)/v(fbamp)
 let loopgain_db = db(loopgain)
 let loopgain_deg = ph(loopgain)*180/3.14159265358979
