@@ -13,6 +13,10 @@
 #     dynamic DoE (load x Cout x ESR) on the batch fleet; README.md
 #     "Dynamic DoE" (refinement: --doe-extra/--doe-only-extra/--doe-base).
 #
+#   sim/ldo-cmos5l-pvt-sweep/run_sweep.sh --batch --loopgain-ac-max=10g   # issue #128
+#     loop-gain AC sweep ceiling (default 100meg; also SWEEP_LOOPGAIN_AC_MAX;
+#     exact power of ten, 20 points/decade, 1 Hz floor -- ac_sweep.py).
+#
 #   sim/ldo-cmos5l-pvt-sweep/run_sweep.sh --check-env   # CI-weight preflight:
 #     generates + syntax-checks one netlist per bench (mos_tt/27C), without
 #     running the full corner grid or writing a records/ entry.

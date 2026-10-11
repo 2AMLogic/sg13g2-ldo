@@ -670,6 +670,25 @@ def _optnum(row: dict, key: str, ctx: str):
     return None if row.get(key, "") == "" else num(row, key, ctx)
 
 
+def _trace_ceiling_hz(path: Path, ctx: str) -> float:
+    """Frequency of the last row of a loop-gain wrdata trace (already sha256-verified)."""
+    try:
+        last = [ln for ln in path.read_text(encoding="utf-8").splitlines() if ln.strip()][-1]
+        hz = float(last.split()[0])
+    except (OSError, ValueError, IndexError) as exc:
+        raise GenError(f"{ctx}: cannot read the sweep ceiling from {path}: {exc!r}") from exc
+    if not math.isfinite(hz) or hz <= 0:
+        raise GenError(f"{ctx}: sweep ceiling {hz!r} is not a positive finite frequency")
+    return round(hz, 3)
+
+
+def _fmt_hz(hz: float) -> str:
+    for scale, unit in ((1e9, "GHz"), (1e6, "MHz"), (1e3, "kHz"), (1.0, "Hz")):
+        if hz >= scale * (1 - 1e-9):
+            return f"{hz / scale:.6g} {unit}"
+    return f"{hz:g} Hz"
+
+
 def load_row10(root: Path, sel: dict, rec: dict, pvt_rows: list[dict], sources: list) -> dict:
     """Validate and return the pinned DR-0014 classification of the selected
     record's loop-gain traces. Every failure is a hard GenError (fail-closed)."""
@@ -717,6 +736,7 @@ def load_row10(root: Path, sel: dict, rec: dict, pvt_rows: list[dict], sources: 
     if len(set(keys)) != len(keys) or set(keys) != {(c, str(t), s) for c in CORNERS for t in TEMPS for s in RES}:
         raise GenError(f"row-10 classification corner set incomplete, duplicated or malformed ({len(keys)} rows)")
     by_key = {}
+    ceilings = set()
     tdir = f"/corners/{rec['id']}/"
     for i, r in enumerate(crow):
         ctx = f"row-10 classification row {i + 2} ({r['corner']}/{r['temp_c']}/{r['res_section']})"
@@ -725,6 +745,7 @@ def load_row10(root: Path, sel: dict, rec: dict, pvt_rows: list[dict], sources: 
         tp = root / r["trace"]
         if not tp.is_file() or sha256_file(tp) != r["trace_sha256"]:
             raise GenError(f"{ctx}: trace {r['trace']} missing or differs from its recorded sha256")
+        ceilings.add(_trace_ceiling_hz(tp, ctx))
         for k in ("pm_verdict", "gm_verdict"):
             if r[k] not in ROW10_VERDICTS:
                 raise GenError(f"{ctx}: {k} {r[k]!r} not one of {ROW10_VERDICTS}")
@@ -751,8 +772,10 @@ def load_row10(root: Path, sel: dict, rec: dict, pvt_rows: list[dict], sources: 
             raise GenError(f"row-10 classification upgrades a recorded PM miss at {k}")
         if float(pr["gain_margin_db"]) < ROW10_GM_BOUND and r["gm_verdict"] != "fail":
             raise GenError(f"row-10 classification upgrades a recorded GM miss at {k}")
+    if len(ceilings) != 1:
+        raise GenError(f"row-10 traces do not share one sweep ceiling: {sorted(ceilings)}")
     return {"by_key": by_key, "doc": doc, "csv_rel": blk["files"]["classification_csv"]["path"],
-            "dr": blk["decision_record"]}
+            "dr": blk["decision_record"], "ceiling_hz": next(iter(ceilings))}
 
 
 def build(root: Path) -> tuple[dict, dict, str]:
@@ -1183,8 +1206,10 @@ def build(root: Path) -> tuple[dict, dict, str]:
     n_bounded = sum(1 for cr in rows10 if cr["ceiling_bounded"] == "True")
     n_low_ok = sum(1 for cr in rows10 if cr["low_end_ok"] == "True")
     r10_rel = r10["csv_rel"]
-    r10_cond = (ac_cond + "; loop-gain trace 1 Hz-100 MHz, 20 points/decade (the committed bench's sweep "
+    ceil_txt = _fmt_hz(r10["ceiling_hz"])
+    r10_cond = (ac_cond + f"; loop-gain trace 1 Hz-{ceil_txt}, 20 points/decade (the committed bench's sweep "
                 "floor and ceiling); PROPOSED classification (DR-0014), not ratified")
+    ceil_dir = ("rising" if min(ceil_d) > 0 else "falling" if max(ceil_d) < 0 else "mixed")
     pm_first = [num(r, "phase_margin_deg", "pvt") for r in prow]
     gm_first = [num(r, "gain_margin_db", "pvt") for r in prow]
     m10a = metric("phase margin, DR-0014: minimum over every 0 dB crossing in the sweep", "deg", "ge", 45.0,
@@ -1196,9 +1221,9 @@ def build(root: Path) -> tuple[dict, dict, str]:
                        "else stays ambiguous with its reason.")
     m10a["reasons"] = reasons("pm_reasons")
     m10a["detail"] = [
-        f"sweep ceiling bounded at {n_bounded} of {len(prow)} points: loop gain at 100 MHz "
+        f"sweep ceiling bounded at {n_bounded} of {len(prow)} points: loop gain at {ceil_txt} "
         f"{min(ceil_g):.4g}..{max(ceil_g):.4g} dB, change over the last decade {min(ceil_d):+.4g}..{max(ceil_d):+.4g} dB "
-        f"(rising); low-end premise holds at {n_low_ok} of {len(prow)}",
+        f"({ceil_dir}); low-end premise holds at {n_low_ok} of {len(prow)}",
         f"{len(multi)} points have two 0 dB crossings: first-crossing margin "
         f"{min(pm_first[i] for i in multi):.4g}..{max(pm_first[i] for i in multi):.4g} deg, second (rising) crossing "
         f"{min(m for i in multi for m in later_margins(rows10[i])):.4g}..{max(m for i in multi for m in later_margins(rows10[i])):.4g} deg "
@@ -1217,14 +1242,14 @@ def build(root: Path) -> tuple[dict, dict, str]:
     m10b["detail"] = [
         f"superseded first -180 deg crossing reading (pre-DR-0014, not a verdict): {sum(1 for v in gm_first if v >= 10.0)} "
         f"of {len(prow)} >= 10 dB, range {min(gm_first):.4g}..{max(gm_first):.4g} dB; no committed trace bounds the "
-        "loop gain above 100 MHz, so none of these is a pass under DR-0014",
+        f"sweep ceiling ({ceil_txt}), so none of these is a pass under DR-0014",
     ]
     add(R[10], [m10a, m10b], "partial", [
         "one (Cout, ESR, load) point only: 1 uF, 0 ohm, 1 mA -- not 0.33-4.7 uF, 0-500 mohm, 0-50 mA",
         "Cc is un-cornered; Cc tolerance checked at ss/125C only",
-        f"sweep ceiling 100 MHz bounded at {n_bounded} of {len(prow)} points (loop gain near 0 dB and rising at "
-        "the ceiling): no PM or GM pass can be scored under DR-0014 until a bench resolves the loop gain above "
-        "100 MHz",
+        f"sweep ceiling {ceil_txt} bounded at {n_bounded} of {len(prow)} points (loop gain {min(ceil_g):.3g}..{max(ceil_g):.3g} dB "
+        f"and {ceil_dir} at the ceiling): no PM or GM pass can be scored under DR-0014 until a bench bounds the "
+        f"loop gain above {ceil_txt}",
         f"{len(multi)} of {len(prow)} points have two 0 dB crossings",
     ], evidence_state,
         notes=[f"Cc value tolerance (ss/125C only, {cc_tol_rel}): PM, GM and PSRR all hold for Cc in "
@@ -1236,6 +1261,7 @@ def build(root: Path) -> tuple[dict, dict, str]:
         "points": len(prow), "low_end_premise_holds": n_low_ok, "ceiling_bounded": n_bounded,
         "ceiling_gain_db_range": rng(ceil_g), "ceiling_last_decade_change_db_range": rng(ceil_d),
         "multi_crossing_points": len(multi),
+        "sweep_ceiling_hz": r10["ceiling_hz"],
     }
 
     # --- completeness ----------------------------------------------------

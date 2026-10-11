@@ -248,7 +248,74 @@ characterization -- but the qualitative verdict does not depend on that
 caveat, and now has a measured tolerance band attached to it rather than an
 assertion.
 
-## Results (issue #89, G1 disable pull-down -- current)
+## Results (issue #128, loop-gain sweep to 10 GHz -- current)
+
+Question: DR-0014 could not score any row-10 point because no committed
+loop-gain trace bounded its 100 MHz sweep ceiling. Does a higher ceiling
+change that? Answer: no. The 10 GHz traces are not bounded either, so all 45
+points stay `ambiguous` (`ceiling_unbounded`). No rule, threshold or bound
+was changed.
+
+Command (batch only; the host runs no SPICE):
+
+    sim/ldo-cmos5l-pvt-sweep/run_sweep.sh --batch --loopgain-ac-max=10g
+
+`--loopgain-ac-max=<f>` (or `SWEEP_LOOPGAIN_AC_MAX`) is the one input. It
+defaults to `100meg`, which renders the historical `ac dec 20 1 100meg`
+unchanged. It must be an exact power of ten between 1 kHz and 1 THz above the
+fixed 1 Hz floor, with 20 points per decade (`ac_sweep.py`, tested by
+`test_ac_sweep.py`). It is rendered into `tb_loopgain_cmos5l.spice.tmpl` as
+`@@LG_AC_MAX@@`, and the loop-gain row count is derived from it (201 rows at
+10 GHz, 161 at 100 MHz). Every loop-gain trace is also checked for its first
+and last frequency, so a wrong-range sweep with the right row count fails
+screening. The psrr bench keeps `ac dec 20 1 100meg`. The record md states
+the ceiling and row count. `--doe-generate` refuses a non-default ceiling.
+
+Record: [`records/20261011-070111-5391c68.md`](records/20261011-070111-5391c68.md)
+and its siblings (same file set as the #89 record). It re-ran the full grid
+on the same design netlists (core `08a7b857...bae57`, erramp `75ee39ce...56fb4`)
+on the EDA batch fleet: 22 `klt sim` requests, all Spot, none reused, 214/214
+points passed, completeness OK. Job ids are in
+`corners/20261011-070111-5391c68/_batch/backend.json` (the 45-point main
+loop-gain request is `g01_loopgain_tt_-40c_rtyp`, job `klt-sim-a559517f5a05`).
+Only the loop-gain traces changed: every DC and PSRR column of the PVT csv is
+identical to `20261011-051956-eda9285`, and the item-5 DC summary is
+byte-identical. In the PVT csv only `n_0db_crossings` and
+`phase_margin_worst_deg` differ, because the extended traces have more
+crossings.
+
+Measured, 45 of 45 points (`evidence/20261011-070111-5391c68/row10-margins.*`,
+written by `row10_record.py`):
+
+| Quantity | Value |
+|---|---|
+| Loop gain at 1 GHz | +0.90 to +1.65 dB |
+| Loop gain at the 10 GHz ceiling | +0.40 to +1.17 dB |
+| Change over the last decade | -0.56 to -0.43 dB |
+| Phase at 10 GHz | -14.0 to -11.7 deg |
+| 0 dB crossings | 2 at every point (first falling, second rising at 59 to 179 MHz) |
+| In-band PM (first crossing) | 53.87 to 76.93 deg |
+| In-band GM (one -180 deg crossing) | 13.84 to 29.87 dB |
+| PM / GM verdicts | 45 ambiguous / 45 ambiguous, all `ceiling_unbounded` |
+| Pass / fail / ambiguous | 0 / 0 / 45 for PM and for GM |
+
+Reading. Above the in-band crossing the loop gain comes back up through 0 dB
+at 59 to 179 MHz and then flattens near +1 dB with its phase near 0 deg. It
+drifts down only about 0.5 dB per decade, so it would take on the order of 20
+more decades to reach -10 dB. The ceiling premise cannot be met by raising
+the ceiling further, and 10 GHz is already well beyond any frequency at which this repo
+has validated the PSP103, `rhigh` or `cap_cmomi` models, so no higher ceiling
+was attempted. The values above 1 GHz are numerically complete traces, not
+validated physics, and they are not used for any pass.
+
+What this does not show. The flat, phase-near-zero plateau is the signature
+DR-0014 and `tb_loopgain_cmos5l` already name for a single-injection break
+at a MOSFET gate, but it was not tested here and the cause is not
+established. Only a measured two-injection (Middlebrook/Tian) comparison can
+say whether it belongs to the circuit or to the measurement. That bench is
+filed as separate work; it was not built here.
+
+## Results (issue #89, G1 disable pull-down)
 
 Record cited: [`records/20261011-051956-eda9285.md`](records/20261011-051956-eda9285.md),
 with its [`.csv`](records/20261011-051956-eda9285.csv),
@@ -1485,6 +1552,10 @@ layout, cross-checks, no-loosening guard and output format, on another
 
     python3 sim/ldo-cmos5l-pvt-sweep/row10_record.py --record 20261011-051956-eda9285
     python3 sim/ldo-cmos5l-pvt-sweep/row10_record.py --check   # CI: every output it wrote
+
+Issue #128 re-ran the same grid with the loop-gain sweep extended to 10 GHz
+(`run_sweep.sh --loopgain-ac-max=10g`, see "Results (issue #128 ...)" above)
+and selected `20261011-070111-5391c68`. The result is still 45 `ambiguous`.
 
 For record `20261011-051956-eda9285` (the G1 pull-down design) the result is
 the same as for `20261010-025634-60a3e81`. PM and GM are `ambiguous` at all

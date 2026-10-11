@@ -102,6 +102,8 @@ ITEMS = {
             f"{_SIM}/README.md",
             f"{_SIM}/run_sweep.sh",
             f"{_SIM}/batch_backend.py",
+            # issue #128: loop-gain AC ceiling contract used by run_sweep.sh
+            f"{_SIM}/ac_sweep.py",
             f"{_SIM}/testbench/tb_dcsweep_cmos5l.spice.tmpl",
             f"{_SIM}/testbench/tb_loopgain_cmos5l.spice.tmpl",
             f"{_SIM}/testbench/tb_psrr_cmos5l.spice.tmpl",

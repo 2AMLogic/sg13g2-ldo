@@ -245,16 +245,18 @@ class GeneratedReportTests(unittest.TestCase):
         pm, gm = self.rows[10]["metrics"]
         self.assertIn("DR-0014", pm["name"])
         self.assertIn("DR-0014", gm["name"])
-        # Every committed trace ends near 0 dB with the loop gain rising, so the
-        # ceiling premise fails everywhere: nothing is scored as a pass.
+        # Every committed trace ends near +1 dB at the 10 GHz ceiling (#128; it
+        # was 100 MHz and rising for earlier records), so the ceiling premise
+        # fails everywhere: nothing is scored as a pass.
         for m in (pm, gm):
             self.assertEqual((m["n_points"], m["n_pass"], m["n_fail"], m["n_ambiguous"]), (45, 0, 0, 45))
             self.assertEqual(m["reasons"], {"ceiling_unbounded": 45})
             self.assertEqual(m["verdict"], "ambiguous")
         mc = self.rows[10]["margin_classification"]
-        self.assertEqual((mc["ceiling_bounded"], mc["multi_crossing_points"], mc["status"]), (0, 15, "proposed"))
+        self.assertEqual((mc["ceiling_bounded"], mc["multi_crossing_points"], mc["status"]), (0, 45, "proposed"))
+        self.assertEqual(mc["sweep_ceiling_hz"], 1e10)
         # the superseded first-crossing reading is reported, not scored
-        self.assertTrue(any("30 of 45 scored >= 45 deg, 15 unscored" in d for d in pm["detail"]))
+        self.assertTrue(any("0 of 45 scored >= 45 deg, 45 unscored" in d for d in pm["detail"]))
         self.assertTrue(any("not a margin" in d for d in pm["detail"]))
         self.assertEqual(self.rows[10]["ratification"]["state"], "open_unratified")
 
@@ -548,6 +550,28 @@ class NegativeControls(unittest.TestCase):
         self.assertEqual(r7["metrics"][1]["verdict"], "fail")
         self.assertEqual(r7["verdict"], "fail")
         self.assertAlmostEqual(r7["metrics"][1]["worst_case"]["value"], 32.5169, places=6)
+
+
+class SweepCeilingTests(unittest.TestCase):
+    """The row-10 text quotes the sweep ceiling read from the traces (#128)."""
+
+    def test_fmt_hz(self):
+        self.assertEqual(G._fmt_hz(1e8), "100 MHz")
+        self.assertEqual(G._fmt_hz(1e10), "10 GHz")
+        self.assertEqual(G._fmt_hz(1e3), "1 kHz")
+
+    def test_ceiling_read_from_last_row_and_bad_traces_rejected(self):
+        tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, tmp, True)
+        p = tmp / "t.csv"
+        p.write_text(" 1.0e+00 0 1.0e+00 0 \n 1.0e+10 0 1.0e+10 0 \n")
+        self.assertEqual(G._trace_ceiling_hz(p, "x"), 1e10)
+        p.write_text("")
+        with self.assertRaises(G.GenError):
+            G._trace_ceiling_hz(p, "x")
+        p.write_text(" 1.0 0 1.0 0 \n nan 0 nan 0 \n")
+        with self.assertRaises(G.GenError):
+            G._trace_ceiling_hz(p, "x")
 
 
 class Row10NegativeControls(unittest.TestCase):
