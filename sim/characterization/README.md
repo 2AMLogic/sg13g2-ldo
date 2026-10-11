@@ -69,6 +69,40 @@ verdict instead of disappearing. The measurements are discrete samples on a
 precision caveat (a difference of two ~50 mA currents, quantized at 1e-10 A).
 Rows 5 and 7 stay Open/unratified and this is not T1 item-5 grading evidence.
 
+## Startup evidence for row 9 (issue #112)
+
+`selection.json` pins, under `startup_evidence`, one committed startup
+campaign by id and stage (`20261010-104827-91e92aa` / `grid`, issue #69): the
+record `.md`, the per-point `.csv` and the `.manifest.json`, each by sha256,
+plus the requested grid (5 process x 3 temperature x 3 resistor corner x 3 Vin
+= 135 points). The record is chosen explicitly; a newer startup directory is
+never picked up automatically. The generator reads it offline (no PDK, no
+simulator) and:
+
+- verifies every per-point trace file against its recorded `trace_sha256`
+  and sample count; a missing or tampered file is a hard error;
+- rejects a duplicate point, a point outside the requested grid, a manifest
+  that disagrees with the csv, and a csv `pass` that its own metrics
+  contradict;
+- validates freshness for the core and the error amplifier **independently**
+  of the legacy `design_freshness_pins` (the manifest records the core hash;
+  the error-amplifier pin is explained in `design_freshness_basis`), and
+  reports each component's state; either mismatch makes the evidence
+  `stale_against_design` and turns the envelope `fail`;
+- reports requested / evaluated / missing / insufficient counts. A missing
+  requested point makes the artifact incomplete (envelope `fail`); an
+  `insufficient` point is counted and can never be a pass;
+- scores settling (3 ms), overshoot (peak above 1.836 V) and monotonicity
+  (downward excursion over 1 mV) as **separate** metrics, for the cold start
+  and the re-enable, with the full conditions and the coordinates of every
+  extremum. Settling inside 3 ms does not override an overshoot or
+  monotonicity failure; a measured failure is never masked by missing or
+  insufficient points (`startup_row_verdict`).
+
+The methodology is **proposed** (DR-0009) and disclosed on the row. Row 9
+stays Open: nothing here ratifies a target or claims whole-spec compliance,
+and the envelope still means artifact completeness/freshness only.
+
 ## What the envelope verdict means (and does not)
 
 `status: pass` means the **artifact is complete and fresh**:
@@ -87,8 +121,8 @@ Rows 5 and 7 stay Open/unratified and this is not T1 item-5 grading evidence.
 It does **not** mean the circuit meets its spec. Row verdicts are reported
 separately and today include `not_measured` (Input), `pass_partial_coverage`
 (Output, Load, Line/load, PSRR, Iq), `pass_full_coverage` (Dropout, the one
-ratified row), `ambiguous` (Stability) and `not_implemented` (Current limit,
-Startup). A `pass_*` verdict is a measurement against the target at the
+ratified row), `ambiguous` (Stability), `fail` (Startup: measured, see below) and
+`not_implemented` (Current limit). A `pass_*` verdict is a measurement against the target at the
 stated conditions only; nine of ten targets are still unratified (DR-0007).
 `klt signoff` trusts the envelope's status and does not read the report;
 the `--check` gate here and in CI is what verifies content and freshness.

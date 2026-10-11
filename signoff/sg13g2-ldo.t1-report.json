@@ -33,7 +33,7 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:76873bc2d111eeec30d04b6a24b7714d679199c519198f60d923363b73e92f7b",
+        "content_hash": "sha256:2a2fb30a7c8aa59a2dc93f75c3b15949ec77f0c274cc89a5468e8f8ae10713a8",
         "input_verified": true,
         "exit_status": 0,
         "artifact_binding": {
@@ -42,7 +42,7 @@
             "path": "signoff/evidence/item1-design-sources.inventory.json",
             "scope": "repo"
           },
-          "content_hash": "sha256:76873bc2d111eeec30d04b6a24b7714d679199c519198f60d923363b73e92f7b",
+          "content_hash": "sha256:2a2fb30a7c8aa59a2dc93f75c3b15949ec77f0c274cc89a5468e8f8ae10713a8",
           "input_verified": true,
           "summary": "SG13CMOS5L schematics/symbols, their generator and the regenerated ngspice netlists are committed; every constituent hash matches the inventory. Freshness/identity only, not a design-correctness or performance claim.",
           "source": "signoff/evidence/item1-design-sources.inventory.json"
@@ -216,7 +216,7 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:463126d7b0c6e9235ab7f77d9dea69a777451e49d06221b47106a3ced35f9e09",
+        "content_hash": "sha256:080a06e2ae8e7f3b4e6af4403e38208d81fba14823e78d78a8cf87d86f61f565",
         "input_verified": null,
         "exit_status": 0
       }
@@ -267,7 +267,7 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:105ea38fff1d0369af6e43fd39f9bee0a9c0c5e010c7ca5146b22bb42c5a7223",
+        "content_hash": "sha256:49b0c1ec13e5628e02e83e77e475d2a9a5ea4342777081a52811bd3587ffe687",
         "input_verified": true,
         "exit_status": 0,
         "artifact_binding": {
@@ -276,7 +276,7 @@
             "path": "signoff/evidence/item10-repo-hygiene.inventory.json",
             "scope": "repo"
           },
-          "content_hash": "sha256:105ea38fff1d0369af6e43fd39f9bee0a9c0c5e010c7ca5146b22bb42c5a7223",
+          "content_hash": "sha256:49b0c1ec13e5628e02e83e77e475d2a9a5ea4342777081a52811bd3587ffe687",
           "input_verified": true,
           "summary": "README, LICENSE, spec index, agent instructions and the CI workflow are committed; every constituent hash matches the inventory and the CI workflow still defines the PDK-free signoff gates. Hygiene presence/freshness only.",
           "source": "signoff/evidence/item10-repo-hygiene.inventory.json"

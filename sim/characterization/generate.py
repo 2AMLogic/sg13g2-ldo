@@ -37,6 +37,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import gzip
 import hashlib
 import json
 import math
@@ -485,6 +486,168 @@ def load_dc_informational(root: Path, sel: dict, rec: dict, pvt_rows: list[dict]
 # the report
 # --------------------------------------------------------------------------- #
 
+# --------------------------------------------------------------------------- #
+# startup campaign evidence (row 9)
+# --------------------------------------------------------------------------- #
+
+# Proposed-methodology thresholds (DR-0009; mirrored in selection.json
+# startup_evidence.proposed_methodology and startup_eval.py). Not ratified.
+STARTUP_BAND_HI_V = 1.836
+STARTUP_SETTLE_LIMIT_S = 3e-3
+STARTUP_MONOTONIC_TOL_V = 1e-3
+STARTUP_CSV_VERDICTS = ("pass", "fail", "insufficient")
+STARTUP_REQUIRED = [
+    "start_settle_time_s", "start_peak_vout_v", "start_max_down_excursion_v",
+    "reen_peak_vout_v", "reen_max_down_excursion_v", "start_observed_s",
+]
+STARTUP_EXTRA = [
+    "start_overshoot_v", "reen_overshoot_v", "reen_observed_s",
+    "start_rise_10_90_s", "off_vout_max_v", "off_supply_current_a",
+]
+
+
+def startup_row_verdict(n_fail: int, n_insufficient: int, n_missing: int,
+                        n_evaluated: int) -> str:
+    """Row-9 verdict from point counts. A measured failure always wins (it is
+    never masked by missing or insufficient points, nor by a numeric settling
+    success); without failures, anything short of a whole evaluated grid is
+    `not_measured`; only a whole, all-passing grid is a (partial-coverage)
+    pass, and even that is a proposed-methodology measurement, not a
+    ratification."""
+    if n_fail:
+        return "fail"
+    if n_insufficient or n_missing or n_evaluated == 0:
+        return "not_measured"
+    return "pass_partial_coverage"
+
+
+def _startup_key(mos, temp, res, vin, load, cout, esr, tmax):
+    return (str(mos), int(float(temp)), str(res), round(float(vin), 3),
+            float(load), float(cout), float(esr), float(tmax))
+
+
+def load_startup(root: Path, sel: dict, sources: list) -> dict:
+    """Validate and return the explicitly selected, pinned startup campaign.
+
+    Hard GenError: block missing, wrong id/stage, any selected file missing or
+    different from its pin, manifest/record disagreement, malformed or
+    non-finite fields, duplicate or unexpected campaign point, trace file
+    missing/tampered, a csv `pass` contradicted by a measured metric. Reported
+    (not raised): requested points with no result row (`missing`), points the
+    evaluator marked `insufficient`, and design staleness (core and error
+    amplifier independently)."""
+    st = sel.get("startup_evidence")
+    if not isinstance(st, dict):
+        raise GenError("selection.json has no startup_evidence block")
+    rid = st["id"]
+    for key in ("record_md", "grid_csv", "manifest_json"):
+        if rid not in st["files"][key]["path"]:
+            raise GenError(f"startup file {st['files'][key]['path']} is not under the selected startup id {rid}")
+    pinned(root, st["files"]["record_md"], "startup_record_md", sources)
+    csv_path = pinned(root, st["files"]["grid_csv"], "startup_grid_csv", sources)
+    man_path = pinned(root, st["files"]["manifest_json"], "startup_manifest_json", sources)
+    try:
+        man = json.loads(man_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        raise GenError(f"cannot load startup manifest {st['files']['manifest_json']['path']}: {exc}") from exc
+    if man.get("rid") != rid or man.get("stage") != st["stage"]:
+        raise GenError(f"startup manifest is for {man.get('rid')!r}/{man.get('stage')!r}, "
+                       f"selected {rid!r}/{st['stage']!r}")
+
+    # --- design freshness: core and error amplifier, independently ---------
+    fresh = {}
+    for comp, pin in st["design_freshness_pins"].items():
+        p = root / pin["path"]
+        if not p.is_file():
+            raise GenError(f"startup design freshness pin target missing: {pin['path']} ({comp})")
+        actual = sha256_file(p)
+        entry = {"path": pin["path"], "pinned_sha256": pin["sha256"], "actual_sha256": actual,
+                 "matches": actual == pin["sha256"], "recorded_in_manifest": bool(pin["recorded_in_manifest"])}
+        if pin["recorded_in_manifest"]:
+            mv = man.get("source_sha256", {}).get(pin["path"])
+            if mv != pin["sha256"]:
+                raise GenError(f"startup manifest source_sha256 for {pin['path']} is {mv!r}, "
+                               f"selection pin is {pin['sha256']!r} ({comp})")
+            entry["manifest_sha256"] = mv
+        fresh[comp] = entry
+        sources.append({"role": f"startup_design_{comp}_freshness", "path": pin["path"],
+                        "sha256": actual, "pinned": True})
+    stale_components = sorted(c for c, e in fresh.items() if not e["matches"])
+
+    # --- campaign points ---------------------------------------------------
+    g = st["requested_grid"]
+    expected = {_startup_key(m, t, r, v, l, c, e, x)
+                for m in g["process"] for t in g["temp_c"] for r in g["res"]
+                for v in g["vin_v"] for l in g["load_ma"] for c in g["cout_nf"]
+                for e in g["esr_mohm"] for x in g["tmax_ns"]}
+    if man.get("requested") != len(expected):
+        raise GenError(f"startup manifest requested {man.get('requested')} points, "
+                       f"selected grid has {len(expected)}")
+    rows = read_csv(csv_path)
+    traces_dir = root / st["traces_dir"]
+    seen: dict = {}
+    pts = []
+    for i, r in enumerate(rows):
+        ctx = f"startup row {i + 2}"
+        try:
+            key = _startup_key(r["mos"], r["temp"], r["res"], r["vin"], r["load_ma"],
+                               r["cout_nf"], r["esr_mohm"], r["tmax_ns"])
+        except (KeyError, ValueError) as exc:
+            raise GenError(f"{ctx}: malformed point coordinates: {exc!r}") from exc
+        if key in seen:
+            raise GenError(f"{ctx}: duplicate campaign point {r.get('point')} "
+                           f"(same coordinates as row {seen[key] + 2})")
+        seen[key] = i
+        if key not in expected:
+            raise GenError(f"{ctx}: point {r.get('point')} is outside the selected requested grid")
+        verdict = r.get("verdict")
+        if verdict not in STARTUP_CSV_VERDICTS:
+            raise GenError(f"{ctx}: verdict {verdict!r} not one of {STARTUP_CSV_VERDICTS}")
+        pt = {"point": r["point"], "corner": r["mos"], "temp_c": int(float(r["temp"])),
+              "res_section": "res_" + r["res"], "vin_v": round(float(r["vin"]), 3),
+              "load_ma": float(r["load_ma"]), "cout_nf": float(r["cout_nf"]),
+              "esr_mohm": float(r["esr_mohm"])}
+        rec = {"id": pt, "verdict": verdict, "reasons": r.get("reasons", ""),
+               "settled": r.get("start_settled") == "True"}
+        if verdict != "insufficient":
+            for k in STARTUP_REQUIRED:
+                rec[k] = num(r, k, ctx)
+            if r.get("start_settled") not in ("True", "False"):
+                raise GenError(f"{ctx}: start_settled not True/False")
+            for k in STARTUP_EXTRA:
+                if r.get(k, "") != "":
+                    rec[k] = num(r, k, ctx)
+            tf, ts = r.get("trace_file", ""), r.get("trace_sha256", "")
+            tp = traces_dir / Path(tf).name
+            if not tf or not tp.is_file():
+                raise GenError(f"{ctx}: trace file missing for evaluated point {r['point']}: {tf!r}")
+            if sha256_file(tp) != ts:
+                raise GenError(f"{ctx}: trace {tf} bytes differ from the recorded trace_sha256")
+            try:
+                with gzip.open(tp, "rt", encoding="utf-8") as fh:
+                    n_lines = sum(1 for _ in fh) - 1
+            except (OSError, EOFError) as exc:
+                raise GenError(f"{ctx}: trace {tf} unreadable: {exc}") from exc
+            if n_lines != int(num(r, "samples", ctx)) or n_lines < 2:
+                raise GenError(f"{ctx}: trace {tf} has {n_lines} samples, record says {r.get('samples')}")
+        pts.append(rec)
+    missing = sorted(expected - set(seen))
+    n_ins = sum(1 for p in pts if p["verdict"] == "insufficient")
+    n_fail = sum(1 for p in pts if p["verdict"] == "fail")
+    n_pass = sum(1 for p in pts if p["verdict"] == "pass")
+    for k, v in (("rows", len(pts)), ("insufficient", n_ins), ("fail", n_fail), ("pass", n_pass),
+                 ("evaluated", n_fail + n_pass)):
+        if man.get(k) != v and not missing:
+            raise GenError(f"startup manifest {k}={man.get(k)!r} disagrees with the pinned csv ({v})")
+    return {"cfg": st, "rid": rid, "manifest": man, "points": pts, "fresh": fresh,
+            "stale_components": stale_components, "n_requested": len(expected),
+            "missing": [{"corner": k[0], "temp_c": k[1], "res_section": "res_" + k[2],
+                         "vin_v": k[3], "load_ma": k[4], "cout_nf": k[5], "esr_mohm": k[6]}
+                        for k in missing],
+            "n_fail": n_fail, "n_pass": n_pass, "n_insufficient": n_ins,
+            "csv_rel": st["files"]["grid_csv"]["path"], "md_rel": st["files"]["record_md"]["path"]}
+
+
 def build(root: Path) -> tuple[dict, dict, str]:
     """Return (report, envelope, markdown). Raises GenError on any hard error."""
     sel = load_selection(root)
@@ -547,6 +710,7 @@ def build(root: Path) -> tuple[dict, dict, str]:
     pid = [point_id(r) for r in prow]
     dcev = load_dc_informational(root, sel, rec, prow, sources)
     dc_rel = dcev["summary_path"]
+    su = load_startup(root, sel, sources)
 
     def dc_col(name, scale=1.0, valid=None):
         """(values, ambiguous-index-set) over the pvt row order. Invalid points
@@ -769,16 +933,119 @@ def build(root: Path) -> tuple[dict, dict, str]:
                            else "ambiguous" if mfl["verdict"] == "ambiguous"
                            else "pass_partial_coverage")
 
-    # 8, 9 not implemented -----------------------------------------------
+    # 8 not implemented -----------------------------------------------
     add(R[8], [unavailable("current limit window", "mA", "not_implemented",
                            "No current limiter in the design; record md lists current limit as 'not implemented'.",
                            source={"record": rec["files"]["record_md"]["path"]})],
         "none", ["no limiter exists; statistical row (DR-0007) cannot be graded until one does"],
         "none")
-    add(R[9], [unavailable("startup", "ms", "not_implemented",
-                           "No enable input and no transient testbench; record md lists startup as 'not implemented'.",
-                           source={"record": rec["files"]["record_md"]["path"]})],
-        "none", ["no enable input, no transient testbench"], "none")
+    # 9 Startup: measured campaign (proposed methodology; row stays Open) --
+    sp = su["points"]
+    ev = [p for p in sp if p["verdict"] != "insufficient"]
+    bad_idx = {i for i, p in enumerate(sp) if p["verdict"] == "insufficient"}
+    startup_cond = ("EN-bearing core (DR-0008), EN = VIN * CTL step at t = 1 ms, schematic level; "
+                    "grid process {tt,ss,ff,sf,fs} x temperature {-40,27,125} C x resistor corner "
+                    "{typ,bcs,wcs} x Vin {2.97,3.30,3.63} V; resistive load 1 mA (1.8 kohm), Cout 1 uF, "
+                    "ESR 0, Cc nominal; ideal 0.90 V reference; 135 requested points. Time zero is the "
+                    "EN = VIN/2 crossing; PROPOSED methodology (DR-0009), not ratified")
+
+    def st_pts(col, *, settle=False):
+        out = []
+        for p in sp:
+            if p["verdict"] == "insufficient":
+                out.append((0.0, p["id"]))
+            elif settle and not p["settled"]:
+                # never settled in the window: the observation length is a lower bound
+                out.append((p["start_observed_s"], p["id"]))
+            else:
+                out.append((p[col], p["id"]))
+        return out
+
+    su_rel = su["csv_rel"]
+    contradictions: list = []
+
+    def st_metric(name, bound, col, *, settle=False, note=None):
+        series = st_pts(col, settle=settle)
+        for (v, pid_), p in zip(series, sp):
+            if p["verdict"] == "pass" and not v <= bound:
+                contradictions.append(f"{pid_['corner']}/{pid_['temp_c']}C/{pid_['res_section']}/"
+                                      f"{pid_['vin_v']}V: {name}")
+        return metric(name, "s" if settle else "V", "le", bound, col, su_rel, series,
+                      startup_cond, ambiguous=bad_idx, note=note)
+
+    st_metrics = [
+        st_metric("start: settle time into the +/-2 % band (3 ms limit)", STARTUP_SETTLE_LIMIT_S,
+                  "start_settle_time_s", settle=True,
+                  note="Numeric settling success does not override the monotonicity and overshoot "
+                       "metrics below; each is scored independently and any failure fails the row. A point "
+                       "that never settled is scored at its observation length (a lower bound)."),
+        st_metric("start: peak VOUT above the +2 % band edge (overshoot, proposed bound 1.836 V)",
+                  STARTUP_BAND_HI_V, "start_peak_vout_v"),
+        st_metric("start: max downward excursion before settling (monotonicity, proposed 1 mV tolerance)",
+                  STARTUP_MONOTONIC_TOL_V, "start_max_down_excursion_v"),
+        st_metric("re-enable: peak VOUT above the +2 % band edge (proposed bound 1.836 V)",
+                  STARTUP_BAND_HI_V, "reen_peak_vout_v"),
+        st_metric("re-enable: max downward excursion (proposed 1 mV tolerance)",
+                  STARTUP_MONOTONIC_TOL_V, "reen_max_down_excursion_v"),
+    ]
+    # A csv `pass` contradicted by a measured metric means the pinned record
+    # and its own metrics disagree: never repaired, never reported as a pass.
+    if contradictions:
+        raise GenError("startup csv verdict pass contradicts a measured metric at "
+                       + "; ".join(contradictions[:3]))
+    n_metric_fail = sum(m["n_fail"] for m in st_metrics)
+    st_verdict = startup_row_verdict(su["n_fail"] or n_metric_fail, su["n_insufficient"],
+                                     len(su["missing"]), len(ev))
+    reason_counts: dict = {}
+    for q in sp:
+        for part in [x.strip() for x in q["reasons"].split("|") if x.strip()]:
+            words = part.split()
+            key = words[0] + (" " + words[1] if len(words) > 1 and not words[1][0].isdigit() else "")
+            reason_counts[key] = reason_counts.get(key, 0) + 1
+    st_state = "stale_against_design" if su["stale_components"] else "current"
+    n_settled = sum(1 for p in ev if p["settled"] and p["start_settle_time_s"] <= STARTUP_SETTLE_LIMIT_S)
+    n_settled_and_failing = sum(1 for p in ev if p["settled"] and p["start_settle_time_s"] <= STARTUP_SETTLE_LIMIT_S
+                                and p["verdict"] == "fail")
+    startup_summary = {
+        "record_id": su["rid"], "stage": su["cfg"]["stage"],
+        "requested_points": su["n_requested"], "result_rows": len(sp),
+        "evaluated_points": len(ev), "missing_points": len(su["missing"]),
+        "insufficient_points": su["n_insufficient"],
+        "csv_verdicts": {"pass": su["n_pass"], "fail": su["n_fail"], "insufficient": su["n_insufficient"]},
+        "settled_within_3ms_points": n_settled,
+        "settled_within_3ms_but_failing_points": n_settled_and_failing,
+        "failure_reasons_point_counts": dict(sorted(reason_counts.items())),
+        "missing": su["missing"],
+        "design_freshness": {"state": st_state, "stale_components": su["stale_components"],
+                             "basis": su["cfg"]["design_freshness_basis"], "components": su["fresh"]},
+        "proposed_methodology": su["cfg"]["proposed_methodology"],
+        "ratification": "none inferred: row 9 stays Open (DR-0007); proposed methodology only",
+        "extrema": {},
+        "campaign_provenance": {k: su["manifest"].get(k) for k in
+                                ("engines", "runner_klt", "client_klt", "pdk_pinned_commit", "pdk_installed_commit")},
+        "source": {"record_md": su["md_rel"], "csv": su_rel},
+    }
+    for ccol, label in (("start_overshoot_v", "start overshoot above 1.8 V [V]"),
+                       ("start_peak_vout_v", "start peak VOUT [V]"),
+                       ("start_settle_time_s", "start settle time [s]"),
+                       ("start_max_down_excursion_v", "start max downward excursion [V]"),
+                       ("reen_overshoot_v", "re-enable overshoot [V]"),
+                       ("reen_max_down_excursion_v", "re-enable max downward excursion [V]")):
+        vals = [(q[ccol], q["id"]) for q in ev if ccol in q]
+        if vals:
+            startup_summary["extrema"][label] = {"min": _extreme(vals, "min"), "max": _extreme(vals, "max")}
+    add(R[9], st_metrics, "partial", [
+        "proposed methodology (DR-0009) only; the target's 'controlled ramp' has no numeric bound and is not graded",
+        "one load/Cout/ESR point only: 1 mA, 1 uF, 0 ohm ESR -- not 0-50 mA, 0.33-4.7 uF, 0-500 mohm",
+        "Vin grid is 2.97/3.30/3.63 V; Cc and the 0.90 V reference are not cornered; schematic level, no post-layout evidence",
+    ] + ([f"{len(su['missing'])} requested point(s) missing and {su['n_insufficient']} insufficient of "
+          f"{su['n_requested']}"] if su["missing"] or su["n_insufficient"] else []), st_state, row_verdict=st_verdict,
+        notes=[f"Measured: {len(ev)} of {su['n_requested']} requested points evaluated, "
+               f"{su['n_fail']} fail, {su['n_pass']} pass, {su['n_insufficient']} insufficient, "
+               f"{len(su['missing'])} missing ({su_rel}). {n_settled_and_failing} of {n_settled} points "
+               "that settle within 3 ms still fail the proposed overshoot / monotonicity checks.",
+               "Proposed methodology, not ratified: DR-0007 row 9 stays Open; no ratification and no whole-spec pass is inferred."])
+    rows[-1]["startup_campaign"] = startup_summary
 
     # 10 Stability --------------------------------------------------------
     pm = col("phase_margin_deg")
@@ -824,6 +1091,15 @@ def build(root: Path) -> tuple[dict, dict, str]:
     chk("every row carries an allowed verdict", all(r["verdict"] in ROW_VERDICTS for r in rows))
     chk("every row cites a source or an explicit unavailability reason",
         all(all(("source" in m and m["source"]) or m.get("reason") for m in r["metrics"]) for r in rows))
+    chk("startup campaign: selected record, csv, manifest and every trace match their pins; no duplicate or "
+        "unexpected point; manifest agrees with the csv", True,
+        f"{su['n_requested']} requested points, {len(sp)} result rows")
+    chk("startup campaign has a result row for every requested point", not su["missing"],
+        f"{len(su['missing'])} of {su['n_requested']} requested points missing")
+    chk("startup evidence is current against the design (core and error amplifier checked independently)",
+        not su["stale_components"],
+        "core and error-amplifier netlist hashes match the startup freshness pins" if not su["stale_components"]
+        else "stale against the design: " + ", ".join(su["stale_components"]))
     chk("selected record is current against the design netlists", not stale,
         "design netlist hashes match the freshness pins" if not stale
         else "design netlist changed since the selected record: select a newer record")
@@ -845,6 +1121,7 @@ def build(root: Path) -> tuple[dict, dict, str]:
             "Open (unratified) targets are not passing requirements; a numeric 'pass' on an open row is a measurement against a draft target at the stated conditions.",
             "All closed-loop numbers are SG13CMOS5L-branch evidence (DR-0007 'What evidence exists'); no closed-loop evidence exists on the SG13G2 branch.",
             "No post-layout (extracted) performance evidence exists for any row; layout reports in layout/ are DRC/LVS/ERC and carry no performance metrics.",
+            "Row 9 (Startup) reports the explicitly selected committed startup campaign: measured failures are measured failures, missing or insufficient points are never passes, and the evaluation methodology is PROPOSED (DR-0009), not ratified. Row 9 stays Open.",
             "Other T1 items are not declared satisfied by this artifact.",
         ],
         "selection": {
@@ -853,6 +1130,8 @@ def build(root: Path) -> tuple[dict, dict, str]:
             "circuit_record_id": rec["id"],
             "experiment": rec["experiment"],
             "device_context_record_id": dev["id"],
+            "startup_record_id": su["rid"],
+            "startup_stage": su["cfg"]["stage"],
             "policy": sel["policy"],
         },
         "sources": sorted(sources, key=lambda s: (s["role"], s["path"])),
@@ -916,7 +1195,13 @@ def build(root: Path) -> tuple[dict, dict, str]:
 # --------------------------------------------------------------------------- #
 
 def _fmt_at(at):
-    return f"{at['corner']}/{at['temp_c']}C/{at['res_section']}" if at else "-"
+    if not at:
+        return "-"
+    base = f"{at['corner']}/{at['temp_c']}C/{at['res_section']}"
+    if "vin_v" in at:
+        base += (f"/Vin {at['vin_v']:g}V/{at['load_ma']:g}mA/{at['cout_nf']:g}nF/"
+                 f"ESR {at['esr_mohm']:g}mohm")
+    return base
 
 
 def render_md(rep: dict, env: dict) -> str:
@@ -938,6 +1223,7 @@ def render_md(rep: dict, env: dict) -> str:
     sel = rep["selection"]
     w(f"- Circuit record (explicitly selected, hash-pinned): `{sel['experiment']}` / `{sel['circuit_record_id']}`")
     w(f"- Bare-device context record: `{sel['device_context_record_id']}` (never used as a closed-loop measurement)")
+    w(f"- Startup campaign (explicitly selected, hash-pinned, proposed methodology): `{sel['startup_record_id']}` stage `{sel['startup_stage']}`")
     w(f"- Selection file: `{sel['file']}` sha256 `{sel['sha256']}`")
     w(f"- Design freshness: **{rep['design_freshness']['state']}**")
     w("")
@@ -975,6 +1261,30 @@ def render_md(rep: dict, env: dict) -> str:
             for g in r["coverage"]["gaps"]:
                 w(f"  - {g}")
         w("")
+        if r.get("startup_campaign"):
+            c = r["startup_campaign"]
+            w("- **Startup campaign (measured; PROPOSED methodology, row stays Open; no ratification inferred)**")
+            w(f"  - record `{c['record_id']}` stage `{c['stage']}` ({c['source']['record_md']}, {c['source']['csv']})")
+            w(f"  - requested {c['requested_points']}, result rows {c['result_rows']}, evaluated {c['evaluated_points']}, "
+              f"missing {c['missing_points']}, insufficient {c['insufficient_points']}; "
+              f"csv verdicts pass {c['csv_verdicts']['pass']} / fail {c['csv_verdicts']['fail']} / "
+              f"insufficient {c['csv_verdicts']['insufficient']}")
+            w(f"  - {c['settled_within_3ms_but_failing_points']} of {c['settled_within_3ms_points']} points settle within 3 ms "
+              "and still fail the proposed overshoot / monotonicity checks")
+            w("  - failure reasons (points): " + ", ".join(f"{k} {v}" for k, v in c["failure_reasons_point_counts"].items()))
+            for mp in c["missing"][:10]:
+                w(f"  - missing point: {_fmt_at(mp)}")
+            w(f"  - design freshness: **{c['design_freshness']['state']}**; "
+              + "; ".join(f"{k} {'matches' if e['matches'] else 'DIFFERS'} (`{e['path']}`)"
+                          for k, e in c["design_freshness"]["components"].items()))
+            for label, e in c["extrema"].items():
+                w(f"  - {label}: min {e['min']['value']:.6g} at {_fmt_at(e['min']['at'])}; "
+                  f"max {e['max']['value']:.6g} at {_fmt_at(e['max']['at'])}")
+            pm_ = c["proposed_methodology"]
+            w(f"  - proposed methodology: band {pm_['band_v'][0]}-{pm_['band_v'][1]} V, settle <= {pm_['settle_limit_s']} s, "
+              f"monotonic tolerance {pm_['monotonic_tolerance_v']} V ({pm_['reference']}); {pm_['note']}")
+            w(f"  - {c['ratification']}")
+            w("")
         for m in r["metrics"]:
             if "bound" not in m:
                 w(f"- **{m['name']}**: {m['verdict']} -- {m['reason']}")

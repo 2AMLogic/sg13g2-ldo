@@ -45,12 +45,19 @@ def copy_inputs(dst: Path) -> None:
     rels |= {f["path"] for f in sel["device_context_record"]["files"].values()}
     dce = sel["dc_informational_evidence"]
     rels |= {f["path"] for f in dce["files"].values()}
+    st = sel["startup_evidence"]
+    rels |= {f["path"] for f in st["files"].values()}
+    rels |= {p["path"] for p in st["design_freshness_pins"].values()}
     inv = json.loads((REPO / dce["files"]["coverage_inventory_json"]["path"]).read_text())
     rels.add(inv["generator"]["path"])
     rels |= set(inv["inputs"]["raw_dc_grids"])
     for r in rels:
         (dst / r).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(REPO / r, dst / r)
+    # 17 MB of traces: link, never copy; tests that tamper a trace replace the link.
+    tdir = dst / st["traces_dir"]
+    tdir.parent.mkdir(parents=True, exist_ok=True)
+    tdir.symlink_to(REPO / st["traces_dir"], target_is_directory=True)
 
 
 class MetricTests(unittest.TestCase):
@@ -141,10 +148,41 @@ class GeneratedReportTests(unittest.TestCase):
         self.assertEqual(v[1], "not_measured")      # bare device is not a circuit measurement
         self.assertEqual(v[4], "pass_full_coverage")
         self.assertEqual(v[8], "not_implemented")
-        self.assertEqual(v[9], "not_implemented")
+        self.assertEqual(v[9], "fail")              # measured startup failures, not an absence claim
         self.assertEqual(v[10], "ambiguous")        # multi-crossing AC points not scored
         self.assertEqual(self.rows[4]["ratification"]["state"], "ratified")
         self.assertEqual(self.rows[2]["ratification"]["state"], "open_unratified")
+
+    def test_row9_reports_measured_startup_failures(self):
+        r = self.rows[9]
+        self.assertEqual(r["ratification"]["state"], "open_unratified")
+        c = r["startup_campaign"]
+        self.assertEqual((c["requested_points"], c["evaluated_points"], c["missing_points"],
+                          c["insufficient_points"]), (135, 135, 0, 0))
+        self.assertEqual(c["csv_verdicts"], {"pass": 0, "fail": 135, "insufficient": 0})
+        self.assertEqual(c["settled_within_3ms_points"], 135)
+        self.assertEqual(c["settled_within_3ms_but_failing_points"], 135)
+        self.assertEqual(c["design_freshness"]["state"], "current")
+        self.assertEqual(set(c["design_freshness"]["components"]), {"core", "error_amp"})
+        mx = c["extrema"]["start peak VOUT [V]"]["max"]
+        self.assertEqual(mx["at"]["corner"], "ff")
+        self.assertEqual(mx["at"]["vin_v"], 3.63)
+        by = {m["source"]["column"]: m for m in r["metrics"]}
+        self.assertEqual(by["start_settle_time_s"]["verdict"], "pass")   # numeric settling passes ...
+        self.assertEqual(by["start_peak_vout_v"]["verdict"], "fail")     # ... but does not mask failures
+        self.assertEqual(by["start_max_down_excursion_v"]["n_fail"], 135)
+        self.assertNotIn("not_implemented", json.dumps(r))
+        self.assertNotIn("No enable input", json.dumps(r))
+        self.assertIn("proposed", json.dumps(r).lower())
+
+    def test_row9_verdict_function(self):
+        f = G.startup_row_verdict
+        self.assertEqual(f(1, 0, 0, 10), "fail")
+        self.assertEqual(f(1, 5, 5, 10), "fail")            # failure never masked by gaps
+        self.assertEqual(f(0, 1, 0, 9), "not_measured")     # insufficient is never a pass
+        self.assertEqual(f(0, 0, 1, 9), "not_measured")     # missing is never a pass
+        self.assertEqual(f(0, 0, 0, 0), "not_measured")
+        self.assertEqual(f(0, 0, 0, 135), "pass_partial_coverage")
 
     def test_row1_device_context_not_substituted(self):
         ctx = [m for m in self.rows[1]["metrics"] if m.get("context_only")]
@@ -483,6 +521,217 @@ class NegativeControls(unittest.TestCase):
         self.assertEqual(r7["metrics"][1]["verdict"], "fail")
         self.assertEqual(r7["verdict"], "fail")
         self.assertAlmostEqual(r7["metrics"][1]["worst_case"]["value"], 32.5169, places=6)
+
+
+class StartupNegativeControls(unittest.TestCase):
+    """Row 9 startup evidence: tampered/missing/stale/duplicate/missing-point/insufficient."""
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, self.tmp, True)
+        copy_inputs(self.tmp)
+        rc, _, err = run_main("--root", str(self.tmp))
+        self.assertEqual(rc, 0, err)
+        self.out = self.tmp / "sim/characterization"
+        self.selp = self.out / "selection.json"
+        self.sel = json.loads(self.selp.read_text())
+        self.st = self.sel["startup_evidence"]
+
+    def path(self, key):
+        return self.tmp / self.st["files"][key]["path"]
+
+    def repin(self, key):
+        self.st["files"][key]["sha256"] = G.sha256_file(self.path(key))
+        self.selp.write_text(json.dumps(self.sel))
+
+    def env_status(self):
+        return json.loads((self.out / G.ENVELOPE_JSON).read_text())["status"]
+
+    def rejected(self, text):
+        rc, _, err = run_main("--root", str(self.tmp))
+        self.assertEqual(rc, 1)
+        self.assertIn(text, err)
+        self.assertEqual(self.env_status(), "fail")
+
+    def edit_csv(self, fn):
+        p = self.path("grid_csv")
+        lines = p.read_text().splitlines(keepends=True)
+        p.write_text("".join(fn(lines)))
+        self.repin("grid_csv")
+
+    def report9(self):
+        rep = json.loads((self.out / G.REPORT_JSON).read_text())
+        return rep, {r["id"]: r for r in rep["rows"]}[9]
+
+    def test_baseline_check_passes(self):
+        rc, _, err = run_main("--root", str(self.tmp), "--check")
+        self.assertEqual(rc, 0, err)
+
+    def test_missing_selection_block_is_error(self):
+        del self.sel["startup_evidence"]
+        self.selp.write_text(json.dumps(self.sel))
+        self.rejected("startup_evidence")
+
+    def test_missing_selected_file_is_error(self):
+        self.path("grid_csv").unlink()
+        self.rejected("selected record missing")
+
+    def test_tampered_selected_csv_fails_pin(self):
+        p = self.path("grid_csv")
+        p.write_text(p.read_text().replace("fail", "pass", 1))
+        self.rejected("differ from pin")
+
+    def test_tampered_manifest_fails_pin(self):
+        p = self.path("manifest_json")
+        p.write_text(p.read_text() + " ")
+        self.rejected("differ from pin")
+
+    def test_tampered_record_md_fails_pin(self):
+        p = self.path("record_md")
+        p.write_text(p.read_text() + " ")
+        self.rejected("differ from pin")
+
+    def test_tampered_trace_is_error(self):
+        tdir = self.tmp / self.st["traces_dir"]
+        real = REPO / self.st["traces_dir"]
+        tdir.unlink()
+        shutil.copytree(real, tdir)
+        victim = sorted(tdir.iterdir())[0]
+        victim.write_bytes(victim.read_bytes()[:-8] + b"\0" * 8)
+        self.rejected("trace")
+
+    def test_missing_trace_is_error(self):
+        tdir = self.tmp / self.st["traces_dir"]
+        tdir.unlink()
+        shutil.copytree(REPO / self.st["traces_dir"], tdir)
+        sorted(tdir.iterdir())[0].unlink()
+        self.rejected("trace file missing")
+
+    def test_stale_core_hash_is_independent_and_fails_envelope(self):
+        n = self.tmp / self.st["design_freshness_pins"]["core"]["path"]
+        n.write_text(n.read_text() + "\n* edited after the campaign\n")
+        rc, _, _ = run_main("--root", str(self.tmp))
+        self.assertEqual(rc, 1)
+        self.assertEqual(self.env_status(), "fail")
+        _rep, r9 = self.report9()
+        fr = r9["startup_campaign"]["design_freshness"]
+        self.assertEqual(fr["stale_components"], ["core"])
+        self.assertTrue(fr["components"]["error_amp"]["matches"])
+        self.assertEqual(r9["evidence_state"], "stale_against_design")
+
+    def test_stale_error_amp_hash_is_independent_and_fails_envelope(self):
+        n = self.tmp / self.st["design_freshness_pins"]["error_amp"]["path"]
+        n.write_text(n.read_text() + "\n* edited after the campaign\n")
+        rc, _, _ = run_main("--root", str(self.tmp))
+        self.assertEqual(rc, 1)
+        self.assertEqual(self.env_status(), "fail")
+        rep, r9 = self.report9()
+        fr = r9["startup_campaign"]["design_freshness"]
+        self.assertEqual(fr["state"], "stale_against_design")
+        self.assertEqual(fr["stale_components"], ["error_amp"])
+        self.assertTrue(fr["components"]["core"]["matches"])
+        self.assertEqual(r9["evidence_state"], "stale_against_design")
+
+    def test_stale_startup_pin_alone_fails_envelope(self):
+        # Legacy record stays current; only the startup pin for the error amp moves.
+        self.st["design_freshness_pins"]["error_amp"]["sha256"] = "0" * 64
+        self.selp.write_text(json.dumps(self.sel))
+        rc, _, _ = run_main("--root", str(self.tmp))
+        self.assertEqual(rc, 1)
+        self.assertEqual(self.env_status(), "fail")
+        rep, r9 = self.report9()
+        self.assertEqual(rep["design_freshness"]["state"], "current")
+        self.assertEqual(r9["startup_campaign"]["design_freshness"]["stale_components"], ["error_amp"])
+
+    def test_core_pin_disagreeing_with_manifest_is_error(self):
+        self.st["design_freshness_pins"]["core"]["sha256"] = "0" * 64
+        self.selp.write_text(json.dumps(self.sel))
+        self.rejected("source_sha256")
+
+    def test_duplicate_point_is_error(self):
+        self.edit_csv(lambda ls: ls + [ls[1]])
+        self.rejected("duplicate campaign point")
+
+    def test_unexpected_point_is_error(self):
+        self.edit_csv(lambda ls: ls[:1] + [ls[1].replace(",ff,-40,bcs,2.97,", ",ff,-40,bcs,2.5,", 1)] + ls[2:])
+        self.rejected("outside the selected requested grid")
+
+    def test_missing_point_is_reported_and_fails_envelope(self):
+        self.edit_csv(lambda ls: ls[:-1])
+        rc, _, _ = run_main("--root", str(self.tmp))
+        self.assertEqual(rc, 1)
+        self.assertEqual(self.env_status(), "fail")
+        rep, r9 = self.report9()
+        c = r9["startup_campaign"]
+        self.assertEqual((c["requested_points"], c["evaluated_points"], c["missing_points"]), (135, 134, 1))
+        self.assertEqual(len(c["missing"]), 1)
+        self.assertEqual(rep["completeness"]["status"], "incomplete")
+        self.assertEqual(r9["verdict"], "fail")      # measured failures still reported as failures
+        self.assertEqual(r9["ratification"]["state"], "open_unratified")
+
+    def test_insufficient_trace_is_counted_never_a_pass(self):
+        def blank(ls):
+            hdr = ls[0].rstrip("\n").split(",")
+            row = ls[1].rstrip("\n").split(",")
+            keep = {"point", "mos", "temp", "res", "vin", "load_ma", "cout_nf", "esr_mohm", "tmax_ns", "group"}
+            new = [v if h in keep else "" for h, v in zip(hdr, row)]
+            new[hdr.index("verdict")] = "insufficient"
+            new[hdr.index("reasons")] = "trace too short"
+            return [ls[0], ",".join(new) + "\n"] + ls[2:]
+        self.edit_csv(blank)
+        rc, _, err = run_main("--root", str(self.tmp))
+        # the manifest still says 135 evaluated: disagreement is a hard error, not a pass
+        self.assertEqual(rc, 1)
+        self.assertIn("disagrees with the pinned csv", err)
+        self.assertEqual(self.env_status(), "fail")
+
+    def test_insufficient_with_consistent_manifest_is_not_pass(self):
+        def blank(ls):
+            hdr = ls[0].rstrip("\n").split(",")
+            row = ls[1].rstrip("\n").split(",")
+            keep = {"point", "mos", "temp", "res", "vin", "load_ma", "cout_nf", "esr_mohm", "tmax_ns", "group"}
+            new = [v if h in keep else "" for h, v in zip(hdr, row)]
+            new[hdr.index("verdict")] = "insufficient"
+            new[hdr.index("reasons")] = "trace too short"
+            return [ls[0], ",".join(new) + "\n"] + ls[2:]
+        self.edit_csv(blank)
+        mp = self.path("manifest_json")
+        man = json.loads(mp.read_text())
+        man.update({"evaluated": 134, "insufficient": 1, "fail": 134})
+        mp.write_text(json.dumps(man))
+        self.repin("manifest_json")
+        rc, _, err = run_main("--root", str(self.tmp))
+        self.assertEqual(rc, 0, err)
+        rep, r9 = self.report9()
+        c = r9["startup_campaign"]
+        self.assertEqual((c["evaluated_points"], c["insufficient_points"]), (134, 1))
+        self.assertTrue(any("insufficient" in g for g in r9["coverage"]["gaps"]))
+        self.assertNotIn(r9["verdict"], ("pass_partial_coverage", "pass_full_coverage"))
+
+    def test_all_pass_but_insufficient_is_not_a_pass(self):
+        self.assertEqual(G.startup_row_verdict(0, 1, 0, 134), "not_measured")
+
+    def test_csv_pass_contradicting_metric_is_error(self):
+        def flip(ls):
+            hdr = ls[0].rstrip("\n").split(",")
+            row = ls[1].rstrip("\n").split(",")
+            row[hdr.index("verdict")] = "pass"
+            return [ls[0], ",".join(row) + "\n"] + ls[2:]
+        self.edit_csv(flip)
+        mp = self.path("manifest_json")
+        man = json.loads(mp.read_text())
+        man.update({"pass": 1, "fail": 134})
+        mp.write_text(json.dumps(man))
+        self.repin("manifest_json")
+        self.rejected("contradicts a measured metric")
+
+    def test_measured_failure_despite_settling_within_3ms(self):
+        rep, r9 = self.report9()
+        c = r9["startup_campaign"]
+        self.assertEqual(c["settled_within_3ms_but_failing_points"], c["settled_within_3ms_points"])
+        by = {m["source"]["column"]: m for m in r9["metrics"]}
+        self.assertEqual(by["start_settle_time_s"]["verdict"], "pass")
+        self.assertEqual(r9["verdict"], "fail")
 
 
 if __name__ == "__main__":
