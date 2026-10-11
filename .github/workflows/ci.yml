@@ -426,7 +426,7 @@ jobs:
           python-version: "3.12"
 
       - name: Append-only checker tests (temporary git repos, real CLI)
-        run: python3 -m unittest discover -s sim/tools -p 'test_*.py' -v
+        run: python3 -m unittest discover -s sim/tools -p 'test_check_append_only.py' -v
 
       - name: Landed sim/ evidence is unmodified
         env:
@@ -469,7 +469,7 @@ jobs:
         run: python3 -m unittest discover -s design -p 'test_*.py' -v
 
       - name: Preflight output-validation tests (--check-env gate, stub simulator, no PDK)
-        run: python3 -m unittest discover -s sim/tools -p 'test_*.py' -v
+        run: python3 -m unittest discover -s sim/tools -p 'test_preflight.py' -v
 
       - name: SG13CMOS5L loop-gain topology guard (offline; positive check + negative controls)
         # Offline shell-only check (#94): --check-topology-guard exits before
