@@ -27,11 +27,13 @@ def en_wave(t):
     return ramp(t, 9e-3, 0.0, VIN)
 
 
-def make(shape, t_end=T_END, dt=DT, drop_after=None):
+def make(shape, t_end=T_END, dt=DT, drop_after=None, extra_t=()):
     """shape(tau) -> vout for tau = time since the first EN/2 crossing
     (1.0005 ms); the re-enable reuses the same shape from 9.0005 ms and the
     disabled stretch is 0."""
     t = [i * dt for i in range(int(round(t_end / dt)) + 1)]
+    if extra_t:
+        t = sorted(set(t) | set(extra_t))
     if drop_after is not None:
         t = [x for x in t if not (drop_after[0] < x < drop_after[1])]
     vout = []
@@ -192,6 +194,113 @@ class StartupEval(unittest.TestCase):
         self.assertAlmostEqual(r["start_max_vsg_pass_v"], 0.8, places=6)
         self.assertAlmostEqual(r["max_vsg_men_v"], VIN, places=6)
         self.assertFalse(r["stress_gt_ref"])
+
+
+# ---- cold-start disabled plateau (issue #130) -------------------------------
+EDGE = (1.0001e-3, 1.0002e-3, 1.0003e-3, 1.0004e-3)   # inside the 1 us EN edge,
+#                                                        before the VIN/2 crossing
+
+
+def _edge_trace(**kw):
+    tr = make(good, extra_t=EDGE, **kw)
+    tr["ivin"] = [-2e-6 if x <= 1e-3 else -1e-3 for x in tr["t"]]   # off: 2 uA
+    return tr
+
+
+class OffPlateau(unittest.TestCase):
+    def test_edge_spike_does_not_leak_into_off_current(self):
+        tr = _edge_trace()
+        for i, x in enumerate(tr["t"]):
+            if 1e-3 < x < 1.0005e-3:
+                tr["ivin"][i] = -28e-6        # crowbar spike on the ramp
+        r = se.evaluate(tr)
+        self.assertEqual(r["verdict"], "pass", r["reasons"])
+        self.assertEqual(r["off_supply_current_a"], 2e-6)   # -ivin, last plateau sample
+        # time zero is still the interpolated EN = VIN/2 crossing
+        self.assertAlmostEqual(r["en_edges"][0][1], 1.0005e-3, delta=1e-12)
+
+    def test_off_current_is_last_plateau_sample(self):
+        tr = _edge_trace()
+        k = max(i for i, x in enumerate(tr["t"]) if x <= 1e-3)
+        tr["ivin"][k - 1] = -9e-6
+        tr["ivin"][k] = -3e-6
+        self.assertEqual(se.evaluate(tr)["off_supply_current_a"], 3e-6)
+
+    def test_ramp_vout_excursion_does_not_contaminate_off_window(self):
+        tr = _edge_trace()
+        for i, x in enumerate(tr["t"]):
+            if 1e-3 < x < 1.0005e-3:
+                tr["vout"][i] = 0.4           # ramp-only excursion
+        r = se.evaluate(tr)
+        self.assertLess(r["off_vout_max_v"], 1e-9)
+        self.assertFalse(any("off-state" in x for x in r["reasons"]), r["reasons"])
+
+    def test_plateau_vout_excursion_is_detected(self):
+        tr = _edge_trace()
+        k = max(i for i, x in enumerate(tr["t"]) if x <= 1e-3)
+        tr["vout"][k - 5] = 0.4
+        r = se.evaluate(tr)
+        self.assertEqual(r["verdict"], "fail")
+        self.assertTrue(any("off-state" in x for x in r["reasons"]))
+
+    def test_missing_ivin_still_supported(self):
+        tr = _edge_trace()
+        del tr["ivin"]
+        r = se.evaluate(tr)
+        self.assertEqual(r["verdict"], "pass", r["reasons"])
+        self.assertNotIn("off_supply_current_a", r)
+        self.assertIn("off_vout_max_v", r)
+
+    def test_no_initial_disabled_plateau_is_insufficient(self):
+        tr = _edge_trace()
+        tr["en"][0] = 0.5                      # above the tolerance, below VIN/2: no edge
+        r = se.evaluate(tr)
+        self.assertEqual(r["verdict"], "insufficient")
+        self.assertNotIn("off_supply_current_a", r)
+        self.assertTrue(any("off-state window" in x for x in r["reasons"]))
+
+    def test_skip_consuming_the_plateau_is_insufficient(self):
+        tr = _edge_trace()
+        cfg = se.Config(off_window_skip_s=1.5e-3)    # plateau ends at 1 ms
+        r = se.evaluate(tr, cfg)
+        self.assertEqual(r["verdict"], "insufficient")
+        self.assertNotIn("off_supply_current_a", r)    # no edge sample substituted
+
+    def test_skip_keeps_last_plateau_sample(self):
+        tr = _edge_trace()
+        r = se.evaluate(tr, se.Config(off_window_skip_s=0.5e-3))
+        self.assertEqual(r["verdict"], "pass", r["reasons"])
+        self.assertEqual(r["off_supply_current_a"], 2e-6)
+
+    def test_shifted_ramp_start_has_no_1ms_assumption(self):
+        # ramp starts at 2 ms instead of 1 ms: the plateau follows it
+        global en_wave
+        orig = en_wave
+        def shifted(t):
+            return orig(t - 1e-3) if t >= 1e-3 else 0.0
+        try:
+            en_wave = shifted
+            t_ex = (2.0001e-3, 2.0003e-3)
+            tr = make(good, t_end=16e-3, extra_t=t_ex)
+        finally:
+            en_wave = orig
+        # vout follows make()'s fixed 1 ms timing; only the off window matters
+        tr["vout"] = [0.0 if x < 2.0005e-3 else v for x, v in zip(tr["t"], tr["vout"])]
+        tr["ivin"] = [-3e-6 if x <= 2e-3 else -1e-3 for x in tr["t"]]
+        for i, x in enumerate(tr["t"]):
+            if 2e-3 < x < 2.0005e-3:
+                tr["ivin"][i] = -30e-6
+        r = se.evaluate(tr)
+        self.assertEqual(r["off_supply_current_a"], 3e-6)
+        self.assertAlmostEqual(r["en_edges"][0][1], 2.0005e-3, delta=1e-12)
+
+    def test_en_tolerance_excludes_ramp_samples(self):
+        tr = _edge_trace()
+        cfg = se.Config()
+        ia, ib = se._off_plateau(tr, cfg)
+        self.assertLessEqual(tr["t"][ib - 1], 1e-3)
+        self.assertTrue(all(e <= cfg.off_en_tol_v for e in tr["en"][ia:ib]))
+        self.assertGreater(tr["en"][ib], cfg.off_en_tol_v)
 
 
 if __name__ == "__main__":

@@ -20,6 +20,13 @@ Subcommands:
                                                   startup/RID/S/
     submit  --stage S --rid RID                   klt sim --backend batch
     collect --stage S --rid RID                   evaluate, write records/
+    recollect --stage S --rid NEW --source-rid OLD
+                                                  re-evaluate OLD's committed
+                                                  traces with the current
+                                                  startup_eval.py into a NEW
+                                                  record (issue #130); runs
+                                                  no simulation, edits no
+                                                  existing record
     binding --grid-csv CSV                        print the binding points
 """
 import argparse
@@ -499,6 +506,96 @@ def cmd_collect(a):
     return 0
 
 
+# ---- recollect (issue #130) --------------------------------------------------
+_IDENT_COLS = ("point", "mos", "temp", "res", "vin", "load_ma", "cout_nf", "esr_mohm",
+               "tmax_ns", "group", "corner_status", "raw_sha256", "trace_file",
+               "trace_sha256", "samples")
+
+
+def cmd_recollect(a):
+    """Re-evaluate a committed record's reduced traces with the CURRENT
+    startup_eval.py into a NEW record identity. Nothing is simulated and no
+    existing file is touched: the new csv keeps each row's `trace_file` /
+    `trace_sha256` / `raw_sha256` pointing at the SOURCE record's traces
+    (verified against the recorded hashes, never copied or rewritten), and
+    the new manifest carries the source record's simulation provenance
+    unchanged plus a `recollected_from` block naming the source files by
+    sha256 and the evaluator hashes before and after."""
+    if a.rid == a.source_rid:
+        raise CampaignError("--rid must differ from --source-rid (records are append-only)")
+    rec = os.path.join(HERE, "records")
+    stem_src = f"{a.source_rid}-startup-{a.stage}"
+    stem = f"{a.rid}-startup-{a.stage}"
+    src_csv = os.path.join(rec, stem_src + ".csv")
+    src_man = os.path.join(rec, stem_src + ".manifest.json")
+    src_md = os.path.join(rec, stem_src + ".md")
+    src_tdir = os.path.join(rec, stem_src + ".traces")
+    outs = {ext: os.path.join(rec, stem + ext) for ext in (".csv", ".manifest.json", ".md")}
+    for pth in list(outs.values()) + [os.path.join(rec, stem + ".traces")]:
+        if os.path.exists(pth):
+            raise CampaignError(f"{os.path.relpath(pth, REPO)} already exists (append-only)")
+    smeta = json.load(open(src_man))
+    if smeta.get("rid") != a.source_rid or smeta.get("stage") != a.stage:
+        raise CampaignError("source manifest rid/stage disagree with --source-rid/--stage")
+    plan = json.load(open(os.path.join(stage_dir(a.source_rid, a.stage), "plan.json")))
+    rows = []
+    for sr in read_csv(src_csv):
+        row = {k: sr[k] for k in _IDENT_COLS if sr.get(k, "") != ""}
+        tr = None
+        if sr.get("trace_file"):
+            tp = os.path.join(src_tdir, os.path.basename(sr["trace_file"]))
+            if sha256_file(tp) != sr["trace_sha256"]:
+                raise CampaignError(f"{tp}: bytes differ from the recorded trace_sha256")
+            tr = read_trace(tp)
+        res = se.evaluate(tr)
+        if tr is None and sr.get("reasons"):
+            res["reasons"] = [sr["reasons"]] + res["reasons"]
+        row.update({k: v for k, v in res.items() if k not in ("reasons", "en_edges")})
+        row["reasons"] = " | ".join(res["reasons"])
+        rows.append(row)
+    keys = []
+    for r in rows:
+        for k in r:
+            if k not in keys:
+                keys.append(k)
+    with open(outs[".csv"], "w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=keys, restval="")
+        w.writeheader()
+        for r in rows:
+            w.writerow({k: ("" if v is None else v) for k, v in r.items()})
+    meta = {"rid": a.rid, "stage": a.stage, "requested": smeta["requested"],
+            "rows": len(rows),
+            "evaluated": sum(1 for r in rows if r.get("verdict") in ("pass", "fail")),
+            "insufficient": sum(1 for r in rows if r.get("verdict") == "insufficient"),
+            "pass": sum(1 for r in rows if r.get("verdict") == "pass"),
+            "fail": sum(1 for r in rows if r.get("verdict") == "fail"),
+            **{k: smeta[k] for k in ("engines", "runner_klt", "client_klt", "jobs",
+                                     "osdi_sha256", "pdk_pinned_commit", "pdk_installed_commit")},
+            "source_sha256": {os.path.relpath(p, REPO): sha256_file(p) for p in
+                              (TEMPLATE, DESIGN, os.path.join(HERE, "startup_eval.py"),
+                               os.path.join(HERE, "startup_campaign.py"))},
+            "csv": os.path.relpath(outs[".csv"], REPO),
+            "recollected_from": {
+                "rid": a.source_rid,
+                "note": ("re-evaluation of the source record's committed reduced traces with "
+                         "the evaluator hashed in source_sha256; no simulation was run, the "
+                         "jobs/engines/osdi/pdk fields above are the SOURCE record's, and the "
+                         "traces are referenced in place (csv trace_file/trace_sha256), not copied"),
+                "traces_dir": os.path.relpath(src_tdir, REPO),
+                "files_sha256": {os.path.relpath(p, REPO): sha256_file(p)
+                                 for p in (src_csv, src_man, src_md)},
+                "source_evaluator_sha256": smeta["source_sha256"].get(
+                    os.path.relpath(os.path.join(HERE, "startup_eval.py"), REPO)),
+                "source_campaign_sha256": smeta["source_sha256"].get(
+                    os.path.relpath(os.path.join(HERE, "startup_campaign.py"), REPO))}}
+    with open(outs[".manifest.json"], "w") as f:
+        json.dump(meta, f, indent=1)
+        f.write("\n")
+    write_md(a, meta, rows, plan)
+    print(json.dumps({k: meta[k] for k in ("requested", "rows", "evaluated", "pass", "fail", "insufficient")}))
+    return 0
+
+
 METRICS = (("start_overshoot_v", "start overshoot above 1.8 V [V]", True),
            ("start_peak_vout_v", "start peak VOUT [V]", True),
            ("start_settle_time_s", "start settle time [s]", True),
@@ -541,7 +638,13 @@ def write_md(a, meta, rows, plan):
          f"- PDK pin (sim/pdk-cmos5l.json) {meta['pdk_pinned_commit'][:12]}; installed checkout {meta['pdk_installed_commit'][:12]}"
          + (" (match)" if meta['pdk_pinned_commit'] == meta['pdk_installed_commit'] else " (**MISMATCH**)"),
          "- OSDI binaries (sha256): " + ", ".join(f"{k} {v[:12]}" for k, v in meta["osdi_sha256"].items()),
-         "- Source hashes: " + ", ".join(f"`{k}` {v[:12]}" for k, v in meta["source_sha256"].items()), ""]
+         "- Source hashes: " + ", ".join(f"`{k}` {v[:12]}" for k, v in meta["source_sha256"].items())]
+    rf = meta.get("recollected_from")
+    if rf:
+        L += [f"- **Re-collected from `{rf['rid']}`** (issue #130): {rf['note']}. Source evaluator "
+              f"{(rf['source_evaluator_sha256'] or 'unknown')[:12]}; traces `{rf['traces_dir']}`. "
+              "Engine/runner/job/OSDI/PDK lines above describe the source simulation."]
+    L.append("")
     L += ["## Extrema over the evaluated points", "",
           "| metric | min | at | max | at |", "|---|---|---|---|---|"]
     for k, label, _ in METRICS:
@@ -583,8 +686,9 @@ def write_md(a, meta, rows, plan):
                     L.append(f"| `{r['point'].replace('_t500ns', '')}` | {label} | {x:.6g} | {y:.6g} | {y - x:+.3g} |")
                 L.append(f"| `{r['point'].replace('_t500ns', '')}` | verdict | {base['verdict']} | {r['verdict']} | |")
             L.append("")
+    tr_dir = (os.path.basename(rf["traces_dir"]) if rf else f"{a.rid}-startup-{a.stage}.traces") + "/"
     L += ["## Points", "", "Per-point metrics, trace file names and trace sha256 are in "
-          f"`{os.path.basename(meta['csv'])}`; reduced traces in `{a.rid}-startup-{a.stage}.traces/` "
+          f"`{os.path.basename(meta['csv'])}`; reduced traces in `{tr_dir}` "
           "(`t,vout,en,vin,eaout,ivin`, gzip). Rawfile sha256 per point is the `raw_sha256` "
           "column (rawfiles themselves, about 2 MB each, are not committed).", ""]
     with open(path, "w") as f:
@@ -620,6 +724,10 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
+    s = sub.add_parser("recollect")
+    s.add_argument("--stage", required=True, choices=("nominal", "grid", "ext", "halfstep"))
+    s.add_argument("--rid", required=True)
+    s.add_argument("--source-rid", required=True)
     for name in ("plan", "submit", "collect"):
         s = sub.add_parser(name)
         s.add_argument("--stage", required=True, choices=("nominal", "grid", "ext", "halfstep"))
@@ -634,6 +742,7 @@ def main():
     a = ap.parse_args()
     try:
         return {"plan": cmd_plan, "submit": cmd_submit, "collect": cmd_collect,
+                "recollect": cmd_recollect,
                 "binding": cmd_binding}[a.cmd](a)
     except (CampaignError, KeyError) as e:
         print(f"startup_campaign: ERROR: {e}", file=sys.stderr)

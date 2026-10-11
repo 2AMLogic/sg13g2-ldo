@@ -17,8 +17,8 @@
 
 - Circuit record (explicitly selected, hash-pinned): `ldo-cmos5l-pvt-sweep` / `20261011-070111-5391c68`
 - Bare-device context record: `20260909-220347-ed18110` (never used as a closed-loop measurement)
-- Startup campaign (explicitly selected, hash-pinned, proposed methodology): `20261011-031426-df3f802` stage `grid`
-- Selection file: `sim/characterization/selection.json` sha256 `a77f1c8c16a2d3fdfa313d6707119a871e84cf8b458be4cf4831dc225e14acba`
+- Startup campaign (explicitly selected, hash-pinned, proposed methodology): `20261011-070146-0c95530` stage `grid`
+- Selection file: `sim/characterization/selection.json` sha256 `71c5c2b5f12836d61b96f7bc296706273fc9cc04cf6d96615b32f8ab0e152268`
 - Design freshness: **current**
 
 | Role | Path | sha256 | Pinned |
@@ -40,10 +40,10 @@
 | row10_classifier_source | `sim/ldo-cmos5l-pvt-sweep/row10_record.py` | `3632a86707f7cf793715667581407b5547511ea2b734dd24503a001df371dcab` | yes |
 | startup_design_core_freshness | `design/sg13cmos5l/netlist/ldo_core_cmos5l.spice` | `08a7b857e1fad43dd7af1f575de97853a058e85541601ecc47567fbc28dbae57` | yes |
 | startup_design_error_amp_freshness | `design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice` | `75ee39ce0c48b54cab6c8a31acd1f199c37c1ccd1ac074a3515dee81cc656fb4` | yes |
-| startup_grid_csv | `sim/ldo-cmos5l-pvt-sweep/records/20261011-031426-df3f802-startup-grid.csv` | `c433ef8fad4951d66d41a7f8be577409edd27349b4c0dbc058268caea6912c7c` | yes |
-| startup_manifest_json | `sim/ldo-cmos5l-pvt-sweep/records/20261011-031426-df3f802-startup-grid.manifest.json` | `b2735018e1a1c56b65829ad6c4bb98fd0a2b5e4891c0cc2d17ad938297412c6d` | yes |
-| startup_record_md | `sim/ldo-cmos5l-pvt-sweep/records/20261011-031426-df3f802-startup-grid.md` | `91d97e67e2d6cd99294e281a52521be0c77504db792b4e428dc3c459cd6f5f8e` | yes |
-| superseded_evidence_statement | `sim/ldo-cmos5l-pvt-sweep/README.md` | `d384e1660484267653fca95204727e048aff739b033fa1d85e6e024d489ba994` | recorded |
+| startup_grid_csv | `sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.csv` | `bc4ea61162a51f3b7ecbefad4c82663f6928139d64f3ba09875c22fe7d2df3d1` | yes |
+| startup_manifest_json | `sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.manifest.json` | `3ec537f955f03dbd081870a068d01825106a886cd0f5ac0698289932cf5a7c95` | yes |
+| startup_record_md | `sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.md` | `908c108fd44b729846b51c0d9a75b35daf3dee4d7bc4c9fab3f091d8a06b307c` | yes |
+| superseded_evidence_statement | `sim/ldo-cmos5l-pvt-sweep/README.md` | `80f4a7105e65e3d6a389ba1b80061e4323afa3e976f1b4c18d220d9131b57534` | recorded |
 | target_table | `README.md` | `7aa5ec43fdffbdd3ff9db9c8fffbffd7a03a0f9d145ff6796b86633138e6fd71` | recorded |
 
 ## Per-row summary
@@ -249,7 +249,7 @@ Verdict key: `pass_*` = measured metrics meet the bound at the stated conditions
 
 - Target: monotonic, controlled ramp, inside ±2% within 3 ms of enable; stretch: —
 - Ratification: open_unratified (README: OPEN — unratified (measured on the SG13CMOS5L core with proposed methodology: all 135 grid points fail the overshoot / monotonicity checks; not ratified); DR-0007: Open, deterministic)
-- Note: Measured: 135 of 135 requested points evaluated, 135 fail, 0 pass, 0 insufficient, 0 missing (sim/ldo-cmos5l-pvt-sweep/records/20261011-031426-df3f802-startup-grid.csv). 135 of 135 points that settle within 3 ms still fail the proposed overshoot / monotonicity checks.
+- Note: Measured: 135 of 135 requested points evaluated, 135 fail, 0 pass, 0 insufficient, 0 missing (sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.csv). 135 of 135 points that settle within 3 ms still fail the proposed overshoot / monotonicity checks.
 - Note: Proposed methodology, not ratified: DR-0007 row 9 stays Open; no ratification and no whole-spec pass is inferred.
 - Coverage of the row as written: partial. Gaps:
   - proposed methodology (DR-0009) only; the target's 'controlled ramp' has no numeric bound and is not graded
@@ -257,7 +257,7 @@ Verdict key: `pass_*` = measured metrics meet the bound at the stated conditions
   - Vin grid is 2.97/3.30/3.63 V; Cc and the 0.90 V reference are not cornered; schematic level, no post-layout evidence
 
 - **Startup campaign (measured; PROPOSED methodology, row stays Open; no ratification inferred)**
-  - record `20261011-031426-df3f802` stage `grid` (sim/ldo-cmos5l-pvt-sweep/records/20261011-031426-df3f802-startup-grid.md, sim/ldo-cmos5l-pvt-sweep/records/20261011-031426-df3f802-startup-grid.csv)
+  - record `20261011-070146-0c95530` stage `grid` (sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.md, sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.csv)
   - requested 135, result rows 135, evaluated 135, missing 0, insufficient 0; csv verdicts pass 0 / fail 135 / insufficient 0
   - 135 of 135 points settle within 3 ms and still fail the proposed overshoot / monotonicity checks
   - failure reasons (points): reen_downward excursion 135, reen_peak 135, start_downward excursion 135, start_peak 135
@@ -267,31 +267,31 @@ Verdict key: `pass_*` = measured metrics meet the bound at the stated conditions
   - start settle time [s]: min 2.84714e-05 at ss/-40C/res_typ/Vin 2.97V/1mA/1000nF/ESR 0mohm; max 0.000440999 at ff/125C/res_wcs/Vin 3.63V/1mA/1000nF/ESR 0mohm
   - start max downward excursion [V]: min 0.022407 at ss/-40C/res_typ/Vin 2.97V/1mA/1000nF/ESR 0mohm; max 0.50375 at ff/125C/res_wcs/Vin 3.63V/1mA/1000nF/ESR 0mohm
   - re-enable overshoot [V]: min 0.0449093 at ss/125C/res_wcs/Vin 2.97V/1mA/1000nF/ESR 0mohm; max 0.449052 at ff/-40C/res_wcs/Vin 3.63V/1mA/1000nF/ESR 0mohm
-  - re-enable max downward excursion [V]: min 0.00927084 at ss/125C/res_wcs/Vin 2.97V/1mA/1000nF/ESR 0mohm; max 0.413312 at ff/-40C/res_wcs/Vin 3.63V/1mA/1000nF/ESR 0mohm
-  - proposed methodology: band 1.764-1.836 V, settle <= 0.003 s, monotonic tolerance 0.001 V (spec/decision-records/DR-0009-sg13cmos5l-startup-measurement-methodology.md); Overshoot is read as peak VOUT above the +2 % band edge (1.836 V) and monotonicity as maximum downward excursion <= 1 mV before settling. 'controlled ramp' has no numeric bound in the target text and is not graded.
+  - re-enable max downward excursion [V]: min 0.00927083 at ss/125C/res_wcs/Vin 2.97V/1mA/1000nF/ESR 0mohm; max 0.413312 at ff/-40C/res_wcs/Vin 3.63V/1mA/1000nF/ESR 0mohm
+  - proposed methodology: band 1.764-1.836 V, settle <= 0.003 s, monotonic tolerance 0.001 V (spec/decision-records/DR-0009-sg13cmos5l-startup-measurement-methodology.md); Overshoot is read as peak VOUT above the +2 % band edge (1.836 V) and monotonicity as maximum downward excursion <= 1 mV before settling. 'controlled ramp' has no numeric bound in the target text and is not graded. Cold-start disabled window (DR-0009 amendment, issue #130): the contiguous initial EN <= 1 mV plateau before the first rising ramp; off_supply_current_a is -ivin at its last sample. Selected record 20261011-070146-0c95530 re-collects 20261011-031426-df3f802's traces with that evaluator (the evaluator and campaign sha256 are in its manifest source_sha256).
   - none inferred: row 9 stays Open (DR-0007); proposed methodology only
 
 - **start: settle time into the +/-2 % band (3 ms limit)** (s): pass; bound le 0.003 s; 135/135 pass, 0 fail, 0 ambiguous, 0 censored upper bound
-  - worst case 0.00044099942 at ff/125C/res_wcs/Vin 3.63V/1mA/1000nF/ESR 0mohm
+  - worst case 0.000440999416 at ff/125C/res_wcs/Vin 3.63V/1mA/1000nF/ESR 0mohm
   - conditions: EN-bearing core (DR-0008), EN = VIN * CTL step at t = 1 ms, schematic level; grid process {tt,ss,ff,sf,fs} x temperature {-40,27,125} C x resistor corner {typ,bcs,wcs} x Vin {2.97,3.30,3.63} V; resistive load 1 mA (1.8 kohm), Cout 1 uF, ESR 0, Cc nominal; ideal 0.90 V reference; 135 requested points. Time zero is the EN = VIN/2 crossing; PROPOSED methodology (DR-0009), not ratified
-  - source: `sim/ldo-cmos5l-pvt-sweep/records/20261011-031426-df3f802-startup-grid.csv` column `start_settle_time_s`
+  - source: `sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.csv` column `start_settle_time_s`
   - note: Numeric settling success does not override the monotonicity and overshoot metrics below; each is scored independently and any failure fails the row. A point that never settled is scored at its observation length (a lower bound).
 - **start: peak VOUT above the +2 % band edge (overshoot, proposed bound 1.836 V)** (V): fail; bound le 1.836 V; 0/135 pass, 135 fail, 0 ambiguous, 0 censored upper bound
   - worst case 2.33885177 at ff/125C/res_wcs/Vin 3.63V/1mA/1000nF/ESR 0mohm
   - conditions: EN-bearing core (DR-0008), EN = VIN * CTL step at t = 1 ms, schematic level; grid process {tt,ss,ff,sf,fs} x temperature {-40,27,125} C x resistor corner {typ,bcs,wcs} x Vin {2.97,3.30,3.63} V; resistive load 1 mA (1.8 kohm), Cout 1 uF, ESR 0, Cc nominal; ideal 0.90 V reference; 135 requested points. Time zero is the EN = VIN/2 crossing; PROPOSED methodology (DR-0009), not ratified
-  - source: `sim/ldo-cmos5l-pvt-sweep/records/20261011-031426-df3f802-startup-grid.csv` column `start_peak_vout_v`
+  - source: `sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.csv` column `start_peak_vout_v`
 - **start: max downward excursion before settling (monotonicity, proposed 1 mV tolerance)** (V): fail; bound le 0.001 V; 0/135 pass, 135 fail, 0 ambiguous, 0 censored upper bound
   - worst case 0.50375 at ff/125C/res_wcs/Vin 3.63V/1mA/1000nF/ESR 0mohm
   - conditions: EN-bearing core (DR-0008), EN = VIN * CTL step at t = 1 ms, schematic level; grid process {tt,ss,ff,sf,fs} x temperature {-40,27,125} C x resistor corner {typ,bcs,wcs} x Vin {2.97,3.30,3.63} V; resistive load 1 mA (1.8 kohm), Cout 1 uF, ESR 0, Cc nominal; ideal 0.90 V reference; 135 requested points. Time zero is the EN = VIN/2 crossing; PROPOSED methodology (DR-0009), not ratified
-  - source: `sim/ldo-cmos5l-pvt-sweep/records/20261011-031426-df3f802-startup-grid.csv` column `start_max_down_excursion_v`
+  - source: `sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.csv` column `start_max_down_excursion_v`
 - **re-enable: peak VOUT above the +2 % band edge (proposed bound 1.836 V)** (V): fail; bound le 1.836 V; 0/135 pass, 135 fail, 0 ambiguous, 0 censored upper bound
   - worst case 2.24905157 at ff/-40C/res_wcs/Vin 3.63V/1mA/1000nF/ESR 0mohm
   - conditions: EN-bearing core (DR-0008), EN = VIN * CTL step at t = 1 ms, schematic level; grid process {tt,ss,ff,sf,fs} x temperature {-40,27,125} C x resistor corner {typ,bcs,wcs} x Vin {2.97,3.30,3.63} V; resistive load 1 mA (1.8 kohm), Cout 1 uF, ESR 0, Cc nominal; ideal 0.90 V reference; 135 requested points. Time zero is the EN = VIN/2 crossing; PROPOSED methodology (DR-0009), not ratified
-  - source: `sim/ldo-cmos5l-pvt-sweep/records/20261011-031426-df3f802-startup-grid.csv` column `reen_peak_vout_v`
+  - source: `sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.csv` column `reen_peak_vout_v`
 - **re-enable: max downward excursion (proposed 1 mV tolerance)** (V): fail; bound le 0.001 V; 0/135 pass, 135 fail, 0 ambiguous, 0 censored upper bound
-  - worst case 0.413312079 at ff/-40C/res_wcs/Vin 3.63V/1mA/1000nF/ESR 0mohm
+  - worst case 0.41331208 at ff/-40C/res_wcs/Vin 3.63V/1mA/1000nF/ESR 0mohm
   - conditions: EN-bearing core (DR-0008), EN = VIN * CTL step at t = 1 ms, schematic level; grid process {tt,ss,ff,sf,fs} x temperature {-40,27,125} C x resistor corner {typ,bcs,wcs} x Vin {2.97,3.30,3.63} V; resistive load 1 mA (1.8 kohm), Cout 1 uF, ESR 0, Cc nominal; ideal 0.90 V reference; 135 requested points. Time zero is the EN = VIN/2 crossing; PROPOSED methodology (DR-0009), not ratified
-  - source: `sim/ldo-cmos5l-pvt-sweep/records/20261011-031426-df3f802-startup-grid.csv` column `reen_max_down_excursion_v`
+  - source: `sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.csv` column `reen_max_down_excursion_v`
 
 ### 10. Stability -- ambiguous
 
