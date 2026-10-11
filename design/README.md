@@ -280,10 +280,13 @@ SG13G2 branch keeps its four-port invariant. #68 drew both devices and the
 against the six-port design; the pre-EN five-port layout reports are
 superseded. Post-layout (PEX) performance is still unclaimed.
 
-`ldo_erramp_cmos5l` pinout: `INP INN OUT VDD VSS IBIAS`. `VDD` and `IBIAS`
+`ldo_erramp_cmos5l` pinout: `INP INN OUT VDD VSS IBIAS EN`. `VDD` and `IBIAS`
 are the two pins the SG13G2 branch's ideal-VCVS placeholder did not need
 and which ["Error amplifier"](#error-amplifier) above predicted a real
-amplifier would; DR-0002's Consequences section anticipated the same.
+amplifier would; DR-0002's Consequences section anticipated the same. `EN`
+(appended by #89, DR-0008 addendum) is the core's enable, which the
+amplifier uses to hold its second-stage gate `G1` at `VSS` while disabled;
+the core's own six-port list is unchanged.
 
 `python3 design/netlist.py --design sg13cmos5l --check` asserts both port
 lists (and that each cell's `.sym` pin order matches its `.sch` port order),
@@ -367,6 +370,10 @@ DR-0002 Decision (b):
   source at `VSS`, drain at `OUT`, loaded by the `Mload2` `sg13_hv_pmos`
   current source from the rail.
 - **Compensation** — `Cc` (MoM) in series with `Rz` from `OUT` back to `G1`.
+- **Disable pull-down** (#89) — `Mpd` (`sg13_hv_nmos` w=1u l=1u) from `G1`
+  to `VSS`, gated by `ENB` from a local `Minvp`/`Minvn` inverter on `EN`.
+  Off when enabled; holds `Mn3` off when `EN` is low, so the disabled supply
+  current no longer depends on a floating node (DR-0008 addendum).
 - **`VREF` stays an external port.** No on-chip bandgap.
 
 Polarity check, re-derived in the schematic header: `FB` rises → `Minp`

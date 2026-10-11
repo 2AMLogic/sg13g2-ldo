@@ -35,7 +35,8 @@ reported, not retried locally.
 | `enable-leak` | `tb_disabled_leak.spice` | EN = 0 with VOUT clamped to 0 V (worst-case Vds): current into the clamp = pass leakage |
 | `enable-ensweep` | `tb_enable_ensweep.spice` | EN swept 0..3.3 V at Vin = 3.30 V (1.8 k load) |
 | `enable-psrr` / `baseline-psrr` | `tb_psrr_en.spice` / `tb_psrr_baseline.spice` | `vdb(vout)` at 10 Hz / 1 kHz / 100 kHz with Vin AC = 1 V (PSRR = -value) |
-| `enable-loopgain` / `baseline-loopgain` | `tb_loopgain_en.spice` / `tb_loopgain_baseline.spice` | Flattened core with the single FB-to-FBAMP break; DC gain, unity-gain frequency, phase |
+| `enable-loopgain` / `baseline-loopgain` | `tb_loopgain_en_g1pd.spice` (record `20261010-023648-4d45f5d`: `tb_loopgain_en.spice`) / `tb_loopgain_baseline.spice` | Flattened core with the single FB-to-FBAMP break; DC gain, unity-gain frequency, phase |
+| `disabled-g1` (#89) | `tb_disabled_reg.spice` | EN = 0, VOUT floating: supply current plus the amplifier's internal `G1` (Mn3's gate), `ENB` and `N1`, and `EAOUT` / Vsg(Mpass) / VOUT |
 
 `enable-leak` is named for the experiment; it runs the EN-**low** deck.
 
@@ -77,3 +78,21 @@ Record `20261010-023648-4d45f5d`: design under test
 `ldo_core_cmos5l.sch` `e5c02aff5fad9f0c...`; symbol `18e1af5b40ae113b...`.
 Every raw report pins its deck, `runner-preamble.cir` and the core netlist by
 sha256 in `environment.netlist_closure`.
+
+Record `20261011-031743-df3f802` (issue #89, DR-0008 addendum "G1 disable
+pull-down"): design under test `ldo_core_cmos5l.spice` sha256
+`08a7b857e1fad43dd7af1f575de97853a058e85541601ecc47567fbc28dbae57`,
+`ldo_erramp_cmos5l.spice` sha256
+`75ee39ce0c48b54cab6c8a31acd1f199c37c1ccd1ac074a3515dee81cc656fb4`
+(Xamp has a seventh pin, `EN`, and holds `G1` at `VSS` when disabled). All
+twelve requests, same fleet/ngspice/model files as the first record; the
+`baseline-*` requests still run the pre-#67 netlist, so `derived.txt`'s
+enabled-state deltas are against that design. `enable-loopgain` uses the
+versioned deck `tb_loopgain_en_g1pd.spice` (`tb_loopgain_en.spice` is kept
+byte-for-byte as the first record's deck; the new copy differs only in
+Xamp's `EN` pin). `disabled-rload` was refused once by the fleet's
+concurrent-instance cap (`8 instance(s) already running + 1 requested
+exceeds BATCH_MAX_CONCURRENT_INSTANCES=8`, klayout-tools#2917; `run_smoke.sh`
+has no retry) and was resubmitted on its own to the batch fleet; nothing ran
+locally. Its `raw/` report is the resubmission.
+
