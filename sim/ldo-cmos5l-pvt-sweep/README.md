@@ -293,10 +293,30 @@ before, the same 15 points have more than one 0 dB crossing, and the `Cc`
 tolerance window is unchanged at `110e-6`-`259e-6`. The worst gain margin
 is now 13.84 dB (was 13.85) and the worst phase margin 53.87 deg.
 
-Four of the 22 fleet requests reuse byte-identical completed reports from
-an interrupted first submission (`SWEEP_BATCH_REUSE_WORK`, listed in
+Four of the 22 fleet requests (`g00_dcsweep`, `g01_loopgain`,
+`g02_loopgain_ressens_bcs`, `g21_loopgain_divattr`) reuse completed reports
+from an interrupted first submission (`SWEEP_BATCH_REUSE_WORK`, listed in
 `corners/20261011-051956-eda9285/_batch/reused-reports.tsv`). The other 18
 were resubmitted.
+
+**Reuse is now bound to input bytes, but these four are not.** The request
+text names the design netlist, the model cards and the OSDI binaries by path,
+so a byte-identical request alone does not show those files are unchanged.
+`batch_backend.py` now writes `inputs.sha256.json` into every group dir when
+the group is written: the sha256 of the transitive `.include` / `.lib`
+closure of `tb.spice` and `corners.lib` (design netlist included) plus the
+OSDI binaries. `--reuse-work` reuses a report only when the earlier group's
+inventory equals the current one, and fails closed when the earlier work dir
+has none. `test_batch_backend.py` has the negative controls: an in-place edit
+of the design netlist, a nested include, a model card or an OSDI binary, with
+all four compared text files left identical, is not reused. The earlier work
+dir for this record predates the inventory, so the four reports above have no
+committed proof of the input bytes they ran against. Indirect evidence
+(PM, GM and Iq differ from `60a3e81` at the points of those groups) says they
+are post-edit, but it does not prove it. Closing that gap is a fleet
+resubmission of those four groups without `--reuse-work`, appended as new
+evidence rather than an edit to this record; it is tracked in a follow-up
+issue and is not done here.
 
 The disabled state is not part of this grid. It is in
 `sim/ldo-cmos5l-enable/` (DC smoke, tt/27C) and in the off-state samples of

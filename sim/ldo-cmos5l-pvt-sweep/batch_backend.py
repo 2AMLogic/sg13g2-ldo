@@ -358,6 +358,64 @@ def plan_groups(points, max_points=None):
     return groups
 
 
+INVENTORY = "inputs.sha256.json"
+# `.lib <file> <section>` loads a file; a bare `.lib <name>` opens a section
+# definition (as in corners.lib) and names no file.
+_TARGET = r'(?:"([^"]+)"|\'([^\']+)\'|(\S+))'
+_INCLUDE_RE = re.compile(rf'^\s*\.(?:include|inc)\s+{_TARGET}', re.I)
+_LIB_RE = re.compile(rf'^\s*\.lib\s+{_TARGET}\s+\S', re.I)
+
+
+def input_closure(files, skip=()):
+    """sha256 of every file the given spice files pull in by `.include` /
+    `.inc` / `.lib <file>` card, transitively. Relative targets resolve against
+    the including file's directory, then the working directory. A target that
+    cannot be found maps to None, which makes the inventory unusable for
+    reuse (fail closed). `skip` holds the generated files, which are compared
+    as text."""
+    out, todo, seen = {}, list(files), set()
+    while todo:
+        path = todo.pop()
+        if path in seen:
+            continue
+        seen.add(path)
+        try:
+            with open(path, encoding="utf-8", errors="replace") as f:
+                lines = f.read().splitlines()
+        except OSError:
+            continue
+        for ln in lines:
+            m = _INCLUDE_RE.match(ln) or _LIB_RE.match(ln)
+            if not m:
+                continue
+            tgt = next(x for x in m.groups() if x)
+            cands = [tgt] if os.path.isabs(tgt) else [
+                os.path.join(os.path.dirname(path), tgt), os.path.abspath(tgt)]
+            hit = next((c for c in cands if os.path.isfile(c)), None)
+            key = os.path.normpath(hit or cands[0])
+            if key in skip:
+                continue
+            out[key] = sha256(hit) if hit else None
+            if hit:
+                todo.append(key)
+    return out
+
+
+def write_inventory(gdir, req, skip=()):
+    """Persist the sha256 of the group's whole input closure: the deck's and
+    the model lib's include targets (the design netlist, model cards, and
+    whatever those include) plus the OSDI binaries the request names. Written
+    at submission time so a later --reuse-work can bind a report to the bytes
+    that were actually submitted."""
+    inv = input_closure([os.path.join(gdir, "tb.spice"), os.path.join(gdir, "corners.lib")], skip)
+    for p in req["options"]["osdi_preload"]:
+        inv[p] = sha256(p) if os.path.isfile(p) else None
+    with open(os.path.join(gdir, INVENTORY), "w") as f:
+        json.dump(dict(sorted(inv.items())), f, indent=1)
+        f.write("\n")
+    return inv
+
+
 def write_group(g, work, osdi_dir, preamble_path):
     gdir = os.path.join(work, g["name"])
     os.makedirs(gdir, exist_ok=True)
@@ -409,6 +467,7 @@ def write_group(g, work, osdi_dir, preamble_path):
     with open(os.path.join(gdir, "request.json"), "w") as f:
         json.dump(req, f, indent=1)
         f.write("\n")
+    write_inventory(gdir, req, skip={os.path.normpath(preamble_path)})
     return gdir
 
 
@@ -470,7 +529,10 @@ def reusable_report(old_gdir, gdir, old_work, work, n_members):
     Only a byte-identical request is reused: request.json and corners.lib
     must match exactly, tb.spice must match once the earlier work dir's path
     (the OSDI preamble include) is replaced by this one's, and so must the
-    OSDI preamble itself. The earlier report must parse, cover every member
+    OSDI preamble itself. So must the sha256 inventory of everything those
+    files include (design netlist, model cards, OSDI binaries), as recorded
+    when the earlier group was submitted; a missing inventory fails closed.
+    The earlier report must parse, cover every member
     point and point at rawfiles that still exist. Anything else is
     submitted to the fleet as usual. It is never a local run."""
     def read(path):
@@ -487,6 +549,17 @@ def reusable_report(old_gdir, gdir, old_work, work, n_members):
     if tb_old is None or tb_old.replace(old_work, work) != read(os.path.join(gdir, "tb.spice")):
         return None
     if read(os.path.join(old_work, "osdi-preamble.cir")) != read(os.path.join(work, "osdi-preamble.cir")):
+        return None
+    # The text above names models, the design netlist and the OSDI binaries
+    # by path only. Bind the report to their bytes: the inventory persisted
+    # when the earlier group was written must equal the current one. A work
+    # dir from before the inventory existed has none, so it is never reused.
+    try:
+        old_inv = json.loads(read(os.path.join(old_gdir, INVENTORY)) or "")
+        new_inv = json.loads(read(os.path.join(gdir, INVENTORY)) or "")
+    except ValueError:
+        return None
+    if not old_inv or old_inv != new_inv or None in old_inv.values():
         return None
     rp = os.path.join(old_gdir, "report.json")
     try:
@@ -644,7 +717,7 @@ def cmd_run(a):
         os.makedirs(dst, exist_ok=True)
         for fn in sorted(os.listdir(src)):
             if fn in ("request.json", "tb.spice", "corners.lib", "report.json",
-                      "cap-retries.log") or fn.endswith(".corner.cir"):
+                      "cap-retries.log", INVENTORY) or fn.endswith(".corner.cir"):
                 shutil.copyfile(os.path.join(src, fn), os.path.join(dst, fn))
     staged = {n: sha256(os.path.join(a.osdi_dir, f"{n}.osdi")) for n in OSDI_ORDER}
     engines = sorted(meta["engines"])
