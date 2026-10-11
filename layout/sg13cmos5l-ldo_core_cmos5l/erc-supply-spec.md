@@ -118,7 +118,10 @@ What this spec asserts, and why each piece is shaped this way:
     well layer -- so `well_layer` is `null` and `well_boxes` asserts the
     region (klayout-tools#2255): the tap bar grown by 20 um, the PDK deck's
     LU.b reach (every N+ implant within 20 um of a substrate tie). Tap layer
-    Activ narrowed by pSD (14/0) and the tap box.
+    Activ narrowed by pSD (14/0) and the tap boxes: the error-amp NMOS
+    group's tie and, since #89, a second bar beside the amplifier's G1
+    disable pull-down devices (XMinvn/XMpd), which sit more than 20 um from
+    the first.
   Every tie therefore rests on a caller assertion and is reported under
   `erc_coverage.checked_by_assertion` and `checked_by_well_assertion`, not
   as an unconditional geometric pass. `well_assertion_coverage` for the

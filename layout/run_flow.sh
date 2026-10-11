@@ -240,7 +240,7 @@ import json, sys
 d = json.load(open(sys.argv[1]))
 print(f"  devices: {d['device_counts']}")
 print(f"  nets:    {[n['name'] for n in d['nets']]}")
-expected = {"pfet": 127, "nfet": 3, "rhigh": 3, "cap_cmomi": 1}
+expected = {"pfet": 128, "nfet": 5, "rhigh": 3, "cap_cmomi": 1}
 sys.exit(0 if d['device_counts'] == expected else 1)
 PY
 
@@ -340,6 +340,9 @@ control parameter-control 's/^MMpass \(.*\) W=2800U/MMpass \1 W=2772U/' \
 # compared, and on what: presence, connectivity, and (by name equality, not
 # by tolerance) its parameters. See klayout-tools#1942 and layout/README.md,
 # "LVS: what is compared at device level, and what is not".
+# The G1 disable pull-down (#89): a reference without it must not match the
+# layout that draws it.
+control pulldown-presence-control '@drop:^MMpd ' "Mpd deleted from the reference"
 control cap-presence-control '@drop:^XCc ' "Cc deleted from the reference"
 control cap-topology-control 's/^XCc EAOUT MZ/XCc EAOUT G1/' "Cc MZ -> G1"
 control cap-parameter-control 's/^XCc \(.*\)W=170 L=30/XCc \1W=85 L=30/' \

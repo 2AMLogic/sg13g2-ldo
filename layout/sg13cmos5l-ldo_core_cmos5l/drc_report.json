@@ -168,7 +168,7 @@
     "nothing_checked_reasons": []
   },
   "provenance": {
-    "klt_version": "0.5.0+gb15edf5e3a2e.dirty",
+    "klt_version": "0.5.0+gb15edf5e3a2e",
     "klayout_version": "0.30.12",
     "pdk": null,
     "deck": {
@@ -177,7 +177,7 @@
       "released": false
     },
     "input": {
-      "content_hash": "sha256:7fdbe0e9ab0e812d348b432a72c18b31f5ecef592bfac5d7a93658c69827ee27",
+      "content_hash": "sha256:06d92e1aadb8b51614016f2f5d953c8bd0674380267f8ab90c2b0cca59576629",
       "role": "layout"
     },
     "klayout_version_mismatch": true

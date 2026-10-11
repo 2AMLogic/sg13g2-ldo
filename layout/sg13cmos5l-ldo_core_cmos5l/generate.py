@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Draw ``sg13cmos5l_ldo_core_cmos5l`` -- the full 15-device LDO core of
+"""Draw ``sg13cmos5l_ldo_core_cmos5l`` -- the full 18-device LDO core of
 ``design/sg13cmos5l/netlist/ldo_core_cmos5l.spice`` -- as one flat cell.
 
     python3 layout/sg13cmos5l-ldo_core_cmos5l/generate.py
@@ -82,7 +82,7 @@ MPASS_ROW_PITCH = 31.0
 # --------------------------------------------------------------------------- #
 NET_TRACKS = [
     "VOUT", "VIN", "VSS", "EAOUT", "IBIAS", "TAIL", "G1", "N1", "FB", "MZ", "VREF",
-    "EN",
+    "EN", "ENB",
 ]
 TRACK_Y0 = -52.0
 TRACK_PITCH = 1.2
@@ -290,21 +290,35 @@ def build() -> c.Builder:
     #            -> 1 finger x 5 um
     #    Both sit in one NWell tied to VIN by its own tap bar (body = source,
     #    as for Mpass). The two gates are joined on the EN track only.
+    #
+    #    The amplifier's G1 disable pull-down (#89, DR-0008 addendum) sits
+    #    beside them, because it is driven from the same EN track:
+    #    XMinvp sg13_hv_pmos w=1u l=1u  drain ENB, gate EN, S/B VIN
+    #           -> 1 finger x 1 um, in the same VIN NWell
+    #    XMinvn sg13_hv_nmos w=1u l=1u  drain ENB, gate EN, S/B VSS
+    #    XMpd   sg13_hv_nmos w=1u l=1u  drain G1,  gate ENB, S/B VSS
+    #           -> 1 finger x 1 um each, outside every NWell, with their own
+    #              substrate tie bar (LU.b: N+Activ within 20 um of a tie)
     # ---------------------------------------------------------------- #
     en_spec = [
         ("Men", "pmos", 2, 20.0, 0.5, 178.0, "EN", "VIN", "EAOUT"),
         ("Mbdis", "pmos", 1, 5.0, 0.5, 187.0, "EN", "VIN", "IBIAS"),
+        ("Minvp", "pmos", 1, 1.0, 1.0, 191.0, "EN", "VIN", "ENB"),
+        ("Minvn", "nmos", 1, 1.0, 1.0, 199.5, "EN", "VSS", "ENB"),
+        ("Mpd", "nmos", 1, 1.0, 1.0, 204.5, "ENB", "VSS", "G1"),
     ]
     en = {}
     for name, flavour, nf, w_f, l_g, x0, g, s, d in en_spec:
         en[name] = c.draw_mos_row(
             b, name, flavour, nf, w_f, l_g, x0, 0.0, g, s, d, draw_well=False
         )
-    well3 = (170.0, -1.6, en["Mbdis"]["activ"][2] + 1.6, 20.0 + c.NW_C1)
+    well3 = (170.0, -1.6, en["Minvp"]["activ"][2] + 1.6, 20.0 + c.NW_C1)
     b.box(c.L_NWELL, *well3)
     b.well_label("VIN", well3[0] + 0.4, well3[3] - 0.4)
     c.draw_tap_bar(b, "nwell", 171.4, 0.0, 172.2, 20.0, "VIN")
     riser(b, "VIN", 171.8, 18.0, 1)
+    c.draw_tap_bar(b, "psub", 209.0, 0.0, 209.8, 5.0, "VSS")
+    riser(b, "VSS", 209.4, 4.0, 1)
     for name, flavour, nf, w_f, l_g, x0, g, s, d in en_spec:
         dev = en[name]
         pitch = c.SD_W_UM + l_g
