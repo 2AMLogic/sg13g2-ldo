@@ -3,8 +3,15 @@
 * Widens ngspice's printed .meas mantissa (default 6 significant digits) to 10;
 * klt reports the printed token verbatim and the fleet runner's klt predates
 * options.ngspice_init, so the setting is made here, ahead of the analysis
-* klt's own .control block. Formatting only. No OSDI preload: the HBT models
-* (VBIC level 9, Gummel-Poon level 1) are native ngspice models.
+* klt's own .control block. No OSDI preload: the HBT models (VBIC level 9,
+* Gummel-Poon level 1) are native ngspice models.
+*
+* gminsteps=0 skips ngspice's dynamic-gmin homotopy and goes straight to source
+* stepping. Probed at pnpMPA/servo typ/125C: dynamic gmin stepping fails
+* ("Warning: Dynamic gmin stepping failed") and source stepping then converges;
+* with gminsteps=0 the warning is gone and every printed .meas is identical to
+* the digit. It only selects which homotopy finds the same DC point.
+.options gminsteps=0
 .control
 set measureprec=9
 .endc
