@@ -491,6 +491,37 @@ jobs:
           # #120) applied around the hash-pinned generator.
           python3 sim/ldo-cmos5l-pvt-sweep/item5_grid.py --check
 
+      - name: Disabled-state supply current read-out reproduces the DR-0008 numbers (#133)
+        # Offline, stdlib-only: no simulator and no PDK. Runs startup_offstate.py
+        # on the committed startup-grid record and asserts the point count and
+        # min / median / max the DR-0008 and pvt-sweep README text cite. The
+        # script verifies each trace against the csv's trace_sha256 itself.
+        # Tolerance: relative 1e-6 (the script prints 9 significant figures).
+        run: |
+          python3 sim/ldo-cmos5l-pvt-sweep/startup_offstate.py 20261011-031426-df3f802 \
+            >/tmp/offstate.csv 2>/tmp/offstate.summary
+          cat /tmp/offstate.summary
+          python3 - <<'PY'
+          import re, sys
+          s = open("/tmp/offstate.summary").read()
+          m = re.fullmatch(
+              r"# (\d+) points; min (\S+) A \((.*?)\); median (\S+) A; max (\S+) A \((.*?)\)\s*", s)
+          if not m:
+              sys.exit(f"unparseable summary: {s!r}")
+          n, lo, _, med, hi, where = int(m[1]), float(m[2]), m[3], float(m[4]), float(m[5]), m[6]
+          want = {"min": (lo, 2.00000305e-06), "median": (med, 2.00123501e-06),
+                  "max": (hi, 2.26401144e-06)}
+          bad = [f"{k}: {got:.9g} != {exp:.9g}" for k, (got, exp) in want.items()
+                 if abs(got - exp) > 1e-6 * exp]
+          if n != 135:
+              bad.append(f"points: {n} != 135")
+          if where != "ff/125C/res_bcs/3.63 V":
+              bad.append(f"max corner: {where!r} != 'ff/125C/res_bcs/3.63 V'")
+          if bad:
+              sys.exit("DR-0008 disabled-state current drifted: " + "; ".join(bad))
+          print("disabled-state current matches DR-0008 (135 points, rel tol 1e-6)")
+          PY
+
       - name: Row-10 margin classification (DR-0014; byte-check against the committed loop-gain traces)
         # Offline, stdlib-only (#126): no simulator and no PDK. Re-derives the
         # classification from the committed traces, cross-checks it against the
