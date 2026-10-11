@@ -236,7 +236,7 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:bc48248e1d2dca3a7c2e713b97c3a4ff2c399d2a0ad66588a9a1f3056df93ee5",
+        "content_hash": "sha256:26bea9d8a762fd74562eaa65d4543cd2695c4e73badde4655194e32dc909ad61",
         "input_verified": true,
         "exit_status": 0,
         "artifact_binding": {
@@ -245,7 +245,7 @@
             "path": "signoff/evidence/item9-testbenches.inventory.json",
             "scope": "repo"
           },
-          "content_hash": "sha256:bc48248e1d2dca3a7c2e713b97c3a4ff2c399d2a0ad66588a9a1f3056df93ee5",
+          "content_hash": "sha256:26bea9d8a762fd74562eaa65d4543cd2695c4e73badde4655194e32dc909ad61",
           "input_verified": true,
           "summary": "The shipped ngspice testbenches/templates, their cold-start entry points (run_*.sh) and experiment READMEs are committed; every constituent hash matches the inventory and each README names its entry point. Testbenches are NOT re-run by this attestation and no measurement result is claimed.",
           "source": "signoff/evidence/item9-testbenches.inventory.json"
