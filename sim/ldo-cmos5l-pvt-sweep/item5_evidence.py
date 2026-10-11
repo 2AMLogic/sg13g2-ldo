@@ -41,7 +41,7 @@ REPO = os.path.abspath(os.path.join(HERE, "..", ".."))
 sys.path.insert(0, HERE)
 import dc_metrics as dcm  # noqa: E402
 
-RECORD_ID = "20261011-051956-eda9285"
+RECORD_ID = "20261011-070111-5391c68"
 RECORD_CSV = f"sim/ldo-cmos5l-pvt-sweep/records/{RECORD_ID}.csv"
 RECORD_MD = f"sim/ldo-cmos5l-pvt-sweep/records/{RECORD_ID}.md"
 CORNERS_DIR = f"sim/ldo-cmos5l-pvt-sweep/corners/{RECORD_ID}"
@@ -60,7 +60,7 @@ DESIGN_PINS = {
     DESIGN_NETLISTS[0]: "08a7b857e1fad43dd7af1f575de97853a058e85541601ecc47567fbc28dbae57",
     DESIGN_NETLISTS[1]: "75ee39ce0c48b54cab6c8a31acd1f199c37c1ccd1ac074a3515dee81cc656fb4",
 }
-RECORD_CSV_PIN = "2777f91561a26877ceeb650aa18bb42f45e91d719ab0e0d7ad1bcaaf7edbcc3c"
+RECORD_CSV_PIN = "b7a41cfeccfe3100758daf0ef8de87ea765ef4d77a1c987aba4d57f373eb6e6d"
 OUT_DIR = f"sim/ldo-cmos5l-pvt-sweep/evidence/{RECORD_ID}"
 
 CORNERS = ["tt", "ff", "ss", "sf", "fs"]
@@ -499,7 +499,7 @@ def main():
             "raw_dc_grids": raw_hashes,
         },
         "provenance_caveats": [
-            "Record 20261011-051956-eda9285 was made by run_sweep.sh --batch at issue #89 branch commit eda9285, which may not resolve after a squash merge. Four of its 22 fleet requests reuse the byte-identical, completed reports of an interrupted first run of the same commit's design (corners/20261011-051956-eda9285/_batch/reused-reports.tsv); the other 18 were submitted afresh. Its netlist snapshots .include the design by an absolute worktree path, but the record md states the sha256 of both design netlists it ran against, and those equal the pins here, so netlist freshness is recorded rather than inferred.",
+            "Record 20261011-070111-5391c68 was made by run_sweep.sh --batch --loopgain-ac-max=10g at issue #128 branch commit 5391c68, which may not resolve after a squash merge. All 22 of its fleet requests were submitted afresh (no reused reports). Its netlist snapshots .include the design by an absolute worktree path, but the record md states the sha256 of both design netlists it ran against, and those equal the pins here, so netlist freshness is recorded rather than inferred. Only the loop-gain AC ceiling differs from the previous record 20261011-051956-eda9285 (10 GHz instead of 100 MHz); every DC and PSRR column of the PVT csv is identical to it.",
             "Every point ran on the EDA batch fleet (runner klt 0.5.0, ngspice-46) at PDK commit 607e18d (sim/pdk-cmos5l.json). The six OSDI binaries, including cap_cmomi, were staged from the submitting host's build, and their sha256 appears in every per-point log. The rawfile-to-wrdata reduction reproduced six points of the local ngspice-46 record 20260917-023832-7061e8f byte-for-byte (sim/ldo-cmos5l-pvt-sweep/backend-validation/20261010-025044/).",
             "The design under test carries the #67 EN interface (DR-0008) and the #89 G1 disable pull-down inside the error amplifier (DR-0008 addendum), with EN tied to VIN in every bench, so the pull-down is off. The disabled state is not part of this grid.",
             "Cap model: cornerCAP.lib maps every section to one nominal cap_cmomi, so Cc has no process-corner spread; this affects the AC rows (6, 10) not the DC grid used here.",

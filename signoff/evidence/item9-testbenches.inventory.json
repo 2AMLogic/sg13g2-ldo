@@ -190,7 +190,11 @@
     },
     {
       "path": "sim/ldo-cmos5l-pvt-sweep/README.md",
-      "sha256": "sha256:8494cd9a71c1b3ad4ca9745fede5e0928189fd9a5499f6220d61978da9cce2d4"
+      "sha256": "sha256:80f4a7105e65e3d6a389ba1b80061e4323afa3e976f1b4c18d220d9131b57534"
+    },
+    {
+      "path": "sim/ldo-cmos5l-pvt-sweep/ac_sweep.py",
+      "sha256": "sha256:6f24f6372296653243196835e89f3a3c9957653a36fc0ed45eee5a18e4fa5002"
     },
     {
       "path": "sim/ldo-cmos5l-pvt-sweep/batch_backend.py",
@@ -206,7 +210,7 @@
     },
     {
       "path": "sim/ldo-cmos5l-pvt-sweep/run_sweep.sh",
-      "sha256": "sha256:9b6cee2621aa2b88871ce7f680b5b46ca2349b8cbb7809dfc9c036a058148e85"
+      "sha256": "sha256:feb3e2d97f13d29894bcd512953490949c1fbba29ec6ed7d151f4b894fe0c245"
     },
     {
       "path": "sim/ldo-cmos5l-pvt-sweep/startup_campaign.py",
@@ -230,7 +234,7 @@
     },
     {
       "path": "sim/ldo-cmos5l-pvt-sweep/testbench/tb_loopgain_cmos5l.spice.tmpl",
-      "sha256": "sha256:9c39a51bfaf2fb5bd172a562149b4283da5afff18bb1ddbf4c0f1301dedb676f"
+      "sha256": "sha256:b6473595524140f34f2cc565c2037cf57629ba102fe7638b6d51181549016b66"
     },
     {
       "path": "sim/ldo-cmos5l-pvt-sweep/testbench/tb_psrr_cmos5l.spice.tmpl",

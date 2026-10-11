@@ -126,7 +126,10 @@ classification of the selected record's own committed loop-gain traces:
 
 Row 10's PM and GM metrics then come from that classification. The
 pre-DR-0014 first-crossing reading is still shown, labelled as superseded
-context, never as a verdict. Today no trace bounds the 100 MHz sweep ceiling,
+context, never as a verdict. The sweep ceiling is read from the last frequency of
+the sha256-verified traces (all 45 must agree) and quoted in the report. Today
+no trace bounds the sweep ceiling (10 GHz for the selected record, #128: the
+loop gain flattens at +0.4..+1.2 dB and drifts down about 0.5 dB per decade),
 so both metrics are `ambiguous` at all 45 points (`ceiling_unbounded`), and the
 row stays `ambiguous` and Open.
 

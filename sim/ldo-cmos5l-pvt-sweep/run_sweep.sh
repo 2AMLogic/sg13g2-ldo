@@ -13,6 +13,10 @@
 #     dynamic DoE (load x Cout x ESR) on the batch fleet; README.md
 #     "Dynamic DoE" (refinement: --doe-extra/--doe-only-extra/--doe-base).
 #
+#   sim/ldo-cmos5l-pvt-sweep/run_sweep.sh --batch --loopgain-ac-max=10g   # issue #128
+#     loop-gain AC sweep ceiling (default 100meg; also SWEEP_LOOPGAIN_AC_MAX;
+#     exact power of ten, 20 points/decade, 1 Hz floor -- ac_sweep.py).
+#
 #   sim/ldo-cmos5l-pvt-sweep/run_sweep.sh --check-env   # CI-weight preflight:
 #     generates + syntax-checks one netlist per bench (mos_tt/27C), without
 #     running the full corner grid or writing a records/ entry.
@@ -101,6 +105,13 @@ DOE_BASE=""
 # in both modes; only the step that runs the simulator changes. See
 # batch_backend.py's docstring and README.md "Batch backend".
 BATCH=0
+# --loopgain-ac-max=<f> (issue #128): upper end of the loop-gain AC sweep,
+# default 100meg (the historical `ac dec 20 1 100meg`). Also settable as
+# SWEEP_LOOPGAIN_AC_MAX. Must be an exact power of ten (ac_sweep.py); the
+# floor (1 Hz) and 20 points/decade are fixed. It is rendered into
+# tb_loopgain_cmos5l.spice.tmpl and sets the loop-gain completeness row
+# count. The PSRR bench is unaffected.
+LOOPGAIN_AC_MAX="${SWEEP_LOOPGAIN_AC_MAX:-100meg}"
 for arg in "$@"; do
   case "${arg}" in
     --check-env) CHECK_ENV=1 ;;
@@ -110,12 +121,23 @@ for arg in "$@"; do
     --doe-only-extra) DOE_ONLY_EXTRA=1 ;;   # with --doe-extra: simulate only the refinement points
     --doe-base=*) DOE_BASE="${arg#--doe-base=}" ;;   # record id whose corners/ the analysis also reads
     --batch) BATCH=1 ;;
+    --loopgain-ac-max=*) LOOPGAIN_AC_MAX="${arg#--loopgain-ac-max=}" ;;
     -h|--help) sed -n '2,40p' "${BASH_SOURCE[0]}"; exit 0 ;;
     *) echo "run_sweep.sh: unknown argument '${arg}'" >&2; exit 2 ;;
   esac
 done
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Validate and canonicalise the loop-gain ceiling before anything else runs.
+LG_AC_MAX="$(python3 "${SCRIPT_DIR}/ac_sweep.py" ceiling "${LOOPGAIN_AC_MAX}")" || {
+  echo "run_sweep.sh: invalid --loopgain-ac-max / SWEEP_LOOPGAIN_AC_MAX '${LOOPGAIN_AC_MAX}'." >&2
+  exit 2
+}
+if [[ ${DOE_GENERATE} -eq 1 && "${LG_AC_MAX}" != "100meg" ]]; then
+  echo "run_sweep.sh: --loopgain-ac-max other than the default is not supported with --doe-generate" >&2
+  echo "run_sweep.sh: (dynamic_doe.py expects the default sweep)." >&2
+  exit 2
+fi
 SIM_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 REPO_ROOT="$(cd "${SIM_DIR}/.." && pwd)"
 
@@ -298,7 +320,20 @@ assert_loopgain_topology_sync
 # these, every point fails loudly -- the same "fail loudly rather than go
 # silently stale" posture assert_loopgain_topology_sync() takes above.
 EXPECT_ROWS_DC=820
-EXPECT_ROWS_AC=161
+EXPECT_ROWS_AC=161      # psrr bench (ac dec 20 1 100meg)
+# Loop-gain bench: derived from the configured ceiling (issue #128) and
+# cross-checked against the rendered template line below, so a template and
+# a count that drift apart fail loudly here instead of at every point.
+EXPECT_ROWS_LG="$(python3 "${SCRIPT_DIR}/ac_sweep.py" rows "${LG_AC_MAX}")"
+LG_AC_LINE="$(python3 "${SCRIPT_DIR}/ac_sweep.py" line "${LG_AC_MAX}")"
+if ! grep -qxF "ac dec 20 1 @@LG_AC_MAX@@" "${SCRIPT_DIR}/testbench/tb_loopgain_cmos5l.spice.tmpl"; then
+  echo "run_sweep.sh: tb_loopgain_cmos5l.spice.tmpl no longer has 'ac dec 20 1 @@LG_AC_MAX@@'; update ac_sweep.py/EXPECT_ROWS_LG with it." >&2
+  exit 3
+fi
+if [[ ${LG_AC_MAX} == 100meg && ${EXPECT_ROWS_LG} -ne ${EXPECT_ROWS_AC} ]]; then
+  echo "run_sweep.sh: default loop-gain row count ${EXPECT_ROWS_LG} != ${EXPECT_ROWS_AC}." >&2
+  exit 3
+fi
 
 if [[ ${CHECK_ENV} -eq 1 ]]; then
   echo "run_sweep.sh: --check-env: syntax-checking all three benches at mos_tt/27C, no records written."
@@ -316,6 +351,7 @@ if [[ ${CHECK_ENV} -eq 1 ]]; then
       -e "s|@@RES_SECTION@@|res_typ|g" \
       -e "s|@@CAP_SECTION@@|cap_typ|g" \
       -e "s|@@TEMP@@|27|g" \
+      -e "s|@@LG_AC_MAX@@|${LG_AC_MAX}|g" \
       -e "s|@@CC_W@@|nominal (--check-env)|g" \
       -e "s|@@LOAD_A@@|0.001|g" \
       -e "s|@@COUT_F@@|1u|g" \
@@ -328,7 +364,7 @@ if [[ ${CHECK_ENV} -eq 1 ]]; then
     log="${tmp}/${bench}_check.log"
     case "${bench}" in
       dcsweep)  vargs=(--wrdata "${tmp}/${bench}_check_dc.csv:8:${EXPECT_ROWS_DC}") ;;
-      loopgain) vargs=(--wrdata "${tmp}/${bench}_check_ac.csv:4:${EXPECT_ROWS_AC}" --marker LOOPGAIN_VOUT_OP) ;;
+      loopgain) vargs=(--wrdata "${tmp}/${bench}_check_ac.csv:4:${EXPECT_ROWS_LG}" --marker LOOPGAIN_VOUT_OP) ;;
       psrr)     vargs=(--wrdata "${tmp}/${bench}_check_ac.csv:2:${EXPECT_ROWS_AC}") ;;
     esac
     preflight_bench_ok "${bench}" "${netlist}" "${log}" "${vargs[@]}" || rc=1
@@ -436,6 +472,7 @@ gen_netlist() {
     -e "s|@@RES_SECTION@@|${res_section}|g" \
     -e "s|@@CAP_SECTION@@|${cap_section}|g" \
     -e "s|@@TEMP@@|${temp}|g" \
+    -e "s|@@LG_AC_MAX@@|${LG_AC_MAX}|g" \
     -e "s|@@CC_W@@|${cc_w_desc}|g" \
     -e "s|@@DESIGN_NETLIST@@|${design_netlist}|g" \
     -e "s|@@LOAD_A@@|${load_a}|g" \
@@ -480,6 +517,7 @@ screen_point() {
   local out_csv expect_rows got_rows
   case "${point_id}" in
     dcsweep_*) out_csv="${CORNERS_OUT}/${point_id}_dc.csv"; expect_rows=${EXPECT_ROWS_DC} ;;
+    loopgain_*) out_csv="${CORNERS_OUT}/${point_id}_ac.csv"; expect_rows=${EXPECT_ROWS_LG} ;;
     *)         out_csv="${CORNERS_OUT}/${point_id}_ac.csv"; expect_rows=${EXPECT_ROWS_AC} ;;
   esac
   total=$((total + 1))
@@ -512,6 +550,15 @@ screen_point() {
   got_rows=$(wc -l < "${out_csv}" 2>/dev/null || echo 0)
   if [[ ! -s "${out_csv}" || ${got_rows} -ne ${expect_rows} ]]; then
     echo "run_sweep.sh: FAILED ${point_id} -- ${out_csv} has ${got_rows} rows, expected ${expect_rows}" >&2
+    failed_points+=("${point_id}")
+    return 1
+  fi
+
+  # Loop-gain traces must also span exactly the configured floor..ceiling
+  # (issue #128): the row count alone would accept a wrong-range sweep.
+  if [[ "${point_id}" == loopgain_* ]] \
+     && ! python3 "${SCRIPT_DIR}/ac_sweep.py" check-trace "${out_csv}" "${LG_AC_MAX}"; then
+    echo "run_sweep.sh: FAILED ${point_id} -- loop-gain trace does not match the configured ${LG_AC_LINE}" >&2
     failed_points+=("${point_id}")
     return 1
   fi
@@ -1295,7 +1342,12 @@ done
   echo "- **Result**: ${passed}/${total} points PASS (ngspice exit 0, no"
   echo "  convergence/model-load error strings in the log, and the expected"
   echo "  full result set written -- ${EXPECT_ROWS_DC} rows per dcsweep point,"
-  echo "  ${EXPECT_ROWS_AC} per AC point)."
+  echo "  ${EXPECT_ROWS_LG} per loopgain point, ${EXPECT_ROWS_AC} per psrr point)."
+  echo "- **Loop-gain AC sweep** (issue #128): \`${LG_AC_LINE}\` (ceiling"
+  echo "  \`${LG_AC_MAX}\`, floor 1 Hz, 20 points/decade, ${EXPECT_ROWS_LG} rows per"
+  echo "  loopgain trace) in every loopgain deck, requested through"
+  echo "  \`--loopgain-ac-max\` / \`SWEEP_LOOPGAIN_AC_MAX\`. The psrr bench is"
+  echo "  \`ac dec 20 1 100meg\`."
   if [[ ${#failed_points[@]} -gt 0 ]]; then
     echo "- **Failed points**: ${failed_points[*]}"
   fi
