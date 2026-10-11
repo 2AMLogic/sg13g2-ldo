@@ -25,15 +25,14 @@ _None._
 
 Issues currently being built (`loom:building`).
 
-- **#64**: sim: parameterise loop-gain/PSRR benches over load, Cout and ESR for rows 3, 6, 10 dynamic coverage
-- **#101**: CI: run layout/run_flow.sh --check so committed layout reports cannot go stale
-- **#107**: Prevent repeated stale signoff evidence in agent PRs
+- **#89**: SG13CMOS5L erramp: pull down the floating Mn3 gate when EN is low (disabled supply current)
+- **#112**: Characterization: integrate measured startup failures into the row-9 report
 
 ## PRs Awaiting Review
 
 PRs waiting on Judge (`loom:review-requested`).
 
-- **#109**: docs: surface signoff regeneration contract in CLAUDE.md and AGENTS.md (#107)
+_None._
 
 ## Approved (Awaiting Merge)
 
@@ -50,12 +49,14 @@ Issues carrying `loom:curated`.
 - **#57**: Post-layout: klt pex extraction of the LDO core and spec re-run on the extracted netlist (T1 item 7) *(curated)*
 - **#63**: SG13CMOS5L current limiter: topology and sizing design plan for row 8 *(curated)*
 - **#64**: sim: parameterise loop-gain/PSRR benches over load, Cout and ESR for rows 3, 6, 10 dynamic coverage *(curated)*
+- **#71**: Clarify row 4 branch status: ratified target, SG13CMOS5L pass, SG13G2 gap *(curated)*
+- **#89**: SG13CMOS5L erramp: pull down the floating Mn3 gate when EN is low (disabled supply current) *(curated)*
 
 ## Proposed (Architect / Hermit)
 
 - **#62**: SG13CMOS5L startup: add enable input and transient testbench for spec row 9 *(architect)*
 - **#63**: SG13CMOS5L current limiter: topology and sizing design plan for row 8 *(architect)*
-- **#102**: CI: enforce the append-only rule for sim/ evidence records *(architect)*
+- **#120**: sim: validate complete DC grids before live sweep summaries *(architect)*
 
 ## Epics
 
@@ -69,10 +70,10 @@ Issues carrying `loom:curated`.
 | Operator merge-risk holds | 0 |
 | Operator priority | 0 |
 | Ready (`loom:issue`) | 0 |
-| In Progress (`loom:building`) | 3 |
-| PRs awaiting review | 1 |
+| In Progress (`loom:building`) | 2 |
+| PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
-| Curated | 5 |
+| Curated | 7 |
 | Architect / Hermit proposals | 3 |
 | Active epics | 2 |
 <!-- guide:plan-body:end -->

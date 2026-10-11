@@ -4,6 +4,18 @@ Chronological record of recently merged pull requests and closed issues, maintai
 
 ### 2026-10-10
 
+- **PR #118**: test: direct contract tests with negative controls for ac_metrics.py
+- **PR #116**: sim: version the row-2 MC bench for the six-port EN core (#88)
+- **PR #115**: test: offline unit tests for layout/ and design/ helpers (#114)
+- **PR #111**: ci: enforce the append-only rule for sim/ evidence records (#102)
+- **PR #110**: CI: gate layout/run_flow.sh --check; fix check mode passing on stale artifacts (#101)
+- **PR #109**: docs: surface signoff regeneration contract in CLAUDE.md and AGENTS.md (#107)
+- **Issue #117** (closed): test: unit tests with negative controls for sim ac_metrics.py (PM/GM/PSRR parsers)
+- **Issue #114** (closed): Add offline unit tests with negative controls for layout/ and design/ helpers
+- **Issue #107** (closed): Prevent repeated stale signoff evidence in agent PRs
+- **Issue #102** (closed): CI: enforce the append-only rule for sim/ evidence records
+- **Issue #101** (closed): CI: run layout/run_flow.sh --check so committed layout reports cannot go stale
+- **Issue #88** (closed): sim: migrate tb_row2_accuracy.spice (Monte Carlo) to the six-port EN core
 - **PR #108**: spec+sim: propose DR-0012 row-4 dropout measurement and re-score on a 5 mV batch campaign (#70)
 - **Issue #70** (closed): spec: define how dropout is measured for row 4 (worst corner is 0.255 V at 1 % loss, a 45 mV margin)
 - **PR #105**: SG13CMOS5L startup measurements: transient bench, evaluator and bounded PVT campaign (#69)
