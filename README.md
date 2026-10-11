@@ -83,7 +83,17 @@ design/        schematics / netlists (xschem)
 sim/           testbenches + PVT corner results (ngspice)
 layout/        GDS + DRC/LVS reports (klayout-tools driven)
 measurements/  silicon characterization (empty until tape-out)
+signoff/       graded T1 report, evidence inventories, manifest
+ratification/  ee-key and market-key review skills (spec-row ratification)
+docs/          supporting proposals (docs/chipalooza/challenge-6-proposal.md)
+reuse.lock.json  sibling-block reuse lock
+WORK_PLAN.md   roadmap generated from Loom label state
+WORK_LOG.md    log of merged PRs and closed issues
 ```
+
+Regeneration contract for `signoff/`: [signoff/README.md#regenerating](signoff/README.md#regenerating).
+The `ratification/` skills produced the ratified row recorded in
+[DR-0007](spec/decision-records/DR-0007-target-spec-row-ratification.md).
 
 ## License
 
