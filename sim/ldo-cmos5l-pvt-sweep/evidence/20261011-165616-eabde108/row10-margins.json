@@ -6,8 +6,8 @@
   "record": {
     "id": "20261011-165616-eabde108",
     "csv": "sim/ldo-cmos5l-pvt-sweep/records/20261011-165616-eabde108.loopgain2.csv",
-    "sha256": "9ed0d200e98140558e597593bf9f3fa47e42878706f9e93d0e742a14efc4d736",
-    "conditions": "Vin 3.30 V, 1 mA, Cout 1 uF, ESR 0, Cc nominal; 45-point PVT grid; loop gain reconstructed from the two-injection (Middlebrook) benches tb_loopgain2v/tb_loopgain2i by loopgain2.py (issue #135)"
+    "sha256": "72f6b2fc8b856202a5b0c98bd90343a444d043d155b436448433a393fda3b72c",
+    "conditions": "Vin 3.30 V, 1 mA, Cout 1 uF, ESR 0, Cc nominal; 45-point PVT grid; Middlebrook loop gain T = (Tv*Ti - 1)/(Tv + Ti + 2) reconstructed from the two-injection benches tb_loopgain2v/tb_loopgain2i by loopgain2.py (issue #135), resolved prefix only"
   },
   "bounds": {
     "pm_deg": 45.0,
@@ -18,70 +18,64 @@
     "sim/ldo-cmos5l-pvt-sweep/ac_metrics.py": "6e96859b839bcb19aaa702eb20a593bfc8914b7b388a8783298e416e65fefd5e",
     "sim/ldo-cmos5l-pvt-sweep/dc_metrics.py": "782319eb4ef619b040f3a4001af67a10def775c9cf17e37fe15b4dd8f3340c81",
     "sim/ldo-cmos5l-pvt-sweep/row10_margins.py": "a6f6d1129095b2fcb73c8c9462eb54b7588259d4118aa932d86c5b01f2a227f7",
-    "sim/ldo-cmos5l-pvt-sweep/row10_loopgain2.py": "218a6ad5b87650c994e1066eea1b474364beae31c19da4a5660839607dfc4e93",
-    "sim/ldo-cmos5l-pvt-sweep/loopgain2.py": "955370e05793f9456696f2f09df783e29246722ab9230453e7cb2748faca7c36"
+    "sim/ldo-cmos5l-pvt-sweep/row10_loopgain2.py": "908582b07b669654b6c6ebc9500268597a92edf01d1dedbd0dc3b258994db8a3",
+    "sim/ldo-cmos5l-pvt-sweep/loopgain2.py": "22e8900632c48b90bbca09373f6656f2a91f7304c9328cb81c097e71c05e68df"
   },
   "traces_verified": 45,
   "cross_checks": "every trace reproduces its record's 0 dB crossing count, first-crossing PM, recorded worst-crossing PM and first -180 deg GM; every recorded PM/GM miss classifies as fail (no-loosening guard)",
   "csv": {
     "path": "sim/ldo-cmos5l-pvt-sweep/evidence/20261011-165616-eabde108/row10-margins.csv",
-    "sha256": "e695a89e414e5a609328b8ac7ab392200cd982bfc8d1c2fe1ac7096ee0c6829b"
+    "sha256": "b6e0aa5424165f3fcfcb91894a6b253b5021f7dbf78f82172d7bee16b798098b"
   },
   "summary_all": {
     "points": 45,
     "pm_verdicts": {
-      "ambiguous": 14,
-      "pass": 31
+      "ambiguous": 45
     },
     "gm_verdicts": {
-      "ambiguous": 14,
-      "pass": 31
+      "ambiguous": 45
     },
     "pm_reasons": {
-      "": 31,
-      "ceiling_unbounded": 14
+      "reconstruction_unresolved_above_cut": 45
     },
     "gm_reasons": {
-      "": 31,
-      "ceiling_unbounded": 14
+      "reconstruction_unresolved_above_cut": 45
     },
     "nyquist_class": {
-      "stable": 31,
-      "undetermined": 14
+      "undetermined": 45
     },
     "n_zero_db_crossings": {
       "1": 45
     },
     "n_critical_crossings": {
-      "2": 32,
-      "4": 13
+      "1": 45
     },
     "pm_deg_range": {
-      "min": 53.9064815,
-      "max": 77.0286541
+      "min": 53.8652207,
+      "max": 76.7787006
     },
     "first_crossing_margin_deg_range": {
-      "min": 53.9064815,
-      "max": 77.0286541
+      "min": 53.8652207,
+      "max": 76.7787006
     },
     "later_crossing_margin_deg_range": null,
     "gm_db_range": {
-      "min": 20.5603024,
-      "max": 39.1327036
+      "min": 18.4128456,
+      "max": 38.2567132
     },
     "low_end_ok": 45,
     "low_end_gain_db_range": {
-      "min": 121.419267,
-      "max": 124.703169
+      "min": 121.419266,
+      "max": 124.703168
     },
-    "ceiling_bounded": 31,
+    "ceiling_bounded": 45,
     "ceiling_gain_db_range": {
-      "min": -300.0,
-      "max": -300.0
+      "min": -145.425784,
+      "max": -140.827046
     },
     "ceiling_last_decade_change_db_range": {
-      "min": -86.750203,
-      "max": 0.0
+      "min": -79.1307865,
+      "max": -70.7821869
     }
   },
   "subset": {
@@ -112,5 +106,10 @@
     "no ratification: DR-0014 is proposed and row 10 stays Open (DR-0007)",
     "no claim about frequencies above the sweep ceiling or between sampled operating points"
   ],
-  "method": "two-injection (Middlebrook) reconstruction (loopgain2.py); classification rules unchanged (DR-0014, proposed; row 10 stays Open)"
+  "method": "two-injection Middlebrook loop gain (loopgain2.py), resolved prefix only; classification rules unchanged (DR-0014, proposed; row 10 stays Open)",
+  "resolution_overlay": {
+    "reason": "reconstruction_unresolved_above_cut",
+    "points_truncated_below_sweep_ceiling": 45,
+    "rule": "a point whose reconstruction is truncated below the sweep ceiling is reported ambiguous (pass -> ambiguous; fail unchanged); its GM above-ceiling bound is withdrawn and its Nyquist bookkeeping is undetermined. The ceiling columns describe the END OF THE RESOLVED PREFIX, not the 10 GHz sweep ceiling."
+  }
 }

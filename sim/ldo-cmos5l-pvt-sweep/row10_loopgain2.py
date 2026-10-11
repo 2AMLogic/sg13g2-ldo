@@ -14,6 +14,18 @@ trace path. The classification rules themselves are the unchanged
 ac_metrics.classify_margins -- no threshold, ceiling-floor, monotonicity or
 crossing rule is touched, and row 10 stays Open either way.
 
+Resolution overlay. loopgain2.py writes only the RESOLVED prefix of each
+reconstruction (1 Hz up to the first frequency whose Middlebrook loop gain
+is below the export-rounding bound); nothing is clamped or invented. The
+unchanged classifier therefore judges its premises at the end of that
+prefix, not at the 10 GHz sweep ceiling. This wrapper never lets that turn
+into a pass: for every point whose reconstruction is truncated below the
+sweep ceiling it reports PM and GM `ambiguous` with the extra reason
+`reconstruction_unresolved_above_cut` (a `fail` stays `fail`: a miss inside
+the resolved band is a miss), withdraws the GM above-ceiling bound and sets
+the Nyquist bookkeeping to `undetermined`. It can only make a verdict more
+conservative.
+
     python3 sim/ldo-cmos5l-pvt-sweep/row10_loopgain2.py --record <rid>
     python3 sim/ldo-cmos5l-pvt-sweep/row10_loopgain2.py --check   # CI: byte-compare
 
@@ -40,8 +52,46 @@ SELF = f"{rm.SIM}/row10_loopgain2.py"
 DS = "legacy"   # the 45-point layout the classifier machinery expects
 
 CONDITIONS = ("Vin 3.30 V, 1 mA, Cout 1 uF, ESR 0, Cc nominal; 45-point PVT grid; "
-              "loop gain reconstructed from the two-injection (Middlebrook) "
-              "benches tb_loopgain2v/tb_loopgain2i by loopgain2.py (issue #135)")
+              "Middlebrook loop gain T = (Tv*Ti - 1)/(Tv + Ti + 2) reconstructed from the "
+              "two-injection benches tb_loopgain2v/tb_loopgain2i by loopgain2.py (issue #135), "
+              "resolved prefix only")
+UNRESOLVED_REASON = "reconstruction_unresolved_above_cut"
+
+
+def _overlay(m, info):
+    """Downgrade a classification of a truncated (resolved-prefix) trace.
+    Only ever pass -> ambiguous; fail is untouched."""
+    if not m or not m.get("valid") or info["first_unresolved_hz"] is None:
+        return m
+    for k in ("pm", "gm"):
+        v = m[k]
+        if v["verdict"] != "fail":
+            v["verdict"] = "ambiguous"
+            v["reasons"] = list(v["reasons"]) + [UNRESOLVED_REASON]
+    m["gm"]["above_ceiling_lower_bound_db"] = None
+    m["nyquist"]["class"] = "undetermined"
+    return m
+
+
+def _resolution_info(record_csv):
+    """trace path -> resolution columns of the comparison CSV."""
+    out = {}
+    with open(record_csv, newline="") as fh:
+        for r in csv.DictReader(fh):
+            if "lg2_first_unresolved_hz" not in r:
+                raise rm.Row10Error(f"{record_csv}: no lg2_first_unresolved_hz column "
+                                    "(pre-resolution schema); regenerate with loopgain2.py")
+            fu = r["lg2_first_unresolved_hz"]
+            out[trace_path_abs(r)] = {
+                "first_unresolved_hz": float(fu) if fu not in ("", None) else None}
+    return out
+
+
+def trace_path_abs(r):
+    return os.path.abspath(os.path.join(rm.REPO, trace_path(_current_record[0], r)))
+
+
+_current_record = [None]
 
 
 def trace_path(record_id, r):
@@ -51,16 +101,25 @@ def trace_path(record_id, r):
 
 
 @contextlib.contextmanager
-def _patched(cfg, record_id):
+def _patched(cfg, record_id, res_info):
     saved_ds = rm.DATASETS[DS]
     saved_tp = rm.trace_path
+    saved_cm = rm.am.classify_margins
     rm.DATASETS[DS] = cfg
     rm.trace_path = lambda ds, r: trace_path(record_id, r)
+
+    def classify(path, **kw):
+        key = os.path.abspath(path)
+        if key not in res_info:   # fail closed: never classify without the resolution columns
+            raise rm.Row10Error(f"{path}: no resolution columns in the comparison CSV")
+        return _overlay(saved_cm(path, **kw), res_info[key])
+    rm.am.classify_margins = classify
     try:
         yield
     finally:
         rm.DATASETS[DS] = saved_ds
         rm.trace_path = saved_tp
+        rm.am.classify_margins = saved_cm
 
 
 def config(record_id, record_sha256):
@@ -97,6 +156,8 @@ def build(record_id, record_sha256):
     _committed_cache.clear()
     _committed_cache.extend(_other_wrappers(record_id))
     cfg = config(record_id, record_sha256)
+    _current_record[0] = record_id
+    res_info = _resolution_info(os.path.join(rm.REPO, cfg["record_csv"]))
     # rm.classify() reads the record csv with csv.DictReader and passes rows
     # to trace_path/cross_check; feed it the lg2-mapped rows by pointing the
     # dataset at a mapped COPY of the comparison csv.
@@ -125,7 +186,7 @@ def build(record_id, record_sha256):
             return saved_sha(os.path.join(rm.REPO, real_csv)) if path == mapped else saved_sha(path)
         row10_margins.sha256_file = sha_of
         try:
-            with _patched(cfg, record_id):
+            with _patched(cfg, record_id, res_info):
                 out = rm.build(DS)
         finally:
             row10_margins.sha256_file = saved_sha
@@ -136,10 +197,22 @@ def build(record_id, record_sha256):
     doc["record"]["csv"] = real_csv
     doc["classifier"][SELF] = rm.sha256_file(SELF)
     doc["classifier"][f"{rm.SIM}/loopgain2.py"] = rm.sha256_file(f"{rm.SIM}/loopgain2.py")
-    doc["method"] = ("two-injection (Middlebrook) reconstruction (loopgain2.py); "
+    doc["method"] = ("two-injection Middlebrook loop gain (loopgain2.py), resolved prefix only; "
                      "classification rules unchanged (DR-0014, proposed; row 10 stays Open)")
+    n_trunc = sum(1 for v in res_info.values() if v["first_unresolved_hz"] is not None)
+    doc["resolution_overlay"] = {
+        "reason": UNRESOLVED_REASON,
+        "points_truncated_below_sweep_ceiling": n_trunc,
+        "rule": ("a point whose reconstruction is truncated below the sweep ceiling is reported "
+                 "ambiguous (pass -> ambiguous; fail unchanged); its GM above-ceiling bound is "
+                 "withdrawn and its Nyquist bookkeeping is undetermined. The ceiling columns "
+                 "describe the END OF THE RESOLVED PREFIX, not the 10 GHz sweep ceiling."),
+    }
     out[f"{rm.OUT_NAME}.json"] = (json.dumps(doc, indent=2) + "\n").encode("utf-8")
-    out[f"{rm.OUT_NAME}.md"] = rm.render_md(doc).encode("utf-8")
+    md = rm.render_md(doc)
+    md += ("\nResolution overlay (`row10_loopgain2.py`): " + doc["resolution_overlay"]["rule"]
+           + f" Points truncated: {n_trunc} of {doc['traces_verified']}.\n")
+    out[f"{rm.OUT_NAME}.md"] = md.encode("utf-8")
     return out
 
 

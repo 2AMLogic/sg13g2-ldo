@@ -87,9 +87,11 @@ KNOWN_LETS = {
         "let vfbamp_re = real(v(fbamp))",
         "let vfbamp_im = imag(v(fbamp))",
     ],
-    # current-injection half: i(vmeas) = i_l (divider side -> load side
-    # through the 0 V ammeter) as a real/imag pair. wrdata layout: f, re il,
-    # f, im il (4 columns).
+    # current-injection half: i(vmeas) = i_m, the BRIDGE current through the
+    # 0 V ammeter (FB -> FBAMP), as a real/imag pair. The vector names keep
+    # the template's historical il_* spelling; the value is i_m, not the
+    # amplifier-side current (1 + i_m). wrdata layout: f, re i_m, f, im i_m
+    # (4 columns).
     "loopgain2i": [
         "let il_re = real(i(vmeas))",
         "let il_im = imag(i(vmeas))",
@@ -542,11 +544,15 @@ def submit_once(gdir):
 
 
 def cap_refused(gdir):
-    # Unreadable output (a refused/killed klt client can leave report.json
-    # missing or empty -- the campaign lost a whole run to exactly that) is
-    # treated like a cap refusal: `submit` re-submits the same request TO THE
-    # FLEET within its bounded budget, and if it never comes back the last
-    # exit code is reported per group below. It is never a local fallback.
+    # Unreadable output (report.json / klt-sim.stderr missing; submit_once
+    # creates both before klt starts, so a missing file is not something the
+    # klt client itself causes -- yet the campaign lost a whole run to an
+    # uncaught FileNotFoundError here) is treated like a cap refusal: `submit`
+    # re-submits the same request TO THE FLEET within its bounded budget,
+    # and if it never comes back the last exit code is reported per group
+    # below. It is never a local fallback. Caveat: if the first submission
+    # did reach the fleet, this can DOUBLE-SUBMIT the same request (bounded
+    # by the retry budget; still fleet-only; the later report wins).
     for fn in ("report.json", "klt-sim.stderr"):
         try:
             with open(os.path.join(gdir, fn), encoding="utf-8", errors="replace") as f:

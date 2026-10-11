@@ -24,15 +24,17 @@
 #                          loop intact behind a 0 V ammeter, shunt AC current
 #                          into the driven side (FBAMP).
 #
-# loopgain2.py then reconstructs the true loop transfer
-# T = (1 + Hi/Hv)/(1 + Hi) per frequency (Middlebrook combination; L = -T in
-# this repo's convention), validates every point against its control under
-# tolerances stated BEFORE the run (loopgain2.py header), writes the
-# reconstructed traces in the classic 4-column layout, and emits the
-# comparison CSV + diagnostics JSON. row10_loopgain2.py classifies the
-# reconstructed traces under the UNCHANGED DR-0014 rules. Nothing here
-# edits a threshold, a ceiling rule or a historical record; sim/ stays
-# append-only.
+# loopgain2.py then reconstructs Middlebrook's general (bilateral) loop gain
+# T = (Tv*Ti - 1)/(Tv + Ti + 2) per frequency (Tv = -v(fb)/v(fbamp),
+# Ti = -i_m/(1 + i_m); L = T in this repo's convention), bounds its
+# export-rounding resolution per frequency, validates every point against
+# its control under the tolerances stated in loopgain2.py's header, writes
+# the RESOLVED PREFIX of each trace in the classic 4-column layout, and
+# emits the comparison CSV + diagnostics JSON + record md.
+# row10_loopgain2.py classifies the traces under the UNCHANGED DR-0014
+# rules (a trace truncated below the ceiling is reported ambiguous).
+# Nothing here edits a threshold, a ceiling rule or a historical record;
+# sim/ stays append-only.
 #
 # The AC ceiling is the same validated runner input as run_sweep.sh's
 # (--loopgain-ac-max / SWEEP_LOOPGAIN_AC_MAX; default here 10g -- the whole
@@ -57,7 +59,7 @@ for arg in "$@"; do
   case "${arg}" in
     --validate) VALIDATE=1 ;;
     --loopgain-ac-max=*) LOOPGAIN_AC_MAX="${arg#--loopgain-ac-max=}" ;;
-    -h|--help) sed -n '2,38p' "${BASH_SOURCE[0]}"; exit 0 ;;
+    -h|--help) sed -n '2,53p' "${BASH_SOURCE[0]}"; exit 0 ;;
     *) echo "run_loopgain2.sh: unknown argument '${arg}'" >&2; exit 2 ;;
   esac
 done
@@ -142,7 +144,7 @@ BENCHES=(loopgain_ctl loopgain2v loopgain2i)
 declare -A BENCH_COLS=( [loopgain_ctl]=4 [loopgain2v]=8 [loopgain2i]=4 )
 
 screen_point() {  # <point_id> -- exit 0 iff log clean AND export complete
-  local point_id="$1" rc=0
+  local point_id="$1"
   local log="${CORNERS_OUT}/${point_id}.log"
   local csv="${CORNERS_OUT}/${point_id}_ac.csv"
   local bench="${point_id%%_[a-z][a-z]_*}"
@@ -212,20 +214,20 @@ sys.path.insert(0, script_dir)
 import loopgain2 as lg2
 import ac_metrics as am
 
-freqs, L, hv, hi, us, diag = lg2.reconstruct(f"{tmp}/val_loopgain2v_ac.csv",
-                                             f"{tmp}/val_loopgain2i_ac.csv")
-x = lg2.validate_against_control(freqs, L, hv, us, f"{tmp}/val_loopgain_ctl_ac.csv")
+rec = lg2.reconstruct(f"{tmp}/val_loopgain2v_ac.csv", f"{tmp}/val_loopgain2i_ac.csv")
+x = lg2.validate_against_control(rec, f"{tmp}/val_loopgain_ctl_ac.csv")
 combined = f"{tmp}/val_loopgain2_ac.csv"
-lg2.write_loopgain_trace(combined, freqs, L)
+lg2.write_loopgain_trace(combined, rec["freqs"][:rec["cut"]], rec["T"][:rec["cut"]])
 lg2m = am.loopgain_metrics(combined)
 ctlm = am.loopgain_metrics(f"{tmp}/val_loopgain_ctl_ac.csv")
-print(f"validate: u(1 Hz) = {diag['u_abs_at_1hz']:.3g}; u_max = {diag['u_abs_max']:.3g} "
-      f"at {diag['u_abs_max_hz']:.3g} Hz; min |1+Hi| = {diag['min_abs_1_plus_hi']:.3g}")
-print(f"validate: 2v-vs-control identity {x['v2ctl_max_rel_diff']:.3g} (tol {lg2.TOL_DECK_IDENTITY:g}); "
-      f"max |dB(L2)-dB(L1)| = {x['max_abs_db_diff']:.4g} dB at {x['max_abs_db_diff_hz']:.3g} Hz")
+d = rec["diag"]
+print(f"validate: resolved to {d['resolved_to_hz']:.3g} Hz; {d['n_resolved_above_cut']} resolved "
+      f"samples above the cut; bound above the cut {d['bound_db_above_cut']} dB")
+print(f"validate: Tv-vs-control identity {x['v2ctl_max_rel_diff']:.3g} (tol {lg2.TOL_DECK_IDENTITY:g}); "
+      f"LF agreement {x['lf_agree_max_rel']:.3g} (tol {lg2.TOL_LF_AGREE:g})")
 print(f"validate: control : PM {ctlm['phase_margin_deg']:.2f} deg, GM {ctlm['gain_margin_db']:.2f} dB, "
       f"{ctlm['n_0db_crossings']} 0 dB crossings, UGF {ctlm['unity_gain_freq_hz']:.4g} Hz")
-print(f"validate: two-inj : PM {lg2m['phase_margin_deg']:.2f} deg, GM {lg2m['gain_margin_db']:.2f} dB, "
+print(f"validate: Middlebrook T : PM {lg2m['phase_margin_deg']:.2f} deg, GM {lg2m['gain_margin_db']:.2f} dB, "
       f"{lg2m['n_0db_crossings']} 0 dB crossings, UGF {lg2m['unity_gain_freq_hz']:.4g} Hz")
 PYEOF
   echo "run_loopgain2.sh: --validate OK (all loopgain2.py tolerances held)"
@@ -397,122 +399,9 @@ for corner in "${CORNERS[@]}"; do
 done
 
 # --- Record md --------------------------------------------------------------- #
-python3 - "${SCRIPT_DIR}" "${RECORD_ID}" "${CORNERS_OUT}" "${CMP_CSV}" "${CMP_JSON}" \
-  "${BASELINE_RID}" "${MD_OUT}" "${LG_AC_MAX}" "${EXPECT_ROWS_LG}" \
-  "${NGSPICE_VERSION}" "${REPO_GIT_SHA}" <<'PYEOF'
-import csv, hashlib, json, math, os, subprocess, sys
-script_dir, rid, corners_dir, cmp_csv, cmp_json, base_rid, md_out, ceiling, nrows, ngspice, git_sha = sys.argv[1:12]
-sys.path.insert(0, script_dir)
-import loopgain2 as lg2
-
-REPO = os.path.abspath(os.path.join(script_dir, "..", ".."))
-rel = lambda p: os.path.relpath(p, REPO)
-sha = lambda p: hashlib.sha256(open(p, "rb").read()).hexdigest()
-
-rows = list(csv.DictReader(open(cmp_csv)))
-valid = [r for r in rows if r["valid"] == "True"]
-diag = json.load(open(cmp_json))
-base_cmp = json.load(open(os.path.join(os.path.dirname(cmp_json), "ctl-vs-baseline.json")))
-batch = json.load(open(os.path.join(corners_dir, "_batch", "backend.json")))
-
-def rng(key, rs=None):
-    vs = [float(r[key]) for r in (rs or valid) if r.get(key) not in ("", None)]
-    return f"{min(vs):.4g} .. {max(vs):.4g}" if vs else "--"
-
-def sha16(p):
-    return sha(p)[:16]
-
-jobs = {j["group"]: j.get("job_id") for j in batch["jobs"]}
-L = []
-L += [f"# Two-injection loop-gain comparison record `{rid}` (issue #135)", ""]
-L += ["SCHEMATIC-LEVEL diagnostic evidence, NOT a spec pass: the SG13CMOS5L loop gain was measured a second,",
-      "independent way (Middlebrook two-injection voltage+current, run as two AC analyses per point) to test",
-      f"whether the +1 dB plateau above the second 0 dB crossing in record `{base_rid}` belongs to the circuit",
-      "or to the single-injection bench's zero-gate-current assumption. Verdict per point below; DR-0014 rules",
-      "are UNCHANGED and row 10 stays Open either way. Append-only: nothing under records/, corners/,",
-      "netlist-snapshots/ or evidence/ was edited.", ""]
-L += ["## Method", "",
-      "- Voltage injection: `tb_loopgain2v_cmos5l.spice.tmpl` -- the same `Vbreak FB FBAMP 0 ac 1` series break",
-      "  as the single-injection bench, exporting the raw complex probes v(fb), v(fbamp).",
-      "- Current injection: `tb_loopgain2i_cmos5l.spice.tmpl` -- loop INTACT behind a 0 V ammeter",
-      "  `Vmeas FB FBAMP 0 dc 0`, shunt source `Iinx 0 FBAMP dc 0 ac 1` into the driven side.",
-      "- Reconstruction (`loopgain2.py`): Hv = v(fbamp)/v(fb); Hi = -i_m/(1 + i_m) = (1 - i_l)/i_l",
-      "  with i_m = i(vmeas) (the BRIDGE current, FB->FBAMP) and i_l = 1 + i_m (the load current);",
-      "  T = (1 + Hi/Hv)/(1 + Hi); L = -T. Full derivation, sign conventions and references in the experiment",
-      "  README, \"Loop-gain measurement method -- two-injection (Middlebrook) reconstruction\".",
-      "- Frequency axis: `" + f"ac dec 20 1 {ceiling}" + f"` ({nrows} rows), the baseline record's own axis.",
-      "- Underflow floor: frequencies where the true |T'| underflows double precision in the combination are",
-      "  clamped to -300 dB in the written trace (n_underflow per point in the comparison CSV); the raw",
-      "  complex exports are the source of record and reproduce the clamp bit-for-bit (`loopgain2.py check`).",
-      "- Tolerances (fixed BEFORE the run): deck identity 1e-6 rel; u(1 Hz) < 1e-3; below f_ugf/10 the methods may",
-      "  differ only by the measured loading (|L2-L1| <= 3|u| + 1e-6|L1|); |1 + Hi| >= 1e-4; orientation check at",
-      "  1 Hz. Any tolerance failure fails the point loudly (it never writes a silently wrong trace).", ""]
-L += ["## Provenance", "",
-      f"- Experiment: `sim/ldo-cmos5l-pvt-sweep/run_loopgain2.sh` (focused campaign; commit `{git_sha}`).",
-      f"- Backend: batch fleet only, `batch_backend.py`; {len(batch['jobs'])} klt sim requests, job ids:",
-      "".join(f"  {g}={j}" for g, j in sorted(jobs.items())),
-      f"- ngspice: `{ngspice}`.",
-      f"- Design netlists under test (unchanged from `{base_rid}`):",
-      f"  - `{rel(os.path.join(REPO, 'design/sg13cmos5l/netlist/ldo_core_cmos5l.spice'))}` sha256 `{sha16(os.path.join(REPO, 'design/sg13cmos5l/netlist/ldo_core_cmos5l.spice'))}...`",
-      f"  - `{rel(os.path.join(REPO, 'design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice'))}` sha256 `{sha16(os.path.join(REPO, 'design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice'))}...`",
-      f"- Campaign scripts/templates pinned by sha256 (first 16 hex): `run_loopgain2.sh` {sha16(os.path.join(script_dir, 'run_loopgain2.sh'))},"
-      f" `loopgain2.py` {sha16(os.path.join(script_dir, 'loopgain2.py'))},"
-      f" `tb_loopgain2v_cmos5l.spice.tmpl` {sha16(os.path.join(script_dir, 'testbench/tb_loopgain2v_cmos5l.spice.tmpl'))},"
-      f" `tb_loopgain2i_cmos5l.spice.tmpl` {sha16(os.path.join(script_dir, 'testbench/tb_loopgain2i_cmos5l.spice.tmpl'))},"
-      f" `tb_loopgain_cmos5l.spice.tmpl` {sha16(os.path.join(script_dir, 'testbench/tb_loopgain_cmos5l.spice.tmpl'))}.",
-      f"- Grid: 5 MOS corners x 3 temperatures x 3 resistor corners at the legacy operating point (Vin 3.30 V,",
-      f"  1 mA / 1 uF / 0 ohm, EN tied to VIN) = 45 points x 3 benches = 135 klt corners.",
-      f"- Historical-baseline tie: the campaign's own single-injection control vs the committed `{base_rid}`",
-      f"  trace at the same point: max |dB diff| = {base_cmp['max_abs_db_diff_over_points']:.3g} dB over all 45 points",
-      "  (same design bytes, PDK pin and analysis line; details in `evidence/" + rid + "/ctl-vs-baseline.json`).", ""]
-L += ["## Results (45 of 45 points valid)" if len(valid) == 45 and len(rows) == 45
-      else f"## Results ({len(valid)} of {len(rows)} points valid -- INVALID POINTS PRESENT)", "",
-      "| quantity | range over the 45 points |", "|---|---|",
-      f"| PM, single-injection control [deg] | {rng('ctl_phase_margin_deg')} |",
-      f"| PM, two-injection reconstruction [deg] | {rng('lg2_phase_margin_deg')} |",
-      f"| GM, control [dB] | {rng('ctl_gain_margin_db')} |",
-      f"| GM, two-injection [dB] | {rng('lg2_gain_margin_db')} |",
-      f"| 0 dB crossings, control | {rng('ctl_n_0db_crossings')} |",
-      f"| 0 dB crossings, two-injection | {rng('lg2_n_0db_crossings')} |",
-      f"| second 0 dB crossing, control [Hz] | {rng('ctl_second_crossing_hz')} |",
-      f"| second 0 dB crossing, two-injection [Hz] | {rng('lg2_second_crossing_hz')} |",
-      f"| loop gain at 1 GHz, control [dB] | {rng('ctl_db_at_1ghz')} |",
-      f"| loop gain at 1 GHz, two-injection [dB] | {rng('lg2_db_at_1ghz')} |",
-      f"| loop gain at the ceiling, control [dB] | {rng('ctl_db_at_ceiling')} |",
-      f"| loop gain at the ceiling, two-injection [dB] | {rng('lg2_db_at_ceiling')} |",
-      f"| PM delta (two-injection - control) [deg] | {rng('pm_delta_deg')} |",
-      f"| GM delta (two-injection - control) [dB] | {rng('gm_delta_db')} |",
-      f"| max dB(L2) - dB(L1) over the axis per point [dB] | {rng('max_abs_db_diff')} |",
-      f"| loading ratio u = Zt/Zl at 1 Hz | {rng('u_abs_at_1hz')} |",
-      f"| loading ratio u, max over the axis | {rng('u_abs_max')} |",
-      f"| u at 1 GHz | {rng('u_abs_at_1ghz')} |",
-      f"| u at the ceiling | {rng('u_abs_at_ceiling')} |",
-      f"| min abs(1 + Hi) over the axis | {rng('min_abs_1_plus_hi')} |",
-      f"| underflow-clamped frequencies per point | {rng('n_underflow')} |", ""]
-L += ["## Reading", ""]
-pmv = [float(r["lg2_phase_margin_deg"]) for r in valid]
-plateau_ctl = [float(r["ctl_db_at_1ghz"]) for r in valid]
-plateau_lg2 = [float(r["lg2_db_at_1ghz"]) for r in valid]
-ceil_ctl = [float(r["ctl_db_at_ceiling"]) for r in valid]
-ceil_lg2 = [float(r["lg2_db_at_ceiling"]) for r in valid]
-L += [f"- The two methods agree in-band: PM delta {rng('pm_delta_deg')} deg, GM delta {rng('gm_delta_db')} dB",
-      f"  (the reconstruction reproduces the control's in-band margins; the first crossings are the same loop).",
-      f"- Above the second crossing, at 1 GHz the control reads {min(plateau_ctl):.2f}..{max(plateau_ctl):.2f} dB while the",
-      f"  two-injection reconstruction reads {min(plateau_lg2):.2f}..{max(plateau_lg2):.2f} dB; at the ceiling",
-      f"  {min(ceil_ctl):.2f}..{max(ceil_ctl):.2f} vs {min(ceil_lg2):.2f}..{max(ceil_lg2):.2f} dB.",
-      f"- The loading ratio u = Zt/Zl (the term the single-injection method ignores) is {rng('u_abs_at_1hz')} at 1 Hz",
-      f"  and {rng('u_abs_at_1ghz')} at 1 GHz: IF the plateau is an artifact of the single-injection break, its size",
-      "  is bounded by these measured loading ratios.", "",
-      "Verdict discipline: this record does NOT establish the plateau's cause from the plot alone. The machine",
-      "comparison is `records/" + os.path.basename(cmp_csv) + "` (per point, both methods, same axes); the DR-0014",
-      "classification of the reconstructed traces -- unchanged rules, row 10 Open -- is",
-      "`evidence/" + rid + "/row10-margins.*`. High-frequency (>1 GHz) model range is UNVALIDATED either way;",
-      "nothing above 1 GHz is usable for a pass claim.", ""]
-open(md_out, "w").write("\n".join(L) + "\n")
-print(f"record md: {md_out}", file=sys.stderr)
-PYEOF
-md_rc=$?
-if [[ ${md_rc} -ne 0 ]]; then
+# Generated offline from the committed files only (loopgain2.py record-md),
+# so `loopgain2.py check` can byte-compare it.
+if ! python3 "${SCRIPT_DIR}/loopgain2.py" record-md --record "${RECORD_ID}"; then
   echo "run_loopgain2.sh: record md generation FAILED" >&2
   exit 1
 fi
@@ -525,7 +414,7 @@ if [[ ${row10_rc} -ne 0 ]]; then
   exit 1
 fi
 
-echo "run_loopgain2.sh: record ${RECORD_ID}: ${passed}/${total} points passed screening;"
+echo "run_loopgain2.sh: record ${RECORD_ID}: ${passed}/${total} points passed screening (${NGSPICE_VERSION});"
 echo "run_loopgain2.sh:   comparison ${CMP_CSV}"
 echo "run_loopgain2.sh:   record     ${MD_OUT}"
 echo "run_loopgain2.sh:   evidence   ${EVIDENCE_DIR}/row10-margins.{csv,json,md}"

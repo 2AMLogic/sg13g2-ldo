@@ -42,24 +42,23 @@
 * validated against the analytic fixture in test_loopgain2.py and against
 * the single-injection bench by run_loopgain2.sh --validate before any
 * fleet run). i_m is the BRIDGE current, not the load current: KCL on the
-* two injection nodes gives the load current i_l = ix + i_m (ix = 1) and
-* the current returning into the divider side i_s = -i_m, so
+* two injection nodes gives the amplifier-side current i_x = ix + i_m
+* (ix = 1) and the forward-oriented return current i_y = i_m, so
+* Middlebrook's current-injection ratio is
 *
-*   Hi(s) = i_s/i_l = -i_m/(1 + i_m) = (1 - T')/u      (u = Zt/Zl)
+*   Ti(s) = -i_y/i_x = -i_m/(1 + i_m)
 *
-* and, with the voltage-injection deck's Hv(s) = v(fbamp)/v(fb), the
-* Middlebrook combination gives the true loop transfer with NO assumption on
-* the gate current:
+* and, with the voltage-injection deck's Tv(s) = -v(fb)/v(fbamp),
+* Middlebrook's GENERAL (bilateral) combination gives the loop gain at the
+* break with no assumption on the gate current or on reverse transmission:
 *
-*   T(s)  = (1 + Hi/Hv)/(1 + Hi)            (L = -T in this repo's convention)
+*   T(s) = (Tv*Ti - 1)/(Tv + Ti + 2)        (L = T in this repo's convention)
 *
-* The ratio Hi = (1-T)/u(u = Zt/Zl) is what the voltage injection cannot
-* see: it vanishes as u -> 0 (zero gate current) exactly where the
-* single-injection method becomes valid, and dominates where that method's
-* zero-gate-current premise fails. The combination is ill-conditioned only
-* where |1 + Hi| ~ 0 (the shunt injection seeing a near-open circuit);
-* loopgain2.py detects and reports that per frequency instead of writing a
-* silently wrong trace.
+* Ti is what the voltage injection cannot see: it grows without bound as
+* the gate current vanishes (where T -> Tv, the single-injection answer)
+* and becomes comparable to Tv where that premise fails. loopgain2.py
+* bounds the export-rounding resolution of T per frequency and keeps only
+* the resolved samples; derivation in the README.
 *
 * THIS BENCH FLATTENS ldo_core_cmos5l ONE LEVEL, exactly like
 * tb_loopgain_cmos5l.spice.tmpl. The XMpass/XRtop/XRbot/Xamp/XMen/XMbdis
@@ -70,9 +69,9 @@
 * generated netlist's topology every run (its two-injection variant), so a
 * future schematic edit that changes this connectivity fails loudly here.
 *
-* Loop-gain sign convention (same as the single-injection bench): Loop Gain
-* L(s) = -T(s), flipped so a healthy negative-feedback loop shows a large
-* POSITIVE real L(0), phase near 0 at DC.
+* Loop-gain sign convention (same as the single-injection bench): a healthy
+* negative-feedback loop shows a large POSITIVE real L(0) = T(0), phase
+* near 0 at DC.
 *
 * ENABLE (issue #67, DR-0008): EN tied to VIN (enabled), as in every
 * loop-gain bench of this experiment; see tb_loopgain_cmos5l.spice.tmpl's
@@ -129,8 +128,9 @@ echo "LOOPGAIN2I_VOUT_OP $&v(vout)"
 
 ac dec 20 1 @@LG_AC_MAX@@
 * Raw complex probe response for the two-injection reconstruction
-* (loopgain2.py): i(vmeas) = i_l, the current the loop pushes from the
-* divider side into the amplifier input. wrdata writes one (freq, value)
+* (loopgain2.py): i(vmeas) = i_m, the BRIDGE current FB -> FBAMP (the
+* vectors keep their historical il_* names; the amplifier-side current is
+* 1 + i_m). wrdata writes one (freq, value)
 * pair per vector, so this is a 4-column file: f, re i(vmeas), f, im
 * i(vmeas). The batch fleet path rebuilds these columns from the corner's
 * ASCII rawfile in batch_backend.py (wrdata_rows), which accepts ONLY this

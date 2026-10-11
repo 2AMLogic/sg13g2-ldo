@@ -25,12 +25,12 @@
 * complex responses of BOTH injections to rebuild the loop gain without the
 * single-injection method's zero-gate-current assumption:
 *
-*   Hv(s) = v(fbamp)/v(fb)          (this deck, voltage injection)
-*   Hi(s) = -i_m/(1 + i_m), i_m = i(vmeas)  (tb_loopgain2i, current inj.)
-*   T(s)  = (1 + Hi/Hv)/(1 + Hi)    (Middlebrook combination; L = -T here)
+*   Tv(s) = -v(fb)/v(fbamp)                 (this deck, voltage injection)
+*   Ti(s) = -i_m/(1 + i_m), i_m = i(vmeas)  (tb_loopgain2i, current inj.)
+*   T(s)  = (Tv*Ti - 1)/(Tv + Ti + 2)       (Middlebrook, general; L = T)
 *
-* With an ideal series voltage injection the ratio Hv alone equals the true
-* loop transfer T only when the load side draws zero current (FBAMP = a
+* With an ideal series voltage injection Tv alone equals the loop gain T
+* only when the load side draws zero current (FBAMP = a
 * MOSFET gate: true at DC, questionable at hundreds of MHz -- the exact
 * question issue #135 asks). The current-injection half and the combination
 * remove that assumption; see the 2i template header and the README for the
@@ -44,9 +44,9 @@
 * inserted Vbreak, differ) -- run_sweep.sh asserts this file's copy still
 * matches the generated netlist's topology every run.
 *
-* Loop-gain sign convention (same as the single-injection bench): Loop Gain
-* L(s) = -T(s) = -v(fb)/v(fbamp), flipped so a healthy negative-feedback loop
-* shows a large POSITIVE real L(0), phase near 0 at DC.
+* Loop-gain sign convention (same as the single-injection bench): Tv =
+* -v(fb)/v(fbamp), so a healthy negative-feedback loop shows a large
+* POSITIVE real value at DC, phase near 0.
 *
 * ENABLE (issue #67, DR-0008): EN tied to VIN (enabled), as in every
 * loop-gain bench of this experiment; see tb_loopgain_cmos5l.spice.tmpl's
