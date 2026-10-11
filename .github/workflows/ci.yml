@@ -491,6 +491,13 @@ jobs:
           # #120) applied around the hash-pinned generator.
           python3 sim/ldo-cmos5l-pvt-sweep/item5_grid.py --check
 
+      - name: Row-10 margin classification (DR-0014; byte-check against the committed loop-gain traces)
+        # Offline, stdlib-only (#126): no simulator and no PDK. Re-derives the
+        # classification from the committed traces, cross-checks it against the
+        # records minted from them, and refuses any recorded PM/GM miss that
+        # does not classify as a fail.
+        run: python3 sim/ldo-cmos5l-pvt-sweep/row10_margins.py --check
+
       - name: Manifest item-8 pin matches the committed report hash
         run: |
           python3 - <<'PY'

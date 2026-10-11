@@ -648,6 +648,113 @@ def load_startup(root: Path, sel: dict, sources: list) -> dict:
             "csv_rel": st["files"]["grid_csv"]["path"], "md_rel": st["files"]["record_md"]["path"]}
 
 
+# --------------------------------------------------------------------------- #
+# row 10: DR-0014 margin classification (proposed)
+# --------------------------------------------------------------------------- #
+
+ROW10_PM_BOUND = 45.0
+ROW10_GM_BOUND = 10.0
+ROW10_VERDICTS = ("pass", "fail", "ambiguous")
+ROW10_COLUMNS = [
+    "corner", "temp_c", "res_section", "record_n_0db_crossings", "record_phase_margin_deg",
+    "record_phase_margin_worst_deg", "record_gain_margin_db", "n_zero_db_crossings",
+    "zero_db_crossings_hz_dir_margin_deg", "pm_deg", "pm_verdict", "pm_reasons",
+    "n_critical_crossings", "critical_crossings_hz_gain_db", "gm_db",
+    "gm_above_ceiling_lower_bound_db", "gm_verdict", "gm_reasons", "low_end_gain_db",
+    "low_end_ok", "ceiling_gain_db", "ceiling_last_decade_change_db", "ceiling_bounded",
+    "nyquist_class", "trace", "trace_sha256",
+]
+
+
+def _optnum(row: dict, key: str, ctx: str):
+    return None if row.get(key, "") == "" else num(row, key, ctx)
+
+
+def load_row10(root: Path, sel: dict, rec: dict, pvt_rows: list[dict], sources: list) -> dict:
+    """Validate and return the pinned DR-0014 classification of the selected
+    record's loop-gain traces. Every failure is a hard GenError (fail-closed)."""
+    blk = sel.get("row10_margin_evidence")
+    if not isinstance(blk, dict):
+        raise GenError("selection.json has no row10_margin_evidence block")
+    if blk.get("circuit_record_id") != rec["id"]:
+        raise GenError(f"row10_margin_evidence is for record {blk.get('circuit_record_id')!r}, "
+                       f"selected circuit record is {rec['id']!r}")
+    csv_path = pinned(root, blk["files"]["classification_csv"], "row10_classification_csv", sources)
+    js_path = pinned(root, blk["files"]["classification_json"], "row10_classification_json", sources)
+    for p in (blk["files"]["classification_csv"]["path"], blk["files"]["classification_json"]["path"]):
+        if f"/{rec['id']}/" not in p:
+            raise GenError(f"row-10 classification {p} is not under the selected record id {rec['id']}")
+    try:
+        doc = json.loads(js_path.read_text(encoding="utf-8"))
+        drec, bounds, clf, dcsv = doc["record"], doc["bounds"], doc["classifier"], doc["csv"]
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        raise GenError(f"row-10 classification json unreadable or malformed: {exc!r}") from exc
+    want = rec["files"]["pvt_csv"]
+    if doc.get("dataset") != "legacy" or drec.get("csv") != want["path"] or drec.get("sha256") != want["sha256"]:
+        raise GenError("row-10 classification does not name the selected record's pinned PVT csv")
+    if (bounds.get("pm_deg"), bounds.get("gm_db")) != (ROW10_PM_BOUND, ROW10_GM_BOUND):
+        raise GenError(f"row-10 classification bounds {bounds} differ from the row-10 target "
+                       f"(PM >= {ROW10_PM_BOUND} deg, GM >= {ROW10_GM_BOUND} dB)")
+    if dcsv.get("path") != blk["files"]["classification_csv"]["path"] or \
+            dcsv.get("sha256") != blk["files"]["classification_csv"]["sha256"]:
+        raise GenError("row-10 classification json does not describe the pinned csv")
+    for rel, h in sorted(clf.items()):
+        p = root / rel
+        if not p.is_file() or sha256_file(p) != h:
+            raise GenError(f"row-10 classifier source {rel} missing or differs from the bytes the "
+                           "classification recorded: regenerate with row10_margins.py")
+        sources.append({"role": "row10_classifier_source", "path": rel, "sha256": h, "pinned": True})
+
+    try:
+        with csv_path.open(newline="", encoding="utf-8") as fh:
+            header = next(csv.reader(fh))
+    except (OSError, StopIteration) as exc:
+        raise GenError(f"cannot read row-10 classification header: {exc!r}") from exc
+    if header != ROW10_COLUMNS:
+        raise GenError(f"row-10 classification columns differ from the expected schema: {header}")
+    crow = read_csv(csv_path)
+    keys = [(r["corner"], r["temp_c"], r["res_section"]) for r in crow]
+    if len(set(keys)) != len(keys) or set(keys) != {(c, str(t), s) for c in CORNERS for t in TEMPS for s in RES}:
+        raise GenError(f"row-10 classification corner set incomplete, duplicated or malformed ({len(keys)} rows)")
+    by_key = {}
+    tdir = f"/corners/{rec['id']}/"
+    for i, r in enumerate(crow):
+        ctx = f"row-10 classification row {i + 2} ({r['corner']}/{r['temp_c']}/{r['res_section']})"
+        if tdir not in r["trace"]:
+            raise GenError(f"{ctx}: trace {r['trace']} is not under the selected record's corners dir")
+        tp = root / r["trace"]
+        if not tp.is_file() or sha256_file(tp) != r["trace_sha256"]:
+            raise GenError(f"{ctx}: trace {r['trace']} missing or differs from its recorded sha256")
+        for k in ("pm_verdict", "gm_verdict"):
+            if r[k] not in ROW10_VERDICTS:
+                raise GenError(f"{ctx}: {k} {r[k]!r} not one of {ROW10_VERDICTS}")
+        pm, gm = _optnum(r, "pm_deg", ctx), _optnum(r, "gm_db", ctx)
+        gm_lb = _optnum(r, "gm_above_ceiling_lower_bound_db", ctx)
+        if r["pm_verdict"] == "pass" and not (pm is not None and pm >= ROW10_PM_BOUND):
+            raise GenError(f"{ctx}: PM verdict pass contradicts pm_deg {pm}")
+        if r["pm_verdict"] == "fail" and not (pm is not None and pm < ROW10_PM_BOUND):
+            raise GenError(f"{ctx}: PM verdict fail contradicts pm_deg {pm}")
+        gm_eff = gm if gm is not None else gm_lb
+        if r["gm_verdict"] == "pass" and not (gm_eff is not None and gm_eff >= ROW10_GM_BOUND
+                                              and (gm_lb is not None and gm_lb >= ROW10_GM_BOUND)):
+            raise GenError(f"{ctx}: GM verdict pass contradicts gm {gm} / ceiling lower bound {gm_lb}")
+        if r["gm_verdict"] == "fail" and not (gm is not None and gm < ROW10_GM_BOUND):
+            raise GenError(f"{ctx}: GM verdict fail contradicts gm_db {gm}")
+        by_key[keys[i]] = (r, pm, gm_eff)
+    for pr in pvt_rows:
+        k = (pr["corner"], pr["temp_c"], pr["res_section"])
+        r, _, _ = by_key[k]
+        for pc in ("n_0db_crossings", "phase_margin_deg", "phase_margin_worst_deg", "gain_margin_db"):
+            if r[f"record_{pc}"] != pr[pc]:
+                raise GenError(f"row-10 classification record_{pc} at {k} disagrees with the pinned PVT csv")
+        if float(pr["phase_margin_deg"]) < ROW10_PM_BOUND and r["pm_verdict"] != "fail":
+            raise GenError(f"row-10 classification upgrades a recorded PM miss at {k}")
+        if float(pr["gain_margin_db"]) < ROW10_GM_BOUND and r["gm_verdict"] != "fail":
+            raise GenError(f"row-10 classification upgrades a recorded GM miss at {k}")
+    return {"by_key": by_key, "doc": doc, "csv_rel": blk["files"]["classification_csv"]["path"],
+            "dr": blk["decision_record"]}
+
+
 def build(root: Path) -> tuple[dict, dict, str]:
     """Return (report, envelope, markdown). Raises GenError on any hard error."""
     sel = load_selection(root)
@@ -711,6 +818,7 @@ def build(root: Path) -> tuple[dict, dict, str]:
     dcev = load_dc_informational(root, sel, rec, prow, sources)
     dc_rel = dcev["summary_path"]
     su = load_startup(root, sel, sources)
+    r10 = load_row10(root, sel, rec, prow, sources)
 
     def dc_col(name, scale=1.0, valid=None):
         """(values, ambiguous-index-set) over the pvt row order. Invalid points
@@ -728,12 +836,6 @@ def build(root: Path) -> tuple[dict, dict, str]:
 
     bc = rec["bench_conditions"]
     ac_cond = bc["ac_loopgain_and_psrr"]
-
-    # --- AC ambiguity: more than one 0 dB crossing => the scalar PM is the
-    # first crossing only and a second crossing exists whose margin the
-    # record reports as phase_margin_worst_deg. Not collapsed to a pass.
-    amb = {i for i, r in enumerate(prow) if int(num(r, "n_0db_crossings", "pvt")) != 1}
-    amb_gm = {i for i, r in enumerate(prow) if int(num(r, "n_gain_margin_crossings", "pvt")) != 1}
 
     ccw = cc_window(read_csv(cc_path))
     cc_tol_rel = rec["files"]["cc_tolerance_csv"]["path"]
@@ -1047,28 +1149,94 @@ def build(root: Path) -> tuple[dict, dict, str]:
                "Proposed methodology, not ratified: DR-0007 row 9 stays Open; no ratification and no whole-spec pass is inferred."])
     rows[-1]["startup_campaign"] = startup_summary
 
-    # 10 Stability --------------------------------------------------------
-    pm = col("phase_margin_deg")
-    gm = col("gain_margin_db")
-    m10a = metric("phase margin (first 0 dB crossing)", "deg", "ge", 45.0, "phase_margin_deg",
-                  pvt_rel, pm, ac_cond, ambiguous=amb,
-                  note="Points with more than one 0 dB crossing are not scored: the scalar PM is the "
-                       "first crossing only and the record's phase_margin_worst_deg is reported "
-                       "beside it unresolved. No scalar pass is manufactured for them.")
-    m10a["ambiguous_first_crossing_pm_range_deg"] = (
-        {"min": rnd(min(pm[i][0] for i in amb)), "max": rnd(max(pm[i][0] for i in amb))} if amb else None)
-    m10a["ambiguous_phase_margin_worst_deg_range"] = (
-        {"min": rnd(min(num(prow[i], "phase_margin_worst_deg", "pvt") for i in amb)),
-         "max": rnd(max(num(prow[i], "phase_margin_worst_deg", "pvt") for i in amb))} if amb else None)
-    m10b = metric("gain margin (first -180 deg crossing)", "dB", "ge", 10.0, "gain_margin_db",
-                  pvt_rel, gm, ac_cond, ambiguous=amb_gm)
+    # 10 Stability: DR-0014 (proposed) classification of the committed traces --
+    # Verdict-bearing PM/GM come from the pinned offline classification of THIS
+    # record's own loop-gain traces (load_row10). The pre-DR-0014 first-crossing
+    # reading is kept beside it as superseded context, never as a verdict.
+    multi = [i for i, r in enumerate(prow) if int(num(r, "n_0db_crossings", "pvt")) != 1]
+    pm_pts, gm_pts, pm_amb, gm_amb, rows10 = [], [], set(), set(), []
+    for i, r in enumerate(prow):
+        cr, pmv, gmv = r10["by_key"][(r["corner"], r["temp_c"], r["res_section"])]
+        rows10.append(cr)
+        pm_pts.append((pmv if pmv is not None else 0.0, pid[i]))
+        gm_pts.append((gmv if gmv is not None else 0.0, pid[i]))
+        if cr["pm_verdict"] == "ambiguous":
+            pm_amb.add(i)
+        if cr["gm_verdict"] == "ambiguous":
+            gm_amb.add(i)
+
+    def later_margins(cr):
+        return [float(x.split("@")[2]) for x in cr["zero_db_crossings_hz_dir_margin_deg"].split(";")[1:]]
+
+    def rng(vals):
+        return {"min": rnd(min(vals)), "max": rnd(max(vals))} if vals else None
+
+    def reasons(key):
+        out: dict = {}
+        for cr in rows10:
+            k = cr[key] or "(none)"
+            out[k] = out.get(k, 0) + 1
+        return dict(sorted(out.items()))
+
+    ceil_g = [num(cr, "ceiling_gain_db", "row10") for cr in rows10]
+    ceil_d = [num(cr, "ceiling_last_decade_change_db", "row10") for cr in rows10]
+    n_bounded = sum(1 for cr in rows10 if cr["ceiling_bounded"] == "True")
+    n_low_ok = sum(1 for cr in rows10 if cr["low_end_ok"] == "True")
+    r10_rel = r10["csv_rel"]
+    r10_cond = (ac_cond + "; loop-gain trace 1 Hz-100 MHz, 20 points/decade (the committed bench's sweep "
+                "floor and ceiling); PROPOSED classification (DR-0014), not ratified")
+    pm_first = [num(r, "phase_margin_deg", "pvt") for r in prow]
+    gm_first = [num(r, "gain_margin_db", "pvt") for r in prow]
+    m10a = metric("phase margin, DR-0014: minimum over every 0 dB crossing in the sweep", "deg", "ge", 45.0,
+                  "pm_deg", r10_rel, pm_pts, r10_cond, ambiguous=pm_amb,
+                  note="Per-crossing margin = angular distance of the crossing phase from the critical point "
+                       "(180 deg mod 360), signed negative after an in-band encirclement. A miss inside the "
+                       "sweep is a fail; a pass also needs a bounded sweep ceiling (loop gain <= -10 dB and "
+                       "non-increasing over the last decade) and a sample bracket clear of the bound. Anything "
+                       "else stays ambiguous with its reason.")
+    m10a["reasons"] = reasons("pm_reasons")
+    m10a["detail"] = [
+        f"sweep ceiling bounded at {n_bounded} of {len(prow)} points: loop gain at 100 MHz "
+        f"{min(ceil_g):.4g}..{max(ceil_g):.4g} dB, change over the last decade {min(ceil_d):+.4g}..{max(ceil_d):+.4g} dB "
+        f"(rising); low-end premise holds at {n_low_ok} of {len(prow)}",
+        f"{len(multi)} points have two 0 dB crossings: first-crossing margin "
+        f"{min(pm_first[i] for i in multi):.4g}..{max(pm_first[i] for i in multi):.4g} deg, second (rising) crossing "
+        f"{min(m for i in multi for m in later_margins(rows10[i])):.4g}..{max(m for i in multi for m in later_margins(rows10[i])):.4g} deg "
+        f"from the critical point; the record's phase_margin_worst_deg "
+        f"({min(num(prow[i], 'phase_margin_worst_deg', 'pvt') for i in multi):.4g}..{max(num(prow[i], 'phase_margin_worst_deg', 'pvt') for i in multi):.4g}) "
+        "is 180 + unwrapped phase, not a margin" if multi else "no point has more than one 0 dB crossing",
+        f"superseded first-crossing reading (pre-DR-0014, not a verdict): {sum(1 for i, v in enumerate(pm_first) if i not in multi and v >= 45.0)} "
+        f"of {len(prow)} scored >= 45 deg, {len(multi)} unscored; range {min(pm_first):.4g}..{max(pm_first):.4g} deg",
+    ]
+    m10b = metric("gain margin, DR-0014: minimum over every -180 deg crossing in the sweep", "dB", "ge", 10.0,
+                  "gm_db", r10_rel, gm_pts, r10_cond, ambiguous=gm_amb,
+                  note="A trace with no -180 deg crossing is never scored as a miss or as infinite margin: it "
+                       "passes only with a bounded sweep ceiling, which bounds the margin above the ceiling "
+                       "below by -(loop gain at the ceiling) >= 10 dB.")
+    m10b["reasons"] = reasons("gm_reasons")
+    m10b["detail"] = [
+        f"superseded first -180 deg crossing reading (pre-DR-0014, not a verdict): {sum(1 for v in gm_first if v >= 10.0)} "
+        f"of {len(prow)} >= 10 dB, range {min(gm_first):.4g}..{max(gm_first):.4g} dB; no committed trace bounds the "
+        "loop gain above 100 MHz, so none of these is a pass under DR-0014",
+    ]
     add(R[10], [m10a, m10b], "partial", [
         "one (Cout, ESR, load) point only: 1 uF, 0 ohm, 1 mA -- not 0.33-4.7 uF, 0-500 mohm, 0-50 mA",
         "Cc is un-cornered; Cc tolerance checked at ss/125C only",
-        f"{len(amb)} of {len(pm)} points have more than one 0 dB crossing (ambiguous scalar PM)",
+        f"sweep ceiling 100 MHz bounded at {n_bounded} of {len(prow)} points (loop gain near 0 dB and rising at "
+        "the ceiling): no PM or GM pass can be scored under DR-0014 until a bench resolves the loop gain above "
+        "100 MHz",
+        f"{len(multi)} of {len(prow)} points have two 0 dB crossings",
     ], evidence_state,
         notes=[f"Cc value tolerance (ss/125C only, {cc_tol_rel}): PM, GM and PSRR all hold for Cc in "
-               f"x{ccw['low_x_nominal']}..x{ccw['high_x_nominal']} of nominal."])
+               f"x{ccw['low_x_nominal']}..x{ccw['high_x_nominal']} of nominal (first-crossing reading, pre-DR-0014).",
+               f"PM/GM verdicts follow the PROPOSED margin classification {r10['dr']} applied offline to the "
+               f"committed traces ({r10_rel}); row 10 stays Open (DR-0007) and nothing is ratified."])
+    rows[-1]["margin_classification"] = {
+        "decision_record": r10["dr"], "status": "proposed", "source": r10_rel,
+        "points": len(prow), "low_end_premise_holds": n_low_ok, "ceiling_bounded": n_bounded,
+        "ceiling_gain_db_range": rng(ceil_g), "ceiling_last_decade_change_db_range": rng(ceil_d),
+        "multi_crossing_points": len(multi),
+    }
 
     # --- completeness ----------------------------------------------------
     checks = []
@@ -1122,6 +1290,7 @@ def build(root: Path) -> tuple[dict, dict, str]:
             "All closed-loop numbers are SG13CMOS5L-branch evidence (DR-0007 'What evidence exists'); no closed-loop evidence exists on the SG13G2 branch.",
             "No post-layout (extracted) performance evidence exists for any row; layout reports in layout/ are DRC/LVS/ERC and carry no performance metrics.",
             "Row 9 (Startup) reports the explicitly selected committed startup campaign: measured failures are measured failures, missing or insufficient points are never passes, and the evaluation methodology is PROPOSED (DR-0009), not ratified. Row 9 stays Open.",
+            "Row 10 (Stability) PM/GM verdicts follow the PROPOSED margin classification DR-0014, applied offline to the selected record's committed loop-gain traces: a miss inside the sweep is a fail, a pass needs a bounded sweep ceiling, everything else stays ambiguous with its reason. Row 10 stays Open.",
             "Other T1 items are not declared satisfied by this artifact.",
         ],
         "selection": {
@@ -1310,11 +1479,10 @@ def render_md(rep: dict, env: dict) -> str:
                 w(f"  - observed range {m['observed_range']['min']}..{m['observed_range']['max']} {m['unit']}")
             if m.get("ambiguous_points"):
                 w("  - ambiguous points: " + ", ".join(_fmt_at(p) for p in m["ambiguous_points"]))
-                if m.get("ambiguous_first_crossing_pm_range_deg"):
-                    a = m["ambiguous_first_crossing_pm_range_deg"]
-                    z = m["ambiguous_phase_margin_worst_deg_range"]
-                    w(f"  - at those points: first-crossing PM {a['min']}..{a['max']} deg, "
-                      f"record phase_margin_worst_deg {z['min']}..{z['max']} deg (unresolved)")
+            if m.get("reasons"):
+                w("  - reasons (points): " + ", ".join(f"{k} {v}" for k, v in m["reasons"].items()))
+            for line in m.get("detail", []):
+                w(f"  - {line}")
             if "n_invalid" in m:
                 w(f"  - validity: {m['n_points'] - m['n_invalid']} valid, {m['n_invalid']} invalid "
                   "(invalid points are counted, not dropped)")

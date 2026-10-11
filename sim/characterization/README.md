@@ -29,7 +29,7 @@ build ([`signoff/README.md`](../../signoff/README.md)).
 | `characterization-report.json` | Canonical aggregate: per row — target, stretch, ratification, verdict, coverage gaps, per-metric worst case with its (process, temperature, resistor corner), bench conditions, counts, source record/column. Also every source path + sha256. |
 | `characterization-report.md` | The same content rendered for reading. |
 | `characterization-envelope.json` | The klt generic envelope (`schema_version: 1`, `kind: generic`, `status`, `source`, `t1_item: 8`, `provenance`). |
-| `test_generate.py` | Row mapping, unit conversion, worst-case retention, censored dropout, ambiguous crossings, draft/stale classification, and the negative controls. |
+| `test_generate.py` | Row mapping, unit conversion, worst-case retention, censored dropout, DR-0014 row-10 classification, draft/stale classification, and the negative controls. |
 
 ## Selection policy (reproducible, never filesystem order)
 
@@ -102,6 +102,32 @@ simulator) and:
 The methodology is **proposed** (DR-0009) and disclosed on the row. Row 9
 stays Open: nothing here ratifies a target or claims whole-spec compliance,
 and the envelope still means artifact completeness/freshness only.
+
+## Row-10 margin classification (issue #126)
+
+`selection.json` pins, under `row10_margin_evidence`, the DR-0014 (proposed)
+classification of the selected record's own committed loop-gain traces:
+`row10-margins.csv` and `row10-margins.json` under
+`sim/ldo-cmos5l-pvt-sweep/evidence/<record-id>/`, written offline by
+`sim/ldo-cmos5l-pvt-sweep/row10_margins.py`. The generator fails closed unless:
+
+- both files match their pins and sit under the selected record id, and the
+  json names the pinned PVT csv;
+- the classifier sources the json lists (`ac_metrics.py`, `dc_metrics.py`,
+  `row10_margins.py`) still hash to the recorded bytes;
+- the bounds are the row-10 targets (45 deg, 10 dB);
+- the 45 corners appear once each, every listed trace is under the record's
+  `corners/` directory and matches its sha256, and the `record_*` columns
+  equal the PVT csv;
+- every `pass` or `fail` agrees with its own number against the bound (a GM
+  pass also needs the ceiling lower bound), and every point the PVT csv shows
+  below a bound is a `fail`, so no recorded miss is upgraded.
+
+Row 10's PM and GM metrics then come from that classification. The
+pre-DR-0014 first-crossing reading is still shown, labelled as superseded
+context, never as a verdict. Today no trace bounds the 100 MHz sweep ceiling,
+so both metrics are `ambiguous` at all 45 points (`ceiling_unbounded`), and the
+row stays `ambiguous` and Open.
 
 ## What the envelope verdict means (and does not)
 
