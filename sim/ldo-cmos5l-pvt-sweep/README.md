@@ -1236,7 +1236,7 @@ decisions are written up in
 | `testbench/tb_startup_cmos5l.spice.tmpl` | Startup bench (klt circuit body). |
 | `startup_eval.py` | Deterministic evaluator (stdlib). Fails closed. |
 | `test_startup_eval.py`, `test_startup_campaign.py` | Fixture tests (no simulator). |
-| `startup_campaign.py` | `plan` / `submit` / `collect` / `binding`. Every simulation is a `klt sim --backend batch` request; nothing runs locally and nothing falls back to local. |
+| `startup_campaign.py` | `plan` / `submit` / `collect` / `recollect` / `binding`. Every simulation is a `klt sim --backend batch` request; nothing runs locally and nothing falls back to local. |
 | `startup/<run>/<stage>/<request>/` | Request artifacts: `request.json`, `tb.spice`, `corners.lib`, klt `report.json` (per-corner artifacts, about 2 MB rawfiles each, are git-ignored; their sha256 is in the record CSV). |
 | `records/<run>-startup-<stage>.{md,csv,manifest.json}` and `.traces/` | Append-only records: coverage, per-point metrics, trace files with sha256, source/tool/PDK hashes. |
 
@@ -1248,7 +1248,8 @@ fail on overshoot and monotonicity as before, every start settles in
 edge, so for this design it includes the amplifier inverter's crowbar
 current. The true off-state supply current (last `EN = 0` sample before the
 edge, 2.000-2.264 uA over the 135 points) is read from the committed traces
-by `startup_offstate.py <run id>`. The evaluator fix is #130. The numbers
+by `startup_offstate.py <run id>`. The evaluator fix is #130 (below): the
+column of the re-collected record `20261011-070146-0c95530` carries that value. The numbers
 and binding points in the subsections below are those of the earlier run.
 
 Run `20261010-104827-91e92aa` is the record set the subsections below
@@ -1387,6 +1388,38 @@ that these bound the design.
   `2AMLogic/klayout-tools#2917`).
 - The runner's klt 0.5.0 ignores `options.osdi_preload` (known, #2901): the
   OSDI binaries are loaded by the preamble from the staged `inputs/`.
+
+### Cold-start disabled plateau and re-collection (issue #130)
+
+`startup_eval.py` used to take the off-state window and `off_supply_current_a`
+from the samples before the `EN = VIN/2` crossing. That crossing is half way up
+the 1 us `EN` edge, so the last such sample lay inside the edge (for the #89
+design: the crowbar current of the amplifier's `EN` inverter, 6.0-28.3 uA
+instead of 2.000-2.264 uA). Time zero of each enable case is unchanged (the
+interpolated `EN = VIN/2` crossing). The cold-start disabled window is now the
+contiguous run of samples from the start of the trace with `EN <=
+off_en_tol_v` (1 mV, a documented numerical tolerance; the bench holds `EN` at
+exactly 0 V), cut at the first sample above it (the start of the first rising
+ramp, read from the trace: no 1 ms assumption), keeping `t >=
+off_window_skip_s`. Off-state `VOUT` max/min/end and `-ivin` at the last
+sample use exactly that window. If `EN` does not start disabled or the window
+is empty after the skip, the verdict is `insufficient` and no edge sample is
+substituted. A missing `ivin` column is still supported (no current column).
+
+Record `20261011-070146-0c95530-startup-grid.*` is the re-collection of
+`20261011-031426-df3f802-startup-grid.*` with the new evaluator, made with
+`startup_campaign.py recollect --stage grid --rid 20261011-070146-0c95530 --source-rid
+20261011-031426-df3f802`: no simulation, the source traces are verified against
+their `trace_sha256` and referenced in place (not copied), the manifest carries
+the source job/engine/OSDI/PDK provenance and a `recollected_from` block with
+the source files' sha256 and both evaluator hashes. All earlier records are
+byte-identical. Result: 135 of 135 still `fail` with the same reasons;
+`off_supply_current_a` is 2.00000305-2.26401144 uA and equals, point by point,
+`-ivin` at the last `EN = 0` sample of each committed trace. The other
+metric columns differ from the source record only by the 9-significant-digit
+rounding of the reduced traces (relative <= 5e-5, mostly far smaller), not by the window. The off-state `VOUT` columns move because the
+window no longer includes ramp samples (up to 11 % of values that stay below
+0.48 mV; bound 50 mV; no verdict change).
 
 ### Reproducing
 
