@@ -221,6 +221,21 @@ class CapRetry(unittest.TestCase):
         self.assertEqual(self.run_submit(3600), 1)
         self.assertEqual(calls, [1])
 
+    def test_killed_client_missing_report_retried_then_reported(self):
+        # A killed klt client can leave report.json unwritten. That is treated
+        # as a cap refusal: re-submitted (to the fleet) within the budget, and
+        # if it never succeeds the exit code comes back as a plain failure
+        # (named per group), never an exception, never a local fallback.
+        calls = []
+
+        def once(gdir):
+            calls.append(1)
+            open(os.path.join(gdir, "klt-sim.stderr"), "w").write("killed\n")
+            return 137
+        bb.submit_once = once
+        self.assertEqual(self.run_submit(100), 137)
+        self.assertGreater(len(calls), 1)
+
 
 class ReuseReport(unittest.TestCase):
     """--reuse-work (issue #89): only a byte-identical request with a complete

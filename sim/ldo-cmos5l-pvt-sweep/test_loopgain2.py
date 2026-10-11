@@ -238,7 +238,7 @@ class Validate(unittest.TestCase):
         # u(1 Hz) above TOL_U_LF, with a gentle enough loading growth that
         # the control still crosses 0 dB (so the u check is what fires).
         Ts, us = known_loop(FREQS, u_at_1hz=2e-3, u_per_decade=0.1)
-        with self.assertRaisesRegex(lg2.Loopgain2Error, "u\(1 Hz\)"):
+        with self.assertRaisesRegex(lg2.Loopgain2Error, r"u\(1 Hz\)"):
             self._validated(us=us)
 
     def test_ammeter_error_at_1hz_that_breaks_the_loading_premise_fails(self):
@@ -257,7 +257,7 @@ class Validate(unittest.TestCase):
         with open(i, "w") as fh:
             fh.write("\n".join(rows) + "\n")
         rec = lg2.reconstruct(v, i)
-        with self.assertRaisesRegex(lg2.Loopgain2Error, "u\(1 Hz\)"):
+        with self.assertRaisesRegex(lg2.Loopgain2Error, r"u\(1 Hz\)"):
             lg2.validate_against_control(rec[0], rec[1], rec[2], rec[4], ctl)
 
     def test_control_without_a_crossing_raises(self):

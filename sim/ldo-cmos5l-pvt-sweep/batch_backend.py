@@ -542,10 +542,18 @@ def submit_once(gdir):
 
 
 def cap_refused(gdir):
+    # Unreadable output (a refused/killed klt client can leave report.json
+    # missing or empty -- the campaign lost a whole run to exactly that) is
+    # treated like a cap refusal: `submit` re-submits the same request TO THE
+    # FLEET within its bounded budget, and if it never comes back the last
+    # exit code is reported per group below. It is never a local fallback.
     for fn in ("report.json", "klt-sim.stderr"):
-        with open(os.path.join(gdir, fn), encoding="utf-8", errors="replace") as f:
-            if CAP_REFUSAL in f.read():
-                return True
+        try:
+            with open(os.path.join(gdir, fn), encoding="utf-8", errors="replace") as f:
+                if CAP_REFUSAL in f.read():
+                    return True
+        except OSError:
+            return True
     return False
 
 
@@ -749,9 +757,17 @@ def cmd_run(a):
     for g in groups:
         rc = rcs[g["name"]]
         if rc not in (0, 3):
-            err = open(os.path.join(gdirs[g["name"]], "klt-sim.stderr")).read()
-            rep = open(os.path.join(gdirs[g["name"]], "report.json")).read()
-            problems.append(f"{g['name']}: klt sim exit {rc}\n{err[-2000:]}\n{rep[-2000:]}")
+            # Read defensively: a killed klt client can leave either file
+            # missing; the group must still be named, not crash the run.
+            def tail(fn):
+                try:
+                    with open(os.path.join(gdirs[g["name"]], fn), encoding="utf-8",
+                              errors="replace") as f:
+                        return f.read()
+                except OSError:
+                    return f"<{fn} missing>"
+            problems.append(f"{g['name']}: klt sim exit {rc}\n"
+                            f"{tail('klt-sim.stderr')[-2000:]}\n{tail('report.json')[-2000:]}")
             continue
         problems += collect(g, gdirs[g["name"]], corners_out, meta)
 
