@@ -51,6 +51,13 @@ def copy_inputs(dst: Path) -> None:
     inv = json.loads((REPO / dce["files"]["coverage_inventory_json"]["path"]).read_text())
     rels.add(inv["generator"]["path"])
     rels |= set(inv["inputs"]["raw_dc_grids"])
+    r10 = sel["row10_margin_evidence"]
+    rels |= {f["path"] for f in r10["files"].values()}
+    r10doc = json.loads((REPO / r10["files"]["classification_json"]["path"]).read_text())
+    rels |= set(r10doc["classifier"])
+    import csv as _csv
+    with (REPO / r10["files"]["classification_csv"]["path"]).open(newline="") as fh:
+        rels |= {row["trace"] for row in _csv.DictReader(fh)}
     for r in rels:
         (dst / r).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(REPO / r, dst / r)
@@ -149,7 +156,7 @@ class GeneratedReportTests(unittest.TestCase):
         self.assertEqual(v[4], "pass_full_coverage")
         self.assertEqual(v[8], "not_implemented")
         self.assertEqual(v[9], "fail")              # measured startup failures, not an absence claim
-        self.assertEqual(v[10], "ambiguous")        # multi-crossing AC points not scored
+        self.assertEqual(v[10], "ambiguous")        # DR-0014: no committed trace bounds the sweep ceiling
         self.assertEqual(self.rows[4]["ratification"]["state"], "ratified")
         self.assertEqual(self.rows[2]["ratification"]["state"], "open_unratified")
 
@@ -230,10 +237,22 @@ class GeneratedReportTests(unittest.TestCase):
         self.assertEqual(self.rows[5]["coverage"]["state"], "partial")
         self.assertTrue(any("not continuous coverage" in g for g in self.rows[5]["coverage"]["gaps"]))
 
-    def test_stability_ambiguous_crossings_preserved(self):
-        m = self.rows[10]["metrics"][0]
-        self.assertEqual((m["n_ambiguous"], m["n_pass"]), (15, 30))
-        self.assertEqual(len(m["ambiguous_points"]), 15)
+    def test_stability_dr0014_classification(self):
+        pm, gm = self.rows[10]["metrics"]
+        self.assertIn("DR-0014", pm["name"])
+        self.assertIn("DR-0014", gm["name"])
+        # Every committed trace ends near 0 dB with the loop gain rising, so the
+        # ceiling premise fails everywhere: nothing is scored as a pass.
+        for m in (pm, gm):
+            self.assertEqual((m["n_points"], m["n_pass"], m["n_fail"], m["n_ambiguous"]), (45, 0, 0, 45))
+            self.assertEqual(m["reasons"], {"ceiling_unbounded": 45})
+            self.assertEqual(m["verdict"], "ambiguous")
+        mc = self.rows[10]["margin_classification"]
+        self.assertEqual((mc["ceiling_bounded"], mc["multi_crossing_points"], mc["status"]), (0, 15, "proposed"))
+        # the superseded first-crossing reading is reported, not scored
+        self.assertTrue(any("30 of 45 scored >= 45 deg, 15 unscored" in d for d in pm["detail"]))
+        self.assertTrue(any("not a margin" in d for d in pm["detail"]))
+        self.assertEqual(self.rows[10]["ratification"]["state"], "open_unratified")
 
     def test_psrr_stretch_and_conditions_retained(self):
         m = self.rows[6]["metrics"][0]
@@ -521,6 +540,128 @@ class NegativeControls(unittest.TestCase):
         self.assertEqual(r7["metrics"][1]["verdict"], "fail")
         self.assertEqual(r7["verdict"], "fail")
         self.assertAlmostEqual(r7["metrics"][1]["worst_case"]["value"], 32.5169, places=6)
+
+
+class Row10NegativeControls(unittest.TestCase):
+    """DR-0014 row-10 classification: every way the pinned classification can
+    disagree with the record, its traces, its classifier or the target fails
+    closed (and leaves no passing envelope)."""
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, self.tmp, True)
+        copy_inputs(self.tmp)
+        self.selp = self.tmp / "sim/characterization/selection.json"
+
+    def sel(self):
+        return json.loads(self.selp.read_text())
+
+    def path(self, key):
+        return self.tmp / self.sel()["row10_margin_evidence"]["files"][key]["path"]
+
+    def repin(self, key):
+        sel = self.sel()
+        f = sel["row10_margin_evidence"]["files"][key]
+        f["sha256"] = G.sha256_file(self.tmp / f["path"])
+        self.selp.write_text(json.dumps(sel))
+
+    def edit_csv(self, fn):
+        p = self.path("classification_csv")
+        ls = p.read_text().splitlines(keepends=True)
+        p.write_text("".join(fn(ls)))
+        jp = self.path("classification_json")
+        doc = json.loads(jp.read_text())
+        doc["csv"]["sha256"] = G.sha256_file(p)
+        jp.write_text(json.dumps(doc))
+        self.repin("classification_csv")
+        self.repin("classification_json")
+
+    def set_field(self, row, field, value):
+        def fn(ls):
+            hdr = ls[0].rstrip("\n").split(",")
+            cells = ls[row].rstrip("\n").split(",")
+            cells[hdr.index(field)] = value
+            return ls[:row] + [",".join(cells) + "\n"] + ls[row + 1:]
+        self.edit_csv(fn)
+
+    def rejected(self, text):
+        rc, _, err = run_main("--root", str(self.tmp))
+        self.assertEqual(rc, 1, err)
+        self.assertIn(text, err)
+        env = json.loads((self.tmp / "sim/characterization" / G.ENVELOPE_JSON).read_text())
+        self.assertEqual(env["status"], "fail")
+
+    def test_baseline_ok(self):
+        rc, _, err = run_main("--root", str(self.tmp))
+        self.assertEqual(rc, 0, err)
+
+    def test_missing_block(self):
+        sel = self.sel()
+        del sel["row10_margin_evidence"]
+        self.selp.write_text(json.dumps(sel))
+        self.rejected("row10_margin_evidence")
+
+    def test_record_id_mismatch(self):
+        sel = self.sel()
+        sel["row10_margin_evidence"]["circuit_record_id"] = "20260917-023832-7061e8f"
+        self.selp.write_text(json.dumps(sel))
+        self.rejected("selected circuit record")
+
+    def test_csv_tamper_fails_pin(self):
+        p = self.path("classification_csv")
+        p.write_text(p.read_text().replace("ambiguous", "pass", 1))
+        self.rejected("differ from pin")
+
+    def test_trace_tamper(self):
+        import csv as _csv
+        with self.path("classification_csv").open(newline="") as fh:
+            tr = self.tmp / next(_csv.DictReader(fh))["trace"]
+        tr.write_text(tr.read_text() + "\n")
+        self.rejected("differs from its recorded sha256")
+
+    def test_classifier_drift(self):
+        doc = json.loads(self.path("classification_json").read_text())
+        src = self.tmp / next(p for p in doc["classifier"] if p.endswith("ac_metrics.py"))
+        src.write_text(src.read_text() + "\n# drift\n")
+        self.rejected("classifier source")
+
+    def test_bounds_changed(self):
+        jp = self.path("classification_json")
+        doc = json.loads(jp.read_text())
+        doc["bounds"]["pm_deg"] = 40.0
+        jp.write_text(json.dumps(doc))
+        self.repin("classification_json")
+        self.rejected("differ from the row-10 target")
+
+    def test_pass_contradicting_its_number(self):
+        self.set_field(1, "pm_verdict", "pass")
+        self.set_field(1, "pm_deg", "44.9")
+        self.rejected("contradicts pm_deg")
+
+    def test_gm_pass_without_bounded_ceiling(self):
+        # a first-crossing GM of 16.9 dB is not a pass without a ceiling bound
+        self.set_field(1, "gm_verdict", "pass")
+        self.rejected("GM verdict pass contradicts")
+
+    def test_record_column_disagreement(self):
+        self.set_field(1, "record_phase_margin_deg", "76.0")
+        self.rejected("disagrees with the pinned PVT csv")
+
+    def test_missing_corner(self):
+        self.edit_csv(lambda ls: ls[:-1])
+        self.rejected("corner set incomplete")
+
+    def test_recorded_miss_is_never_upgraded(self):
+        # Fed directly to the loader: a PVT row showing PM 40 deg (a miss) whose
+        # classification is still ambiguous must be refused.
+        self.set_field(1, "record_phase_margin_deg", "40.0")
+        sel = self.sel()
+        rec = sel["circuit_record"]
+        prow = G.read_csv(self.tmp / rec["files"]["pvt_csv"]["path"])
+        prow[0]["phase_margin_deg"] = "40.0"
+        with self.assertRaises(G.GenError) as cm:
+            G.load_row10(self.tmp, sel, rec, prow, [])
+        self.assertIn("upgrades a recorded PM miss", str(cm.exception))
 
 
 class StartupNegativeControls(unittest.TestCase):

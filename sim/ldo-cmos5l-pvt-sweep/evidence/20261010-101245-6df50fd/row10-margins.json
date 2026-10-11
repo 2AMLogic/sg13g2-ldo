@@ -1,0 +1,154 @@
+{
+  "schema_version": 1,
+  "rule": "DR-0014 (proposed; row 10 stays Open, nothing ratified)",
+  "decision_record": "spec/decision-records/DR-0014-row10-stability-margin-classification.md",
+  "dataset": "doe",
+  "record": {
+    "id": "20261010-101245-6df50fd",
+    "csv": "sim/ldo-cmos5l-pvt-sweep/records/20261010-101245-6df50fd.dynamic-doe.csv",
+    "sha256": "6cdcdf447743ee5e35e860872578e06704e0330b5a50c8723710ec0aa4703f44",
+    "conditions": "Vin 3.30 V; 4 binding PVT corners x load x Cout x ESR (#64 base matrix + refinement round 1)"
+  },
+  "bounds": {
+    "pm_deg": 45.0,
+    "gm_db": 10.0,
+    "ceiling_floor_db": -10.0
+  },
+  "classifier": {
+    "sim/ldo-cmos5l-pvt-sweep/ac_metrics.py": "6e96859b839bcb19aaa702eb20a593bfc8914b7b388a8783298e416e65fefd5e",
+    "sim/ldo-cmos5l-pvt-sweep/dc_metrics.py": "782319eb4ef619b040f3a4001af67a10def775c9cf17e37fe15b4dd8f3340c81",
+    "sim/ldo-cmos5l-pvt-sweep/row10_margins.py": "a6f6d1129095b2fcb73c8c9462eb54b7588259d4118aa932d86c5b01f2a227f7"
+  },
+  "traces_verified": 536,
+  "cross_checks": "every trace reproduces its record's 0 dB crossing count, first-crossing PM, recorded worst-crossing PM and first -180 deg GM; every recorded PM/GM miss classifies as fail (no-loosening guard)",
+  "csv": {
+    "path": "sim/ldo-cmos5l-pvt-sweep/evidence/20261010-101245-6df50fd/row10-margins.csv",
+    "sha256": "5f7f49062637550d01a265d55d9da8b1d99370f599572325018579428e740731"
+  },
+  "summary_all": {
+    "points": 536,
+    "pm_verdicts": {
+      "ambiguous": 326,
+      "fail": 210
+    },
+    "gm_verdicts": {
+      "ambiguous": 446,
+      "fail": 90
+    },
+    "pm_reasons": {
+      "ceiling_unbounded": 318,
+      "in_band_crossing_below_bound": 210,
+      "resolution_limited|ceiling_unbounded": 8
+    },
+    "gm_reasons": {
+      "ceiling_unbounded": 432,
+      "in_band_crossing_below_bound": 90,
+      "resolution_limited|ceiling_unbounded": 14
+    },
+    "nyquist_class": {
+      "undetermined": 536
+    },
+    "n_zero_db_crossings": {
+      "1": 388,
+      "2": 148
+    },
+    "n_critical_crossings": {
+      "0": 46,
+      "1": 490
+    },
+    "pm_deg_range": {
+      "min": -162.461263,
+      "max": 145.145993
+    },
+    "first_crossing_margin_deg_range": {
+      "min": -52.6986935,
+      "max": 145.145993
+    },
+    "later_crossing_margin_deg_range": {
+      "min": -162.461263,
+      "max": 162.513333
+    },
+    "gm_db_range": {
+      "min": -9.20367407,
+      "max": 77.3278339
+    },
+    "low_end_ok": 536,
+    "low_end_gain_db_range": {
+      "min": 70.1327631,
+      "max": 124.288803
+    },
+    "ceiling_bounded": 0,
+    "ceiling_gain_db_range": {
+      "min": -1.16796306,
+      "max": 0.52995647
+    },
+    "ceiling_last_decade_change_db_range": {
+      "min": 5.25858377,
+      "max": 12.8664771
+    }
+  },
+  "subset": {
+    "name": "failed_rows",
+    "definition": "rows the combined #64 analysis marks `failed` (no -180 deg crossing, gain margin unmeasured)",
+    "summary": {
+      "points": 46,
+      "pm_verdicts": {
+        "ambiguous": 7,
+        "fail": 39
+      },
+      "gm_verdicts": {
+        "ambiguous": 46
+      },
+      "pm_reasons": {
+        "ceiling_unbounded": 6,
+        "in_band_crossing_below_bound": 39,
+        "resolution_limited|ceiling_unbounded": 1
+      },
+      "gm_reasons": {
+        "ceiling_unbounded": 46
+      },
+      "nyquist_class": {
+        "undetermined": 46
+      },
+      "n_zero_db_crossings": {
+        "1": 37,
+        "2": 9
+      },
+      "n_critical_crossings": {
+        "0": 46
+      },
+      "pm_deg_range": {
+        "min": 9.51406342,
+        "max": 57.1327562
+      },
+      "first_crossing_margin_deg_range": {
+        "min": 9.51406342,
+        "max": 57.1327562
+      },
+      "later_crossing_margin_deg_range": {
+        "min": 162.51332,
+        "max": 162.513325
+      },
+      "gm_db_range": null,
+      "low_end_ok": 46,
+      "low_end_gain_db_range": {
+        "min": 70.1327631,
+        "max": 122.282615
+      },
+      "ceiling_bounded": 0,
+      "ceiling_gain_db_range": {
+        "min": -1.16796061,
+        "max": 0.527445793
+      },
+      "ceiling_last_decade_change_db_range": {
+        "min": 5.31194855,
+        "max": 12.5115941
+      }
+    }
+  },
+  "not_claimed": [
+    "no new simulation; no historical record edited",
+    "no ratification: DR-0014 is proposed and row 10 stays Open (DR-0007)",
+    "no claim about frequencies above the sweep ceiling or between sampled operating points"
+  ]
+}

@@ -12,11 +12,12 @@
     "All closed-loop numbers are SG13CMOS5L-branch evidence (DR-0007 'What evidence exists'); no closed-loop evidence exists on the SG13G2 branch.",
     "No post-layout (extracted) performance evidence exists for any row; layout reports in layout/ are DRC/LVS/ERC and carry no performance metrics.",
     "Row 9 (Startup) reports the explicitly selected committed startup campaign: measured failures are measured failures, missing or insufficient points are never passes, and the evaluation methodology is PROPOSED (DR-0009), not ratified. Row 9 stays Open.",
+    "Row 10 (Stability) PM/GM verdicts follow the PROPOSED margin classification DR-0014, applied offline to the selected record's committed loop-gain traces: a miss inside the sweep is a fail, a pass needs a bounded sweep ceiling, everything else stays ambiguous with its reason. Row 10 stays Open.",
     "Other T1 items are not declared satisfied by this artifact."
   ],
   "selection": {
     "file": "sim/characterization/selection.json",
-    "sha256": "f464fe0e071083555416f27cd576a177a72deeb60983430a69a7699fde5a4288",
+    "sha256": "e6aa6a5e181c3c101b10922aee902e4d5b2bac23ddc963338f7fa9791d6c8ce9",
     "circuit_record_id": "20261010-025634-60a3e81",
     "experiment": "ldo-cmos5l-pvt-sweep",
     "device_context_record_id": "20260909-220347-ed18110",
@@ -80,6 +81,36 @@
       "pinned": false
     },
     {
+      "role": "row10_classification_csv",
+      "path": "sim/ldo-cmos5l-pvt-sweep/evidence/20261010-025634-60a3e81/row10-margins.csv",
+      "sha256": "6eaeca16a2b2e26a293acd0c44fa6ddd7b5c8b5137e36a466bcb5e1e1279e828",
+      "pinned": true
+    },
+    {
+      "role": "row10_classification_json",
+      "path": "sim/ldo-cmos5l-pvt-sweep/evidence/20261010-025634-60a3e81/row10-margins.json",
+      "sha256": "9b5f408e3ab73da894f41ebfc95a93f32de1406f38c1cc57cc7af39dab463f02",
+      "pinned": true
+    },
+    {
+      "role": "row10_classifier_source",
+      "path": "sim/ldo-cmos5l-pvt-sweep/ac_metrics.py",
+      "sha256": "6e96859b839bcb19aaa702eb20a593bfc8914b7b388a8783298e416e65fefd5e",
+      "pinned": true
+    },
+    {
+      "role": "row10_classifier_source",
+      "path": "sim/ldo-cmos5l-pvt-sweep/dc_metrics.py",
+      "sha256": "782319eb4ef619b040f3a4001af67a10def775c9cf17e37fe15b4dd8f3340c81",
+      "pinned": true
+    },
+    {
+      "role": "row10_classifier_source",
+      "path": "sim/ldo-cmos5l-pvt-sweep/row10_margins.py",
+      "sha256": "a6f6d1129095b2fcb73c8c9462eb54b7588259d4118aa932d86c5b01f2a227f7",
+      "pinned": true
+    },
+    {
       "role": "startup_design_core_freshness",
       "path": "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice",
       "sha256": "7953b25be4cb00053f8df5f283bee0500f60a826b7a2d6519b88a8578d222cc1",
@@ -112,7 +143,7 @@
     {
       "role": "superseded_evidence_statement",
       "path": "sim/ldo-cmos5l-pvt-sweep/README.md",
-      "sha256": "3dad199c58bf1b203e2b751432962601e45735db2fc646085f008f961f6eaa0b",
+      "sha256": "9f247523c5b985ed72fe48ae61f98e9379a1ce9e02ae525dc0902c81766288a3",
       "pinned": false
     },
     {
@@ -1475,12 +1506,13 @@
         "gaps": [
           "one (Cout, ESR, load) point only: 1 uF, 0 ohm, 1 mA -- not 0.33-4.7 uF, 0-500 mohm, 0-50 mA",
           "Cc is un-cornered; Cc tolerance checked at ss/125C only",
-          "15 of 45 points have more than one 0 dB crossing (ambiguous scalar PM)"
+          "sweep ceiling 100 MHz bounded at 0 of 45 points (loop gain near 0 dB and rising at the ceiling): no PM or GM pass can be scored under DR-0014 until a bench resolves the loop gain above 100 MHz",
+          "15 of 45 points have two 0 dB crossings"
         ]
       },
       "metrics": [
         {
-          "name": "phase margin (first 0 dB crossing)",
+          "name": "phase margin, DR-0014: minimum over every 0 dB crossing in the sweep",
           "unit": "deg",
           "bound": {
             "comparator": "ge",
@@ -1488,24 +1520,16 @@
             "unit": "deg"
           },
           "n_points": 45,
-          "n_pass": 30,
+          "n_pass": 0,
           "n_fail": 0,
           "n_censored_upper_bound": 0,
-          "n_ambiguous": 15,
-          "worst_case": {
-            "value": 53.8710338,
-            "at": {
-              "corner": "ss",
-              "temp_c": 125,
-              "res_section": "res_bcs"
-            },
-            "n_points_at_this_value": 1
-          },
+          "n_ambiguous": 45,
+          "worst_case": null,
           "verdict": "ambiguous",
-          "conditions": "Vin = 3.30 V, Iload = 1 mA, Cout = 1 uF, ESR = 0, ideal 0.90 V reference; Cc nominal (MoM-cap model has no corner spread at this PDK pin)",
+          "conditions": "Vin = 3.30 V, Iload = 1 mA, Cout = 1 uF, ESR = 0, ideal 0.90 V reference; Cc nominal (MoM-cap model has no corner spread at this PDK pin); loop-gain trace 1 Hz-100 MHz, 20 points/decade (the committed bench's sweep floor and ceiling); PROPOSED classification (DR-0014), not ratified",
           "source": {
-            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv",
-            "column": "phase_margin_deg"
+            "record": "sim/ldo-cmos5l-pvt-sweep/evidence/20261010-025634-60a3e81/row10-margins.csv",
+            "column": "pm_deg"
           },
           "ambiguous_points": [
             {
@@ -1516,7 +1540,22 @@
             {
               "corner": "tt",
               "temp_c": -40,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "tt",
+              "temp_c": -40,
               "res_section": "res_wcs"
+            },
+            {
+              "corner": "tt",
+              "temp_c": 27,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "tt",
+              "temp_c": 27,
+              "res_section": "res_bcs"
             },
             {
               "corner": "tt",
@@ -1524,11 +1563,66 @@
               "res_section": "res_wcs"
             },
             {
+              "corner": "tt",
+              "temp_c": 125,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "tt",
+              "temp_c": 125,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "tt",
+              "temp_c": 125,
+              "res_section": "res_wcs"
+            },
+            {
+              "corner": "ss",
+              "temp_c": -40,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "ss",
+              "temp_c": -40,
+              "res_section": "res_bcs"
+            },
+            {
               "corner": "ss",
               "temp_c": -40,
               "res_section": "res_wcs"
             },
             {
+              "corner": "ss",
+              "temp_c": 27,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "ss",
+              "temp_c": 27,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "ss",
+              "temp_c": 27,
+              "res_section": "res_wcs"
+            },
+            {
+              "corner": "ss",
+              "temp_c": 125,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "ss",
+              "temp_c": 125,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "ss",
+              "temp_c": 125,
+              "res_section": "res_wcs"
+            },
+            {
               "corner": "ff",
               "temp_c": -40,
               "res_section": "res_typ"
@@ -1551,6 +1645,26 @@
             {
               "corner": "ff",
               "temp_c": 27,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "ff",
+              "temp_c": 27,
+              "res_section": "res_wcs"
+            },
+            {
+              "corner": "ff",
+              "temp_c": 125,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "ff",
+              "temp_c": 125,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "ff",
+              "temp_c": 125,
               "res_section": "res_wcs"
             },
             {
@@ -1571,6 +1685,31 @@
             {
               "corner": "sf",
               "temp_c": 27,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "sf",
+              "temp_c": 27,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "sf",
+              "temp_c": 27,
+              "res_section": "res_wcs"
+            },
+            {
+              "corner": "sf",
+              "temp_c": 125,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "sf",
+              "temp_c": 125,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "sf",
+              "temp_c": 125,
               "res_section": "res_wcs"
             },
             {
@@ -1581,21 +1720,56 @@
             {
               "corner": "fs",
               "temp_c": -40,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "fs",
+              "temp_c": -40,
+              "res_section": "res_wcs"
+            },
+            {
+              "corner": "fs",
+              "temp_c": 27,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "fs",
+              "temp_c": 27,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "fs",
+              "temp_c": 27,
+              "res_section": "res_wcs"
+            },
+            {
+              "corner": "fs",
+              "temp_c": 125,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "fs",
+              "temp_c": 125,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "fs",
+              "temp_c": 125,
               "res_section": "res_wcs"
             }
           ],
-          "note": "Points with more than one 0 dB crossing are not scored: the scalar PM is the first crossing only and the record's phase_margin_worst_deg is reported beside it unresolved. No scalar pass is manufactured for them.",
-          "ambiguous_first_crossing_pm_range_deg": {
-            "min": 74.3390934,
-            "max": 76.7959245
+          "note": "Per-crossing margin = angular distance of the crossing phase from the critical point (180 deg mod 360), signed negative after an in-band encirclement. A miss inside the sweep is a fail; a pass also needs a bounded sweep ceiling (loop gain <= -10 dB and non-increasing over the last decade) and a sample bracket clear of the bound. Anything else stays ambiguous with its reason.",
+          "reasons": {
+            "ceiling_unbounded": 45
           },
-          "ambiguous_phase_margin_worst_deg_range": {
-            "min": -166.185006,
-            "max": -158.026268
-          }
+          "detail": [
+            "sweep ceiling bounded at 0 of 45 points: loop gain at 100 MHz -1.165..0.5281 dB, change over the last decade +5.32..+12.46 dB (rising); low-end premise holds at 45 of 45",
+            "15 points have two 0 dB crossings: first-crossing margin 74.34..76.8 deg, second (rising) crossing 158..166.2 deg from the critical point; the record's phase_margin_worst_deg (-166.2..-158) is 180 + unwrapped phase, not a margin",
+            "superseded first-crossing reading (pre-DR-0014, not a verdict): 30 of 45 scored >= 45 deg, 15 unscored; range 53.87..76.93 deg"
+          ]
         },
         {
-          "name": "gain margin (first -180 deg crossing)",
+          "name": "gain margin, DR-0014: minimum over every -180 deg crossing in the sweep",
           "unit": "dB",
           "bound": {
             "comparator": "ge",
@@ -1603,31 +1777,275 @@
             "unit": "dB"
           },
           "n_points": 45,
-          "n_pass": 45,
+          "n_pass": 0,
           "n_fail": 0,
           "n_censored_upper_bound": 0,
-          "n_ambiguous": 0,
-          "worst_case": {
-            "value": 13.8525525,
-            "at": {
+          "n_ambiguous": 45,
+          "worst_case": null,
+          "verdict": "ambiguous",
+          "conditions": "Vin = 3.30 V, Iload = 1 mA, Cout = 1 uF, ESR = 0, ideal 0.90 V reference; Cc nominal (MoM-cap model has no corner spread at this PDK pin); loop-gain trace 1 Hz-100 MHz, 20 points/decade (the committed bench's sweep floor and ceiling); PROPOSED classification (DR-0014), not ratified",
+          "source": {
+            "record": "sim/ldo-cmos5l-pvt-sweep/evidence/20261010-025634-60a3e81/row10-margins.csv",
+            "column": "gm_db"
+          },
+          "ambiguous_points": [
+            {
+              "corner": "tt",
+              "temp_c": -40,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "tt",
+              "temp_c": -40,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "tt",
+              "temp_c": -40,
+              "res_section": "res_wcs"
+            },
+            {
+              "corner": "tt",
+              "temp_c": 27,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "tt",
+              "temp_c": 27,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "tt",
+              "temp_c": 27,
+              "res_section": "res_wcs"
+            },
+            {
+              "corner": "tt",
+              "temp_c": 125,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "tt",
+              "temp_c": 125,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "tt",
+              "temp_c": 125,
+              "res_section": "res_wcs"
+            },
+            {
+              "corner": "ss",
+              "temp_c": -40,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "ss",
+              "temp_c": -40,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "ss",
+              "temp_c": -40,
+              "res_section": "res_wcs"
+            },
+            {
+              "corner": "ss",
+              "temp_c": 27,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "ss",
+              "temp_c": 27,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "ss",
+              "temp_c": 27,
+              "res_section": "res_wcs"
+            },
+            {
+              "corner": "ss",
+              "temp_c": 125,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "ss",
+              "temp_c": 125,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "ss",
+              "temp_c": 125,
+              "res_section": "res_wcs"
+            },
+            {
+              "corner": "ff",
+              "temp_c": -40,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "ff",
+              "temp_c": -40,
+              "res_section": "res_bcs"
+            },
+            {
               "corner": "ff",
               "temp_c": -40,
               "res_section": "res_wcs"
             },
-            "n_points_at_this_value": 1
+            {
+              "corner": "ff",
+              "temp_c": 27,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "ff",
+              "temp_c": 27,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "ff",
+              "temp_c": 27,
+              "res_section": "res_wcs"
+            },
+            {
+              "corner": "ff",
+              "temp_c": 125,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "ff",
+              "temp_c": 125,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "ff",
+              "temp_c": 125,
+              "res_section": "res_wcs"
+            },
+            {
+              "corner": "sf",
+              "temp_c": -40,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "sf",
+              "temp_c": -40,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "sf",
+              "temp_c": -40,
+              "res_section": "res_wcs"
+            },
+            {
+              "corner": "sf",
+              "temp_c": 27,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "sf",
+              "temp_c": 27,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "sf",
+              "temp_c": 27,
+              "res_section": "res_wcs"
+            },
+            {
+              "corner": "sf",
+              "temp_c": 125,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "sf",
+              "temp_c": 125,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "sf",
+              "temp_c": 125,
+              "res_section": "res_wcs"
+            },
+            {
+              "corner": "fs",
+              "temp_c": -40,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "fs",
+              "temp_c": -40,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "fs",
+              "temp_c": -40,
+              "res_section": "res_wcs"
+            },
+            {
+              "corner": "fs",
+              "temp_c": 27,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "fs",
+              "temp_c": 27,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "fs",
+              "temp_c": 27,
+              "res_section": "res_wcs"
+            },
+            {
+              "corner": "fs",
+              "temp_c": 125,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "fs",
+              "temp_c": 125,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "fs",
+              "temp_c": 125,
+              "res_section": "res_wcs"
+            }
+          ],
+          "note": "A trace with no -180 deg crossing is never scored as a miss or as infinite margin: it passes only with a bounded sweep ceiling, which bounds the margin above the ceiling below by -(loop gain at the ceiling) >= 10 dB.",
+          "reasons": {
+            "ceiling_unbounded": 45
           },
-          "verdict": "pass",
-          "conditions": "Vin = 3.30 V, Iload = 1 mA, Cout = 1 uF, ESR = 0, ideal 0.90 V reference; Cc nominal (MoM-cap model has no corner spread at this PDK pin)",
-          "source": {
-            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv",
-            "column": "gain_margin_db"
-          }
+          "detail": [
+            "superseded first -180 deg crossing reading (pre-DR-0014, not a verdict): 45 of 45 >= 10 dB, range 13.85..29.87 dB; no committed trace bounds the loop gain above 100 MHz, so none of these is a pass under DR-0014"
+          ]
         }
       ],
       "stretch_note": null,
       "notes": [
-        "Cc value tolerance (ss/125C only, sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.cc-tolerance.csv): PM, GM and PSRR all hold for Cc in x0.647..x1.524 of nominal."
-      ]
+        "Cc value tolerance (ss/125C only, sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.cc-tolerance.csv): PM, GM and PSRR all hold for Cc in x0.647..x1.524 of nominal (first-crossing reading, pre-DR-0014).",
+        "PM/GM verdicts follow the PROPOSED margin classification spec/decision-records/DR-0014-row10-stability-margin-classification.md applied offline to the committed traces (sim/ldo-cmos5l-pvt-sweep/evidence/20261010-025634-60a3e81/row10-margins.csv); row 10 stays Open (DR-0007) and nothing is ratified."
+      ],
+      "margin_classification": {
+        "decision_record": "spec/decision-records/DR-0014-row10-stability-margin-classification.md",
+        "status": "proposed",
+        "source": "sim/ldo-cmos5l-pvt-sweep/evidence/20261010-025634-60a3e81/row10-margins.csv",
+        "points": 45,
+        "low_end_premise_holds": 45,
+        "ceiling_bounded": 0,
+        "ceiling_gain_db_range": {
+          "min": -1.16473064,
+          "max": 0.528141788
+        },
+        "ceiling_last_decade_change_db_range": {
+          "min": 5.3199397,
+          "max": 12.4618906
+        },
+        "multi_crossing_points": 15
+      }
     }
   ],
   "summary": {
@@ -1675,7 +2093,7 @@
       {
         "check": "all selected records exist and match their sha256 pins",
         "ok": true,
-        "detail": "13 pinned sources verified"
+        "detail": "18 pinned sources verified"
       },
       {
         "check": "README target table: 10 rows, expected names and target text",

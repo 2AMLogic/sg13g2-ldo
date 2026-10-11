@@ -10,6 +10,7 @@
 - All closed-loop numbers are SG13CMOS5L-branch evidence (DR-0007 'What evidence exists'); no closed-loop evidence exists on the SG13G2 branch.
 - No post-layout (extracted) performance evidence exists for any row; layout reports in layout/ are DRC/LVS/ERC and carry no performance metrics.
 - Row 9 (Startup) reports the explicitly selected committed startup campaign: measured failures are measured failures, missing or insufficient points are never passes, and the evaluation methodology is PROPOSED (DR-0009), not ratified. Row 9 stays Open.
+- Row 10 (Stability) PM/GM verdicts follow the PROPOSED margin classification DR-0014, applied offline to the selected record's committed loop-gain traces: a miss inside the sweep is a fail, a pass needs a bounded sweep ceiling, everything else stays ambiguous with its reason. Row 10 stays Open.
 - Other T1 items are not declared satisfied by this artifact.
 
 ## Selection and sources
@@ -17,7 +18,7 @@
 - Circuit record (explicitly selected, hash-pinned): `ldo-cmos5l-pvt-sweep` / `20261010-025634-60a3e81`
 - Bare-device context record: `20260909-220347-ed18110` (never used as a closed-loop measurement)
 - Startup campaign (explicitly selected, hash-pinned, proposed methodology): `20261010-104827-91e92aa` stage `grid`
-- Selection file: `sim/characterization/selection.json` sha256 `f464fe0e071083555416f27cd576a177a72deeb60983430a69a7699fde5a4288`
+- Selection file: `sim/characterization/selection.json` sha256 `e6aa6a5e181c3c101b10922aee902e4d5b2bac23ddc963338f7fa9791d6c8ce9`
 - Design freshness: **current**
 
 | Role | Path | sha256 | Pinned |
@@ -31,12 +32,17 @@
 | design_netlist_freshness | `design/sg13cmos5l/netlist/ldo_core_cmos5l.spice` | `7953b25be4cb00053f8df5f283bee0500f60a826b7a2d6519b88a8578d222cc1` | yes |
 | design_netlist_freshness | `design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice` | `7982d728a2db933165eedcae69feaa4985dbddf54c269fc68b82d88577c8e38c` | yes |
 | ratification_record | `spec/decision-records/DR-0007-target-spec-row-ratification.md` | `74496ee0800de6de36ff2f045796a7c2f802f6d647439255df5a8c8e69451556` | recorded |
+| row10_classification_csv | `sim/ldo-cmos5l-pvt-sweep/evidence/20261010-025634-60a3e81/row10-margins.csv` | `6eaeca16a2b2e26a293acd0c44fa6ddd7b5c8b5137e36a466bcb5e1e1279e828` | yes |
+| row10_classification_json | `sim/ldo-cmos5l-pvt-sweep/evidence/20261010-025634-60a3e81/row10-margins.json` | `9b5f408e3ab73da894f41ebfc95a93f32de1406f38c1cc57cc7af39dab463f02` | yes |
+| row10_classifier_source | `sim/ldo-cmos5l-pvt-sweep/ac_metrics.py` | `6e96859b839bcb19aaa702eb20a593bfc8914b7b388a8783298e416e65fefd5e` | yes |
+| row10_classifier_source | `sim/ldo-cmos5l-pvt-sweep/dc_metrics.py` | `782319eb4ef619b040f3a4001af67a10def775c9cf17e37fe15b4dd8f3340c81` | yes |
+| row10_classifier_source | `sim/ldo-cmos5l-pvt-sweep/row10_margins.py` | `a6f6d1129095b2fcb73c8c9462eb54b7588259d4118aa932d86c5b01f2a227f7` | yes |
 | startup_design_core_freshness | `design/sg13cmos5l/netlist/ldo_core_cmos5l.spice` | `7953b25be4cb00053f8df5f283bee0500f60a826b7a2d6519b88a8578d222cc1` | yes |
 | startup_design_error_amp_freshness | `design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice` | `7982d728a2db933165eedcae69feaa4985dbddf54c269fc68b82d88577c8e38c` | yes |
 | startup_grid_csv | `sim/ldo-cmos5l-pvt-sweep/records/20261010-104827-91e92aa-startup-grid.csv` | `eeabf83b88b5ae5170dab972f53634dfd4998103b4bddbd03953580fff4a80c9` | yes |
 | startup_manifest_json | `sim/ldo-cmos5l-pvt-sweep/records/20261010-104827-91e92aa-startup-grid.manifest.json` | `7a73961bfd61f72eb48670b6a66c1b5ae70981a17977ca14cf8c271f9f45f9bc` | yes |
 | startup_record_md | `sim/ldo-cmos5l-pvt-sweep/records/20261010-104827-91e92aa-startup-grid.md` | `d85433a0dd32aa9d3d1152aa32ae032fc6482d6ec28a24e214f889033e50c14b` | yes |
-| superseded_evidence_statement | `sim/ldo-cmos5l-pvt-sweep/README.md` | `3dad199c58bf1b203e2b751432962601e45735db2fc646085f008f961f6eaa0b` | recorded |
+| superseded_evidence_statement | `sim/ldo-cmos5l-pvt-sweep/README.md` | `9f247523c5b985ed72fe48ae61f98e9379a1ce9e02ae525dc0902c81766288a3` | recorded |
 | target_table | `README.md` | `7aa5ec43fdffbdd3ff9db9c8fffbffd7a03a0f9d145ff6796b86633138e6fd71` | recorded |
 
 ## Per-row summary
@@ -290,27 +296,34 @@ Verdict key: `pass_*` = measured metrics meet the bound at the stated conditions
 
 - Target: 0–50 mA, C_out 0.33–4.7 µF effective, ESR 0–500 mΩ; PM ≥ 45°, GM ≥ 10 dB worst corner; stretch: capless variant (separate fork)
 - Ratification: open_unratified (README: OPEN — unratified (one load/C_out/ESR point only); DR-0007: Open, deterministic)
-- Note: Cc value tolerance (ss/125C only, sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.cc-tolerance.csv): PM, GM and PSRR all hold for Cc in x0.647..x1.524 of nominal.
+- Note: Cc value tolerance (ss/125C only, sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.cc-tolerance.csv): PM, GM and PSRR all hold for Cc in x0.647..x1.524 of nominal (first-crossing reading, pre-DR-0014).
+- Note: PM/GM verdicts follow the PROPOSED margin classification spec/decision-records/DR-0014-row10-stability-margin-classification.md applied offline to the committed traces (sim/ldo-cmos5l-pvt-sweep/evidence/20261010-025634-60a3e81/row10-margins.csv); row 10 stays Open (DR-0007) and nothing is ratified.
 - Coverage of the row as written: partial. Gaps:
   - one (Cout, ESR, load) point only: 1 uF, 0 ohm, 1 mA -- not 0.33-4.7 uF, 0-500 mohm, 0-50 mA
   - Cc is un-cornered; Cc tolerance checked at ss/125C only
-  - 15 of 45 points have more than one 0 dB crossing (ambiguous scalar PM)
+  - sweep ceiling 100 MHz bounded at 0 of 45 points (loop gain near 0 dB and rising at the ceiling): no PM or GM pass can be scored under DR-0014 until a bench resolves the loop gain above 100 MHz
+  - 15 of 45 points have two 0 dB crossings
 
-- **phase margin (first 0 dB crossing)** (deg): ambiguous; bound ge 45.0 deg; 30/45 pass, 0 fail, 15 ambiguous, 0 censored upper bound
-  - worst case 53.8710338 at ss/125C/res_bcs
-  - conditions: Vin = 3.30 V, Iload = 1 mA, Cout = 1 uF, ESR = 0, ideal 0.90 V reference; Cc nominal (MoM-cap model has no corner spread at this PDK pin)
-  - source: `sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv` column `phase_margin_deg`
-  - ambiguous points: tt/-40C/res_typ, tt/-40C/res_wcs, tt/27C/res_wcs, ss/-40C/res_wcs, ff/-40C/res_typ, ff/-40C/res_bcs, ff/-40C/res_wcs, ff/27C/res_typ, ff/27C/res_wcs, sf/-40C/res_typ, sf/-40C/res_bcs, sf/-40C/res_wcs, sf/27C/res_wcs, fs/-40C/res_typ, fs/-40C/res_wcs
-  - at those points: first-crossing PM 74.3390934..76.7959245 deg, record phase_margin_worst_deg -166.185006..-158.026268 deg (unresolved)
-  - note: Points with more than one 0 dB crossing are not scored: the scalar PM is the first crossing only and the record's phase_margin_worst_deg is reported beside it unresolved. No scalar pass is manufactured for them.
-- **gain margin (first -180 deg crossing)** (dB): pass; bound ge 10.0 dB; 45/45 pass, 0 fail, 0 ambiguous, 0 censored upper bound
-  - worst case 13.8525525 at ff/-40C/res_wcs
-  - conditions: Vin = 3.30 V, Iload = 1 mA, Cout = 1 uF, ESR = 0, ideal 0.90 V reference; Cc nominal (MoM-cap model has no corner spread at this PDK pin)
-  - source: `sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv` column `gain_margin_db`
+- **phase margin, DR-0014: minimum over every 0 dB crossing in the sweep** (deg): ambiguous; bound ge 45.0 deg; 0/45 pass, 0 fail, 45 ambiguous, 0 censored upper bound
+  - conditions: Vin = 3.30 V, Iload = 1 mA, Cout = 1 uF, ESR = 0, ideal 0.90 V reference; Cc nominal (MoM-cap model has no corner spread at this PDK pin); loop-gain trace 1 Hz-100 MHz, 20 points/decade (the committed bench's sweep floor and ceiling); PROPOSED classification (DR-0014), not ratified
+  - source: `sim/ldo-cmos5l-pvt-sweep/evidence/20261010-025634-60a3e81/row10-margins.csv` column `pm_deg`
+  - ambiguous points: tt/-40C/res_typ, tt/-40C/res_bcs, tt/-40C/res_wcs, tt/27C/res_typ, tt/27C/res_bcs, tt/27C/res_wcs, tt/125C/res_typ, tt/125C/res_bcs, tt/125C/res_wcs, ss/-40C/res_typ, ss/-40C/res_bcs, ss/-40C/res_wcs, ss/27C/res_typ, ss/27C/res_bcs, ss/27C/res_wcs, ss/125C/res_typ, ss/125C/res_bcs, ss/125C/res_wcs, ff/-40C/res_typ, ff/-40C/res_bcs, ff/-40C/res_wcs, ff/27C/res_typ, ff/27C/res_bcs, ff/27C/res_wcs, ff/125C/res_typ, ff/125C/res_bcs, ff/125C/res_wcs, sf/-40C/res_typ, sf/-40C/res_bcs, sf/-40C/res_wcs, sf/27C/res_typ, sf/27C/res_bcs, sf/27C/res_wcs, sf/125C/res_typ, sf/125C/res_bcs, sf/125C/res_wcs, fs/-40C/res_typ, fs/-40C/res_bcs, fs/-40C/res_wcs, fs/27C/res_typ, fs/27C/res_bcs, fs/27C/res_wcs, fs/125C/res_typ, fs/125C/res_bcs, fs/125C/res_wcs
+  - reasons (points): ceiling_unbounded 45
+  - sweep ceiling bounded at 0 of 45 points: loop gain at 100 MHz -1.165..0.5281 dB, change over the last decade +5.32..+12.46 dB (rising); low-end premise holds at 45 of 45
+  - 15 points have two 0 dB crossings: first-crossing margin 74.34..76.8 deg, second (rising) crossing 158..166.2 deg from the critical point; the record's phase_margin_worst_deg (-166.2..-158) is 180 + unwrapped phase, not a margin
+  - superseded first-crossing reading (pre-DR-0014, not a verdict): 30 of 45 scored >= 45 deg, 15 unscored; range 53.87..76.93 deg
+  - note: Per-crossing margin = angular distance of the crossing phase from the critical point (180 deg mod 360), signed negative after an in-band encirclement. A miss inside the sweep is a fail; a pass also needs a bounded sweep ceiling (loop gain <= -10 dB and non-increasing over the last decade) and a sample bracket clear of the bound. Anything else stays ambiguous with its reason.
+- **gain margin, DR-0014: minimum over every -180 deg crossing in the sweep** (dB): ambiguous; bound ge 10.0 dB; 0/45 pass, 0 fail, 45 ambiguous, 0 censored upper bound
+  - conditions: Vin = 3.30 V, Iload = 1 mA, Cout = 1 uF, ESR = 0, ideal 0.90 V reference; Cc nominal (MoM-cap model has no corner spread at this PDK pin); loop-gain trace 1 Hz-100 MHz, 20 points/decade (the committed bench's sweep floor and ceiling); PROPOSED classification (DR-0014), not ratified
+  - source: `sim/ldo-cmos5l-pvt-sweep/evidence/20261010-025634-60a3e81/row10-margins.csv` column `gm_db`
+  - ambiguous points: tt/-40C/res_typ, tt/-40C/res_bcs, tt/-40C/res_wcs, tt/27C/res_typ, tt/27C/res_bcs, tt/27C/res_wcs, tt/125C/res_typ, tt/125C/res_bcs, tt/125C/res_wcs, ss/-40C/res_typ, ss/-40C/res_bcs, ss/-40C/res_wcs, ss/27C/res_typ, ss/27C/res_bcs, ss/27C/res_wcs, ss/125C/res_typ, ss/125C/res_bcs, ss/125C/res_wcs, ff/-40C/res_typ, ff/-40C/res_bcs, ff/-40C/res_wcs, ff/27C/res_typ, ff/27C/res_bcs, ff/27C/res_wcs, ff/125C/res_typ, ff/125C/res_bcs, ff/125C/res_wcs, sf/-40C/res_typ, sf/-40C/res_bcs, sf/-40C/res_wcs, sf/27C/res_typ, sf/27C/res_bcs, sf/27C/res_wcs, sf/125C/res_typ, sf/125C/res_bcs, sf/125C/res_wcs, fs/-40C/res_typ, fs/-40C/res_bcs, fs/-40C/res_wcs, fs/27C/res_typ, fs/27C/res_bcs, fs/27C/res_wcs, fs/125C/res_typ, fs/125C/res_bcs, fs/125C/res_wcs
+  - reasons (points): ceiling_unbounded 45
+  - superseded first -180 deg crossing reading (pre-DR-0014, not a verdict): 45 of 45 >= 10 dB, range 13.85..29.87 dB; no committed trace bounds the loop gain above 100 MHz, so none of these is a pass under DR-0014
+  - note: A trace with no -180 deg crossing is never scored as a miss or as infinite margin: it passes only with a bounded sweep ceiling, which bounds the margin above the ceiling below by -(loop gain at the ceiling) >= 10 dB.
 
 ## Completeness checks
 
-- [x] all selected records exist and match their sha256 pins -- 13 pinned sources verified
+- [x] all selected records exist and match their sha256 pins -- 18 pinned sources verified
 - [x] README target table: 10 rows, expected names and target text
 - [x] DR-0007 ratification table covers rows 1-10 exactly once and agrees with README
 - [x] PVT grid complete (5 process x 3 temperature x 3 resistor corner = 45 points, all numeric fields finite)
