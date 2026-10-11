@@ -1,0 +1,199 @@
+{
+  "netlist": "tb_npn13G2l_ibsweep.spice",
+  "backend": "batch",
+  "batch": {
+    "runner_version_check": "warn",
+    "capacity_wait_s": 1800
+  },
+  "models": {
+    "lib": "hbt-corners.lib"
+  },
+  "analysis": {
+    "kind": "dc",
+    "args": "Vs -8 -2.3 0.02"
+  },
+  "measurements": [
+    {
+      "name": "ib_l50_v030",
+      "spice": ".meas dc ib_l50_v030 FIND v(ibn) WHEN i(vc_l50_v030)=-0.05",
+      "unit": "A"
+    },
+    {
+      "name": "vb_l50_v030",
+      "spice": ".meas dc vb_l50_v030 FIND v(b_l50_v030) WHEN i(vc_l50_v030)=-0.05",
+      "unit": "V"
+    },
+    {
+      "name": "icext_l50_v030",
+      "spice": ".meas dc icext_l50_v030 MIN i(vc_l50_v030)",
+      "unit": "A"
+    },
+    {
+      "name": "ib_l50_v100",
+      "spice": ".meas dc ib_l50_v100 FIND v(ibn) WHEN i(vc_l50_v100)=-0.05",
+      "unit": "A"
+    },
+    {
+      "name": "vb_l50_v100",
+      "spice": ".meas dc vb_l50_v100 FIND v(b_l50_v100) WHEN i(vc_l50_v100)=-0.05",
+      "unit": "V"
+    },
+    {
+      "name": "icext_l50_v100",
+      "spice": ".meas dc icext_l50_v100 MIN i(vc_l50_v100)",
+      "unit": "A"
+    },
+    {
+      "name": "ib_l50_v150",
+      "spice": ".meas dc ib_l50_v150 FIND v(ibn) WHEN i(vc_l50_v150)=-0.05",
+      "unit": "A"
+    },
+    {
+      "name": "vb_l50_v150",
+      "spice": ".meas dc vb_l50_v150 FIND v(b_l50_v150) WHEN i(vc_l50_v150)=-0.05",
+      "unit": "V"
+    },
+    {
+      "name": "icext_l50_v150",
+      "spice": ".meas dc icext_l50_v150 MIN i(vc_l50_v150)",
+      "unit": "A"
+    },
+    {
+      "name": "ib_l50_v183",
+      "spice": ".meas dc ib_l50_v183 FIND v(ibn) WHEN i(vc_l50_v183)=-0.05",
+      "unit": "A"
+    },
+    {
+      "name": "vb_l50_v183",
+      "spice": ".meas dc vb_l50_v183 FIND v(b_l50_v183) WHEN i(vc_l50_v183)=-0.05",
+      "unit": "V"
+    },
+    {
+      "name": "icext_l50_v183",
+      "spice": ".meas dc icext_l50_v183 MIN i(vc_l50_v183)",
+      "unit": "A"
+    },
+    {
+      "name": "ib_l100_v030",
+      "spice": ".meas dc ib_l100_v030 FIND v(ibn) WHEN i(vc_l100_v030)=-0.1",
+      "unit": "A"
+    },
+    {
+      "name": "vb_l100_v030",
+      "spice": ".meas dc vb_l100_v030 FIND v(b_l100_v030) WHEN i(vc_l100_v030)=-0.1",
+      "unit": "V"
+    },
+    {
+      "name": "icext_l100_v030",
+      "spice": ".meas dc icext_l100_v030 MIN i(vc_l100_v030)",
+      "unit": "A"
+    },
+    {
+      "name": "ib_l100_v100",
+      "spice": ".meas dc ib_l100_v100 FIND v(ibn) WHEN i(vc_l100_v100)=-0.1",
+      "unit": "A"
+    },
+    {
+      "name": "vb_l100_v100",
+      "spice": ".meas dc vb_l100_v100 FIND v(b_l100_v100) WHEN i(vc_l100_v100)=-0.1",
+      "unit": "V"
+    },
+    {
+      "name": "icext_l100_v100",
+      "spice": ".meas dc icext_l100_v100 MIN i(vc_l100_v100)",
+      "unit": "A"
+    },
+    {
+      "name": "ib_l100_v150",
+      "spice": ".meas dc ib_l100_v150 FIND v(ibn) WHEN i(vc_l100_v150)=-0.1",
+      "unit": "A"
+    },
+    {
+      "name": "vb_l100_v150",
+      "spice": ".meas dc vb_l100_v150 FIND v(b_l100_v150) WHEN i(vc_l100_v150)=-0.1",
+      "unit": "V"
+    },
+    {
+      "name": "icext_l100_v150",
+      "spice": ".meas dc icext_l100_v150 MIN i(vc_l100_v150)",
+      "unit": "A"
+    },
+    {
+      "name": "ib_l100_v183",
+      "spice": ".meas dc ib_l100_v183 FIND v(ibn) WHEN i(vc_l100_v183)=-0.1",
+      "unit": "A"
+    },
+    {
+      "name": "vb_l100_v183",
+      "spice": ".meas dc vb_l100_v183 FIND v(b_l100_v183) WHEN i(vc_l100_v183)=-0.1",
+      "unit": "V"
+    },
+    {
+      "name": "icext_l100_v183",
+      "spice": ".meas dc icext_l100_v183 MIN i(vc_l100_v183)",
+      "unit": "A"
+    },
+    {
+      "name": "ib_cell_i100u",
+      "spice": ".meas dc ib_cell_i100u FIND v(ibn) WHEN i(vc_cell)=-0.0001",
+      "unit": "A"
+    },
+    {
+      "name": "vb_cell_i100u",
+      "spice": ".meas dc vb_cell_i100u FIND v(b_cell) WHEN i(vc_cell)=-0.0001",
+      "unit": "V"
+    },
+    {
+      "name": "ib_cell_i1m",
+      "spice": ".meas dc ib_cell_i1m FIND v(ibn) WHEN i(vc_cell)=-0.001",
+      "unit": "A"
+    },
+    {
+      "name": "vb_cell_i1m",
+      "spice": ".meas dc vb_cell_i1m FIND v(b_cell) WHEN i(vc_cell)=-0.001",
+      "unit": "V"
+    },
+    {
+      "name": "ib_cell_i10m",
+      "spice": ".meas dc ib_cell_i10m FIND v(ibn) WHEN i(vc_cell)=-0.01",
+      "unit": "A"
+    },
+    {
+      "name": "vb_cell_i10m",
+      "spice": ".meas dc vb_cell_i10m FIND v(b_cell) WHEN i(vc_cell)=-0.01",
+      "unit": "V"
+    },
+    {
+      "name": "ib_cell_i25m",
+      "spice": ".meas dc ib_cell_i25m FIND v(ibn) WHEN i(vc_cell)=-0.025",
+      "unit": "A"
+    },
+    {
+      "name": "vb_cell_i25m",
+      "spice": ".meas dc vb_cell_i25m FIND v(b_cell) WHEN i(vc_cell)=-0.025",
+      "unit": "V"
+    },
+    {
+      "name": "icext_cell",
+      "spice": ".meas dc icext_cell MIN i(vc_cell)",
+      "unit": "A"
+    }
+  ],
+  "corners": {
+    "process": [
+      "bcs",
+      "typ",
+      "wcs"
+    ],
+    "temperature_c": [
+      -40,
+      27,
+      125
+    ]
+  },
+  "options": {
+    "timeout_s": 120,
+    "keep_artifacts": false,
+    "stage_model_inputs": true
+  }
+}
