@@ -1410,9 +1410,18 @@ done
   echo "  across the whole grid), or #35 (the \`Cc\` re-compensation that"
   echo "  closes the res_bcs/125C phase-margin gap #31 found), or #67 (the"
   echo "  active-high \`EN\` interface, DR-0008, run with EN tied to VIN)."
+  # Installed-revision provenance is READ from the install (issue #155): the
+  # fetcher's .fetched-version marker, else a git checkout's HEAD, else
+  # "not recorded" -- never a hard-coded commit string.
+  pdk_installed="not recorded (no .fetched-version marker, not a git checkout)"
+  if [[ -f "${PDK_ROOT}/${PDK}/.fetched-version" ]]; then
+    pdk_installed="$(cat "${PDK_ROOT}/${PDK}/.fetched-version") (read from ${PDK}/.fetched-version)"
+  elif git -C "${PDK_ROOT}/${PDK}" rev-parse HEAD >/dev/null 2>&1; then
+    pdk_installed="$(git -C "${PDK_ROOT}/${PDK}" rev-parse HEAD) (git rev-parse HEAD)"
+  fi
   echo "- **PDK**: \`${PDK}\` at \`${PDK_ROOT}\` -- pinned revision: see"
-  echo "  \`sim/pdk-cmos5l.json\` (commit \`607e18d\`, re-verified against the"
-  echo "  installed checkout)."
+  echo "  \`sim/pdk-cmos5l.json\`. Installed revision as read from the install:"
+  echo "  \`${pdk_installed}\`."
   echo "- **OSDI models**: \`${OSDI_DIR}\` -- built by"
   echo "  \`PDK=${PDK} sim/tools/build-osdi.sh\`."
   echo "- **ngspice**: \`${NGSPICE_VERSION}\`"
