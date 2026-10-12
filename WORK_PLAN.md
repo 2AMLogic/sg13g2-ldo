@@ -25,7 +25,8 @@ _None._
 
 Issues currently being built (`loom:building`).
 
-_None._
+- **#155**: Re-stamp SG13CMOS5L PDK pin from klayout-tools (IHP-Open-PDK dev f7bca326)
+- **#158**: SG13CMOS5L: measure four device operating points for DR-0015 E1
 
 ## PRs Awaiting Review
 
@@ -68,7 +69,7 @@ Issues carrying `loom:curated`.
 | Operator merge-risk holds | 0 |
 | Operator priority | 0 |
 | Ready (`loom:issue`) | 0 |
-| In Progress (`loom:building`) | 0 |
+| In Progress (`loom:building`) | 2 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
 | Curated | 7 |
