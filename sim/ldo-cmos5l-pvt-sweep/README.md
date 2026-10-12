@@ -1304,6 +1304,26 @@ weakened guard fail CI. It writes no records, changes no signoff verdict, and
 makes no PVT or spec-passing claim. It does not replace the missing PDK-backed
 `--check-env` preflight described above, which remains local/manual.
 
+## Re-run on the re-stamped PDK (issue #155)
+
+The PDK moved to the `ihp-sg13cmos5l/` subtree of `IHP-Open-PDK` `dev` @
+`f7bca326` (`sim/pdk-cmos5l.json`). Every record cited above that names
+commit `607e18d` is a run on the **old** pin and stays labelled that way.
+The campaigns that support current claims were re-run on the new install, as
+new records: PVT `20261012-060932-c53f0177` (214/214; an earlier attempt
+`20261012-042925-c53f0177` is INCOMPLETE, 124/214, because the shared fleet
+refused two groups at its 8-instance cap), startup `20261012-063918-bb1d73c`,
+dropout `20261012-065435-b53a442f`, two-injection loop gain
+`20261012-071449-6a3c1475`, dynamic DoE `20261012-074813-c94873ba` plus
+refinement `20261012-080951-142dac4a`. The PVT, loop-gain and enable result
+files are identical to the old selected records; startup metrics agree to
+1e-6 relative with the same 135 failures; the dropout and DoE records were
+last run on the pre-#89 netlists, so their small differences mix the design
+change with the PDK. Full per-record accounting, tool vintages and what was
+not re-run: [`../migration-inventory-155.md`](../migration-inventory-155.md).
+`run_sweep.sh` now records the installed PDK revision it reads from the
+install's `.fetched-version` marker instead of a hard-coded commit string.
+
 ## Reproducing
 
 ```bash
