@@ -49,6 +49,7 @@ Issues carrying `loom:curated`.
 - **#63**: SG13CMOS5L current limiter: topology and sizing design plan for row 8 *(curated)*
 - **#64**: sim: parameterise loop-gain/PSRR benches over load, Cout and ESR for rows 3, 6, 10 dynamic coverage *(curated)*
 - **#71**: Clarify row 4 branch status: ratified target, SG13CMOS5L pass, SG13G2 gap *(curated)*
+- **#155**: Re-stamp SG13CMOS5L PDK pin from klayout-tools (IHP-Open-PDK dev f7bca326) *(curated)*
 
 ## Proposed (Architect / Hermit)
 
@@ -70,7 +71,7 @@ Issues carrying `loom:curated`.
 | In Progress (`loom:building`) | 0 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
-| Curated | 6 |
+| Curated | 7 |
 | Architect / Hermit proposals | 2 |
 | Active epics | 2 |
 <!-- guide:plan-body:end -->

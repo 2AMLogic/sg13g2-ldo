@@ -4,6 +4,8 @@ Chronological record of recently merged pull requests and closed issues, maintai
 
 ### 2026-10-11
 
+- **Issue #153** (closed): Guard decision review: keep rm-scope-unresolved-var flagged
+
 - **PR #152**: layout: add an SG13G2 HBT vendor-fixture extraction/LVS probe witnessing the upstream bipolar gap
 - **PR #151**: sim: two-injection (Middlebrook) loop-gain bench and 45-point fleet comparison (#135)
 - **PR #149**: spec: DR-0016 keep in-tree error amplifier; reuse.lock evaluate -> kept
