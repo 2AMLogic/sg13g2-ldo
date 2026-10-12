@@ -1,0 +1,77 @@
+{
+ "backend": "batch",
+ "client_klt": "klt 0.7.0+gff97d692a147",
+ "runner_klt": [
+  "0.5.0"
+ ],
+ "engines": [
+  "ngspice-46"
+ ],
+ "staged_osdi_sha256": {
+  "psp103": "2e4299c4683997e26469410dc1ab36b02ced924b1ac0972d6c4eae360e1fc796",
+  "psp103_nqs": "839b164483205601c09032951f6c41d3580f15e506dc40a7202950d3afbdfc7d",
+  "mosvar": "25e64a374ab523dbfeb7ffed75dcb8b086ee10f06120a9074bd68b92d7b0fb41",
+  "r3_cmc": "4fead17bc2e9cbfe3df6f106e9dbd6f2cdcd48c002af9c56c2ca0b0712fce350",
+  "cap_cmomi": "61491e722c30425eb0e6ac0e79bc5ad28b5491ad516d5405a960c6412acac704",
+  "cap_cmomf": "52ce5c95055aeb8d7d3c72c7fba5b78093174a9d2d9142360ebb4d5ae0b8f714"
+ },
+ "reused_reports": {},
+ "jobs": [
+  {
+   "group": "g00_dcsweep_tt_-40c_rtyp",
+   "job_id": "klt-sim-8191973fe465",
+   "runner_klt_version": "0.5.0",
+   "instance_type": "m7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 45,
+   "requested": 45,
+   "points": [
+    "dcsweep_tt_-40c_rtyp",
+    "dcsweep_tt_-40c_rbcs",
+    "dcsweep_tt_-40c_rwcs",
+    "dcsweep_tt_27c_rtyp",
+    "dcsweep_tt_27c_rbcs",
+    "dcsweep_tt_27c_rwcs",
+    "dcsweep_tt_125c_rtyp",
+    "dcsweep_tt_125c_rbcs",
+    "dcsweep_tt_125c_rwcs",
+    "dcsweep_ff_-40c_rtyp",
+    "dcsweep_ff_-40c_rbcs",
+    "dcsweep_ff_-40c_rwcs",
+    "dcsweep_ff_27c_rtyp",
+    "dcsweep_ff_27c_rbcs",
+    "dcsweep_ff_27c_rwcs",
+    "dcsweep_ff_125c_rtyp",
+    "dcsweep_ff_125c_rbcs",
+    "dcsweep_ff_125c_rwcs",
+    "dcsweep_ss_-40c_rtyp",
+    "dcsweep_ss_-40c_rbcs",
+    "dcsweep_ss_-40c_rwcs",
+    "dcsweep_ss_27c_rtyp",
+    "dcsweep_ss_27c_rbcs",
+    "dcsweep_ss_27c_rwcs",
+    "dcsweep_ss_125c_rtyp",
+    "dcsweep_ss_125c_rbcs",
+    "dcsweep_ss_125c_rwcs",
+    "dcsweep_sf_-40c_rtyp",
+    "dcsweep_sf_-40c_rbcs",
+    "dcsweep_sf_-40c_rwcs",
+    "dcsweep_sf_27c_rtyp",
+    "dcsweep_sf_27c_rbcs",
+    "dcsweep_sf_27c_rwcs",
+    "dcsweep_sf_125c_rtyp",
+    "dcsweep_sf_125c_rbcs",
+    "dcsweep_sf_125c_rwcs",
+    "dcsweep_fs_-40c_rtyp",
+    "dcsweep_fs_-40c_rbcs",
+    "dcsweep_fs_-40c_rwcs",
+    "dcsweep_fs_27c_rtyp",
+    "dcsweep_fs_27c_rbcs",
+    "dcsweep_fs_27c_rwcs",
+    "dcsweep_fs_125c_rtyp",
+    "dcsweep_fs_125c_rbcs",
+    "dcsweep_fs_125c_rwcs"
+   ]
+  }
+ ]
+}
