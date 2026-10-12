@@ -52,10 +52,16 @@ live request selects the successor, and that the successor's instance
 matches the current core's port count with `EN` = `VIN`. It also ships
 negative controls.
 
-**No row-2 result exists yet for the EN design.** Everything under
-"Measurement definition" and the numbers in the record describe the pre-EN
-core. A row-2 statement about the EN core needs a new campaign record
-(`run_campaign.sh submit` on a new record id).
+**Row-2 results for the EN design: record `20261012-093854-934dbd7`**
+(issue #155, on the re-stamped PDK `f7bca326`). It ran the live
+`tb_row2_accuracy_en.spice` deck through `run_campaign.sh submit` on a new
+record id; 2000/2000 draws in window, the same ≥ 99.08 % (95 %) statement
+per population as before, and the same gmin-stepping caveat. The
+measurement definition below applies unchanged. Its numbers agree with the
+pre-EN record `20261009-003009-3ee8306` to ≤ 1 nV per draw at −40/27 °C and
+≤ 1.75 µV at 125 °C; the staged model files are byte-identical between the
+two, so that residue is attributed to the design, not the PDK (record md,
+"Comparison"). The pre-EN record stays historical: old pin, five-port core.
 `request-row2-smoke-en.json` is a one-unit bench check (tt_nom, 27 °C,
 MC off). Its batch run is non-gating evidence, not a record:
 [`evidence/20261010-193208-028a3f8-en-smoke/`](evidence/20261010-193208-028a3f8-en-smoke/README.md).
@@ -248,7 +254,13 @@ in CI, klayout-tools#2900).
 
 - [`records/20261009-003009-3ee8306.md`](records/20261009-003009-3ee8306.md):
   the first campaign (issue #56), five-port pre-EN core, bench
-  `tb_row2_accuracy.spice`.
+  `tb_row2_accuracy.spice`, old PDK pin `607e18d`. Historical.
+- [`records/20261012-093854-934dbd7.md`](records/20261012-093854-934dbd7.md):
+  the same campaign on the six-port EN core (current design), bench
+  `tb_row2_accuracy_en.spice`, PDK pin `f7bca326` (issue #155). `klt yield`
+  reports from klt `0.7.0+gb82427b30c96` with the native extension built in
+  a scratch venv; that build reproduces the first record's reports byte for
+  byte.
 
 Non-gating evidence (not a record; `run_campaign.sh check` does not read it):
 

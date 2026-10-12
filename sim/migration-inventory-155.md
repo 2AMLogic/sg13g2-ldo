@@ -48,6 +48,10 @@ ran on the fleet with the scratch install (pin `f7bca326`), client klt
 `0.7.0+gff97d692a147`, runner klt 0.5.0, ngspice-46, record ids carry the
 date `20261012`. Fleet failures are quoted verbatim.
 
+The table is the first increment's account (PR #157). Rows 2, 3, 6, 7, 8 and
+10 were completed or qualified by the second increment; see "Second
+increment" below, which supersedes their "New-pin run" cells.
+
 | # | Campaign / citation | Old record (old pin, client klt, design) | Selected? | New-pin run | Old vs new |
 |---|---|---|---|---|---|
 | 1 | Main PVT x resistor grid, DC + AC (rows 2-8), Cc sensitivity, Cc tolerance, divider attribution, 214 points | `20261011-070111-5391c68` (`607e18d`, `0.7.0+g0d0312b30708`, netlists `08a7b857`/`75ee39ce`) | Yes: `selection.json` `circuit_record`, `dc_informational_evidence`, `row10_margin_evidence` | `20261012-060932-c53f0177`: 214/214, complete. An earlier attempt `20261012-042925-c53f0177` is INCOMPLETE (124/214): groups `g00_dcsweep_tt_-40c_rtyp` and `g01_loopgain_tt_-40c_rtyp` were refused for the whole 3600 s cap-wait with `batch-fleet-provision.sh launch failed (exit 1): error: 8 instance(s) already running + 1 requested exceeds BATCH_MAX_CONCURRENT_INSTANCES=8`. The complete record was submitted with `SWEEP_BATCH_REUSE_WORK` of the incomplete one (3 groups reused: `g02`, `g03`, `g21`, `_batch/reused-reports.tsv`). Nothing ran locally. | All five CSVs (main, sensitivity, cc-tolerance, delta, divider-attribution) are `cmp`-identical to the old record. No metric or verdict moved. |
@@ -82,7 +86,7 @@ selection was compared before being left alone, and the old records stay
 labelled as runs on `607e18d`. The T1 report remains an honest non-T1
 (exit 3) result; no threshold, gate or verdict was changed.
 
-## Not done
+## Not done in the first increment (PR #157)
 
 - A Monte Carlo campaign on the live EN deck (no prior EN record exists).
 - Startup `ext` and `halfstep` stages on the new pin.
@@ -90,3 +94,36 @@ labelled as runs on `607e18d`. The T1 report remains an honest non-T1
   grids (re-reductions, not reruns).
 - An old-design-on-new-pin run to split the design (#89) and PDK contributions
   to the small dropout and DoE differences in rows 7 and 8.
+
+## Second increment
+
+Every simulation below ran on the batch fleet (`klt sim --backend batch`
+through the documented entry points; client klt `0.7.0+gff97d692a147`,
+runner klt 0.5.0, ngspice-46). No fleet submission was refused or failed in
+this increment. New-pin runs used the same scratch fetcher install
+(`.fetched-version` = `f7bca32694fe3d58be0cc7d9df4b9f5db7161a14`); the two
+DoE controls deliberately used the old install. No existing record,
+snapshot, corners or evidence file was edited.
+
+| # | Item | Run (record id) | Result | Old vs new |
+|---|---|---|---|---|
+| 10 | Monte Carlo row 2 on the live EN deck | `ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7` (`run_campaign.sh submit` + `analyse`; 9 fleet jobs listed in the record md) | 2000/2000 draws in window, ≥ 99.08 % at 95 % per population; negative control `detected`; reproduction bit-identical; sampler control zero spread. 368/2000 recovered (gmin) solves, disclosed as before. `run_campaign.sh check` passes. Row 2 stays Open, item 6 uncited. | First row-2 record of the EN design. Against the pre-EN, old-pin `20261009-003009-3ee8306`: same seeds, same pass/fail for all 2752 rows, per-draw `vout_v` within 1 nV at −40/27 °C, ≤ 1.75 µV at 125 °C. The 13 staged model files are byte-identical in all five requests, so the residue is the design (#67/#89), not the PDK. `klt yield` vintage: klt `0.7.0+gb82427b30c96` + native extension in a scratch venv (reproduces the old record's yield reports byte for byte). |
+| 6 | Startup `ext` / `halfstep` | Stages of run `20261012-063918-bb1d73c` (the new-pin grid's run, current design): `…-startup-ext.*` (16 points, 8 requests), `…-startup-halfstep.*` (2 points) | `ext`: 2 pass / 14 fail, complete (16/16 evaluated); `halfstep`: 2 fail, verdict unchanged vs the 1 us grid, but start overshoot moves −0.313 V (ff 125 C rwcs) and −0.107 V (ff −40 C rwcs). PDK pin and installed marker match in both manifests. | Not like-for-like with `20261010-104827-91e92aa` (pre-#89 design; three binding points, 24 + 3 points). The shared `ff` 125 C `res_wcs` point fails at all 8 load/Cout/ESR combinations in both. The larger halfstep shift strengthens the existing "overshoot not step-converged" caveat. |
+| 7 | Dropout: design held constant | `20261012-094155-934dbd7c` = pre-#89 netlists (`7953b25b`/`7982d728`, main `eab18e6f`) on the NEW pin, from a scratch clone of `934dbd7c` with only those two files replaced (the record's `input_sha256` names them; its `git_sha` is that clone's base). Fleet job `klt-sim-420e46df2522`. | 45/45 resolved, `definitive: true`, `reduce --check` passes. | CSV and all 45 raw DC grids **byte-identical** to `20261010-111618-19e8e39` (same netlists, old pin). The difference between `19e8e39` and `b53a442f` (worst point ≤ 0.15 µV) is therefore the #89 design change. |
+| 8 | DoE: design held constant | `20261012-100716-934dbd7c` (base, 384 sims) and `20261012-102846-934dbd7c` (refinement, 688 sims) = current netlists on the OLD install (`~/share/pdk`, git `607e18d`; snapshots and `_batch/*/inputs.sha256.json` name it). **Old-pin controls, not new-pin evidence.** | Same completeness as the new-pin runs (178/14 and 490/46 ok/failed). | Both CSVs (up to record ids), the refinement request and all 1072 raw AC traces **byte-identical** to `c94873ba` / `142dac4a`, although the staged `cap_cmomi`/`cap_cmomf` OSDI binaries differ in sha256 between the installs. The differences against `6df50fd` (PM ≤ 0.157 deg, GM ≤ 0.101 dB) are the #89 design change. |
+| 3 | Row-10 classification of the new PVT record | `evidence/20261012-060932-c53f0177/row10-margins.*` (`row10_record.py --record`; covered by `row10_record.py --check` in CI, test extended) | 45/45 ambiguous / ceiling-unbounded, as before | Identical to `evidence/20261011-070111-5391c68/` except record ids and the CSV hash that embeds them. |
+| 2, 8 | Item-5 DC reduction; DoE row-10 classification | `sim/migration-155-rereduce.py` (offline, in memory; output `sim/migration-155-rereduce.json`, `--check` in CI) | Item 5: 45/45 points valid, raw grid reproduces the record CSV, `dc-informational-summary.csv` identical to the committed one. DoE: same 536-point set, 0 points with a changed verdict, reason or status. | Item-5 inventory not minted for the new record: `item5_evidence.py` is hash-pinned and its provenance text names the old record and pin, so a new-record copy would carry false provenance; only the numeric summary is compared. DoE row-10 deltas vs `6df50fd`: PM ≤ 0.157 deg, GM ≤ 0.101 dB (design change, per row 8 above). |
+| 12 | Layout re-run log | `sim/migration-inventory-155.layout-run.log` | The first increment cited this file but did not commit it (`*.log` is git-ignored). It is now committed (force-added), unchanged from the dispatch host's scratch copy written by that run (`/tmp/run155-layout.log`, 2026-10-12 04:30Z). It is `run_flow.sh`'s stdout and does not itself print the PDK root. | — |
+
+Selection: `selection.json` and the signoff manifest are unchanged. The new
+MC record is not cited by T1 item 6 (row 2 Open, row 8 deferred); the new
+startup stages, controls and re-reductions change no selected verdict.
+
+### Still not done
+
+- A pre-EN (five-port) core on the new pin, which would make the MC
+  comparison a design-held-constant run like rows 7 and 8; the PDK-only
+  conclusion for the MC rests on the byte-identical staged model inputs.
+- A startup `ext`/`halfstep` run of the pre-#89 design on the new pin (the
+  new-pin stages use the current design and its own binding points).
+- A minted item-5 inventory for the new PVT record (see row 2, 8 above).

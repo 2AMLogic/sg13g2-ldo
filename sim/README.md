@@ -29,7 +29,10 @@ Three different things are easy to conflate here, so they are kept apart:
   that re-stamp were generated against the superseded archived-repository pin
   `607e18d` (kept in `pdk-cmos5l.json` as `superseded_pin`); they stay
   historical and are listed with their new-pin disposition in
-  [`migration-inventory-155.md`](migration-inventory-155.md).
+  [`migration-inventory-155.md`](migration-inventory-155.md). Two later
+  records also ran on the old install on purpose, as design-held-constant
+  PDK controls: dynamic DoE `20261012-100716-934dbd7c` and
+  `20261012-102846-934dbd7c` (same inventory, "Second increment").
 - **Recorded fleet-model provenance** -- what a given record's own committed
   raw reports show the simulator actually loaded. Several records ran on the
   EDA batch fleet, whose runner image bakes its own PDK and OSDI binaries

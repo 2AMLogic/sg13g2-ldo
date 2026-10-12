@@ -1,0 +1,84 @@
+{
+ "doe_row10": {
+  "caveat": "old record ran the pre-#89 design on the old pin; the delta mixes both",
+  "compared_with": "evidence/20261010-101245-6df50fd/row10-margins.*",
+  "metric_deltas": {
+   "gm_db": {
+    "max_abs_delta": 0.100764,
+    "points": 490
+   },
+   "pm_deg": {
+    "max_abs_delta": 0.157036,
+    "points": 536
+   }
+  },
+  "new_record": "20261012-080951-142dac4a",
+  "points": 536,
+  "points_with_verdict_reason_or_status_change": 0,
+  "same_point_set": true,
+  "summary_verdict_counts": {
+   "gm_reasons": {
+    "ceiling_unbounded": 432,
+    "in_band_crossing_below_bound": 90,
+    "resolution_limited|ceiling_unbounded": 14
+   },
+   "gm_verdicts": {
+    "ambiguous": 446,
+    "fail": 90
+   },
+   "pm_reasons": {
+    "ceiling_unbounded": 318,
+    "in_band_crossing_below_bound": 210,
+    "resolution_limited|ceiling_unbounded": 8
+   },
+   "pm_verdicts": {
+    "ambiguous": 326,
+    "fail": 210
+   }
+  },
+  "summary_verdict_counts_identical": true
+ },
+ "item5": {
+  "compared_with": "evidence/20261011-070111-5391c68/dc-informational-summary.csv",
+  "dc_informational_summary_identical": true,
+  "new_record": "20261012-060932-c53f0177",
+  "points": 45,
+  "points_valid": 45,
+  "raw_grid_reproduces_record_csv": true
+ },
+ "pdk_controls": [
+  {
+   "compared_with": "20261010-111618-19e8e39",
+   "control": "dropout: pre-#89 netlists on the NEW pin vs the same netlists on the old pin",
+   "control_record": "20261012-094155-934dbd7c",
+   "raw_traces": {
+    "differing": 0,
+    "files": 45,
+    "same_names": true
+   },
+   "record_csv_identical_up_to_record_ids": true
+  },
+  {
+   "compared_with": "20261012-074813-c94873ba",
+   "control": "dynamic DoE base: current netlists on the OLD pin vs the same netlists on the new pin",
+   "control_record": "20261012-100716-934dbd7c",
+   "raw_traces": {
+    "differing": 0,
+    "files": 384,
+    "same_names": true
+   },
+   "record_csv_identical_up_to_record_ids": true
+  },
+  {
+   "compared_with": "20261012-080951-142dac4a",
+   "control": "dynamic DoE refinement: current netlists on the OLD pin vs the same netlists on the new pin",
+   "control_record": "20261012-102846-934dbd7c",
+   "raw_traces": {
+    "differing": 0,
+    "files": 688,
+    "same_names": true
+   },
+   "record_csv_identical_up_to_record_ids": true
+  }
+ ]
+}
