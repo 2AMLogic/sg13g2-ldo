@@ -16,7 +16,7 @@
         "path": "signoff/evidence/item9-testbenches.inventory.json",
         "scope": "repo"
       },
-      "content_hash": "sha256:0f335ae295e1960966c1c72dd05ba59e30905803be4482c3fd30ff1bbaad7fda",
+      "content_hash": "sha256:b77543c2a5c20108ec2dbbe64df98dd2754a91f975627269b1355dd367a9a378",
       "role": "inventory"
     },
     "generator": {

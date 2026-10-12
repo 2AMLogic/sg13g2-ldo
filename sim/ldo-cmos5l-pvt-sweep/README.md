@@ -414,8 +414,14 @@ deliberate, not an oversight.
 ## PDK pin, corner naming, and the resistor/cap corner axes
 
 Pinned SG13CMOS5L revision: [`sim/pdk-cmos5l.json`](../pdk-cmos5l.json)
-(commit `607e18d`, re-verified against the installed checkout, matching the
-commit issue #21's body cited). `cornerMOShv.lib` at this pin is **byte-for-
+(commit `f7bca326` of `IHP-GmbH/IHP-Open-PDK` `dev`, subtree
+`ihp-sg13cmos5l/`, since issue #155). **Everything below this line that cites
+commit `607e18d` is historical**: those records were generated against the
+archived `IHP-GmbH/ihp-sg13cmos5l` repository at `607e18d` (issue #21's pin,
+re-verified against that installed checkout at the time) and are listed with
+their new-pin disposition in
+[`../migration-inventory-155.md`](../migration-inventory-155.md). The
+statements that follow describe that historical pin. `cornerMOShv.lib` at this pin is **byte-for-
 byte identical** to `ihp-sg13g2`'s own copy (`diff` clean) -- confirming,
 directly against the installed model library rather than by assumption,
 that the five-corner naming scheme (`mos_tt`/`mos_ss`/`mos_ff`/`mos_sf`/
@@ -1275,14 +1281,15 @@ What this is **not**:
 
 **No CI job runs `run_sweep.sh --check-env` for this experiment yet**, unlike
 `sim/pass-device-screening-check` (SG13G2 branch). `.github/workflows/ci.yml`
-fetches `ihp-sg13g2` via `klayout-tools`' pinned `fetch-ihp-sg13g2.sh`; no
-equivalent pinned fetch exists for `ihp-sg13cmos5l` in CI, because (per
-`design/README.md` "Known gaps") it is a separate upstream repository
-(`IHP-GmbH/ihp-sg13cmos5l`), not a variant directory inside the
-IHP-Open-PDK tarball that script downloads -- already filed upstream as
-`2AMLogic/klayout-tools#1929`. Until that lands, `--check-env` for this
-experiment (like `--check` for the SG13CMOS5L schematic branch generally)
-is a local/manual step, verified by this PR's author before submission
+fetches `ihp-sg13g2` via `klayout-tools`' pinned `fetch-ihp-sg13g2.sh` and, for
+`netlist-check` only, `ihp-sg13cmos5l` via `fetch-ihp-sg13cmos5l.sh` (the
+`ihp-sg13cmos5l/` subtree of `IHP-GmbH/IHP-Open-PDK` `dev` @ `f7bca326`,
+checksum-verified, `.fetched-version` marker; the script is taken from an
+immutable klayout-tools commit, see `.github/workflows/ci.yml`
+`KLAYOUT_TOOLS_REF`). (Before issue #155 the script cloned the archived
+`IHP-GmbH/ihp-sg13cmos5l` repository, tracked upstream as
+`2AMLogic/klayout-tools#1929`/`#2720`.) No CI job installs the OSDI models or
+runs `--check-env` for this experiment, so that step stays a local/manual one
 (see "Reproducing" below).
 
 The separate, offline loop-gain topology guard **is** a CI gate (issue #94):
@@ -1296,6 +1303,26 @@ negative control mutation is rejected, so both connectivity drift and a
 weakened guard fail CI. It writes no records, changes no signoff verdict, and
 makes no PVT or spec-passing claim. It does not replace the missing PDK-backed
 `--check-env` preflight described above, which remains local/manual.
+
+## Re-run on the re-stamped PDK (issue #155)
+
+The PDK moved to the `ihp-sg13cmos5l/` subtree of `IHP-Open-PDK` `dev` @
+`f7bca326` (`sim/pdk-cmos5l.json`). Every record cited above that names
+commit `607e18d` is a run on the **old** pin and stays labelled that way.
+The campaigns that support current claims were re-run on the new install, as
+new records: PVT `20261012-060932-c53f0177` (214/214; an earlier attempt
+`20261012-042925-c53f0177` is INCOMPLETE, 124/214, because the shared fleet
+refused two groups at its 8-instance cap), startup `20261012-063918-bb1d73c`,
+dropout `20261012-065435-b53a442f`, two-injection loop gain
+`20261012-071449-6a3c1475`, dynamic DoE `20261012-074813-c94873ba` plus
+refinement `20261012-080951-142dac4a`. The PVT, loop-gain and enable result
+files are identical to the old selected records; startup metrics agree to
+1e-6 relative with the same 135 failures; the dropout and DoE records were
+last run on the pre-#89 netlists, so their small differences mix the design
+change with the PDK. Full per-record accounting, tool vintages and what was
+not re-run: [`../migration-inventory-155.md`](../migration-inventory-155.md).
+`run_sweep.sh` now records the installed PDK revision it reads from the
+install's `.fetched-version` marker instead of a hard-coded commit string.
 
 ## Reproducing
 

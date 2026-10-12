@@ -33,7 +33,7 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:4318fbf8bdf9e45f643b5930073e9d4197eeee3c61472b7e99527dea7103ff2c",
+        "content_hash": "sha256:89763f2d2267eaee1d053e0718892b064fa82db00961714d6feb789d50875bf6",
         "input_verified": true,
         "exit_status": 0,
         "artifact_binding": {
@@ -42,7 +42,7 @@
             "path": "signoff/evidence/item1-design-sources.inventory.json",
             "scope": "repo"
           },
-          "content_hash": "sha256:4318fbf8bdf9e45f643b5930073e9d4197eeee3c61472b7e99527dea7103ff2c",
+          "content_hash": "sha256:89763f2d2267eaee1d053e0718892b064fa82db00961714d6feb789d50875bf6",
           "input_verified": true,
           "summary": "SG13CMOS5L schematics/symbols, their generator and the regenerated ngspice netlists are committed; every constituent hash matches the inventory. Freshness/identity only, not a design-correctness or performance claim.",
           "source": "signoff/evidence/item1-design-sources.inventory.json"
@@ -64,7 +64,7 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:cf16f7a0301595433c0107a28f790573ed65cd788cc046646b8e04c65baa411b",
+        "content_hash": "sha256:547e4d6fcc16dba2ddec384cca74d1204f5d8c8b3a18fd81750e93ce21298a37",
         "input_verified": true,
         "exit_status": 0,
         "artifact_binding": {
@@ -73,7 +73,7 @@
             "path": "signoff/evidence/item2-layout.inventory.json",
             "scope": "repo"
           },
-          "content_hash": "sha256:cf16f7a0301595433c0107a28f790573ed65cd788cc046646b8e04c65baa411b",
+          "content_hash": "sha256:547e4d6fcc16dba2ddec384cca74d1204f5d8c8b3a18fd81750e93ce21298a37",
           "input_verified": true,
           "summary": "The SG13CMOS5L layout GDS stream and its generator are committed; every constituent hash matches the inventory. Freshness/identity only: DRC/LVS/ERC are the separate item 3/4/11 citations.",
           "source": "signoff/evidence/item2-layout.inventory.json"
@@ -216,7 +216,7 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:1581b590975974b968316d50f974c31f02bd1da7d37d446eb9ddfab0c170e1cc",
+        "content_hash": "sha256:a30659f4e7daf16bef4a6440caf98aa97b66650c9046e7700c59a1a93225dd52",
         "input_verified": null,
         "exit_status": 0
       }
@@ -236,7 +236,7 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:0f335ae295e1960966c1c72dd05ba59e30905803be4482c3fd30ff1bbaad7fda",
+        "content_hash": "sha256:b77543c2a5c20108ec2dbbe64df98dd2754a91f975627269b1355dd367a9a378",
         "input_verified": true,
         "exit_status": 0,
         "artifact_binding": {
@@ -245,7 +245,7 @@
             "path": "signoff/evidence/item9-testbenches.inventory.json",
             "scope": "repo"
           },
-          "content_hash": "sha256:0f335ae295e1960966c1c72dd05ba59e30905803be4482c3fd30ff1bbaad7fda",
+          "content_hash": "sha256:b77543c2a5c20108ec2dbbe64df98dd2754a91f975627269b1355dd367a9a378",
           "input_verified": true,
           "summary": "The shipped ngspice testbenches/templates, their cold-start entry points (run_*.sh) and experiment READMEs are committed; every constituent hash matches the inventory and each README names its entry point. Testbenches are NOT re-run by this attestation and no measurement result is claimed.",
           "source": "signoff/evidence/item9-testbenches.inventory.json"
@@ -267,7 +267,7 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:d1b7c3573f6a05040d9107091181bfc09a9141f9c89de8fb5ee5972b09acd271",
+        "content_hash": "sha256:0c34705c95002793801255b10cf029ed795e6f292a65fdb9ca3cb795eb1a1699",
         "input_verified": true,
         "exit_status": 0,
         "artifact_binding": {
@@ -276,7 +276,7 @@
             "path": "signoff/evidence/item10-repo-hygiene.inventory.json",
             "scope": "repo"
           },
-          "content_hash": "sha256:d1b7c3573f6a05040d9107091181bfc09a9141f9c89de8fb5ee5972b09acd271",
+          "content_hash": "sha256:0c34705c95002793801255b10cf029ed795e6f292a65fdb9ca3cb795eb1a1699",
           "input_verified": true,
           "summary": "README, LICENSE, spec index, agent instructions and the CI workflow are committed; every constituent hash matches the inventory and the CI workflow still defines the PDK-free signoff gates. Hygiene presence/freshness only.",
           "source": "signoff/evidence/item10-repo-hygiene.inventory.json"

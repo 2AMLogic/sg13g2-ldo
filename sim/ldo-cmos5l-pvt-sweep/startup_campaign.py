@@ -400,6 +400,17 @@ def read_trace(path):
 
 
 def _git_head(path):
+    """Installed PDK commit. The fetcher-installed tree (issue #155) has no
+    .git; its provenance is the `.fetched-version` marker the fetch script
+    writes. Prefer the marker; fall back to `git rev-parse` for the older
+    clone-style installs; "unknown" if neither can be read."""
+    try:
+        with open(os.path.join(path, ".fetched-version")) as f:
+            v = f.read().strip()
+        if v:
+            return v
+    except OSError:
+        pass
     r = subprocess.run(["git", "-C", path, "rev-parse", "HEAD"], capture_output=True, text=True)
     return r.stdout.strip() or "unknown"
 

@@ -1,0 +1,54 @@
+== loop gain (tt/27C, Vin 3.30 V, 1 mA, Cc = 5.47 pF linear stand-in, Cout 1 uF) ==
+lg0_db             baseline 123.796  enable 123.796  delta -1.18e-07
+ugf_hz             baseline 84956.2  enable 84956.5  delta +0.278
+|L|_at_ugf         baseline 1  enable 1  delta +0
+phase_at_ugf_deg   baseline -105.347  enable -105.354  delta -0.0067
+phase_margin_deg   baseline 74.6531  enable 74.6464  delta -0.0067
+== PSRR ==
+psrr_db_10hz       baseline 75.631744  enable 75.631744  delta -1.30e-07
+psrr_db_1khz       baseline 55.752894  enable 55.752886  delta -8.26e-06
+psrr_db_100khz     baseline 34.242001  enable 34.241195  delta -8.06e-04
+== DC regulating state, EN tied to VIN vs pre-#67 design (|max abs delta| per quantity) ==
+vout       max|delta| 1e-09
+eaout      max|delta| 0
+fb         max|delta| 3e-10
+isup       max|delta| 2.1e-13
+vsg_pass   max|delta| 0
+== disabled: pass-device leakage, VOUT clamped to 0 V ==
+ileak_pass_2p97 2.990841644e-10
+isup_2p97 2.000300199e-06
+eaout_2p97 2.97
+vsg_pass_2p97 3.14193116e-11
+vsg_men_2p97 2.97
+ileak_pass_3p30 6.060149122e-10
+isup_3p30 2.000608338e-06
+eaout_3p30 3.3
+vsg_pass_3p30 3.274891469e-11
+vsg_men_3p30 3.3
+ileak_pass_3p63 1.226430141e-09
+isup_3p63 2.001231158e-06
+eaout_3p63 3.63
+vsg_pass_3p63 3.546629657e-11
+vsg_men_3p63 3.63
+== disabled, VOUT floating: amplifier internal nodes (issue #89) ==
+isup_2p97 2.00030008e-06
+g1_2p97 3.185563816e-09
+enb_2p97 2.97
+n1_2p97 0.0006234955425
+eaout_2p97 2.97
+vsg_pass_2p97 3.142019978e-11
+vout_2p97 0.0001874539351
+isup_3p30 2.000607837e-06
+g1_3p30 7.007461861e-09
+enb_3p30 3.3
+n1_3p30 0.0008801410729
+eaout_3p30 3.3
+vsg_pass_3p30 3.274802651e-11
+vout_3p30 0.0003796562518
+isup_3p63 2.001229212e-06
+g1_3p63 1.434421109e-08
+enb_3p63 3.63
+n1_3p63 0.001107178176
+eaout_3p63 3.63
+vsg_pass_3p63 3.546629657e-11
+vout_3p63 0.0007677506749

@@ -75,7 +75,7 @@ reproduce byte for byte before it will re-verify the reports.
 | `klt` | 0.5.0+gb15edf5e3a2e (was 0.4.0 before #44, 0.5.0 through #28) | curated DRC deck, device extraction, LVS compare |
 | KLayout Python module | 0.30.10 (was 0.30.12 through #28) | pulled in by `klt`; also what `generate.py` draws with |
 | standalone `klayout` | 0.28.16 | runs the PDK's **own** DRC-DSL deck (stage 3) |
-| `ihp-sg13cmos5l` | pin `607e18d4` (`sim/pdk-cmos5l.json`) | the deck, the layer table, the PCell sources every constant is cited from |
+| `ihp-sg13cmos5l` | pin `f7bca326` (`sim/pdk-cmos5l.json`, `IHP-Open-PDK` `dev` subtree, since #155; the committed reports below predate the re-stamp and were produced against the superseded `607e18d4` unless `layout/` says otherwise) | the deck, the layer table, the PCell sources every constant is cited from |
 
 `PDK_ROOT` defaults to `~/share/pdk`; override it in the environment. Install
 `ihp-sg13cmos5l` **next to** an `ihp-sg13g2` checkout under the same

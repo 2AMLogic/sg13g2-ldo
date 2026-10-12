@@ -13,6 +13,20 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import startup_campaign as sc  # noqa: E402
 
 
+class InstalledCommit(unittest.TestCase):
+    """_git_head reads the fetcher's .fetched-version marker (issue #155)."""
+
+    def test_marker_is_read_without_git(self):
+        with tempfile.TemporaryDirectory() as d:
+            with open(os.path.join(d, ".fetched-version"), "w") as f:
+                f.write("f7bca32694fe3d58be0cc7d9df4b9f5db7161a14\n")
+            self.assertEqual(sc._git_head(d), "f7bca32694fe3d58be0cc7d9df4b9f5db7161a14")
+
+    def test_no_marker_no_git_is_unknown(self):
+        with tempfile.TemporaryDirectory() as d:
+            self.assertEqual(sc._git_head(d), "unknown")
+
+
 class Plan(unittest.TestCase):
     def test_grid_is_135_unique_points_in_3_requests(self):
         pts = sc.grid_points()

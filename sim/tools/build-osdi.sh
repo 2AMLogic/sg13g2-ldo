@@ -82,6 +82,16 @@ LIBLLVM21_DEB_ASSET="libllvm21_21.1.8-${LIBLLVM21_DEB_CODENAME}_amd64.deb"
 # model basename -> subdirectory under libs.tech/verilog-a, mirroring the
 # PDK's own openvaf-compile-va.sh / ngspice/install.py model list.
 MODELS=("psp103:psp103" "psp103_nqs:psp103" "r3_cmc:r3_cmc" "mosvar:mosvar")
+# SG13CMOS5L additionally ships the two MoM-cap Verilog-A models (the Miller
+# cap Cc in ldo_erramp_cmos5l.sch is cap_cmomi). They live in the
+# ihp-sg13cmos5l/ subtree itself, not behind a sibling symlink (issue #155:
+# earlier cap_cmomi/cap_cmomf binaries were built ad hoc; this builds them
+# from the same pinned sources with the same pinned compiler).
+EXTRA_MODELS=()
+if [[ "${PDK:-}" == "ihp-sg13cmos5l" ]]; then
+  EXTRA_MODELS=("cap_cmomi:cap_cmomi" "cap_cmomf:cap_cmomf")
+  MODELS+=("${EXTRA_MODELS[@]}")
+fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SIM_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
@@ -199,6 +209,12 @@ check_models() {
   for m in "${REQUIRED_OSDI[@]}"; do
     if [[ ! -f "${OSDI_DIR}/${m}" ]]; then
       echo "build-osdi.sh: MISSING ${OSDI_DIR}/${m}" >&2
+      missing=1
+    fi
+  done
+  for m in "${EXTRA_MODELS[@]}"; do
+    if [[ ! -f "${OSDI_DIR}/${m%%:*}.osdi" ]]; then
+      echo "build-osdi.sh: MISSING ${OSDI_DIR}/${m%%:*}.osdi" >&2
       missing=1
     fi
   done

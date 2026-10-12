@@ -1,0 +1,3733 @@
+{
+  "schema_version": 3,
+  "netlist": {
+    "path": null,
+    "scope": "external"
+  },
+  "status": "pass",
+  "corner_count": 114,
+  "passed": 114,
+  "failed": 0,
+  "errored": 0,
+  "inconclusive": 0,
+  "diagnostic_counts": {
+    "by_code": {},
+    "by_severity": {},
+    "corners_with_diagnostics": 0
+  },
+  "metrics": {
+    "sim__corner__count": 114,
+    "sim__corner__passed_count": 114,
+    "sim__corner__failed_count": 0,
+    "sim__corner__errored_count": 0,
+    "sim__corner__inconclusive_count": 0
+  },
+  "environment": {
+    "engine": "ngspice",
+    "engine_version": "46",
+    "ngspice_binary": "/home/ubuntu/.local/bin/ngspice",
+    "models_lib": {
+      "path": null,
+      "scope": "external"
+    },
+    "models_lib_sha256": "09886d7ecf91c227634fca61ae73d44312b8517d6f3bb94219cabdb0399e7119",
+    "netlist_sha256": "ac0eb2007c677e9d95c706cbfe982bb19e734472c1ff23483696e37ae625a289",
+    "netlist_closure": [
+      {
+        "path": null,
+        "scope": "external",
+        "sha256": "ac0eb2007c677e9d95c706cbfe982bb19e734472c1ff23483696e37ae625a289"
+      },
+      {
+        "path": null,
+        "scope": "external",
+        "sha256": "a918cedf29b9bc1b09163ec53453b2f38411b76e7643064083e35bf531091f02"
+      },
+      {
+        "path": "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice",
+        "scope": "repo",
+        "sha256": "08a7b857e1fad43dd7af1f575de97853a058e85541601ecc47567fbc28dbae57"
+      }
+    ],
+    "osdi_preload": [
+      {
+        "name": "psp103.osdi",
+        "path": "pdks/ihp-open-pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/psp103.osdi",
+        "scope": "repo",
+        "sha256": "2e4299c4683997e26469410dc1ab36b02ced924b1ac0972d6c4eae360e1fc796"
+      },
+      {
+        "name": "psp103_nqs.osdi",
+        "path": "pdks/ihp-open-pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/psp103_nqs.osdi",
+        "scope": "repo",
+        "sha256": "839b164483205601c09032951f6c41d3580f15e506dc40a7202950d3afbdfc7d"
+      },
+      {
+        "name": "mosvar.osdi",
+        "path": "pdks/ihp-open-pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/mosvar.osdi",
+        "scope": "repo",
+        "sha256": "25e64a374ab523dbfeb7ffed75dcb8b086ee10f06120a9074bd68b92d7b0fb41"
+      },
+      {
+        "name": "r3_cmc.osdi",
+        "path": "pdks/ihp-open-pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/r3_cmc.osdi",
+        "scope": "repo",
+        "sha256": "4fead17bc2e9cbfe3df6f106e9dbd6f2cdcd48c002af9c56c2ca0b0712fce350"
+      },
+      {
+        "name": "cap_cmomi.osdi",
+        "path": "pdks/ihp-open-pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/cap_cmomi.osdi",
+        "scope": "repo",
+        "sha256": "61491e722c30425eb0e6ac0e79bc5ad28b5491ad516d5405a960c6412acac704"
+      },
+      {
+        "name": "cap_cmomf.osdi",
+        "path": "pdks/ihp-open-pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/cap_cmomf.osdi",
+        "scope": "repo",
+        "sha256": "52ce5c95055aeb8d7d3c72c7fba5b78093174a9d2d9142360ebb4d5ae0b8f714"
+      }
+    ],
+    "staged_model_inputs": [
+      {
+        "name": "corners.lib",
+        "field": "models.lib",
+        "kind": "library",
+        "sha256": "a417cf4eebfea6ba0e69eb9fad717e607967f93ed92c07a3e4e0a28894af75a0",
+        "rewritten": true
+      },
+      {
+        "name": "psp103.osdi",
+        "field": "options.osdi_preload[0]",
+        "kind": "osdi",
+        "sha256": "2e4299c4683997e26469410dc1ab36b02ced924b1ac0972d6c4eae360e1fc796",
+        "rewritten": false
+      },
+      {
+        "name": "psp103_nqs.osdi",
+        "field": "options.osdi_preload[1]",
+        "kind": "osdi",
+        "sha256": "839b164483205601c09032951f6c41d3580f15e506dc40a7202950d3afbdfc7d",
+        "rewritten": false
+      },
+      {
+        "name": "mosvar.osdi",
+        "field": "options.osdi_preload[2]",
+        "kind": "osdi",
+        "sha256": "25e64a374ab523dbfeb7ffed75dcb8b086ee10f06120a9074bd68b92d7b0fb41",
+        "rewritten": false
+      },
+      {
+        "name": "r3_cmc.osdi",
+        "field": "options.osdi_preload[3]",
+        "kind": "osdi",
+        "sha256": "4fead17bc2e9cbfe3df6f106e9dbd6f2cdcd48c002af9c56c2ca0b0712fce350",
+        "rewritten": false
+      },
+      {
+        "name": "cap_cmomi.osdi",
+        "field": "options.osdi_preload[4]",
+        "kind": "osdi",
+        "sha256": "61491e722c30425eb0e6ac0e79bc5ad28b5491ad516d5405a960c6412acac704",
+        "rewritten": false
+      },
+      {
+        "name": "cap_cmomf.osdi",
+        "field": "options.osdi_preload[5]",
+        "kind": "osdi",
+        "sha256": "52ce5c95055aeb8d7d3c72c7fba5b78093174a9d2d9142360ebb4d5ae0b8f714",
+        "rewritten": false
+      },
+      {
+        "name": "cornerMOShv.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "40c4140415a2a2e92d2f42fd64e026d1c04d800708b7a5b663ef083206ddfd62",
+        "rewritten": true
+      },
+      {
+        "name": "cornerRES.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "8c27e705a59d4221a5107b8fe95d388f3e166414d0fe214acfd2f07dcbb22b61",
+        "rewritten": true
+      },
+      {
+        "name": "cornerCAP.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "f7e46eb43e0b9522dd4e76058cd16f1c9a839701786ea97d36ccadeb84bd67c3",
+        "rewritten": true
+      },
+      {
+        "name": "sg13g2_moshv_mod.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "a2800206343e9adfb4758e9cca40d50dae05fb42a33da3cde4fca8e0780e1bf9",
+        "rewritten": true
+      },
+      {
+        "name": "sg13g2_svaricaphv_mod.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "1462f67e80da7f5fa6f6b51efb0eb0e4dc7ef2da28d8bfde95a19ce2a780580a",
+        "rewritten": false
+      },
+      {
+        "name": "sg13g2_moshv_mismatch.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "2e9612bdb8252c281f422511039dc9b3ea983892aec89f8ef3361592e68fed09",
+        "rewritten": false
+      },
+      {
+        "name": "sg13g2_moshv_mod_mismatch.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "52d45aec4c933d78bf9309a8d6ab53d16fd3ef97251a9a293f2c9764e586e54e",
+        "rewritten": true
+      },
+      {
+        "name": "sg13g2_svaricaphv_mod_mismatch.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "16da7669ee7e963645a604f64770d2f8d871fa8483c34e3dddaa9fcf01c51f50",
+        "rewritten": false
+      },
+      {
+        "name": "sg13g2_moshv_stat.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "cd30f22637e41fdbbaba506ebe0f17746b8438027e4651a7a87b241a39d68903",
+        "rewritten": false
+      },
+      {
+        "name": "resistors_mod.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "c2329110bcb66894936e942d4cb73fc5eb9188c5230e1bebf18f60d9b00c5c7f",
+        "rewritten": false
+      },
+      {
+        "name": "resistors_mod_mismatch.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "f0aa7d90b6489112ed256aaf4cb0a11b9ab17ebe0c3ce092f4f8c5ecb1fd1e15",
+        "rewritten": false
+      },
+      {
+        "name": "resistors_stat.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "183eb9192bf711db991b8df87e031bab2ca5e559c73393edc756fa02a2720d40",
+        "rewritten": false
+      },
+      {
+        "name": "cap_cmomi.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "ea8e1e2b2efcb072c0b516138f4ef1900691d217b7f1d8a7e810efe2de5d5e9a",
+        "rewritten": false
+      },
+      {
+        "name": "cap_cmomf.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "4704625f619ad55a0728ccd0b7c902155a974805833d1874901bd2262c642a5e",
+        "rewritten": false
+      },
+      {
+        "name": "sg13g2_moshv_parm.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "eea5bbed39184cb1e2654ae29425a9ed6ee2f2341d6cb76c472591c75237bd35",
+        "rewritten": false
+      }
+    ],
+    "remote": {
+      "provider": "aws-batch-fleet",
+      "job_id": "klt-sim-d9033c55da00",
+      "bucket": "2am-batch-jobs-221082181346",
+      "region": "us-east-1",
+      "instance_id": "i-00aa48cf2f2f606c6",
+      "instance_type": "m7i.4xlarge",
+      "availability_zone": "us-east-1a",
+      "ami_id": "ami-0e40e3245f1923ac8",
+      "lifecycle": "spot",
+      "spot": true,
+      "state": "done",
+      "exit_code": "0",
+      "concurrency": "1",
+      "physical_cores": "8",
+      "elapsed_seconds": 556,
+      "runner_klt_version": "0.5.0",
+      "client_klt_version": "0.7.0+gff97d692a147",
+      "runner_compatibility": "mismatch",
+      "runner_compatibility_warning": "the fleet runner ran klt 0.5.0 but the submitting client is 0.7.0+gff97d692a147; request options the runner does not know may have been ignored -- update the runner image or use a compatible client"
+    }
+  },
+  "coverage": {
+    "corners_simulated": 114,
+    "measurements_declared": 1,
+    "measurements_with_limits": 0,
+    "unrecognized_limit_keys": [],
+    "schema_version": 1,
+    "known": true,
+    "checked": [
+      "measurement:[0,\"mos_ss__res_bcs__cap_typ__v00a6342baec5/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[1,\"mos_ss__res_bcs__cap_typ__v07fb86f3311c/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[10,\"mos_ss__res_bcs__cap_typ__v586ef5417a85/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[100,\"mos_ss__res_wcs__cap_typ__vc9dd4387ab52/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[101,\"mos_ss__res_wcs__cap_typ__vce6f646790d0/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[102,\"mos_ss__res_wcs__cap_typ__vce8ce97b280d/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[103,\"mos_ss__res_wcs__cap_typ__vd2b9c38a54df/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[104,\"mos_ss__res_wcs__cap_typ__vd58789330eb9/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[105,\"mos_ss__res_wcs__cap_typ__vd8d631b97b73/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[106,\"mos_ss__res_wcs__cap_typ__ve06fc7fb8df4/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[107,\"mos_ss__res_wcs__cap_typ__ve2b3d075021d/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[108,\"mos_ss__res_wcs__cap_typ__ve3907c6f120d/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[109,\"mos_ss__res_wcs__cap_typ__ve4fcef3a0ede/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[11,\"mos_ss__res_bcs__cap_typ__v60d991e8fff7/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[110,\"mos_ss__res_wcs__cap_typ__ve8905752732c/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[111,\"mos_ss__res_wcs__cap_typ__vee5e673ff7d8/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[112,\"mos_ss__res_wcs__cap_typ__vfbd8ce721090/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[113,\"mos_ss__res_wcs__cap_typ__vfbe6b2e3f521/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[12,\"mos_ss__res_bcs__cap_typ__v65f32903c58a/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[13,\"mos_ss__res_bcs__cap_typ__v66fd776f9722/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[14,\"mos_ss__res_bcs__cap_typ__v6d05d8b6654d/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[15,\"mos_ss__res_bcs__cap_typ__v75991e9680d6/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[16,\"mos_ss__res_bcs__cap_typ__v7c61ffda42f2/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[17,\"mos_ss__res_bcs__cap_typ__v7cf666eb40e7/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[18,\"mos_ss__res_bcs__cap_typ__v81c8397f7dce/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[19,\"mos_ss__res_bcs__cap_typ__v856e29ea44c6/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[2,\"mos_ss__res_bcs__cap_typ__v0ad39b3374b8/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[20,\"mos_ss__res_bcs__cap_typ__v8e7575d9c240/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[21,\"mos_ss__res_bcs__cap_typ__v9705af45617c/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[22,\"mos_ss__res_bcs__cap_typ__v9917037ae448/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[23,\"mos_ss__res_bcs__cap_typ__v9921bbe0358c/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[24,\"mos_ss__res_bcs__cap_typ__v99450f344901/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[25,\"mos_ss__res_bcs__cap_typ__v99c1b823bb49/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[26,\"mos_ss__res_bcs__cap_typ__va31855972c09/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[27,\"mos_ss__res_bcs__cap_typ__va93f8ddea332/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[28,\"mos_ss__res_bcs__cap_typ__vaceda12ab5a1/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[29,\"mos_ss__res_bcs__cap_typ__vb0263702c900/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[3,\"mos_ss__res_bcs__cap_typ__v172a9fce240e/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[30,\"mos_ss__res_bcs__cap_typ__vc15f6a993692/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[31,\"mos_ss__res_bcs__cap_typ__vd58789330eb9/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[32,\"mos_ss__res_bcs__cap_typ__ve3907c6f120d/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[33,\"mos_ss__res_wcs__cap_typ__v00a6342baec5/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[34,\"mos_ss__res_wcs__cap_typ__v01595a2d15e8/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[35,\"mos_ss__res_wcs__cap_typ__v029a71300cbd/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[36,\"mos_ss__res_wcs__cap_typ__v07779b6d4308/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[37,\"mos_ss__res_wcs__cap_typ__v07fb86f3311c/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[38,\"mos_ss__res_wcs__cap_typ__v0ad39b3374b8/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[39,\"mos_ss__res_wcs__cap_typ__v0b1c68ef08e8/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[4,\"mos_ss__res_bcs__cap_typ__v2b693b0b916a/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[40,\"mos_ss__res_wcs__cap_typ__v0c294643af30/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[41,\"mos_ss__res_wcs__cap_typ__v103d6b3ee1db/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[42,\"mos_ss__res_wcs__cap_typ__v1136cff02aac/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[43,\"mos_ss__res_wcs__cap_typ__v12f4428489a7/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[44,\"mos_ss__res_wcs__cap_typ__v172a9fce240e/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[45,\"mos_ss__res_wcs__cap_typ__v18f341205189/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[46,\"mos_ss__res_wcs__cap_typ__v19f425248f2b/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[47,\"mos_ss__res_wcs__cap_typ__v1c4f0625ec5a/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[48,\"mos_ss__res_wcs__cap_typ__v297d543ba30d/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[49,\"mos_ss__res_wcs__cap_typ__v2b693b0b916a/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[5,\"mos_ss__res_bcs__cap_typ__v2bb873142d82/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[50,\"mos_ss__res_wcs__cap_typ__v2bb873142d82/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[51,\"mos_ss__res_wcs__cap_typ__v2c0b0a886d11/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[52,\"mos_ss__res_wcs__cap_typ__v307f0fdfaa17/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[53,\"mos_ss__res_wcs__cap_typ__v408576bf783b/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[54,\"mos_ss__res_wcs__cap_typ__v43456e431ec5/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[55,\"mos_ss__res_wcs__cap_typ__v446f6246d007/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[56,\"mos_ss__res_wcs__cap_typ__v463fdcea2873/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[57,\"mos_ss__res_wcs__cap_typ__v4a100fac70fd/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[58,\"mos_ss__res_wcs__cap_typ__v4a2db5df4ecd/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[59,\"mos_ss__res_wcs__cap_typ__v4cecaeb20dab/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[6,\"mos_ss__res_bcs__cap_typ__v43456e431ec5/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[60,\"mos_ss__res_wcs__cap_typ__v4f1f18772b13/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[61,\"mos_ss__res_wcs__cap_typ__v51eace02838b/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[62,\"mos_ss__res_wcs__cap_typ__v561a9073bc7a/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[63,\"mos_ss__res_wcs__cap_typ__v586ef5417a85/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[64,\"mos_ss__res_wcs__cap_typ__v60d991e8fff7/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[65,\"mos_ss__res_wcs__cap_typ__v65f32903c58a/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[66,\"mos_ss__res_wcs__cap_typ__v66fd776f9722/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[67,\"mos_ss__res_wcs__cap_typ__v6904c379c5d5/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[68,\"mos_ss__res_wcs__cap_typ__v735b82b57103/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[69,\"mos_ss__res_wcs__cap_typ__v755c0baefabc/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[7,\"mos_ss__res_bcs__cap_typ__v446f6246d007/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[70,\"mos_ss__res_wcs__cap_typ__v75991e9680d6/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[71,\"mos_ss__res_wcs__cap_typ__v79b1afb2745c/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[72,\"mos_ss__res_wcs__cap_typ__v7c61ffda42f2/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[73,\"mos_ss__res_wcs__cap_typ__v7cf666eb40e7/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[74,\"mos_ss__res_wcs__cap_typ__v7d32838bfaff/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[75,\"mos_ss__res_wcs__cap_typ__v81c8397f7dce/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[76,\"mos_ss__res_wcs__cap_typ__v8489d4076db6/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[77,\"mos_ss__res_wcs__cap_typ__v856e29ea44c6/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[78,\"mos_ss__res_wcs__cap_typ__v88b011a54244/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[79,\"mos_ss__res_wcs__cap_typ__v89981a7ad006/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[8,\"mos_ss__res_bcs__cap_typ__v4a100fac70fd/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[80,\"mos_ss__res_wcs__cap_typ__v8e7575d9c240/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[81,\"mos_ss__res_wcs__cap_typ__v8ee780f3634b/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[82,\"mos_ss__res_wcs__cap_typ__v9357bf40e043/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[83,\"mos_ss__res_wcs__cap_typ__v9705af45617c/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[84,\"mos_ss__res_wcs__cap_typ__v98d3323b140e/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[85,\"mos_ss__res_wcs__cap_typ__v9917037ae448/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[86,\"mos_ss__res_wcs__cap_typ__v9921bbe0358c/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[87,\"mos_ss__res_wcs__cap_typ__v99450f344901/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[88,\"mos_ss__res_wcs__cap_typ__v99c1b823bb49/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[89,\"mos_ss__res_wcs__cap_typ__v9ac8bbe4f099/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[9,\"mos_ss__res_bcs__cap_typ__v4f1f18772b13/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[90,\"mos_ss__res_wcs__cap_typ__v9eee9e5a131f/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[91,\"mos_ss__res_wcs__cap_typ__v9ffadcaa5689/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[92,\"mos_ss__res_wcs__cap_typ__va31855972c09/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[93,\"mos_ss__res_wcs__cap_typ__va93f8ddea332/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[94,\"mos_ss__res_wcs__cap_typ__vaceda12ab5a1/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[95,\"mos_ss__res_wcs__cap_typ__vafffbcb60d2d/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[96,\"mos_ss__res_wcs__cap_typ__vb0263702c900/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[97,\"mos_ss__res_wcs__cap_typ__vb449161da423/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[98,\"mos_ss__res_wcs__cap_typ__vc15f6a993692/novdd/125C\",\"liveness_vout\"]/observation",
+      "measurement:[99,\"mos_ss__res_wcs__cap_typ__vc2383fe3326c/novdd/125C\",\"liveness_vout\"]/observation"
+    ],
+    "skipped": [],
+    "inapplicable": [
+      {
+        "id": "measurement:[0,\"mos_ss__res_bcs__cap_typ__v00a6342baec5/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"mos_ss__res_bcs__cap_typ__v07fb86f3311c/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[10,\"mos_ss__res_bcs__cap_typ__v586ef5417a85/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[100,\"mos_ss__res_wcs__cap_typ__vc9dd4387ab52/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[101,\"mos_ss__res_wcs__cap_typ__vce6f646790d0/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[102,\"mos_ss__res_wcs__cap_typ__vce8ce97b280d/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[103,\"mos_ss__res_wcs__cap_typ__vd2b9c38a54df/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[104,\"mos_ss__res_wcs__cap_typ__vd58789330eb9/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[105,\"mos_ss__res_wcs__cap_typ__vd8d631b97b73/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[106,\"mos_ss__res_wcs__cap_typ__ve06fc7fb8df4/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[107,\"mos_ss__res_wcs__cap_typ__ve2b3d075021d/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[108,\"mos_ss__res_wcs__cap_typ__ve3907c6f120d/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[109,\"mos_ss__res_wcs__cap_typ__ve4fcef3a0ede/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[11,\"mos_ss__res_bcs__cap_typ__v60d991e8fff7/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[110,\"mos_ss__res_wcs__cap_typ__ve8905752732c/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[111,\"mos_ss__res_wcs__cap_typ__vee5e673ff7d8/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[112,\"mos_ss__res_wcs__cap_typ__vfbd8ce721090/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[113,\"mos_ss__res_wcs__cap_typ__vfbe6b2e3f521/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[12,\"mos_ss__res_bcs__cap_typ__v65f32903c58a/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[13,\"mos_ss__res_bcs__cap_typ__v66fd776f9722/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[14,\"mos_ss__res_bcs__cap_typ__v6d05d8b6654d/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[15,\"mos_ss__res_bcs__cap_typ__v75991e9680d6/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[16,\"mos_ss__res_bcs__cap_typ__v7c61ffda42f2/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[17,\"mos_ss__res_bcs__cap_typ__v7cf666eb40e7/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[18,\"mos_ss__res_bcs__cap_typ__v81c8397f7dce/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[19,\"mos_ss__res_bcs__cap_typ__v856e29ea44c6/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"mos_ss__res_bcs__cap_typ__v0ad39b3374b8/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[20,\"mos_ss__res_bcs__cap_typ__v8e7575d9c240/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[21,\"mos_ss__res_bcs__cap_typ__v9705af45617c/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[22,\"mos_ss__res_bcs__cap_typ__v9917037ae448/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[23,\"mos_ss__res_bcs__cap_typ__v9921bbe0358c/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[24,\"mos_ss__res_bcs__cap_typ__v99450f344901/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[25,\"mos_ss__res_bcs__cap_typ__v99c1b823bb49/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[26,\"mos_ss__res_bcs__cap_typ__va31855972c09/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[27,\"mos_ss__res_bcs__cap_typ__va93f8ddea332/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[28,\"mos_ss__res_bcs__cap_typ__vaceda12ab5a1/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[29,\"mos_ss__res_bcs__cap_typ__vb0263702c900/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"mos_ss__res_bcs__cap_typ__v172a9fce240e/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[30,\"mos_ss__res_bcs__cap_typ__vc15f6a993692/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[31,\"mos_ss__res_bcs__cap_typ__vd58789330eb9/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[32,\"mos_ss__res_bcs__cap_typ__ve3907c6f120d/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[33,\"mos_ss__res_wcs__cap_typ__v00a6342baec5/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[34,\"mos_ss__res_wcs__cap_typ__v01595a2d15e8/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[35,\"mos_ss__res_wcs__cap_typ__v029a71300cbd/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[36,\"mos_ss__res_wcs__cap_typ__v07779b6d4308/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[37,\"mos_ss__res_wcs__cap_typ__v07fb86f3311c/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[38,\"mos_ss__res_wcs__cap_typ__v0ad39b3374b8/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[39,\"mos_ss__res_wcs__cap_typ__v0b1c68ef08e8/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"mos_ss__res_bcs__cap_typ__v2b693b0b916a/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[40,\"mos_ss__res_wcs__cap_typ__v0c294643af30/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[41,\"mos_ss__res_wcs__cap_typ__v103d6b3ee1db/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[42,\"mos_ss__res_wcs__cap_typ__v1136cff02aac/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[43,\"mos_ss__res_wcs__cap_typ__v12f4428489a7/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[44,\"mos_ss__res_wcs__cap_typ__v172a9fce240e/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[45,\"mos_ss__res_wcs__cap_typ__v18f341205189/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[46,\"mos_ss__res_wcs__cap_typ__v19f425248f2b/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[47,\"mos_ss__res_wcs__cap_typ__v1c4f0625ec5a/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[48,\"mos_ss__res_wcs__cap_typ__v297d543ba30d/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[49,\"mos_ss__res_wcs__cap_typ__v2b693b0b916a/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"mos_ss__res_bcs__cap_typ__v2bb873142d82/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[50,\"mos_ss__res_wcs__cap_typ__v2bb873142d82/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[51,\"mos_ss__res_wcs__cap_typ__v2c0b0a886d11/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[52,\"mos_ss__res_wcs__cap_typ__v307f0fdfaa17/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[53,\"mos_ss__res_wcs__cap_typ__v408576bf783b/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[54,\"mos_ss__res_wcs__cap_typ__v43456e431ec5/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[55,\"mos_ss__res_wcs__cap_typ__v446f6246d007/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[56,\"mos_ss__res_wcs__cap_typ__v463fdcea2873/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[57,\"mos_ss__res_wcs__cap_typ__v4a100fac70fd/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[58,\"mos_ss__res_wcs__cap_typ__v4a2db5df4ecd/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[59,\"mos_ss__res_wcs__cap_typ__v4cecaeb20dab/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"mos_ss__res_bcs__cap_typ__v43456e431ec5/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[60,\"mos_ss__res_wcs__cap_typ__v4f1f18772b13/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[61,\"mos_ss__res_wcs__cap_typ__v51eace02838b/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[62,\"mos_ss__res_wcs__cap_typ__v561a9073bc7a/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[63,\"mos_ss__res_wcs__cap_typ__v586ef5417a85/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[64,\"mos_ss__res_wcs__cap_typ__v60d991e8fff7/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[65,\"mos_ss__res_wcs__cap_typ__v65f32903c58a/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[66,\"mos_ss__res_wcs__cap_typ__v66fd776f9722/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[67,\"mos_ss__res_wcs__cap_typ__v6904c379c5d5/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[68,\"mos_ss__res_wcs__cap_typ__v735b82b57103/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[69,\"mos_ss__res_wcs__cap_typ__v755c0baefabc/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"mos_ss__res_bcs__cap_typ__v446f6246d007/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[70,\"mos_ss__res_wcs__cap_typ__v75991e9680d6/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[71,\"mos_ss__res_wcs__cap_typ__v79b1afb2745c/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[72,\"mos_ss__res_wcs__cap_typ__v7c61ffda42f2/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[73,\"mos_ss__res_wcs__cap_typ__v7cf666eb40e7/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[74,\"mos_ss__res_wcs__cap_typ__v7d32838bfaff/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[75,\"mos_ss__res_wcs__cap_typ__v81c8397f7dce/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[76,\"mos_ss__res_wcs__cap_typ__v8489d4076db6/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[77,\"mos_ss__res_wcs__cap_typ__v856e29ea44c6/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[78,\"mos_ss__res_wcs__cap_typ__v88b011a54244/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[79,\"mos_ss__res_wcs__cap_typ__v89981a7ad006/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"mos_ss__res_bcs__cap_typ__v4a100fac70fd/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[80,\"mos_ss__res_wcs__cap_typ__v8e7575d9c240/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[81,\"mos_ss__res_wcs__cap_typ__v8ee780f3634b/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[82,\"mos_ss__res_wcs__cap_typ__v9357bf40e043/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[83,\"mos_ss__res_wcs__cap_typ__v9705af45617c/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[84,\"mos_ss__res_wcs__cap_typ__v98d3323b140e/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[85,\"mos_ss__res_wcs__cap_typ__v9917037ae448/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[86,\"mos_ss__res_wcs__cap_typ__v9921bbe0358c/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[87,\"mos_ss__res_wcs__cap_typ__v99450f344901/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[88,\"mos_ss__res_wcs__cap_typ__v99c1b823bb49/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[89,\"mos_ss__res_wcs__cap_typ__v9ac8bbe4f099/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[9,\"mos_ss__res_bcs__cap_typ__v4f1f18772b13/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[90,\"mos_ss__res_wcs__cap_typ__v9eee9e5a131f/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[91,\"mos_ss__res_wcs__cap_typ__v9ffadcaa5689/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[92,\"mos_ss__res_wcs__cap_typ__va31855972c09/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[93,\"mos_ss__res_wcs__cap_typ__va93f8ddea332/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[94,\"mos_ss__res_wcs__cap_typ__vaceda12ab5a1/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[95,\"mos_ss__res_wcs__cap_typ__vafffbcb60d2d/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[96,\"mos_ss__res_wcs__cap_typ__vb0263702c900/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[97,\"mos_ss__res_wcs__cap_typ__vb449161da423/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[98,\"mos_ss__res_wcs__cap_typ__vc15f6a993692/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[99,\"mos_ss__res_wcs__cap_typ__vc2383fe3326c/novdd/125C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      }
+    ],
+    "unknown": [],
+    "nothing_checked": false,
+    "nothing_checked_reasons": []
+  },
+  "provenance": {
+    "klt_version": "0.7.0+gff97d692a147",
+    "klayout_version": "0.30.12",
+    "pdk": null,
+    "deck": {
+      "name": "corners.lib",
+      "content_hash": "sha256:09886d7ecf91c227634fca61ae73d44312b8517d6f3bb94219cabdb0399e7119",
+      "released": false
+    },
+    "input": {
+      "content_hash": "sha256:ac0eb2007c677e9d95c706cbfe982bb19e734472c1ff23483696e37ae625a289",
+      "role": "netlist"
+    }
+  },
+  "measurements": [
+    {
+      "name": "liveness_vout",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "mos_ss__res_bcs__cap_typ__v00a6342baec5/novdd/125C",
+        "value": 2.0,
+        "margin": null
+      }
+    }
+  ],
+  "corners": [
+    {
+      "corner_id": "mos_ss__res_bcs__cap_typ__v00a6342baec5/novdd/125C",
+      "process": "mos_ss__res_bcs__cap_typ__v00a6342baec5",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 54.748,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v00a6342baec5_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v00a6342baec5_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v00a6342baec5_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v00a6342baec5_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_bcs__cap_typ__v07fb86f3311c/novdd/125C",
+      "process": "mos_ss__res_bcs__cap_typ__v07fb86f3311c",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 55.95,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v07fb86f3311c_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v07fb86f3311c_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v07fb86f3311c_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v07fb86f3311c_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_bcs__cap_typ__v0ad39b3374b8/novdd/125C",
+      "process": "mos_ss__res_bcs__cap_typ__v0ad39b3374b8",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 55.588,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 1.99998,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v0ad39b3374b8_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v0ad39b3374b8_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v0ad39b3374b8_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v0ad39b3374b8_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_bcs__cap_typ__v172a9fce240e/novdd/125C",
+      "process": "mos_ss__res_bcs__cap_typ__v172a9fce240e",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 56.292,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v172a9fce240e_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v172a9fce240e_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v172a9fce240e_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v172a9fce240e_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_bcs__cap_typ__v2b693b0b916a/novdd/125C",
+      "process": "mos_ss__res_bcs__cap_typ__v2b693b0b916a",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 47.624,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v2b693b0b916a_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v2b693b0b916a_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v2b693b0b916a_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v2b693b0b916a_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_bcs__cap_typ__v2bb873142d82/novdd/125C",
+      "process": "mos_ss__res_bcs__cap_typ__v2bb873142d82",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 55.224,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v2bb873142d82_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v2bb873142d82_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v2bb873142d82_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v2bb873142d82_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_bcs__cap_typ__v43456e431ec5/novdd/125C",
+      "process": "mos_ss__res_bcs__cap_typ__v43456e431ec5",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 56.363,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 1.99998,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v43456e431ec5_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v43456e431ec5_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v43456e431ec5_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v43456e431ec5_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_bcs__cap_typ__v446f6246d007/novdd/125C",
+      "process": "mos_ss__res_bcs__cap_typ__v446f6246d007",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 54.685,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v446f6246d007_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v446f6246d007_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v446f6246d007_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v446f6246d007_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_bcs__cap_typ__v4a100fac70fd/novdd/125C",
+      "process": "mos_ss__res_bcs__cap_typ__v4a100fac70fd",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 2.45,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v4a100fac70fd_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v4a100fac70fd_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v4a100fac70fd_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v4a100fac70fd_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_bcs__cap_typ__v4f1f18772b13/novdd/125C",
+      "process": "mos_ss__res_bcs__cap_typ__v4f1f18772b13",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 52.863,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v4f1f18772b13_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v4f1f18772b13_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v4f1f18772b13_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v4f1f18772b13_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_bcs__cap_typ__v586ef5417a85/novdd/125C",
+      "process": "mos_ss__res_bcs__cap_typ__v586ef5417a85",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 44.364,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v586ef5417a85_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v586ef5417a85_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v586ef5417a85_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v586ef5417a85_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_bcs__cap_typ__v60d991e8fff7/novdd/125C",
+      "process": "mos_ss__res_bcs__cap_typ__v60d991e8fff7",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 49.925,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v60d991e8fff7_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v60d991e8fff7_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v60d991e8fff7_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v60d991e8fff7_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_bcs__cap_typ__v65f32903c58a/novdd/125C",
+      "process": "mos_ss__res_bcs__cap_typ__v65f32903c58a",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 55.031,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 1.99998,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v65f32903c58a_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v65f32903c58a_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v65f32903c58a_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v65f32903c58a_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_bcs__cap_typ__v66fd776f9722/novdd/125C",
+      "process": "mos_ss__res_bcs__cap_typ__v66fd776f9722",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 50.151,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v66fd776f9722_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v66fd776f9722_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v66fd776f9722_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v66fd776f9722_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_bcs__cap_typ__v6d05d8b6654d/novdd/125C",
+      "process": "mos_ss__res_bcs__cap_typ__v6d05d8b6654d",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 2.403,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v6d05d8b6654d_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v6d05d8b6654d_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v6d05d8b6654d_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v6d05d8b6654d_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_bcs__cap_typ__v75991e9680d6/novdd/125C",
+      "process": "mos_ss__res_bcs__cap_typ__v75991e9680d6",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 49.153,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v75991e9680d6_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v75991e9680d6_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v75991e9680d6_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v75991e9680d6_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_bcs__cap_typ__v7c61ffda42f2/novdd/125C",
+      "process": "mos_ss__res_bcs__cap_typ__v7c61ffda42f2",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 54.445,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 1.99998,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v7c61ffda42f2_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v7c61ffda42f2_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v7c61ffda42f2_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v7c61ffda42f2_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_bcs__cap_typ__v7cf666eb40e7/novdd/125C",
+      "process": "mos_ss__res_bcs__cap_typ__v7cf666eb40e7",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 2.243,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v7cf666eb40e7_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v7cf666eb40e7_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v7cf666eb40e7_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v7cf666eb40e7_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_bcs__cap_typ__v81c8397f7dce/novdd/125C",
+      "process": "mos_ss__res_bcs__cap_typ__v81c8397f7dce",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 52.879,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 1.99998,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v81c8397f7dce_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v81c8397f7dce_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v81c8397f7dce_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v81c8397f7dce_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_bcs__cap_typ__v856e29ea44c6/novdd/125C",
+      "process": "mos_ss__res_bcs__cap_typ__v856e29ea44c6",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 53.764,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 1.99998,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v856e29ea44c6_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v856e29ea44c6_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v856e29ea44c6_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v856e29ea44c6_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_bcs__cap_typ__v8e7575d9c240/novdd/125C",
+      "process": "mos_ss__res_bcs__cap_typ__v8e7575d9c240",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 52.402,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v8e7575d9c240_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v8e7575d9c240_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v8e7575d9c240_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v8e7575d9c240_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_bcs__cap_typ__v9705af45617c/novdd/125C",
+      "process": "mos_ss__res_bcs__cap_typ__v9705af45617c",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 52.055,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v9705af45617c_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v9705af45617c_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v9705af45617c_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v9705af45617c_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_bcs__cap_typ__v9917037ae448/novdd/125C",
+      "process": "mos_ss__res_bcs__cap_typ__v9917037ae448",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 44.401,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v9917037ae448_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v9917037ae448_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v9917037ae448_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v9917037ae448_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_bcs__cap_typ__v9921bbe0358c/novdd/125C",
+      "process": "mos_ss__res_bcs__cap_typ__v9921bbe0358c",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 56.076,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 1.99998,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v9921bbe0358c_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v9921bbe0358c_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v9921bbe0358c_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v9921bbe0358c_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_bcs__cap_typ__v99450f344901/novdd/125C",
+      "process": "mos_ss__res_bcs__cap_typ__v99450f344901",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 54.389,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 1.99998,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v99450f344901_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v99450f344901_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v99450f344901_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v99450f344901_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_bcs__cap_typ__v99c1b823bb49/novdd/125C",
+      "process": "mos_ss__res_bcs__cap_typ__v99c1b823bb49",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 46.133,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v99c1b823bb49_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v99c1b823bb49_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v99c1b823bb49_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__v99c1b823bb49_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_bcs__cap_typ__va31855972c09/novdd/125C",
+      "process": "mos_ss__res_bcs__cap_typ__va31855972c09",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 2.542,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__va31855972c09_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__va31855972c09_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__va31855972c09_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__va31855972c09_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_bcs__cap_typ__va93f8ddea332/novdd/125C",
+      "process": "mos_ss__res_bcs__cap_typ__va93f8ddea332",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 2.485,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__va93f8ddea332_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__va93f8ddea332_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__va93f8ddea332_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__va93f8ddea332_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_bcs__cap_typ__vaceda12ab5a1/novdd/125C",
+      "process": "mos_ss__res_bcs__cap_typ__vaceda12ab5a1",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 45.792,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__vaceda12ab5a1_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__vaceda12ab5a1_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__vaceda12ab5a1_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__vaceda12ab5a1_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_bcs__cap_typ__vb0263702c900/novdd/125C",
+      "process": "mos_ss__res_bcs__cap_typ__vb0263702c900",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 44.774,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__vb0263702c900_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__vb0263702c900_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__vb0263702c900_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__vb0263702c900_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_bcs__cap_typ__vc15f6a993692/novdd/125C",
+      "process": "mos_ss__res_bcs__cap_typ__vc15f6a993692",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 46.2,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__vc15f6a993692_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__vc15f6a993692_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__vc15f6a993692_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__vc15f6a993692_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_bcs__cap_typ__vd58789330eb9/novdd/125C",
+      "process": "mos_ss__res_bcs__cap_typ__vd58789330eb9",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 55.474,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__vd58789330eb9_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__vd58789330eb9_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__vd58789330eb9_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__vd58789330eb9_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_bcs__cap_typ__ve3907c6f120d/novdd/125C",
+      "process": "mos_ss__res_bcs__cap_typ__ve3907c6f120d",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 2.618,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__ve3907c6f120d_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__ve3907c6f120d_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__ve3907c6f120d_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_bcs__cap_typ__ve3907c6f120d_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v00a6342baec5/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v00a6342baec5",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 45.888,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v00a6342baec5_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v00a6342baec5_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v00a6342baec5_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v00a6342baec5_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v01595a2d15e8/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v01595a2d15e8",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 56.469,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v01595a2d15e8_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v01595a2d15e8_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v01595a2d15e8_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v01595a2d15e8_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v029a71300cbd/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v029a71300cbd",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 54.007,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v029a71300cbd_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v029a71300cbd_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v029a71300cbd_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v029a71300cbd_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v07779b6d4308/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v07779b6d4308",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 49.872,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v07779b6d4308_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v07779b6d4308_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v07779b6d4308_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v07779b6d4308_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v07fb86f3311c/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v07fb86f3311c",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 55.286,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v07fb86f3311c_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v07fb86f3311c_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v07fb86f3311c_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v07fb86f3311c_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v0ad39b3374b8/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v0ad39b3374b8",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 14.242,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 1.99997,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v0ad39b3374b8_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v0ad39b3374b8_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v0ad39b3374b8_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v0ad39b3374b8_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v0b1c68ef08e8/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v0b1c68ef08e8",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 2.482,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v0b1c68ef08e8_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v0b1c68ef08e8_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v0b1c68ef08e8_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v0b1c68ef08e8_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v0c294643af30/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v0c294643af30",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 2.615,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v0c294643af30_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v0c294643af30_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v0c294643af30_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v0c294643af30_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v103d6b3ee1db/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v103d6b3ee1db",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 67.52,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v103d6b3ee1db_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v103d6b3ee1db_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v103d6b3ee1db_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v103d6b3ee1db_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v1136cff02aac/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v1136cff02aac",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 40.799,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v1136cff02aac_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v1136cff02aac_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v1136cff02aac_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v1136cff02aac_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v12f4428489a7/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v12f4428489a7",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 43.881,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v12f4428489a7_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v12f4428489a7_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v12f4428489a7_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v12f4428489a7_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v172a9fce240e/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v172a9fce240e",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 45.588,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v172a9fce240e_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v172a9fce240e_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v172a9fce240e_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v172a9fce240e_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v18f341205189/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v18f341205189",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 2.61,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v18f341205189_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v18f341205189_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v18f341205189_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v18f341205189_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v19f425248f2b/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v19f425248f2b",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 2.46,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v19f425248f2b_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v19f425248f2b_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v19f425248f2b_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v19f425248f2b_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v1c4f0625ec5a/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v1c4f0625ec5a",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 54.856,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v1c4f0625ec5a_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v1c4f0625ec5a_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v1c4f0625ec5a_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v1c4f0625ec5a_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v297d543ba30d/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v297d543ba30d",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 44.989,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v297d543ba30d_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v297d543ba30d_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v297d543ba30d_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v297d543ba30d_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v2b693b0b916a/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v2b693b0b916a",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 49.104,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v2b693b0b916a_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v2b693b0b916a_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v2b693b0b916a_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v2b693b0b916a_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v2bb873142d82/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v2bb873142d82",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 46.081,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v2bb873142d82_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v2bb873142d82_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v2bb873142d82_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v2bb873142d82_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v2c0b0a886d11/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v2c0b0a886d11",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 45.216,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v2c0b0a886d11_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v2c0b0a886d11_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v2c0b0a886d11_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v2c0b0a886d11_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v307f0fdfaa17/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v307f0fdfaa17",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 47.727,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v307f0fdfaa17_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v307f0fdfaa17_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v307f0fdfaa17_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v307f0fdfaa17_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v408576bf783b/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v408576bf783b",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 2.709,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v408576bf783b_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v408576bf783b_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v408576bf783b_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v408576bf783b_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v43456e431ec5/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v43456e431ec5",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 14.043,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 1.99997,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v43456e431ec5_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v43456e431ec5_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v43456e431ec5_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v43456e431ec5_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v446f6246d007/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v446f6246d007",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 45.625,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v446f6246d007_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v446f6246d007_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v446f6246d007_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v446f6246d007_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v463fdcea2873/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v463fdcea2873",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 2.669,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v463fdcea2873_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v463fdcea2873_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v463fdcea2873_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v463fdcea2873_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v4a100fac70fd/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v4a100fac70fd",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 70.567,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v4a100fac70fd_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v4a100fac70fd_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v4a100fac70fd_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v4a100fac70fd_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v4a2db5df4ecd/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v4a2db5df4ecd",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 45.754,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v4a2db5df4ecd_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v4a2db5df4ecd_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v4a2db5df4ecd_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v4a2db5df4ecd_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v4cecaeb20dab/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v4cecaeb20dab",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 14.065,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 1.99997,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v4cecaeb20dab_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v4cecaeb20dab_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v4cecaeb20dab_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v4cecaeb20dab_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v4f1f18772b13/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v4f1f18772b13",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 56.137,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v4f1f18772b13_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v4f1f18772b13_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v4f1f18772b13_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v4f1f18772b13_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v51eace02838b/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v51eace02838b",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 14.498,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 1.99997,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v51eace02838b_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v51eace02838b_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v51eace02838b_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v51eace02838b_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v561a9073bc7a/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v561a9073bc7a",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 14.153,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 1.99997,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v561a9073bc7a_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v561a9073bc7a_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v561a9073bc7a_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v561a9073bc7a_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v586ef5417a85/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v586ef5417a85",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 48.052,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v586ef5417a85_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v586ef5417a85_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v586ef5417a85_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v586ef5417a85_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v60d991e8fff7/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v60d991e8fff7",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 54.087,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v60d991e8fff7_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v60d991e8fff7_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v60d991e8fff7_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v60d991e8fff7_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v65f32903c58a/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v65f32903c58a",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 14.489,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 1.99997,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v65f32903c58a_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v65f32903c58a_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v65f32903c58a_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v65f32903c58a_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v66fd776f9722/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v66fd776f9722",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 53.763,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v66fd776f9722_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v66fd776f9722_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v66fd776f9722_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v66fd776f9722_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v6904c379c5d5/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v6904c379c5d5",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 39.884,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v6904c379c5d5_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v6904c379c5d5_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v6904c379c5d5_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v6904c379c5d5_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v735b82b57103/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v735b82b57103",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 46.112,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v735b82b57103_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v735b82b57103_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v735b82b57103_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v735b82b57103_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v755c0baefabc/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v755c0baefabc",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 42.892,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v755c0baefabc_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v755c0baefabc_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v755c0baefabc_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v755c0baefabc_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v75991e9680d6/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v75991e9680d6",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 55.374,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v75991e9680d6_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v75991e9680d6_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v75991e9680d6_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v75991e9680d6_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v79b1afb2745c/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v79b1afb2745c",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 13.864,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 1.99997,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v79b1afb2745c_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v79b1afb2745c_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v79b1afb2745c_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v79b1afb2745c_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v7c61ffda42f2/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v7c61ffda42f2",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 14.121,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 1.99997,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v7c61ffda42f2_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v7c61ffda42f2_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v7c61ffda42f2_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v7c61ffda42f2_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v7cf666eb40e7/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v7cf666eb40e7",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 70.598,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v7cf666eb40e7_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v7cf666eb40e7_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v7cf666eb40e7_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v7cf666eb40e7_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v7d32838bfaff/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v7d32838bfaff",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 2.564,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v7d32838bfaff_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v7d32838bfaff_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v7d32838bfaff_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v7d32838bfaff_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v81c8397f7dce/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v81c8397f7dce",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 13.944,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 1.99997,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v81c8397f7dce_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v81c8397f7dce_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v81c8397f7dce_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v81c8397f7dce_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v8489d4076db6/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v8489d4076db6",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 57.054,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v8489d4076db6_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v8489d4076db6_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v8489d4076db6_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v8489d4076db6_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v856e29ea44c6/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v856e29ea44c6",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 14.072,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 1.99997,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v856e29ea44c6_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v856e29ea44c6_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v856e29ea44c6_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v856e29ea44c6_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v88b011a54244/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v88b011a54244",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 53.362,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v88b011a54244_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v88b011a54244_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v88b011a54244_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v88b011a54244_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v89981a7ad006/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v89981a7ad006",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 13.547,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 1.99997,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v89981a7ad006_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v89981a7ad006_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v89981a7ad006_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v89981a7ad006_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v8e7575d9c240/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v8e7575d9c240",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 44.35,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v8e7575d9c240_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v8e7575d9c240_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v8e7575d9c240_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v8e7575d9c240_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v8ee780f3634b/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v8ee780f3634b",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 47.352,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v8ee780f3634b_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v8ee780f3634b_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v8ee780f3634b_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v8ee780f3634b_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v9357bf40e043/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v9357bf40e043",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 56.831,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v9357bf40e043_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v9357bf40e043_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v9357bf40e043_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v9357bf40e043_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v9705af45617c/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v9705af45617c",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 44.78,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v9705af45617c_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v9705af45617c_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v9705af45617c_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v9705af45617c_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v98d3323b140e/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v98d3323b140e",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 14.228,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 1.99997,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v98d3323b140e_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v98d3323b140e_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v98d3323b140e_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v98d3323b140e_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v9917037ae448/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v9917037ae448",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 48.534,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v9917037ae448_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v9917037ae448_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v9917037ae448_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v9917037ae448_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v9921bbe0358c/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v9921bbe0358c",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 14.397,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 1.99997,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v9921bbe0358c_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v9921bbe0358c_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v9921bbe0358c_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v9921bbe0358c_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v99450f344901/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v99450f344901",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 14.06,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 1.99997,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v99450f344901_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v99450f344901_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v99450f344901_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v99450f344901_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v99c1b823bb49/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v99c1b823bb49",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 48.076,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v99c1b823bb49_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v99c1b823bb49_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v99c1b823bb49_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v99c1b823bb49_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v9ac8bbe4f099/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v9ac8bbe4f099",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 2.689,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v9ac8bbe4f099_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v9ac8bbe4f099_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v9ac8bbe4f099_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v9ac8bbe4f099_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v9eee9e5a131f/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v9eee9e5a131f",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 41.849,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v9eee9e5a131f_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v9eee9e5a131f_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v9eee9e5a131f_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v9eee9e5a131f_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__v9ffadcaa5689/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__v9ffadcaa5689",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 56.394,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v9ffadcaa5689_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v9ffadcaa5689_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v9ffadcaa5689_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__v9ffadcaa5689_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__va31855972c09/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__va31855972c09",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 70.255,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__va31855972c09_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__va31855972c09_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__va31855972c09_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__va31855972c09_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__va93f8ddea332/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__va93f8ddea332",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 70.386,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__va93f8ddea332_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__va93f8ddea332_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__va93f8ddea332_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__va93f8ddea332_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__vaceda12ab5a1/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__vaceda12ab5a1",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 48.536,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vaceda12ab5a1_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vaceda12ab5a1_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vaceda12ab5a1_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vaceda12ab5a1_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__vafffbcb60d2d/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__vafffbcb60d2d",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 54.466,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vafffbcb60d2d_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vafffbcb60d2d_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vafffbcb60d2d_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vafffbcb60d2d_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__vb0263702c900/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__vb0263702c900",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 48.023,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vb0263702c900_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vb0263702c900_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vb0263702c900_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vb0263702c900_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__vb449161da423/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__vb449161da423",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 14.762,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 1.99997,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vb449161da423_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vb449161da423_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vb449161da423_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vb449161da423_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__vc15f6a993692/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__vc15f6a993692",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 48.636,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vc15f6a993692_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vc15f6a993692_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vc15f6a993692_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vc15f6a993692_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__vc2383fe3326c/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__vc2383fe3326c",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 56.782,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vc2383fe3326c_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vc2383fe3326c_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vc2383fe3326c_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vc2383fe3326c_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__vc9dd4387ab52/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__vc9dd4387ab52",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 57.687,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vc9dd4387ab52_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vc9dd4387ab52_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vc9dd4387ab52_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vc9dd4387ab52_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__vce6f646790d0/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__vce6f646790d0",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 56.924,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vce6f646790d0_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vce6f646790d0_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vce6f646790d0_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vce6f646790d0_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__vce8ce97b280d/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__vce8ce97b280d",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 54.945,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vce8ce97b280d_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vce8ce97b280d_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vce8ce97b280d_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vce8ce97b280d_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__vd2b9c38a54df/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__vd2b9c38a54df",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 2.521,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vd2b9c38a54df_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vd2b9c38a54df_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vd2b9c38a54df_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vd2b9c38a54df_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__vd58789330eb9/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__vd58789330eb9",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 50.282,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vd58789330eb9_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vd58789330eb9_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vd58789330eb9_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vd58789330eb9_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__vd8d631b97b73/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__vd8d631b97b73",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 2.352,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vd8d631b97b73_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vd8d631b97b73_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vd8d631b97b73_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vd8d631b97b73_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__ve06fc7fb8df4/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__ve06fc7fb8df4",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 14.618,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 1.99997,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__ve06fc7fb8df4_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__ve06fc7fb8df4_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__ve06fc7fb8df4_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__ve06fc7fb8df4_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__ve2b3d075021d/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__ve2b3d075021d",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 2.614,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__ve2b3d075021d_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__ve2b3d075021d_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__ve2b3d075021d_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__ve2b3d075021d_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__ve3907c6f120d/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__ve3907c6f120d",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 49.368,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__ve3907c6f120d_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__ve3907c6f120d_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__ve3907c6f120d_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__ve3907c6f120d_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__ve4fcef3a0ede/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__ve4fcef3a0ede",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 40.221,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__ve4fcef3a0ede_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__ve4fcef3a0ede_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__ve4fcef3a0ede_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__ve4fcef3a0ede_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__ve8905752732c/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__ve8905752732c",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 2.292,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__ve8905752732c_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__ve8905752732c_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__ve8905752732c_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__ve8905752732c_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__vee5e673ff7d8/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__vee5e673ff7d8",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 14.298,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 1.99997,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vee5e673ff7d8_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vee5e673ff7d8_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vee5e673ff7d8_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vee5e673ff7d8_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__vfbd8ce721090/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__vfbd8ce721090",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 22.351,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vfbd8ce721090_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vfbd8ce721090_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vfbd8ce721090_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vfbd8ce721090_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "mos_ss__res_wcs__cap_typ__vfbe6b2e3f521/novdd/125C",
+      "process": "mos_ss__res_wcs__cap_typ__vfbe6b2e3f521",
+      "supply_v": {},
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 18.172,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vfbe6b2e3f521_novdd_125C/ngspice.log",
+        "raw": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vfbe6b2e3f521_novdd_125C/waveform.raw",
+        "waveform": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vfbe6b2e3f521_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/ldo-cmos5l-pvt-batch.eVDnz4/g02_loopgain_dyn_ss_125c_rbcs_i0ua_c330nf_e125mohm/artifacts/mos_ss__res_wcs__cap_typ__vfbe6b2e3f521_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    }
+  ]
+}

@@ -187,6 +187,17 @@ Schematic capture for the SG13CMOS5L port, against the `ihp-sg13cmos5l` PDK
 (issue #20, phase 2/4 of the port tracked by #12, Epic `2AMLogic/2am#542`
 Phase 5A).
 
+> **PDK re-stamp (issue #155).** The `ihp-sg13cmos5l` PDK is now the
+> `IHP-Open-PDK` `dev` subtree at `f7bca326` (was the archived
+> `IHP-GmbH/ihp-sg13cmos5l` repository at `607e18d`). All figures quoted below
+> were measured against the old pin; which have been re-run on the new pin,
+> and how they moved, is in
+> [`sim/migration-inventory-155.md`](../sim/migration-inventory-155.md).
+> The upstream `rfnmos_minW`/`rfpmos_minW` change (0.15 um to 0.39 um) does not
+> touch this design: it instantiates only `sg13_hv_nmos`/`sg13_hv_pmos`,
+> `rhigh`/`rsil`/`rppd` and `cap_cmomi`, none of them an RF MOS (`sg13_lv_*`
+> RF flavour); no device was resized.
+
 > **Status: PVT-verified and re-compensated (issues #21, #25, #31, #35,
 > phases 3–4c) — every ratified spec row passes at all 45 grid points.**
 > #35 closed the `res_bcs`/125 °C phase-margin gap #31 found, with a
@@ -621,14 +632,18 @@ which #35's wider `Cc` is what closes
   self-biased mirror needs no start-up circuit only because `IBIAS` is
   externally driven — if the bias is ever moved on-block, start-up becomes a
   real requirement.
-- **No CI job** runs `--design sg13cmos5l --check`.
-  `.github/workflows/ci.yml` provisions `ihp-sg13g2` via klayout-tools'
-  `scripts/fetch-ihp-sg13g2.sh`, and no equivalent pinned fetch script
-  exists for `ihp-sg13cmos5l` — it is a separate upstream repository
-  (`IHP-GmbH/ihp-sg13cmos5l`), not a variant directory inside the
-  `IHP-Open-PDK` tarball that script downloads. Filed upstream as
-  `2AMLogic/klayout-tools#1929`. Until that lands, this branch's check is a
-  local/manual step.
+- **Install it with the upstream fetcher, not by cloning.**
+  `ihp-sg13cmos5l` is the `ihp-sg13cmos5l/` subtree of `IHP-GmbH/IHP-Open-PDK`
+  `dev` (commit `f7bca32694fe3d58be0cc7d9df4b9f5db7161a14`, tarball sha256
+  `5eb6f8a9b0b2ecc4fa08cc30627668406f85b1a97834f278036c43f0c0dbc70b`;
+  `sim/pdk-cmos5l.json`). Run klayout-tools' `scripts/fetch-ihp-sg13g2.sh`
+  and then `scripts/fetch-ihp-sg13cmos5l.sh` (the second refuses to run
+  without the first's sibling and verifies the checksum). The install
+  carries a `.fetched-version` marker, not a `.git`; read it to confirm what
+  is installed. `.github/workflows/ci.yml` runs `--design sg13cmos5l --check`
+  against exactly that install, taking the scripts from an immutable
+  klayout-tools commit. (Until issue #155 the PDK was the archived separate
+  repository `IHP-GmbH/ihp-sg13cmos5l`; klayout-tools#1929/#2720.)
 - **Install shape is a dispatch hazard.** `ihp-sg13cmos5l`'s device symbols
   and HV model cards are *relative* symlinks into a sibling `ihp-sg13g2`
   checkout (`../../../../ihp-sg13g2/...`). Install **both** variants under

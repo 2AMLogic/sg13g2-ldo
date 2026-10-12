@@ -59,9 +59,11 @@ name: CI
 # checksum-verified by 2AMLogic/klayout-tools' own fetch script) is cached
 # across runs via actions/cache to keep the steady-state cost low.
 #
-# The ihp-sg13cmos5l PDK (a separate upstream repo, pinned to a commit and
-# checksum-verified by klayout-tools' fetch-ihp-sg13cmos5l.sh, which
-# exists from klayout-tools v0.6.0) is fetched only by netlist-check. Its
+# The ihp-sg13cmos5l PDK (the ihp-sg13cmos5l/ subtree of IHP-GmbH/IHP-Open-PDK
+# `dev`, pinned to a commit and checksum-verified by klayout-tools'
+# fetch-ihp-sg13cmos5l.sh at the immutable KLAYOUT_TOOLS_REF below; it
+# stamps <PDK_ROOT>/ihp-sg13cmos5l/.fetched-version, there is no .git) is
+# fetched only by netlist-check. Its
 # xschem MOS symbols and HV model cards are relative symlinks into the
 # sibling ihp-sg13g2 install, so both must sit under the same PDK_ROOT;
 # the fetch script refuses to run without the sibling. ihp-sg13g2 alone does
@@ -133,17 +135,27 @@ on:
 # (IHP_OPEN_PDK_VERSION) and spec/porting-plan.md's own v0.3.0 references.
 env:
   IHP_OPEN_PDK_VERSION: "0.3.0"
-  # Pin the klayout-tools ref this workflow checks out its PDK-fetch script
+  # Pin the klayout-tools ref this workflow checks out its PDK-fetch scripts
   # from, so a future klayout-tools change can't silently alter this repo's
   # CI. Bump deliberately, alongside IHP_OPEN_PDK_VERSION above if the two
-  # move together.
-  KLAYOUT_TOOLS_REF: "v0.7.0"
-  # ihp-sg13cmos5l commit that scripts/fetch-ihp-sg13cmos5l.sh (klayout-tools
-  # v0.7.0) pins; only used in netlist-check's cache key. Keep in sync with
-  # that script's IHP_SG13CMOS5L_COMMIT (and the PDK recorded in
-  # sim/ldo-cmos5l-monte-carlo records). v0.7.0's ihp-sg13g2 fetch script
-  # differs from v0.3.0's only in comments (same 0.3.0 tarball + checksum).
-  IHP_SG13CMOS5L_COMMIT: "607e18d4bd9214a52575c194b4181ef449f9252f"
+  # move together. This is an immutable commit (not a tag) because #155:
+  # klayout-tools#2720 migrated scripts/fetch-ihp-sg13cmos5l.sh from the
+  # archived IHP-GmbH/ihp-sg13cmos5l repository to the ihp-sg13cmos5l/
+  # subtree of IHP-GmbH/IHP-Open-PDK `dev`, and v0.7.0 predates that
+  # migration. 159527a551 is the latest commit touching that script when
+  # chosen; its fetch-ihp-sg13g2.sh is byte-identical to v0.7.0's (sha256
+  # bdb2c8debbe3...), so the SG13G2 fetch is unchanged. This ref is ONLY the
+  # fetch-script source: the layout/signoff tool builds below are separate
+  # pins and were deliberately NOT moved by this change.
+  KLAYOUT_TOOLS_REF: "159527a551596caa74f290dcab08bdb8cc78ce93"
+  # IHP-Open-PDK `dev` commit (subtree ihp-sg13cmos5l/, tarball sha256
+  # 5eb6f8a9b0b2ecc4fa08cc30627668406f85b1a97834f278036c43f0c0dbc70b) that
+  # scripts/fetch-ihp-sg13cmos5l.sh at KLAYOUT_TOOLS_REF pins; only used in
+  # netlist-check's cache key. Keep in sync with that script's
+  # IHP_SG13CMOS5L_COMMIT and sim/pdk-cmos5l.json (the fetcher records it in
+  # <PDK_ROOT>/ihp-sg13cmos5l/.fetched-version). Superseded pin:
+  # 607e18d4bd9214a52575c194b4181ef449f9252f (archived ihp-sg13cmos5l repo).
+  IHP_SG13CMOS5L_COMMIT: "f7bca32694fe3d58be0cc7d9df4b9f5db7161a14"
   # Pin the klt build that grades signoff/sg13g2-ldo.json (#44). The
   # item-11 (power delivery) grading rules, the "erc" evidence kind, and
   # input-artifact verification (citation `input_verified`, which re-hashes
