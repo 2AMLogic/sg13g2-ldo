@@ -2,6 +2,10 @@
 
 Chronological record of recently merged pull requests and closed issues, maintained by the Loom Guide role.
 
+### 2026-10-12
+
+- **PR #157**: Re-stamp SG13CMOS5L PDK pin to IHP-Open-PDK dev f7bca326 and re-run evidence (#155)
+
 ### 2026-10-11
 
 - **Issue #153** (closed): Guard decision review: keep rm-scope-unresolved-var flagged
