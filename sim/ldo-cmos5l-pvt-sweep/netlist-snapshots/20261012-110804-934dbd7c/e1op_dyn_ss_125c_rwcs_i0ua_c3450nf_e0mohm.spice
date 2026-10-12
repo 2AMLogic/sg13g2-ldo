@@ -1,0 +1,158 @@
+* sg13g2-ldo -- SG13CMOS5L E1 DC operating-point extraction bench (issue #158).
+* Generated from
+* sim/ldo-cmos5l-pvt-sweep/testbench/tb_e1op_cmos5l.spice.tmpl by
+* sim/ldo-cmos5l-pvt-sweep/run_e1op.sh -- do not edit a generated
+* netlist-snapshots/*.spice file directly. Full methodology, quantity list,
+* sign conventions and the pole-estimate limitations are in
+* sim/ldo-cmos5l-pvt-sweep/README.md "E1 DC operating points (issue #158)"
+* and spec/decision-records/DR-0015-...md's follow-up brief (experiment E1);
+* this header is a short pointer.
+*
+* Generated for: corner=mos_ss temp=125C res=res_wcs
+* cap=cap_typ Cc_w=170u (nominal)
+* PDK: ihp-sg13cmos5l /home/ubuntu/share/pdk (see sim/pdk-cmos5l.json for the pinned release)
+* OSDI models: /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi (built by sim/tools/build-osdi.sh)
+* Design netlist under test (frozen at this repo's git sha in the record):
+*   /home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-158/design/sg13cmos5l/netlist/ldo_core_cmos5l.spice
+*
+* WHAT THIS BENCH IS: experiment E1 of DR-0015's follow-up brief -- a DC
+* operating-point extraction of the SG13CMOS5L LDO at the four selected
+* points P1/P2/P5/P6 (pass-device I_d/g_ds/V_eaout, divider current, and
+* the error-amplifier devices' operating-point quantities needed to
+* estimate the two low-frequency pole mechanisms). It measures the
+* diagnosis's declared unknowns; it changes no schematic, no layout, no
+* spec row and no verdict. DR-0015 stays Proposed.
+*
+* CIRCUIT: byte-for-byte the flattened tb_loopgain_cmos5l bench (issue #21;
+* loop broken at FB with a 0 V AC source -- FBAMP is a MOSFET gate, so the
+* break draws zero current and the DC operating point is the closed loop's;
+* run_sweep.sh's assert_loopgain_topology_sync() diffs the four mirrored
+* instantiation lines and the break against the generated netlist every
+* run), PLUS two additions that cannot perturb that operating point:
+*
+* 1. The non-invasive divider replica from tb_dcsweep_cmos5l (issue #31):
+*    an ideal unity VCVS copy of VOUT driving byte-identical rhigh legs
+*    through a 0 V ammeter Vdivsense. ngspice cannot report a branch
+*    current inside an rhigh/r3_cmc subcircuit, so i(vdivsense) is how the
+*    divider's standing current -- and, with v(vout), its per-leg
+*    resistance -- is measured. The replica's node set (REPTOP/REPT/REPFB)
+*    is disjoint from the circuit under test and draws zero current from
+*    VOUT (a VCVS input), so Iq, the operating point and every other
+*    quantity are unchanged.
+* 2. A `.save` card naming the device operating-point parameters this
+*    experiment exports. With the OSDI PSP103 devices, saveable parameter
+*    names are (verified against ngspice-46 + the pinned PDK's psp103.osdi):
+*    `[ids]` (drain current; saved into the rawfile as `i(@n.<path>[ids])`),
+*    `[gm]`, `[gds]`, `[cgs]`, `[cgd]`, `[cdd]` and `[vth]` (saved as
+*    `v(@n.<path>[vth])`). The bare `[id]` and `[vbs]` spellings create
+*    ZERO-LENGTH vectors and a single zero-length saved vector makes
+*    ngspice's rawfile `write` fail outright ("no writable vector found"),
+*    so they must never be added to the save list.
+*
+* Device-instance naming (the wrdata token contract): every MOS in this
+* bench instantiates the PDK subckt wrapper `sg13_hv_pmos`/`sg13_hv_nmos`,
+* whose inner PSP device is `nsg13_hv_pmos`/`nsg13_hv_nmos` (read from
+* models/sg13g2_moshv_mod.lib at the pinned commit). Hierarchical paths:
+* `@n.xmpass.nsg13_hv_pmos[ids]` (top level), `@n.xamp.xminp.nsg13_hv_pmos[gm]`
+* (inside the Xamp subckt). The .save card and the wrdata line below name
+* exactly these paths; batch_backend.py's e1op branch resolves the rawfile
+* vectors (exact name, then the i()/v()-wrapped spelling) and fails closed
+* on any token it cannot find.
+*
+* ANALYSIS: `dc vin 3.299 3.301 0.001` -- a three-point DC sweep bracketing
+* the operating point (Vin = 3.30 V). It is one operating-point extraction
+* with a +/-1 mV quasi-static neighbourhood around it, not a line-regulation
+* measurement: the CSV's middle row (v-sweep exactly 3.3) IS the operating
+* point the E1 record reduces. The sweep exists because (a) a one-point
+* axis gives ngspice's `.meas dc ... AT=` "out of interval" (the liveness
+* measurement would fail), and (b) the two extra rows give the reducer a
+* free finiteness/continuity check. analysis.kind stays "dc" so the same
+* liveness-measurement machinery as every other bench applies; there is no
+* `.meas op` in ngspice.
+*
+* SIGN/UNIT CONVENTIONS (the record states them per quantity):
+* - `[ids]` is this PDK's PSP103 OSDI magnitude-signed drain current:
+*   POSITIVE when the device conducts, for BOTH polarities (verified
+*   against ngspice-46 + psp103.osdi in the --validate probe: the pass
+*   device delivering 1 mA reports ids = +1.0048e-3 A). An off device
+*   reports tiny positive leakage. Never expect a negative ids; the
+*   reducer treats one as a unit/sign mistake. gm, gds, cgs, cgd > 0;
+*   cdd may be NEGATIVE (PSP charge-based cap sign); PMOS [vth] < 0.
+* - i(vdivsense) > 0 = current into the replica divider (REPTOP -> REPT).
+* - i(vin) < 0 while the rail delivers current (ngspice source-branch
+*   sign); |i(vin)| = total supply current (pass + erramp + Men/Mbdis).
+* - i(vbreak) ~ 0 (the FB/FBAMP break draws no current -- the record
+*   reports it as the break-validity check).
+* - All voltages in V, currents in A, gm/gds in S, caps in F, from the
+*   deck's own units. Temperatures in C (klt's axis), tnom = 27 C.
+*
+* ENABLE (issue #67/#89, same as tb_loopgain): EN tied to VIN (enabled,
+* regulating state); the G1 pull-down inside Xamp is off (ENB at VDD).
+
+.lib "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/models/cornerMOShv.lib" mos_ss
+.lib "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/models/cornerRES.lib" res_wcs
+.lib "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/models/cornerCAP.lib" cap_typ
+
+.options temp=125 tnom=27
+
+.include "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-158/design/sg13cmos5l/netlist/ldo_core_cmos5l.spice"
+
+Vin VIN 0 dc 3.30
+Vref VREF 0 dc 0.90 ac 0
+Ibias IBIAS 0 dc 2u
+* Operating point (issue #64 convention, substituted by run_e1op.sh; the
+* four E1 points are DR-0015's P1/P2/P5/P6: ESR = 0 everywhere).
+Iload VOUT 0 dc 0
+Cout VOUT 0 3.45u
+* ESR=0: Cout wired directly to ground (all four E1 points)
+
+* --- flattened ldo_core_cmos5l, loop broken at FB. Byte-for-byte the
+* tb_loopgain_cmos5l template's copy (FB -> FBAMP on Xamp's first pin and
+* the inserted Vbreak excepted, exactly as there) -- run_sweep.sh's
+* assert_loopgain_topology_sync() diffs this block against the generated
+* netlist on every run. ---
+Vgnd VSS 0 dc 0
+XMpass VOUT EAOUT VIN VIN sg13_hv_pmos w=2800u l=0.5u ng=1 m=1
+XRtop VOUT FB VSS rhigh w=1e-6 l=25.43e-6 m=1 b=7
+XRbot FB VSS VSS rhigh w=1e-6 l=25.43e-6 m=1 b=7
+Vbreak FB FBAMP 0 ac 1
+Xamp FBAMP VREF EAOUT VIN VSS IBIAS EN ldo_erramp_cmos5l
+XMen EAOUT EN VIN VIN sg13_hv_pmos w=40u l=0.5u ng=1 m=1
+XMbdis IBIAS EN VIN VIN sg13_hv_pmos w=5u l=0.5u ng=1 m=1
+Ven EN VIN dc 0
+
+* --- E1 addendum 1: non-invasive divider replica (tb_dcsweep's, issue #31).
+* XRrep_top/XRrep_bot are byte-identical copies of the XRtop/XRbot lines
+* above; i(vdivsense) IS the real divider's standing current at this
+* corner/temperature, and (v(vout)/2)/i(vdivsense) its per-leg resistance.
+Erep REPTOP 0 VOUT 0 1.0
+Vdivsense REPTOP REPT dc 0
+XRrep_top REPT REPFB 0 rhigh w=1e-6 l=25.43e-6 m=1 b=7
+XRrep_bot REPFB 0 0 rhigh w=1e-6 l=25.43e-6 m=1 b=7
+
+* --- E1 addendum 2: the operating-point parameter save list. The inner
+* device paths follow the PDK subckt wrappers (see header). The nodes and
+* source currents are saved explicitly because the fleet's klt 0.5.0
+* runner emits NO `save all` of its own -- with only a device-parameter
+* .save card, the node vectors would not exist and the runner's liveness
+* `.meas` (and the rawfile rebuild of every v()/i() column) would fail.
+* Order matters: it must match wrdata_rows' e1op token contract in
+* batch_backend.py and e1_oppoints.py's QUANTITIES (all three fail closed
+* on a mismatch).
+.save v(vout) v(eaout) v(fb) v(fbamp) v(vref) v(en) v(ibias) v(xamp.g1) v(xamp.mz) v(xamp.n1) v(xamp.tail) v(xamp.enb) v(reptop) i(vdivsense) i(vin) i(vbreak) @n.xmpass.nsg13_hv_pmos[ids] @n.xmpass.nsg13_hv_pmos[gm] @n.xmpass.nsg13_hv_pmos[gds] @n.xmen.nsg13_hv_pmos[ids] @n.xmen.nsg13_hv_pmos[gm] @n.xmen.nsg13_hv_pmos[gds] @n.xmbdis.nsg13_hv_pmos[ids] @n.xmbdis.nsg13_hv_pmos[gm] @n.xmbdis.nsg13_hv_pmos[gds] @n.xamp.xmb0.nsg13_hv_pmos[ids] @n.xamp.xmb0.nsg13_hv_pmos[gm] @n.xamp.xmb0.nsg13_hv_pmos[gds] @n.xamp.xmtail.nsg13_hv_pmos[ids] @n.xamp.xmtail.nsg13_hv_pmos[gm] @n.xamp.xmtail.nsg13_hv_pmos[gds] @n.xamp.xmload2.nsg13_hv_pmos[ids] @n.xamp.xmload2.nsg13_hv_pmos[gm] @n.xamp.xmload2.nsg13_hv_pmos[gds] @n.xamp.xminp.nsg13_hv_pmos[ids] @n.xamp.xminp.nsg13_hv_pmos[gm] @n.xamp.xminp.nsg13_hv_pmos[gds] @n.xamp.xminn.nsg13_hv_pmos[ids] @n.xamp.xminn.nsg13_hv_pmos[gm] @n.xamp.xminn.nsg13_hv_pmos[gds] @n.xamp.xminvp.nsg13_hv_pmos[ids] @n.xamp.xminvp.nsg13_hv_pmos[gm] @n.xamp.xminvp.nsg13_hv_pmos[gds] @n.xamp.xmn1.nsg13_hv_nmos[ids] @n.xamp.xmn1.nsg13_hv_nmos[gm] @n.xamp.xmn1.nsg13_hv_nmos[gds] @n.xamp.xmn2.nsg13_hv_nmos[ids] @n.xamp.xmn2.nsg13_hv_nmos[gm] @n.xamp.xmn2.nsg13_hv_nmos[gds] @n.xamp.xmn3.nsg13_hv_nmos[ids] @n.xamp.xmn3.nsg13_hv_nmos[gm] @n.xamp.xmn3.nsg13_hv_nmos[gds] @n.xamp.xminvn.nsg13_hv_nmos[ids] @n.xamp.xminvn.nsg13_hv_nmos[gm] @n.xamp.xminvn.nsg13_hv_nmos[gds] @n.xamp.xmpd.nsg13_hv_nmos[ids] @n.xamp.xmpd.nsg13_hv_nmos[gm] @n.xamp.xmpd.nsg13_hv_nmos[gds] @n.xmpass.nsg13_hv_pmos[cgs] @n.xmpass.nsg13_hv_pmos[cgd] @n.xmpass.nsg13_hv_pmos[cdd] @n.xmpass.nsg13_hv_pmos[vth] @n.xamp.xmn3.nsg13_hv_nmos[cgs] @n.xamp.xmn3.nsg13_hv_nmos[cgd]
+
+.control
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/psp103.osdi
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/psp103_nqs.osdi
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/mosvar.osdi
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/r3_cmc.osdi
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/cap_cmomi.osdi
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/cap_cmomf.osdi
+
+save all
+op
+echo "E1OP_VOUT_OP $&v(vout)"
+dc vin 3.299 3.301 0.001
+wrdata /home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-158/sim/ldo-cmos5l-pvt-sweep/corners/20261012-110804-934dbd7c/e1op_dyn_ss_125c_rwcs_i0ua_c3450nf_e0mohm_dc.csv v(vout) v(eaout) v(fb) v(fbamp) v(vref) v(en) v(ibias) v(xamp.g1) v(xamp.mz) v(xamp.n1) v(xamp.tail) v(xamp.enb) v(reptop) i(vdivsense) i(vin) i(vbreak) @n.xmpass.nsg13_hv_pmos[ids] @n.xmpass.nsg13_hv_pmos[gm] @n.xmpass.nsg13_hv_pmos[gds] @n.xmen.nsg13_hv_pmos[ids] @n.xmen.nsg13_hv_pmos[gm] @n.xmen.nsg13_hv_pmos[gds] @n.xmbdis.nsg13_hv_pmos[ids] @n.xmbdis.nsg13_hv_pmos[gm] @n.xmbdis.nsg13_hv_pmos[gds] @n.xamp.xmb0.nsg13_hv_pmos[ids] @n.xamp.xmb0.nsg13_hv_pmos[gm] @n.xamp.xmb0.nsg13_hv_pmos[gds] @n.xamp.xmtail.nsg13_hv_pmos[ids] @n.xamp.xmtail.nsg13_hv_pmos[gm] @n.xamp.xmtail.nsg13_hv_pmos[gds] @n.xamp.xmload2.nsg13_hv_pmos[ids] @n.xamp.xmload2.nsg13_hv_pmos[gm] @n.xamp.xmload2.nsg13_hv_pmos[gds] @n.xamp.xminp.nsg13_hv_pmos[ids] @n.xamp.xminp.nsg13_hv_pmos[gm] @n.xamp.xminp.nsg13_hv_pmos[gds] @n.xamp.xminn.nsg13_hv_pmos[ids] @n.xamp.xminn.nsg13_hv_pmos[gm] @n.xamp.xminn.nsg13_hv_pmos[gds] @n.xamp.xminvp.nsg13_hv_pmos[ids] @n.xamp.xminvp.nsg13_hv_pmos[gm] @n.xamp.xminvp.nsg13_hv_pmos[gds] @n.xamp.xmn1.nsg13_hv_nmos[ids] @n.xamp.xmn1.nsg13_hv_nmos[gm] @n.xamp.xmn1.nsg13_hv_nmos[gds] @n.xamp.xmn2.nsg13_hv_nmos[ids] @n.xamp.xmn2.nsg13_hv_nmos[gm] @n.xamp.xmn2.nsg13_hv_nmos[gds] @n.xamp.xmn3.nsg13_hv_nmos[ids] @n.xamp.xmn3.nsg13_hv_nmos[gm] @n.xamp.xmn3.nsg13_hv_nmos[gds] @n.xamp.xminvn.nsg13_hv_nmos[ids] @n.xamp.xminvn.nsg13_hv_nmos[gm] @n.xamp.xminvn.nsg13_hv_nmos[gds] @n.xamp.xmpd.nsg13_hv_nmos[ids] @n.xamp.xmpd.nsg13_hv_nmos[gm] @n.xamp.xmpd.nsg13_hv_nmos[gds] @n.xmpass.nsg13_hv_pmos[cgs] @n.xmpass.nsg13_hv_pmos[cgd] @n.xmpass.nsg13_hv_pmos[cdd] @n.xmpass.nsg13_hv_pmos[vth] @n.xamp.xmn3.nsg13_hv_nmos[cgs] @n.xamp.xmn3.nsg13_hv_nmos[cgd]
+.endc
+.end

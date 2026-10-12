@@ -609,3 +609,114 @@ any candidate; no ratification. `sim/` evidence stays append-only.
   [`DR-0005`](DR-0005-sg13cmos5l-cc-recompensation.md),
   [`DR-0007`](DR-0007-target-spec-row-ratification.md),
   [`DR-0014`](DR-0014-row10-stability-margin-classification.md).
+
+## Addendum: E1 DC operating-point measurements (issue #158)
+
+**Status impact: none.** This record stays **Proposed**; the family
+ranking, the Disposition and every spec-row state above are unchanged.
+This addendum reports what experiment E1 -- the four DC operating-point
+extractions this record's follow-up brief prices at P1/P2/P5/P6 -- measured
+on the current design bytes and PDK pin, and what that does to the
+class-1 (zero-load) analysis above. It authorizes no compensation change.
+
+- **Record of evidence**:
+  `sim/ldo-cmos5l-pvt-sweep/records/20261012-110804-934dbd7c.e1op.md`
+  (reduction `…​.e1op.csv`, raw exports and fleet provenance under
+  `sim/ldo-cmos5l-pvt-sweep/corners/20261012-110804-934dbd7c/`; bench
+  `tb_e1op_cmos5l.spice.tmpl`, campaign `run_e1op.sh`, reducer
+  `e1_oppoints.py`). One batch-fleet request, four corners, job
+  `klt-sim-b8248ab15091`; every point's operating point converged with all
+  declared quantities present, finite and sign-consistent (the record's
+  per-point checks: break current ~ 0, KCL at VOUT closed to within the
+  node's measured leakage, VOUT in regulation, the fleet liveness
+  measurement in agreement).
+- **Vintage (explicit, per the brief's reconciliation requirement)**: E1
+  ran on the design netlists as committed at record id `…-934dbd7c`
+  (sha256 in the record manifest; identical bytes to the #155-era design)
+  and the **current** PDK pin `f7bca326…` (the #155 re-stamp), staged
+  model cards and OSDI binaries pinned by sha256 in the record. The AC
+  evidence the class-1 analysis above cites (`…-a31c626`, `…-6df50fd`) is
+  the **old** pin `607e18d4…` on the pre-#89 design; the same-vintage AC
+  reference for these points is the #155 re-run
+  `20261012-080951-142dac4a`. Every comparison below is cross-vintage in
+  exactly this sense and is labelled as such; the PSP103 MOS model
+  binaries, whose parameters E1 reads out, are byte-identical between the
+  two pins (sim/migration-inventory-155.md).
+
+### What was measured (pass device, per point)
+
+| point | corner | `I_d,pass` | `g_m,pass` | `g_ds,pass` | `r_o = 1/g_ds` | VA equiv |
+|---|---|---|---|---|---|---|
+| P1 | ss/125 °C/res_bcs, 0 mA | 4.807 µA | 87.82 µS | 311.0 nS | **3.215 MΩ** | 15.45 V |
+| P2 | ff/−40 °C/res_wcs, 0 mA | 1.974 µA | 67.37 µS | 224.1 nS | **4.461 MΩ** | 8.81 V |
+| P5 | ss/125 °C/res_wcs, 0 mA | 2.881 µA | 52.48 µS | 187.8 nS | **5.324 MΩ** | 15.34 V |
+| P6 | ss/125 °C/res_bcs, 1 mA | 1.0048 mA | 11.198 mS | 42.03 µS | **23.79 kΩ** | 23.91 V |
+
+(VA equiv = `|I_d|/g_ds`, the Early-voltage equivalent of the measured
+small-signal output resistance at the point's own bias; it is a figure of
+merit read off the operating point, not a claim about the model's Early
+voltage parameter.)
+
+Also measured per point (record CSV): `V_eaout` (P1 3.001 V, P2 2.845 V,
+P5 3.030 V, P6 2.671 V against VIN = 3.3 V), `V(g1)`, `V(tail)`, the
+divider standing current and per-leg resistance (P1 4.816 µA / 186.9 kΩ,
+P2 1.974 µA / 455.9 kΩ, P5 2.891 µA / 311.4 kΩ, P6 4.816 µA / 186.9 kΩ --
+same corner as P1, same values), and every error-amplifier device's
+`ids/gm/gds` (first-stage `gm,in` ≈ 34.1 µS at ss points, 52.6 µS at ff;
+second stage `gm,n3` ≈ 134–195 µS; per-device values in the record CSV).
+
+### Class-1 hypotheses: supported, contradicted, unresolved
+
+1. **SUPPORTED (direction and mechanism): the zero-load phase-margin
+   mechanism runs through the pass device's output resistance.** The
+   measured `r_o` moves from 3.2–5.3 MΩ at the three zero-load points to
+   23.8 kΩ at the 1 mA reference -- a ~135–224× collapse tracking the
+   load exactly as the class-1 analysis requires (its premise was that
+   "the external load (the only thing holding `r_o` down) disappears" at
+   0 mA). The estimated VOUT-node pole
+   (`1/(2π·(r_o ∥ R_div)·(Cout + |c_dd,pass|))`, all terms measured)
+   sits at **0.475 Hz (P1) / 0.210 Hz (P2) / 0.083 Hz (P5)** at zero load
+   versus **7.11 Hz at P6** -- inside the 0.2–5 Hz band the class-1
+   analysis inferred from the AC traces for the `Cout`-scaling member of
+   the sub-1 Hz cluster, and scaling with `Cout` and corner as that
+   analysis demanded. The zero-load PM mechanism (a `Cout`-scaling pole
+   held down by a huge `r_o` at 0 mA, pulled up by the load at 1 mA)
+   stands on measured quantities now.
+2. **CONTRADICTED (magnitude): the "VA ≈ 10 V ⇒ `r_o` ≈ 10 kΩ at 1 mA"
+   assumption.** Measured at P6: `r_o` = 23.79 kΩ, VA equiv 23.9 V --
+   2.4× the assumed value. Consequence for the P6 narrative above: the
+   VOUT-node pole at 1 mA is ≈ 7 Hz (with the divider load included), not
+   the ≈ 16 kHz the P6 paragraph states. That paragraph's arithmetic
+   carried a units slip independent of E1 (`1/(2π·10 kΩ·1 µF)` evaluates
+   to ≈ 16 **Hz**, not kHz); with the measured `r_o` and the measured
+   divider in parallel it evaluates to ≈ 7 Hz. The paragraph's
+   *directional* claim survives (7 Hz is still two decades above the
+   zero-load VOUT-pole estimates and the loaded point's measured PM is
+   healthy), but its numbers are superseded by the record's; the original
+   text is preserved above as evidence of its own vintage and not edited.
+3. **UNRESOLVED (by construction): the amplifier-side split of the
+   sub-1 Hz cluster.** E1's scope was four DC extractions; it measures
+   device bias points, not node impedances. The CSV's amplifier-side pole
+   ESTIMATES (G1-node Miller-multiplied pole, EAOUT-node pole) rest on
+   the measured `gm`/`gds` values but on incomplete capacitance data
+   (only the pass device's and XMn3's `cgs/cgd/cdd` are exported; the
+   XMn2/XMinp/XRz/XMpd capacitances and all wiring parasitics are not),
+   and are labelled estimates in the record for exactly that reason.
+   Identifying the amplifier node impedances by small-signal probing
+   remains the unresolved follow-up the brief allowed; nothing in this
+   addendum claims a measured amplifier pole.
+4. **Note on the (B) prototype screen**: the family-(B) gate-drive
+   variants sense `EAOUT`, whose measured zero-load bias sits at
+   2.84–3.03 V against VIN = 3.3 V (pass `V_sg` ≈ 0.30–0.46 V) -- usable
+   headroom information for the prototype screen the brief conditions on
+   E1–E4, recorded here as measurement only.
+
+### What this addendum does not do
+
+No spec row, threshold, gate, record or verdict is changed; DR-0007 rows
+3, 6, 7 and 10 keep their states; DR-0014's classifications are untouched;
+no compensation candidate is proposed, screened or ratified; no
+post-change margin is predicted. The (B) family stays "recommended
+follow-up subject", now with its central premise (`r_o` collapse at 0 mA)
+measured instead of inferred. E2/E3/E4 remain open experiments of the
+brief.

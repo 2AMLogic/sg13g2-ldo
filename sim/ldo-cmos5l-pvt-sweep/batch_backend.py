@@ -97,13 +97,21 @@ KNOWN_LETS = {
         "let il_im = imag(i(vmeas))",
     ],
     "psrr": ["let psrr_db = -db(v(vout)/v(vin))"],
+    "e1op": [],
 }
 # the wrdata vector names each bench's template must name, in order
 KNOWN_WRDATA = {
+    # wrdata vector names each bench's template must name, in order. The
+    # e1op bench (issue #158) declares its full export token list in the
+    # template's wrdata line itself (device-parameter and source-current
+    # tokens included); wrdata_rows resolves each token against the rawfile
+    # generically and fails closed on any it cannot find, so no separate
+    # allow-list is needed here -- only the no-lets contract below.
     "loopgain": ["loopgain_db", "loopgain_deg"],
     "loopgain2v": ["vfb_re", "vfb_im", "vfbamp_re", "vfbamp_im"],
     "loopgain2i": ["il_re", "il_im"],
     "psrr": ["psrr_db"],
+    "e1op": [],
 }
 # the rawfile vectors each new bench's reconstruction reads (bench ->
 # [(name in rawfile, column role)]); None for the legacy reduced benches,
@@ -199,9 +207,12 @@ def parse_deck(path, variant_re=None):
         elif s.startswith("wrdata "):
             parts = s.split()
             wrdata = parts[2:]
-        elif s == "op" or re.match(r'^echo "LOOPGAIN(2V|2I)?_VOUT_OP ', s):
-            # informational operating-point echo in the loop-gain templates;
-            # nothing downstream reads it.
+        elif s == "op" or re.match(
+                r'^echo "(LOOPGAIN(2V|2I)?|E1OP)_VOUT_OP ', s) or s == "save all":
+            # informational operating-point echo in the loop-gain templates
+            # and the `save all` the runner re-emits itself (the e1op
+            # template carries one so local ngspice runs keep every vector;
+            # nothing downstream reads either line).
             continue
         else:
             raise BackendError(f"{path}: unsupported .control line: {s}")
@@ -220,7 +231,7 @@ def parse_deck(path, variant_re=None):
 def bench_of(point_id):
     # order matters only for readability: the prefixes are mutually exclusive
     # ("loopgain2v_"/"loopgain2i_" do not start with "loopgain_").
-    for b in ("dcsweep", "loopgain2v", "loopgain2i", "loopgain", "psrr"):
+    for b in ("dcsweep", "loopgain2v", "loopgain2i", "loopgain", "psrr", "e1op"):
         if point_id.startswith(b + "_"):
             return b
     raise BackendError(f"cannot tell the bench of point {point_id}")
@@ -286,6 +297,32 @@ def vec(data, name):
     raise BackendError(f"vector {name} not in rawfile (have {sorted(data)[:12]}...)")
 
 
+def vec_e1op(data, tok):
+    """Resolve one e1op wrdata token (issue #158) against a DC rawfile.
+
+    The deck's tokens name the quantity the way the template's .save card
+    and wrdata line spell it; ngspice names the rawfile vectors it saved:
+
+      v(node)             -> v(node)                       (exact)
+      i(src)              -> i(src) in a DC plot; <src>#branch otherwise
+      @n.path[ids]        -> i(@n.path[ids])   (currents get the i() wrapper)
+      @n.path[vth]        -> v(@n.path[vth])   (voltage-type params, v() wrapper)
+      @n.path[gm|gds|c..] -> @n.path[gm]       (exact)
+
+    Fails closed naming the token and what the rawfile does have.
+    """
+    tok = tok.lower()
+    for cand in (tok, f"i({tok})", f"v({tok})"):
+        if cand in data:
+            return data[cand]
+    m = re.match(r"^i\((\w+)\)$", tok)
+    if m and f"{m.group(1)}#branch" in data:
+        return data[f"{m.group(1)}#branch"]
+    raise BackendError(
+        f"e1op token {tok!r} not in rawfile (tried exact, i()- and v()-wrapped; "
+        f"have {len(data)} vectors, e.g. {sorted(data)[:8]}...)")
+
+
 def db(z):
     return 20.0 * math.log10(abs(z))
 
@@ -327,6 +364,23 @@ def wrdata_rows(bench, parsed, names, data, cplx):
             raise BackendError(f"psrr .control differs from the known template: {parsed['lets']} {want}")
         vo, vi = vec(data, "v(vout)"), vec(data, "v(vin)")
         cols = [[-db(a / b) for a, b in zip(vo, vi)]]
+    elif bench == "e1op":
+        # issue #158: three-point DC sweep bracketing the operating point;
+        # the CSV columns are exactly the template's wrdata tokens, resolved
+        # against the rawfile the runner wrote (device parameters arrive via
+        # the deck's .save card). No lets are permitted (KNOWN_LETS["e1op"]).
+        if parsed["lets"] != KNOWN_LETS["e1op"]:
+            raise BackendError(f"e1op .control carries unexpected lets: {parsed['lets']}")
+        if cplx:
+            raise BackendError("e1op rawfile is complex")
+        if len(scale) != 3:
+            raise BackendError(f"e1op rawfile has {len(scale)} points, expected the 3-point bracket sweep")
+        cols = []
+        for tok in want:
+            v = vec_e1op(data, tok)
+            if len(v) != 3:
+                raise BackendError(f"e1op token {tok!r}: vector has {len(v)} points, expected 3")
+            cols.append(list(v))
     else:
         raise BackendError(bench)
     out = []
@@ -662,7 +716,8 @@ def collect(g, gdir, corners_out, record_meta):
         key = (corner_name(p), p["temp"])
         c = by_corner.get(key)
         log_out = os.path.join(corners_out, f"{pid}.log")
-        csv_out = os.path.join(corners_out, f"{pid}_{'dc' if g['bench'] == 'dcsweep' else 'ac'}.csv")
+        suffix = "dc" if g["bench"] in ("dcsweep", "e1op") else "ac"
+        csv_out = os.path.join(corners_out, f"{pid}_{suffix}.csv")
         if c is None:
             problems.append(f"{pid}: no corner {key} in {g['name']}/report.json")
             with open(log_out, "w") as f:

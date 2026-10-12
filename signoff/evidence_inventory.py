@@ -113,6 +113,11 @@ ITEMS = {
             f"{_SIM}/run_loopgain2.sh",
             f"{_SIM}/loopgain2.py",
             f"{_SIM}/row10_loopgain2.py",
+            # issue #158: E1 DC operating-point bench, campaign driver and reducer
+            f"{_SIM}/run_e1op.sh",
+            f"{_SIM}/e1_oppoints.py",
+            f"{_SIM}/test_e1_oppoints.py",
+            f"{_SIM}/testbench/tb_e1op_cmos5l.spice.tmpl",
             f"{_SIM}/testbench/tb_psrr_cmos5l.spice.tmpl",
             # issue #69: startup bench, its batch driver and evaluator
             f"{_SIM}/testbench/tb_startup_cmos5l.spice.tmpl",
