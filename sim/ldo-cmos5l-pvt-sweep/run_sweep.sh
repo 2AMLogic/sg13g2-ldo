@@ -247,7 +247,7 @@ topology_sync_problem() {
 
 assert_loopgain_topology_sync() {
   local tmpl variant rc=0
-  for tmpl in loopgain loopgain2v loopgain2i; do
+  for tmpl in loopgain loopgain2v loopgain2i e1op; do
     case "${tmpl}" in
       loopgain2i) variant=shunt ;;
       *)          variant=vbreak ;;

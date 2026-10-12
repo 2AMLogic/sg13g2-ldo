@@ -1988,3 +1988,74 @@ the same as for `20261010-025634-60a3e81`. PM and GM are `ambiguous` at all
 crossing and 15 have two, and those 15 are the same points as before. The
 in-band GM is 13.84 to 29.87 dB, and no committed trace bounds the 100 MHz
 ceiling (-1.164 to +0.528 dB there, and rising). Tests: `test_row10_record.py`.
+
+## E1 DC operating points (issue #158, DR-0015 experiment E1)
+
+[`DR-0015`](../../spec/decision-records/DR-0015-sg13cmos5l-dynamic-window-stability-diagnosis.md)
+(stays **Proposed**) explains the zero-load stability misses with an
+inferred pass-device output resistance and inferred amplifier pole
+locations; its follow-up brief prices experiment E1 as four DC
+operating-point extractions at P1/P2/P5/P6 to replace those assumptions
+with measurements. This campaign is exactly that, and nothing more: no
+spec row, threshold or verdict changes, and no compensation change is
+made or proposed.
+
+**Bench** (`testbench/tb_e1op_cmos5l.spice.tmpl`): the flattened
+loop-gain bench's circuit -- whose FB/FBAMP break draws zero current, so
+its DC operating point IS the closed loop's -- plus the non-invasive
+divider replica the dcsweep bench introduced, plus a `.save` card naming
+the exported device operating-point parameters (per-MOS `ids/gm/gds` for
+all fourteen MOS wrappers, pass-device `cgs/cgd/cdd/vth`, `XMn3`
+`cgs/cgd`). The analysis is a three-point DC sweep bracketing
+`Vin = 3.30 V`; the middle row of the export is the operating point.
+`run_sweep.sh --check-topology` extends to this template (the generated
+deck must mirror `ldo_core_cmos5l`), and `batch_backend.py` resolves the
+template's full wrdata token list (device-parameter and source-current
+tokens included) against the rawfile, failing closed on any token it
+cannot find.
+
+**Campaign** (`run_e1op.sh`): one batch-fleet request, the four corners
+
+    P1  ss/125C/res_bcs  0 mA  1.00 uF    P2  ff/-40C/res_wcs  0 mA  1.00 uF
+    P5  ss/125C/res_wcs  0 mA  3.45 uF    P6  ss/125C/res_bcs  1 mA  1.00 uF
+
+i.e. DR-0015's four selected points verbatim (its "six points" table).
+No local grid: `--validate` runs ONE tt/27C deck locally as a debug
+probe; `--plan-only` prints the request. Environment conventions are
+`run_loopgain2.sh`'s (`SWEEP_BATCH_PLAN_ONLY`, `SWEEP_BATCH_REUSE_WORK`).
+
+**Reduction** (`e1_oppoints.py`): offline, stdlib-only; per point it
+checks the export (all declared quantities present, finite,
+sign-consistent; break current ~ 0; KCL at VOUT; VOUT in regulation;
+fleet liveness agreement), then derives `r_o = 1/gds`, the VA
+equivalent, the divider standing current and per-leg resistance, and
+pole ESTIMATES (`1/(2*pi*R*C)` on measured terms, labelled estimates in
+every output -- never presented as measured poles). Negative controls
+in `test_e1_oppoints.py`: missing quantity, nonfinite value, sign and
+unit mistakes must all fail the checks.
+
+    python3 sim/ldo-cmos5l-pvt-sweep/e1_oppoints.py reduce  --record <id> ...
+    python3 sim/ldo-cmos5l-pvt-sweep/e1_oppoints.py record-md --record <id>
+    python3 sim/ldo-cmos5l-pvt-sweep/e1_oppoints.py check   --record <id>   # byte-compare
+
+**Result** (record `20261012-115531-cfa681f9`, PDK pin `f7bca326...`
+-- the #155 re-stamp, read from the install and fail-closed-checked by
+`run_e1op.sh`): every point converged with all
+declared quantities; all checks pass. Headline numbers (full table in
+the record): measured pass-device `r_o` is 3.215/4.461/5.324 MOhm at the
+three zero-load points versus 23.79 kOhm at the 1 mA reference P6 -- the
+~135-224x collapse DR-0015's class-1 analysis had inferred; the derived
+VOUT-node pole estimates move 0.475/0.210/0.083 Hz (zero load) vs
+7.11 Hz (1 mA). The measured P6 `r_o` is 2.4x the value DR-0015 assumed
+("VA ~ 10 V"), superseding that paragraph's arithmetic while keeping its
+directional claim. What is supported, contradicted and unresolved is
+stated in the DR-0015 addendum and the record; amplifier node impedances
+by small-signal probing remain an unresolved follow-up (out of E1's
+four-run scope).
+
+Vintage note: DR-0015's AC evidence predates #155/#89 (old PDK pin, pre-#89
+design); comparisons between this record and that diagnosis are
+cross-vintage and labelled as such in the addendum. The same-vintage AC
+reference is the #155 re-run `20261012-080951-142dac4a`. Tests:
+`test_e1_oppoints.py`; the record's `check` subcommand byte-compares the
+committed reduction and record markdown against the raw exports.

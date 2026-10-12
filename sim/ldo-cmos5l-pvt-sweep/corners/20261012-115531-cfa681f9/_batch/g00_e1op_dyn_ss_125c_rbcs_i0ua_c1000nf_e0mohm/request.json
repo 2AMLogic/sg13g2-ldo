@@ -1,0 +1,66 @@
+{
+ "netlist": "tb.spice",
+ "backend": "batch",
+ "batch": {
+  "runner_version_check": "warn",
+  "capacity_wait_s": 3600
+ },
+ "models": {
+  "lib": "corners.lib"
+ },
+ "analysis": {
+  "kind": "dc",
+  "args": "vin 3.299 3.301 0.001"
+ },
+ "measurements": [
+  {
+   "name": "liveness_vout",
+   "spice": ".meas dc liveness_vout FIND v(vout) AT=3.3",
+   "unit": "V"
+  }
+ ],
+ "corners": {
+  "process": [
+   "mos_ff__res_wcs__cap_typ__vd8858fa1d1a7",
+   "mos_ss__res_bcs__cap_typ__vbc5701da9954",
+   "mos_ss__res_bcs__cap_typ__vd8858fa1d1a7",
+   "mos_ss__res_wcs__cap_typ__vcd135b7f9a57"
+  ],
+  "temperature_c": [
+   -40,
+   125
+  ]
+ },
+ "options": {
+  "timeout_s": 1800,
+  "keep_artifacts": true,
+  "waveforms": true,
+  "stage_model_inputs": true,
+  "osdi_preload": [
+   "/tmp/kt155/src/pdks/ihp-open-pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/psp103.osdi",
+   "/tmp/kt155/src/pdks/ihp-open-pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/psp103_nqs.osdi",
+   "/tmp/kt155/src/pdks/ihp-open-pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/mosvar.osdi",
+   "/tmp/kt155/src/pdks/ihp-open-pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/r3_cmc.osdi",
+   "/tmp/kt155/src/pdks/ihp-open-pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/cap_cmomi.osdi",
+   "/tmp/kt155/src/pdks/ihp-open-pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/cap_cmomf.osdi"
+  ]
+ },
+ "exclude": [
+  {
+   "process": "mos_ff__res_wcs__cap_typ__vd8858fa1d1a7",
+   "temperature_c": 125
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__vbc5701da9954",
+   "temperature_c": -40
+  },
+  {
+   "process": "mos_ss__res_bcs__cap_typ__vd8858fa1d1a7",
+   "temperature_c": -40
+  },
+  {
+   "process": "mos_ss__res_wcs__cap_typ__vcd135b7f9a57",
+   "temperature_c": -40
+  }
+ ]
+}
