@@ -1324,6 +1324,47 @@ not re-run: [`../migration-inventory-155.md`](../migration-inventory-155.md).
 `run_sweep.sh` now records the installed PDK revision it reads from the
 install's `.fetched-version` marker instead of a hard-coded commit string.
 
+Second increment (issue #155, all on the batch fleet):
+
+- **Startup `ext` and `halfstep`** were run on the new pin as stages of the
+  same run, `20261012-063918-bb1d73c` (current design). The grid of that run
+  selects **two** binding points (`ff` 125 C `res_wcs` 3.63 V and `ff` -40 C
+  `res_wcs` 3.63 V), not the three of the pre-#89 run below, so `ext` is 16
+  points and `halfstep` 2. `ext`: 2 pass, 14 fail (the passes are both at
+  `ff` -40 C, Cout 4.7 uF, ESR 0.5 ohm); `ff` 125 C `res_wcs` again fails at
+  every load/Cout/ESR combination. `halfstep`: verdict unchanged (fail) at
+  both points, but halving the step cap moves start overshoot by **-0.313 V**
+  at `ff` 125 C `res_wcs` (0.539 to 0.226 V) and -0.107 V at `ff` -40 C, larger
+  than the -0.108/+0.043/+0.025 V of the pre-#89 run: the overshoot magnitudes
+  are not step-converged (the verdict is, at these points). These are not
+  like-for-like with the `20261010-104827-91e92aa` stages (pre-#89 design,
+  different binding points).
+- **PDK-only controls (design held constant).** Dropout: the pre-#89
+  netlists (`7953b25b`/`7982d728`, from main commit `eab18e6f`) run on the
+  NEW pin, record `20261012-094155-934dbd7c` (submitted from a scratch clone
+  of `934dbd7c` with only those two netlists replaced; the record's
+  `input_sha256` names them). Its CSV and all 45 raw DC grids are
+  byte-identical to `20261010-111618-19e8e39` (same netlists, old pin).
+  Dynamic DoE: the current netlists run on the OLD install
+  (`~/share/pdk`, git checkout `607e18d`; the netlist snapshots and
+  `_batch/*/inputs.sha256.json` name that path), base
+  `20261012-100716-934dbd7c` and refinement `20261012-102846-934dbd7c`. Both
+  CSVs (up to record ids), the refinement request file and all 384 + 688 raw
+  AC traces are byte-identical to the new-pin `c94873ba` / `142dac4a`
+  records, although the staged `cap_cmomi`/`cap_cmomf` OSDI binaries differ
+  in sha256 between the two installs. So the PDK re-stamp moved nothing in
+  either campaign, and the dropout (worst point <= 0.15 uV) and DoE (PM <= 0.157 deg,
+  GM <= 0.101 dB) differences against the old records are the #89 design
+  change. The two DoE control records are **old-pin runs**, kept only as
+  controls; they are not evidence for the new pin.
+- **Offline re-reductions** of the new grids (no simulation):
+  `evidence/20261012-060932-c53f0177/row10-margins.*` (`row10_record.py`,
+  checked in CI) classifies the new PVT record exactly as
+  `20261011-070111-5391c68`'s; `sim/migration-155-rereduce.py --check` (CI)
+  re-runs the item-5 DC reduction and the DoE row-10 classification on the
+  new records in memory and byte-compares the controls above. Results:
+  [`../migration-155-rereduce.json`](../migration-155-rereduce.json).
+
 ## Reproducing
 
 ```bash
@@ -1669,6 +1710,12 @@ describe (the six-pin amplifier). `startup/20261010-075612-91e92aa/`
 and the `records/20261010-075612-91e92aa-startup-nominal.*` files are the
 earlier diagnostic run (first nominal, two lost grid attempts, probe requests);
 they are kept as evidence and are superseded by the later run.
+
+Run `20261012-063918-bb1d73c` is the current design on the re-stamped PDK
+(issue #155) with all four stages (`nominal`, `grid`, `ext`, `halfstep`);
+its `ext`/`halfstep` results are summarised under "Re-run on the re-stamped
+PDK (issue #155)" above. The subsections below still describe the pre-#89
+run.
 
 ### Contract (as implemented)
 

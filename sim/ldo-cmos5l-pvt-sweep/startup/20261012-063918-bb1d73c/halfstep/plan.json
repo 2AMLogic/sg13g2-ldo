@@ -1,0 +1,35 @@
+{
+ "rid": "20261012-063918-bb1d73c",
+ "stage": "halfstep",
+ "requested": 2,
+ "tran_stop": "15m",
+ "groups": [
+  {
+   "group": "g000_ff_rwcs_i1ma_c1000nf_e0mohm_t500ns",
+   "points": [
+    {
+     "mos": "ff",
+     "temp": 125,
+     "res": "wcs",
+     "vin": 3.63,
+     "load_ma": "1",
+     "cout_nf": 1000,
+     "esr_mohm": 0,
+     "tmax_ns": 500,
+     "id": "st_ff_125c_rwcs_v3630mv_i1ma_c1000nf_e0mohm_t500ns"
+    },
+    {
+     "mos": "ff",
+     "temp": -40,
+     "res": "wcs",
+     "vin": 3.63,
+     "load_ma": "1",
+     "cout_nf": 1000,
+     "esr_mohm": 0,
+     "tmax_ns": 500,
+     "id": "st_ff_-40c_rwcs_v3630mv_i1ma_c1000nf_e0mohm_t500ns"
+    }
+   ]
+  }
+ ]
+}

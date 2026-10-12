@@ -598,6 +598,13 @@ jobs:
         # (it is hash-pinned in its own landed outputs, so it is not edited).
         run: python3 sim/ldo-cmos5l-pvt-sweep/row10_record.py --check
 
+      - name: PDK re-stamp re-reductions and design-held-constant controls (issue #155)
+        # Offline, stdlib-only: no simulator and no PDK. Re-runs the item-5
+        # and DoE row-10 reducers on the new-pin records in memory, byte-
+        # compares the PDK control records with the records they control
+        # for, and checks the committed comparison json reproduces.
+        run: python3 sim/migration-155-rereduce.py --check
+
       - name: Two-injection loop-gain comparison record (issue #135; reconstruction + DR-0014 wrapper reproduce)
         # Offline, stdlib-only: no simulator and no PDK. loopgain2.py check
         # finds every two-injection record under corners/, rebuilds each

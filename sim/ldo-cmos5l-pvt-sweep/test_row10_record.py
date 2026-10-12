@@ -15,6 +15,7 @@ import row10_record as rr  # noqa: E402
 
 OLD_RID = "20261011-051956-eda9285"   # #89, 100 MHz ceiling; historical, still reproduces
 RID = "20261011-070111-5391c68"       # #128, 10 GHz ceiling
+NEW_PIN_RID = "20261012-060932-c53f0177"  # #155, same grid re-run on the re-stamped PDK
 
 
 class Committed(unittest.TestCase):
@@ -25,7 +26,7 @@ class Committed(unittest.TestCase):
         cls.old = rr.build(OLD_RID, cls.found[OLD_RID])
 
     def test_discovers_only_wrapper_outputs(self):
-        self.assertEqual(set(self.found), {OLD_RID, RID})
+        self.assertEqual(set(self.found), {OLD_RID, RID, NEW_PIN_RID})
         for cfg in rm.DATASETS.values():
             self.assertNotIn(cfg["record_id"], self.found)
 
@@ -70,6 +71,21 @@ class Committed(unittest.TestCase):
         self.assertEqual(doc["summary_all"]["ceiling_bounded"], 0)
         for r in self.out["row10-margins.csv"].decode().splitlines()[1:]:
             self.assertIn(f"/corners/{RID}/", r)
+
+    def test_new_pin_classification_matches_old_pin(self):
+        """#155: the re-stamped-PDK re-run's classification is committed and
+        reproduces; its summary equals the old-pin record's, point for point
+        (the two records' CSVs and raw traces are byte-identical)."""
+        new = rr.build(NEW_PIN_RID, self.found[NEW_PIN_RID])
+        d = os.path.join(rm.REPO, rm.SIM, "evidence", NEW_PIN_RID)
+        for name, data in new.items():
+            with open(os.path.join(d, name), "rb") as fh:
+                self.assertEqual(fh.read(), data, name)
+        a, b = json.loads(new["row10-margins.json"]), json.loads(self.out["row10-margins.json"])
+        self.assertEqual(a["summary_all"], b["summary_all"])
+        self.assertEqual(a["subset"]["summary"], b["subset"]["summary"])
+        strip = lambda out, rid: out["row10-margins.csv"].decode().replace(rid, "RID")
+        self.assertEqual(strip(new, NEW_PIN_RID), strip(self.out, RID))
 
     def test_legacy_dataset_restored(self):
         self.assertEqual(rm.DATASETS["legacy"]["record_id"], "20261010-025634-60a3e81")

@@ -1,0 +1,10 @@
+{
+ "g000_ff_rwcs_i0ma_c330nf_e0mohm_t1000ns": 0,
+ "g001_ff_rwcs_i0ma_c330nf_e500mohm_t1000ns": 0,
+ "g002_ff_rwcs_i0ma_c4700nf_e0mohm_t1000ns": 0,
+ "g003_ff_rwcs_i0ma_c4700nf_e500mohm_t1000ns": 0,
+ "g004_ff_rwcs_i50ma_c330nf_e0mohm_t1000ns": 0,
+ "g005_ff_rwcs_i50ma_c330nf_e500mohm_t1000ns": 0,
+ "g006_ff_rwcs_i50ma_c4700nf_e0mohm_t1000ns": 0,
+ "g007_ff_rwcs_i50ma_c4700nf_e500mohm_t1000ns": 0
+}
