@@ -484,6 +484,13 @@ def record_md(rid, sim_dir=HERE):
             if ln.startswith("BATCH_RUNNER_KLT="):
                 runner = ln.split("=", 1)[1].strip().strip("'")
     git_sha = rid.split("-")[2] if rid.count("-") >= 2 else "unknown"
+    pdk_col = ""
+    manifest_path = os.path.join(rec_dir, f"{rid}.{BENCH}.manifest.tsv")
+    if os.path.isfile(manifest_path):
+        with open(manifest_path, newline="") as fh:
+            pdk_col = "; ".join(sorted({r.get("pdk", "") for r in
+                                        csv.DictReader(fh, delimiter="\t")
+                                        if r.get("pdk")}))
 
     L = [
         "# E1 DC operating points (issue #158) -- DR-0015 experiment E1", "",
@@ -497,12 +504,15 @@ def record_md(rid, sim_dir=HERE):
         "compensation experiment starts from measurements.", "",
         "## Vintage and provenance", "",
         f"- Record id: `{rid}` (run at HEAD git sha `{git_sha}`, design",
-        "  netlists byte-identical to the ones this worktree commits; sha256",
-        "  of both netlists in the manifest below).",
-        "- PDK: `ihp-sg13cmos5l` at the **current pin**",
-        "  `f7bca32694fe3d58be0cc7d9df4b9f5db7161a14` (the #155 re-stamp;",
-        "  `sim/pdk-cmos5l.json`). The staged model cards and OSDI binaries",
-        "  are pinned by sha256 in",
+        "  netlists byte-identical to the ones this worktree commits: the",
+        "  design-netlist sha256 is staged in",
+        f"  `corners/{rid}/_batch/*/inputs.sha256.json`; the manifest",
+        "  below pins the generated deck snapshots).",
+        "- PDK install that actually ran (the manifest's `pdk` column;",
+        "  `run_e1op.sh` reads it from the resolved install at run time",
+        "  and refuses to run off-pin): "
+        + (f"`{pdk_col}`." if pdk_col else "unknown (no manifest).") ,
+        "  The staged model cards and OSDI binaries are pinned by sha256 in",
         f"  `corners/{rid}/_batch/inputs.sha256.json` and",
         "  `backend.json`'s `staged_osdi_sha256`.",
         "- DR-0015's AC evidence (records `20261010-091123-a31c626`,",

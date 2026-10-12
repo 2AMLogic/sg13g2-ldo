@@ -192,6 +192,10 @@ def parse_deck(path, variant_re=None):
         raise BackendError(f"{path}: no .options temp / .lib cards found")
 
     osdi, analysis, lets, wrdata = [], None, [], None
+    # `save all` is an e1op-deck privilege only (its local --validate probe
+    # wants every vector); every other bench must name exactly what it
+    # exports via wrdata, so a stray `save all` cannot widen an export.
+    e1op_deck = any('echo "E1OP_VOUT_OP ' in s for s in control)
     for s in control:
         if not s or s.startswith("*"):
             continue
@@ -208,11 +212,11 @@ def parse_deck(path, variant_re=None):
             parts = s.split()
             wrdata = parts[2:]
         elif s == "op" or re.match(
-                r'^echo "(LOOPGAIN(2V|2I)?|E1OP)_VOUT_OP ', s) or s == "save all":
+                r'^echo "(LOOPGAIN(2V|2I)?|E1OP)_VOUT_OP ', s) or (
+                s == "save all" and e1op_deck):
             # informational operating-point echo in the loop-gain templates
-            # and the `save all` the runner re-emits itself (the e1op
-            # template carries one so local ngspice runs keep every vector;
-            # nothing downstream reads either line).
+            # and the e1op deck's own `save all` (nothing downstream reads
+            # either line).
             continue
         else:
             raise BackendError(f"{path}: unsupported .control line: {s}")

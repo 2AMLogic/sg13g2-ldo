@@ -68,6 +68,27 @@ if [[ -z "${PDK_ROOT:-}" || ! -d "${PDK_ROOT}/${PDK}/libs.tech/ngspice" ]]; then
   echo "run_e1op.sh: no resolvable ${PDK} install -- see sim/env.sh output above." >&2
   exit 3
 fi
+# Fail closed on a PDK-pin mismatch: the record's provenance must describe
+# the install that ACTUALLY ran, so the resolved install is read here
+# (fetcher installs answer via .fetched-version, older git-based ones via
+# rev-parse) and must equal sim/pdk-cmos5l.json's pinned_commit. A run on a
+# superseded install would otherwise be free to mislabel itself as the pin.
+PDK_PIN_EXPECTED="$(python3 -c 'import json; print(json.load(open("'"${SIM_DIR}"'/pdk-cmos5l.json"))["pinned_commit"])')"
+if [[ -f "${PDK_ROOT}/${PDK}/.fetched-version" ]]; then
+  PDK_PIN_FOUND="$(cat "${PDK_ROOT}/${PDK}/.fetched-version")"
+elif [[ -d "${PDK_ROOT}/${PDK}/.git" ]]; then
+  PDK_PIN_FOUND="$(git -C "${PDK_ROOT}/${PDK}" rev-parse HEAD)"
+else
+  PDK_PIN_FOUND=""
+fi
+if [[ "${PDK_PIN_FOUND}" != "${PDK_PIN_EXPECTED}" ]]; then
+  echo "run_e1op.sh: ${PDK} install at PDK_ROOT=${PDK_ROOT} is '${PDK_PIN_FOUND:-unidentified}'," >&2
+  echo "run_e1op.sh:   but sim/pdk-cmos5l.json pins ${PDK_PIN_EXPECTED} -- refusing to run." >&2
+  echo "run_e1op.sh:   E1 evidence must come from the pinned install (scripts/fetch-ihp-sg13cmos5l.sh);" >&2
+  echo "run_e1op.sh:   point PDK_ROOT at it and re-run." >&2
+  exit 3
+fi
+echo "run_e1op.sh: ${PDK} install verified at the pinned commit ${PDK_PIN_FOUND}"
 OSDI_DIR="${SG13G2_OSDI_DIR}"
 
 if [[ ! -f "${DESIGN_NETLIST}" || ! -f "${ERRAMP_NETLIST}" ]]; then
@@ -265,7 +286,7 @@ python3 "${SCRIPT_DIR}/e1_oppoints.py" record-md --record "${RECORD_ID}"
       "$(point_field "${i}" 2)" "$(point_field "${i}" 3)" "$(point_field "${i}" 4)" \
       "$(point_field "${i}" 5)" "$(point_field "${i}" 6)" \
       "${netlist#"${REPO_ROOT}/"}" "${sha}" "${invocation}" \
-      "${REPO_GIT_SHA}" "ihp-sg13cmos5l f7bca32694fe3d58be0cc7d9df4b9f5db7161a14" \
+      "${REPO_GIT_SHA}" "${PDK} ${PDK_PIN_FOUND}" \
       "${BATCH_NGSPICE_VERSION:-unknown}"
   done
 } > "${MANIFEST}"
