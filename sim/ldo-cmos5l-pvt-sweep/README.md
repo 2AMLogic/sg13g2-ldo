@@ -2038,8 +2038,9 @@ unit mistakes must all fail the checks.
     python3 sim/ldo-cmos5l-pvt-sweep/e1_oppoints.py record-md --record <id>
     python3 sim/ldo-cmos5l-pvt-sweep/e1_oppoints.py check   --record <id>   # byte-compare
 
-**Result** (record `20261012-110804-934dbd7c`, current PDK pin
-`f7bca326...` -- the #155 re-stamp): every point converged with all
+**Result** (record `20261012-114732-405078c7`, PDK pin `f7bca326...`
+-- the #155 re-stamp, read from the install and fail-closed-checked by
+`run_e1op.sh`): every point converged with all
 declared quantities; all checks pass. Headline numbers (full table in
 the record): measured pass-device `r_o` is 3.215/4.461/5.324 MOhm at the
 three zero-load points versus 23.79 kOhm at the 1 mA reference P6 -- the

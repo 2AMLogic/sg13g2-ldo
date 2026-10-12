@@ -620,21 +620,26 @@ on the current design bytes and PDK pin, and what that does to the
 class-1 (zero-load) analysis above. It authorizes no compensation change.
 
 - **Record of evidence**:
-  `sim/ldo-cmos5l-pvt-sweep/records/20261012-110804-934dbd7c.e1op.md`
+  `sim/ldo-cmos5l-pvt-sweep/records/20261012-114732-405078c7.e1op.md`
   (reduction `…​.e1op.csv`, raw exports and fleet provenance under
-  `sim/ldo-cmos5l-pvt-sweep/corners/20261012-110804-934dbd7c/`; bench
+  `sim/ldo-cmos5l-pvt-sweep/corners/20261012-114732-405078c7/`; bench
   `tb_e1op_cmos5l.spice.tmpl`, campaign `run_e1op.sh`, reducer
   `e1_oppoints.py`). One batch-fleet request, four corners, job
-  `klt-sim-b8248ab15091`; every point's operating point converged with all
+  `klt-sim-f98b99d68a9e`; every point's operating point converged with all
   declared quantities present, finite and sign-consistent (the record's
   per-point checks: break current ~ 0, KCL at VOUT closed to within the
   node's measured leakage, VOUT in regulation, the fleet liveness
   measurement in agreement).
 - **Vintage (explicit, per the brief's reconciliation requirement)**: E1
-  ran on the design netlists as committed at record id `…-934dbd7c`
+  ran on the design netlists as committed at record id `…-405078c7`
   (sha256 in the record manifest; identical bytes to the #155-era design)
-  and the **current** PDK pin `f7bca326…` (the #155 re-stamp), staged
-  model cards and OSDI binaries pinned by sha256 in the record. The AC
+  and the **current** PDK pin `f7bca326…` (the #155 re-stamp) --
+  `run_e1op.sh` reads the resolved install's version marker at run time,
+  refuses to run unless it equals `sim/pdk-cmos5l.json`'s `pinned_commit`,
+  and writes what it read into the record manifest, whose `pdk` column the
+  record md quotes; the staged
+  model cards and OSDI binaries are pinned by sha256 in the record (the
+  MoM-cap OSDI builds are the new-pin ones, `61491e72…`/`52ce5c95…`). The AC
   evidence the class-1 analysis above cites (`…-a31c626`, `…-6df50fd`) is
   the **old** pin `607e18d4…` on the pre-#89 design; the same-vintage AC
   reference for these points is the #155 re-run

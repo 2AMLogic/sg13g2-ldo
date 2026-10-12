@@ -270,9 +270,10 @@ fi
 reduce_rc=0
 python3 "${SCRIPT_DIR}/e1_oppoints.py" reduce --record "${RECORD_ID}" \
   --corners-dir "${CORNERS_OUT}" --out-csv "${OUT_CSV}" --out-json "${OUT_JSON}" || reduce_rc=$?
-python3 "${SCRIPT_DIR}/e1_oppoints.py" record-md --record "${RECORD_ID}"
 
 # --- Manifest (house columns; per-point provenance) -------------------------- #
+# Written BEFORE record-md: the record's provenance section quotes this
+# manifest's pdk column, so the manifest must exist when the md is rendered.
 {
   printf 'bench\tpoint_id\tmos\tres\ttemp_c\tload_a\tcout_f\tesr_ohm\tnetlist\tnetlist_sha256\tinvocation\tgit_sha\tpdk\tngspice\n'
   for i in "${!POINTS[@]}"; do
@@ -290,6 +291,8 @@ python3 "${SCRIPT_DIR}/e1_oppoints.py" record-md --record "${RECORD_ID}"
       "${BATCH_NGSPICE_VERSION:-unknown}"
   done
 } > "${MANIFEST}"
+
+python3 "${SCRIPT_DIR}/e1_oppoints.py" record-md --record "${RECORD_ID}"
 
 echo "run_e1op.sh: record ${RECORD_ID}: ${passed}/${total} points passed screening (${NGSPICE_VERSION});"
 echo "run_e1op.sh:   reduction ${OUT_CSV}"
