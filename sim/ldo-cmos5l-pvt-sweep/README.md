@@ -414,8 +414,14 @@ deliberate, not an oversight.
 ## PDK pin, corner naming, and the resistor/cap corner axes
 
 Pinned SG13CMOS5L revision: [`sim/pdk-cmos5l.json`](../pdk-cmos5l.json)
-(commit `607e18d`, re-verified against the installed checkout, matching the
-commit issue #21's body cited). `cornerMOShv.lib` at this pin is **byte-for-
+(commit `f7bca326` of `IHP-GmbH/IHP-Open-PDK` `dev`, subtree
+`ihp-sg13cmos5l/`, since issue #155). **Everything below this line that cites
+commit `607e18d` is historical**: those records were generated against the
+archived `IHP-GmbH/ihp-sg13cmos5l` repository at `607e18d` (issue #21's pin,
+re-verified against that installed checkout at the time) and are listed with
+their new-pin disposition in
+[`../migration-inventory-155.md`](../migration-inventory-155.md). The
+statements that follow describe that historical pin. `cornerMOShv.lib` at this pin is **byte-for-
 byte identical** to `ihp-sg13g2`'s own copy (`diff` clean) -- confirming,
 directly against the installed model library rather than by assumption,
 that the five-corner naming scheme (`mos_tt`/`mos_ss`/`mos_ff`/`mos_sf`/
@@ -1275,14 +1281,15 @@ What this is **not**:
 
 **No CI job runs `run_sweep.sh --check-env` for this experiment yet**, unlike
 `sim/pass-device-screening-check` (SG13G2 branch). `.github/workflows/ci.yml`
-fetches `ihp-sg13g2` via `klayout-tools`' pinned `fetch-ihp-sg13g2.sh`; no
-equivalent pinned fetch exists for `ihp-sg13cmos5l` in CI, because (per
-`design/README.md` "Known gaps") it is a separate upstream repository
-(`IHP-GmbH/ihp-sg13cmos5l`), not a variant directory inside the
-IHP-Open-PDK tarball that script downloads -- already filed upstream as
-`2AMLogic/klayout-tools#1929`. Until that lands, `--check-env` for this
-experiment (like `--check` for the SG13CMOS5L schematic branch generally)
-is a local/manual step, verified by this PR's author before submission
+fetches `ihp-sg13g2` via `klayout-tools`' pinned `fetch-ihp-sg13g2.sh` and, for
+`netlist-check` only, `ihp-sg13cmos5l` via `fetch-ihp-sg13cmos5l.sh` (the
+`ihp-sg13cmos5l/` subtree of `IHP-GmbH/IHP-Open-PDK` `dev` @ `f7bca326`,
+checksum-verified, `.fetched-version` marker; the script is taken from an
+immutable klayout-tools commit, see `.github/workflows/ci.yml`
+`KLAYOUT_TOOLS_REF`). (Before issue #155 the script cloned the archived
+`IHP-GmbH/ihp-sg13cmos5l` repository, tracked upstream as
+`2AMLogic/klayout-tools#1929`/`#2720`.) No CI job installs the OSDI models or
+runs `--check-env` for this experiment, so that step stays a local/manual one
 (see "Reproducing" below).
 
 The separate, offline loop-gain topology guard **is** a CI gate (issue #94):

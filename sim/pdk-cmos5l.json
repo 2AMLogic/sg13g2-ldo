@@ -1,17 +1,26 @@
 {
   "_comment": "Pinned SG13CMOS5L PDK revision this sim/ tree's SG13CMOS5L-branch evidence records (sim/ldo-cmos5l-pvt-sweep/) were generated against -- the SG13CMOS5L counterpart of sim/pdk.json (SG13G2). Every record under sim/ldo-cmos5l-pvt-sweep/records/*.md must trace to this file (or a later commit that bumps it) -- see sim/README.md 'PDK pin'. Not consumed by tooling; kept as a plain, greppable fact sheet.",
-  "source": "IHP-GmbH/ihp-sg13cmos5l",
-  "fetch_method": "git clone https://github.com/IHP-GmbH/ihp-sg13cmos5l.git (a separate upstream repository, NOT a variant directory inside the IHP-Open-PDK tarball sim/pdk.json's fetch_method pulls -- see design/README.md 'Known gaps' on this branch and 2AMLogic/klayout-tools#1929, the tracked upstream gap for a pinned fetch script equivalent to fetch-ihp-sg13g2.sh)",
-  "release_tag": "none -- this PDK ships no tagged releases as of this pin; pinned by commit sha on the main branch instead (see pinned_commit below)",
-  "pinned_commit": "607e18d4bd9214a52575c194b4181ef449f9252f",
-  "pinned_commit_date": "2026-08-25T12:13:21Z",
-  "pinned_commit_verified": "2026-09-16 -- re-verified directly against the installed checkout's `git log -1 --format=%H` before use, per issue #21's instruction not to trust the commit string cited in the issue body without re-checking; it matched exactly.",
-  "pdk_root_layout": "PDK_ROOT/ihp-sg13cmos5l -- installed NEXT TO an ihp-sg13g2 checkout under the SAME PDK_ROOT (design/README.md 'Install shape is a dispatch hazard': this PDK's device symbols and HV model cards are relative symlinks into a sibling ihp-sg13g2 tree, e.g. libs.tech/ngspice/models/cornerMOShv.lib is byte-identical to ihp-sg13g2's own copy -- confirmed directly, both files diff clean, at this pin).",
+  "source": "IHP-GmbH/IHP-Open-PDK (branch dev), subtree ihp-sg13cmos5l/",
+  "fetch_method": "klayout-tools scripts/fetch-ihp-sg13cmos5l.sh (the master; this repo does not copy its download logic): downloads the codeload tarball of the pinned IHP-Open-PDK commit, verifies its sha256, extracts only the ihp-sg13cmos5l/ subtree next to an already-fetched ihp-sg13g2 sibling (scripts/fetch-ihp-sg13g2.sh, run first), and stamps <PDK_ROOT>/ihp-sg13cmos5l/.fetched-version. CI checks the script out of the immutable klayout-tools commit in .github/workflows/ci.yml KLAYOUT_TOOLS_REF (159527a551596caa74f290dcab08bdb8cc78ce93; klayout-tools#2720 migrated the script, v0.7.0 predates it).",
+  "release_tag": "none -- IHP-Open-PDK dev branch commit, not a release tag; pinned by commit sha (see pinned_commit below)",
+  "pinned_commit": "f7bca32694fe3d58be0cc7d9df4b9f5db7161a14",
+  "pinned_tarball_sha256": "5eb6f8a9b0b2ecc4fa08cc30627668406f85b1a97834f278036c43f0c0dbc70b",
+  "pinned_tarball_url": "https://codeload.github.com/IHP-GmbH/IHP-Open-PDK/tar.gz/f7bca32694fe3d58be0cc7d9df4b9f5db7161a14",
+  "subtree": "ihp-sg13cmos5l/",
+  "pinned_commit_verified": "2026-10-12 -- constants read from the fetch script at klayout-tools 159527a551596caa74f290dcab08bdb8cc78ce93 (IHP_SG13CMOS5L_COMMIT, IHP_SG13CMOS5L_SHA256) and the script itself ran to completion (it exits non-zero on checksum mismatch) in a clean scratch PDK root; see local_install_verified.",
+  "superseded_pin": {
+    "_comment": "HISTORICAL. Every record in sim/*/records/ and layout/ report committed before the issue #155 re-stamp was generated against this pin (or against the fleet's baked tree, see sim/README.md). Those records are append-only and stay labelled with it; sim/migration-inventory-155.md lists each selected citation and its new-pin disposition.",
+    "source": "IHP-GmbH/ihp-sg13cmos5l (archived separate repository)",
+    "pinned_commit": "607e18d4bd9214a52575c194b4181ef449f9252f",
+    "pinned_commit_date": "2026-08-25T12:13:21Z",
+    "install_marker": "<PDK_ROOT>/ihp-sg13cmos5l/.git (git rev-parse HEAD)"
+  },
+  "pdk_root_layout": "PDK_ROOT/ihp-sg13cmos5l -- installed NEXT TO an ihp-sg13g2 install under the SAME PDK_ROOT (design/README.md 'Install shape is a dispatch hazard': this PDK's device symbols and HV model cards are relative symlinks into the sibling, e.g. libs.tech/ngspice/models/cornerMOShv.lib -> ../../../../ihp-sg13g2/libs.tech/ngspice/models/cornerMOShv.lib). The fetch script refuses to run without the sibling. With the sibling at IHP-Open-PDK v0.3.0 (sim/pdk.json) 262 of 530 symlinks in the new subtree dangle (moscap models, gnucap, xyce, LVS/pycell helpers that v0.3.0 does not ship); none of them is a file this design's netlist or simulations load -- the model libraries, Verilog-A sources and xschem symbols they use resolve (checked 2026-10-12, issue #155).",
   "variant": "ihp-sg13cmos5l",
   "local_install_verified": {
-    "path_marker": "<PDK_ROOT>/ihp-sg13cmos5l/.git (no .fetched-version marker on this PDK -- it is a plain git checkout, not an open_pdks-shaped release tarball)",
-    "value_read": "607e18d4bd9214a52575c194b4181ef449f9252f (git rev-parse HEAD)",
-    "checked": "2026-09-16"
+    "path_marker": "<PDK_ROOT>/ihp-sg13cmos5l/.fetched-version (written by the fetch script; the new install has no .git)",
+    "value_read": "f7bca32694fe3d58be0cc7d9df4b9f5db7161a14 (cat .fetched-version in a clean scratch install, 2026-10-12)",
+    "checked": "2026-10-12"
   },
   "osdi_toolchain": {
     "_comment": "Same toolchain and pins as sim/pdk.json's osdi_toolchain block (sim/tools/build-osdi.sh is PDK-parameterized via ${PDK}/${PDK_ROOT}, not SG13G2-specific -- see sim/env.sh); restated here because this PDK's OSDI outputs live under a different PDK_ROOT/<PDK> path and additionally cover the two MoM-cap models SG13G2's own tree does not need (cap_cmomi/cap_cmomf -- the Miller compensation cap XCc in ldo_erramp_cmos5l.sch).",

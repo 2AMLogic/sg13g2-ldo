@@ -21,9 +21,15 @@ Three different things are easy to conflate here, so they are kept apart:
 - **Intended local PDK pin** -- the revision a local checkout is expected to
   be at, per [`pdk.json`](pdk.json) (`IHP-Open-PDK` tag `v0.3.0`, fetchable
   via `klayout-tools`' `scripts/fetch-ihp-sg13g2.sh`) or
-  [`pdk-cmos5l.json`](pdk-cmos5l.json) (`IHP-GmbH/ihp-sg13cmos5l`, a separate
-  upstream repository with no tagged releases, pinned by commit sha `607e18d`;
-  see that file for why the fetch/pin shape differs).
+  [`pdk-cmos5l.json`](pdk-cmos5l.json) (the `ihp-sg13cmos5l/` subtree of
+  `IHP-GmbH/IHP-Open-PDK` `dev`, pinned by commit sha `f7bca326...`, tarball
+  sha256 `5eb6f8a9...`, fetched by `klayout-tools`'
+  `scripts/fetch-ihp-sg13cmos5l.sh` -- run after the SG13G2 fetch -- which
+  writes the `.fetched-version` marker; issue #155). Records committed before
+  that re-stamp were generated against the superseded archived-repository pin
+  `607e18d` (kept in `pdk-cmos5l.json` as `superseded_pin`); they stay
+  historical and are listed with their new-pin disposition in
+  [`migration-inventory-155.md`](migration-inventory-155.md).
 - **Recorded fleet-model provenance** -- what a given record's own committed
   raw reports show the simulator actually loaded. Several records ran on the
   EDA batch fleet, whose runner image bakes its own PDK and OSDI binaries

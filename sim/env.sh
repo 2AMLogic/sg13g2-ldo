@@ -57,6 +57,12 @@ if [[ -n "${PDK_ROOT:-}" && -d "${PDK_ROOT}/${PDK}/libs.tech/ngspice" ]]; then
   # that instantiates a MOS loads from here via `pre_osdi`.
   export SG13G2_OSDI_DIR="${PDK_ROOT}/${PDK}/libs.tech/ngspice/osdi"
   echo "${PDK}: PDK_ROOT=${PDK_ROOT} PDK=${PDK}"
+  # The fetcher-installed SG13CMOS5L tree has no .git; its provenance is the
+  # .fetched-version marker. Print what is there (read, not assumed) and
+  # leave comparing it to sim/pdk-cmos5l.json to the caller.
+  if [[ -f "${PDK_ROOT}/${PDK}/.fetched-version" ]]; then
+    echo "${PDK}: .fetched-version=$(cat "${PDK_ROOT}/${PDK}/.fetched-version")"
+  fi
   if [[ ! -f "${SG13G2_OSDI_DIR}/psp103.osdi" ]]; then
     echo "${PDK}: OSDI device models not built yet in ${SG13G2_OSDI_DIR}" >&2
     echo "${PDK}: MOS devices (sg13_hv_*) will not simulate until they are." >&2
@@ -67,7 +73,9 @@ else
   echo "${PDK}: no ${PDK} install found under PDK_ROOT or the usual prefixes." >&2
   echo "${PDK}: set PDK_ROOT to an open_pdks-shaped IHP-Open-PDK checkout and re-source," >&2
   echo "${PDK}: e.g. via klayout-tools' scripts/fetch-ihp-sg13g2.sh (SG13G2) or the" >&2
-  echo "${PDK}: separate IHP-GmbH/ihp-sg13cmos5l checkout (SG13CMOS5L, see" >&2
+  echo "${PDK}: klayout-tools' scripts/fetch-ihp-sg13cmos5l.sh (SG13CMOS5L: the" >&2
+  echo "${PDK}: ihp-sg13cmos5l/ subtree of IHP-GmbH/IHP-Open-PDK dev, run AFTER the" >&2
+  echo "${PDK}: SG13G2 fetch; stamps ihp-sg13cmos5l/.fetched-version; see" >&2
   echo "${PDK}: sim/pdk-cmos5l.json), then:" >&2
   echo "${PDK}:   export PDK_ROOT=/path/to/pdk/parent PDK=${PDK}" >&2
   echo "${PDK}: see sim/pdk.json (SG13G2) / sim/pdk-cmos5l.json (SG13CMOS5L) for the" >&2
