@@ -560,7 +560,7 @@ jobs:
         # reduction CSV/JSON and record md from the committed raw exports and
         # byte-compares, so the committed record cannot drift from its data
         # (same pattern as #135's and #155's record byte-checks).
-        run: python3 sim/ldo-cmos5l-pvt-sweep/e1_oppoints.py check --record 20261012-114732-405078c7
+        run: python3 sim/ldo-cmos5l-pvt-sweep/e1_oppoints.py check --record 20261012-115531-cfa681f9
 
       - name: Disabled-state supply current read-out reproduces the DR-0008 numbers (#133)
         # Offline, stdlib-only: no simulator and no PDK. Runs startup_offstate.py

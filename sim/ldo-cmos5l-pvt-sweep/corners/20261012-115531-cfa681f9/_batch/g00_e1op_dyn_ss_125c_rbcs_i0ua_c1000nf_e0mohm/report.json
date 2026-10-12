@@ -31,12 +31,12 @@
       "scope": "external"
     },
     "models_lib_sha256": "33353ff4168cbdd5c73862ea183b01fa28cc6e944194d0ff4756af39e52772a2",
-    "netlist_sha256": "ffc753910ecbbcc7f895235adeec9ba722928f74a6b50185f04c200861cd35bf",
+    "netlist_sha256": "0c1ab43ace98261f5a7d3a2f5a68ace1a7084c561787ee55dab647837f5cd876",
     "netlist_closure": [
       {
         "path": null,
         "scope": "external",
-        "sha256": "ffc753910ecbbcc7f895235adeec9ba722928f74a6b50185f04c200861cd35bf"
+        "sha256": "0c1ab43ace98261f5a7d3a2f5a68ace1a7084c561787ee55dab647837f5cd876"
       },
       {
         "path": null,
@@ -245,12 +245,12 @@
     ],
     "remote": {
       "provider": "aws-batch-fleet",
-      "job_id": "klt-sim-f98b99d68a9e",
+      "job_id": "klt-sim-043a7dd1431f",
       "bucket": "2am-batch-jobs-221082181346",
       "region": "us-east-1",
-      "instance_id": "i-0d758296de83d6468",
+      "instance_id": "i-0ac16f79aab47b241",
       "instance_type": "c7i.8xlarge",
-      "availability_zone": "us-east-1f",
+      "availability_zone": "us-east-1d",
       "ami_id": "ami-0e40e3245f1923ac8",
       "lifecycle": "spot",
       "spot": true,
@@ -258,7 +258,7 @@
       "exit_code": "0",
       "concurrency": "2",
       "physical_cores": "16",
-      "elapsed_seconds": 7,
+      "elapsed_seconds": 8,
       "runner_klt_version": "0.5.0",
       "client_klt_version": "0.7.0+gff97d692a147",
       "runner_compatibility": "mismatch",
@@ -311,7 +311,7 @@
       "released": false
     },
     "input": {
-      "content_hash": "sha256:ffc753910ecbbcc7f895235adeec9ba722928f74a6b50185f04c200861cd35bf",
+      "content_hash": "sha256:0c1ab43ace98261f5a7d3a2f5a68ace1a7084c561787ee55dab647837f5cd876",
       "role": "netlist"
     }
   },
@@ -335,7 +335,7 @@
       "supply_v": {},
       "temperature_c": -40,
       "status": "pass",
-      "runtime_s": 0.688,
+      "runtime_s": 0.591,
       "measurements": [
         {
           "name": "liveness_vout",
@@ -347,10 +347,10 @@
       ],
       "diagnostics": [],
       "artifacts": {
-        "log": "/tmp/loom-nt/23595f08-2a59-434e-8909-f85f00812151/ldo-cmos5l-e1op.qw7tCt/g00_e1op_dyn_ss_125c_rbcs_i0ua_c1000nf_e0mohm/artifacts/mos_ff__res_wcs__cap_typ__vd8858fa1d1a7_novdd_n40C/ngspice.log",
-        "raw": "/tmp/loom-nt/23595f08-2a59-434e-8909-f85f00812151/ldo-cmos5l-e1op.qw7tCt/g00_e1op_dyn_ss_125c_rbcs_i0ua_c1000nf_e0mohm/artifacts/mos_ff__res_wcs__cap_typ__vd8858fa1d1a7_novdd_n40C/waveform.raw",
-        "waveform": "/tmp/loom-nt/23595f08-2a59-434e-8909-f85f00812151/ldo-cmos5l-e1op.qw7tCt/g00_e1op_dyn_ss_125c_rbcs_i0ua_c1000nf_e0mohm/artifacts/mos_ff__res_wcs__cap_typ__vd8858fa1d1a7_novdd_n40C/waveform.raw.json",
-        "deck": "/tmp/loom-nt/23595f08-2a59-434e-8909-f85f00812151/ldo-cmos5l-e1op.qw7tCt/g00_e1op_dyn_ss_125c_rbcs_i0ua_c1000nf_e0mohm/artifacts/mos_ff__res_wcs__cap_typ__vd8858fa1d1a7_novdd_n40C/corner.cir"
+        "log": "/tmp/loom-nt/23595f08-2a59-434e-8909-f85f00812151/ldo-cmos5l-e1op.NC4ZZl/g00_e1op_dyn_ss_125c_rbcs_i0ua_c1000nf_e0mohm/artifacts/mos_ff__res_wcs__cap_typ__vd8858fa1d1a7_novdd_n40C/ngspice.log",
+        "raw": "/tmp/loom-nt/23595f08-2a59-434e-8909-f85f00812151/ldo-cmos5l-e1op.NC4ZZl/g00_e1op_dyn_ss_125c_rbcs_i0ua_c1000nf_e0mohm/artifacts/mos_ff__res_wcs__cap_typ__vd8858fa1d1a7_novdd_n40C/waveform.raw",
+        "waveform": "/tmp/loom-nt/23595f08-2a59-434e-8909-f85f00812151/ldo-cmos5l-e1op.NC4ZZl/g00_e1op_dyn_ss_125c_rbcs_i0ua_c1000nf_e0mohm/artifacts/mos_ff__res_wcs__cap_typ__vd8858fa1d1a7_novdd_n40C/waveform.raw.json",
+        "deck": "/tmp/loom-nt/23595f08-2a59-434e-8909-f85f00812151/ldo-cmos5l-e1op.NC4ZZl/g00_e1op_dyn_ss_125c_rbcs_i0ua_c1000nf_e0mohm/artifacts/mos_ff__res_wcs__cap_typ__vd8858fa1d1a7_novdd_n40C/corner.cir"
       },
       "monte_carlo": null
     },
@@ -360,7 +360,7 @@
       "supply_v": {},
       "temperature_c": 125,
       "status": "pass",
-      "runtime_s": 0.638,
+      "runtime_s": 0.541,
       "measurements": [
         {
           "name": "liveness_vout",
@@ -372,10 +372,10 @@
       ],
       "diagnostics": [],
       "artifacts": {
-        "log": "/tmp/loom-nt/23595f08-2a59-434e-8909-f85f00812151/ldo-cmos5l-e1op.qw7tCt/g00_e1op_dyn_ss_125c_rbcs_i0ua_c1000nf_e0mohm/artifacts/mos_ss__res_bcs__cap_typ__vbc5701da9954_novdd_125C/ngspice.log",
-        "raw": "/tmp/loom-nt/23595f08-2a59-434e-8909-f85f00812151/ldo-cmos5l-e1op.qw7tCt/g00_e1op_dyn_ss_125c_rbcs_i0ua_c1000nf_e0mohm/artifacts/mos_ss__res_bcs__cap_typ__vbc5701da9954_novdd_125C/waveform.raw",
-        "waveform": "/tmp/loom-nt/23595f08-2a59-434e-8909-f85f00812151/ldo-cmos5l-e1op.qw7tCt/g00_e1op_dyn_ss_125c_rbcs_i0ua_c1000nf_e0mohm/artifacts/mos_ss__res_bcs__cap_typ__vbc5701da9954_novdd_125C/waveform.raw.json",
-        "deck": "/tmp/loom-nt/23595f08-2a59-434e-8909-f85f00812151/ldo-cmos5l-e1op.qw7tCt/g00_e1op_dyn_ss_125c_rbcs_i0ua_c1000nf_e0mohm/artifacts/mos_ss__res_bcs__cap_typ__vbc5701da9954_novdd_125C/corner.cir"
+        "log": "/tmp/loom-nt/23595f08-2a59-434e-8909-f85f00812151/ldo-cmos5l-e1op.NC4ZZl/g00_e1op_dyn_ss_125c_rbcs_i0ua_c1000nf_e0mohm/artifacts/mos_ss__res_bcs__cap_typ__vbc5701da9954_novdd_125C/ngspice.log",
+        "raw": "/tmp/loom-nt/23595f08-2a59-434e-8909-f85f00812151/ldo-cmos5l-e1op.NC4ZZl/g00_e1op_dyn_ss_125c_rbcs_i0ua_c1000nf_e0mohm/artifacts/mos_ss__res_bcs__cap_typ__vbc5701da9954_novdd_125C/waveform.raw",
+        "waveform": "/tmp/loom-nt/23595f08-2a59-434e-8909-f85f00812151/ldo-cmos5l-e1op.NC4ZZl/g00_e1op_dyn_ss_125c_rbcs_i0ua_c1000nf_e0mohm/artifacts/mos_ss__res_bcs__cap_typ__vbc5701da9954_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/loom-nt/23595f08-2a59-434e-8909-f85f00812151/ldo-cmos5l-e1op.NC4ZZl/g00_e1op_dyn_ss_125c_rbcs_i0ua_c1000nf_e0mohm/artifacts/mos_ss__res_bcs__cap_typ__vbc5701da9954_novdd_125C/corner.cir"
       },
       "monte_carlo": null
     },
@@ -385,7 +385,7 @@
       "supply_v": {},
       "temperature_c": 125,
       "status": "pass",
-      "runtime_s": 0.638,
+      "runtime_s": 0.541,
       "measurements": [
         {
           "name": "liveness_vout",
@@ -397,10 +397,10 @@
       ],
       "diagnostics": [],
       "artifacts": {
-        "log": "/tmp/loom-nt/23595f08-2a59-434e-8909-f85f00812151/ldo-cmos5l-e1op.qw7tCt/g00_e1op_dyn_ss_125c_rbcs_i0ua_c1000nf_e0mohm/artifacts/mos_ss__res_bcs__cap_typ__vd8858fa1d1a7_novdd_125C/ngspice.log",
-        "raw": "/tmp/loom-nt/23595f08-2a59-434e-8909-f85f00812151/ldo-cmos5l-e1op.qw7tCt/g00_e1op_dyn_ss_125c_rbcs_i0ua_c1000nf_e0mohm/artifacts/mos_ss__res_bcs__cap_typ__vd8858fa1d1a7_novdd_125C/waveform.raw",
-        "waveform": "/tmp/loom-nt/23595f08-2a59-434e-8909-f85f00812151/ldo-cmos5l-e1op.qw7tCt/g00_e1op_dyn_ss_125c_rbcs_i0ua_c1000nf_e0mohm/artifacts/mos_ss__res_bcs__cap_typ__vd8858fa1d1a7_novdd_125C/waveform.raw.json",
-        "deck": "/tmp/loom-nt/23595f08-2a59-434e-8909-f85f00812151/ldo-cmos5l-e1op.qw7tCt/g00_e1op_dyn_ss_125c_rbcs_i0ua_c1000nf_e0mohm/artifacts/mos_ss__res_bcs__cap_typ__vd8858fa1d1a7_novdd_125C/corner.cir"
+        "log": "/tmp/loom-nt/23595f08-2a59-434e-8909-f85f00812151/ldo-cmos5l-e1op.NC4ZZl/g00_e1op_dyn_ss_125c_rbcs_i0ua_c1000nf_e0mohm/artifacts/mos_ss__res_bcs__cap_typ__vd8858fa1d1a7_novdd_125C/ngspice.log",
+        "raw": "/tmp/loom-nt/23595f08-2a59-434e-8909-f85f00812151/ldo-cmos5l-e1op.NC4ZZl/g00_e1op_dyn_ss_125c_rbcs_i0ua_c1000nf_e0mohm/artifacts/mos_ss__res_bcs__cap_typ__vd8858fa1d1a7_novdd_125C/waveform.raw",
+        "waveform": "/tmp/loom-nt/23595f08-2a59-434e-8909-f85f00812151/ldo-cmos5l-e1op.NC4ZZl/g00_e1op_dyn_ss_125c_rbcs_i0ua_c1000nf_e0mohm/artifacts/mos_ss__res_bcs__cap_typ__vd8858fa1d1a7_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/loom-nt/23595f08-2a59-434e-8909-f85f00812151/ldo-cmos5l-e1op.NC4ZZl/g00_e1op_dyn_ss_125c_rbcs_i0ua_c1000nf_e0mohm/artifacts/mos_ss__res_bcs__cap_typ__vd8858fa1d1a7_novdd_125C/corner.cir"
       },
       "monte_carlo": null
     },
@@ -410,7 +410,7 @@
       "supply_v": {},
       "temperature_c": 125,
       "status": "pass",
-      "runtime_s": 0.688,
+      "runtime_s": 0.591,
       "measurements": [
         {
           "name": "liveness_vout",
@@ -422,10 +422,10 @@
       ],
       "diagnostics": [],
       "artifacts": {
-        "log": "/tmp/loom-nt/23595f08-2a59-434e-8909-f85f00812151/ldo-cmos5l-e1op.qw7tCt/g00_e1op_dyn_ss_125c_rbcs_i0ua_c1000nf_e0mohm/artifacts/mos_ss__res_wcs__cap_typ__vcd135b7f9a57_novdd_125C/ngspice.log",
-        "raw": "/tmp/loom-nt/23595f08-2a59-434e-8909-f85f00812151/ldo-cmos5l-e1op.qw7tCt/g00_e1op_dyn_ss_125c_rbcs_i0ua_c1000nf_e0mohm/artifacts/mos_ss__res_wcs__cap_typ__vcd135b7f9a57_novdd_125C/waveform.raw",
-        "waveform": "/tmp/loom-nt/23595f08-2a59-434e-8909-f85f00812151/ldo-cmos5l-e1op.qw7tCt/g00_e1op_dyn_ss_125c_rbcs_i0ua_c1000nf_e0mohm/artifacts/mos_ss__res_wcs__cap_typ__vcd135b7f9a57_novdd_125C/waveform.raw.json",
-        "deck": "/tmp/loom-nt/23595f08-2a59-434e-8909-f85f00812151/ldo-cmos5l-e1op.qw7tCt/g00_e1op_dyn_ss_125c_rbcs_i0ua_c1000nf_e0mohm/artifacts/mos_ss__res_wcs__cap_typ__vcd135b7f9a57_novdd_125C/corner.cir"
+        "log": "/tmp/loom-nt/23595f08-2a59-434e-8909-f85f00812151/ldo-cmos5l-e1op.NC4ZZl/g00_e1op_dyn_ss_125c_rbcs_i0ua_c1000nf_e0mohm/artifacts/mos_ss__res_wcs__cap_typ__vcd135b7f9a57_novdd_125C/ngspice.log",
+        "raw": "/tmp/loom-nt/23595f08-2a59-434e-8909-f85f00812151/ldo-cmos5l-e1op.NC4ZZl/g00_e1op_dyn_ss_125c_rbcs_i0ua_c1000nf_e0mohm/artifacts/mos_ss__res_wcs__cap_typ__vcd135b7f9a57_novdd_125C/waveform.raw",
+        "waveform": "/tmp/loom-nt/23595f08-2a59-434e-8909-f85f00812151/ldo-cmos5l-e1op.NC4ZZl/g00_e1op_dyn_ss_125c_rbcs_i0ua_c1000nf_e0mohm/artifacts/mos_ss__res_wcs__cap_typ__vcd135b7f9a57_novdd_125C/waveform.raw.json",
+        "deck": "/tmp/loom-nt/23595f08-2a59-434e-8909-f85f00812151/ldo-cmos5l-e1op.NC4ZZl/g00_e1op_dyn_ss_125c_rbcs_i0ua_c1000nf_e0mohm/artifacts/mos_ss__res_wcs__cap_typ__vcd135b7f9a57_novdd_125C/corner.cir"
       },
       "monte_carlo": null
     }

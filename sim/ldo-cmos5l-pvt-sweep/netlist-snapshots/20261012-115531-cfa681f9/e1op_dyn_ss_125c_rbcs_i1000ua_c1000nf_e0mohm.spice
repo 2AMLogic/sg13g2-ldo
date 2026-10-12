@@ -8,7 +8,7 @@
 * and spec/decision-records/DR-0015-...md's follow-up brief (experiment E1);
 * this header is a short pointer.
 *
-* Generated for: corner=mos_ff temp=-40C res=res_wcs
+* Generated for: corner=mos_ss temp=125C res=res_bcs
 * cap=cap_typ Cc_w=170u (nominal)
 * PDK: ihp-sg13cmos5l /tmp/kt155/src/pdks/ihp-open-pdk (see sim/pdk-cmos5l.json for the pinned release)
 * OSDI models: /tmp/kt155/src/pdks/ihp-open-pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi (built by sim/tools/build-osdi.sh)
@@ -89,11 +89,11 @@
 * ENABLE (issue #67/#89, same as tb_loopgain): EN tied to VIN (enabled,
 * regulating state); the G1 pull-down inside Xamp is off (ENB at VDD).
 
-.lib "/tmp/kt155/src/pdks/ihp-open-pdk/ihp-sg13cmos5l/libs.tech/ngspice/models/cornerMOShv.lib" mos_ff
-.lib "/tmp/kt155/src/pdks/ihp-open-pdk/ihp-sg13cmos5l/libs.tech/ngspice/models/cornerRES.lib" res_wcs
+.lib "/tmp/kt155/src/pdks/ihp-open-pdk/ihp-sg13cmos5l/libs.tech/ngspice/models/cornerMOShv.lib" mos_ss
+.lib "/tmp/kt155/src/pdks/ihp-open-pdk/ihp-sg13cmos5l/libs.tech/ngspice/models/cornerRES.lib" res_bcs
 .lib "/tmp/kt155/src/pdks/ihp-open-pdk/ihp-sg13cmos5l/libs.tech/ngspice/models/cornerCAP.lib" cap_typ
 
-.options temp=-40 tnom=27
+.options temp=125 tnom=27
 
 .include "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-158/design/sg13cmos5l/netlist/ldo_core_cmos5l.spice"
 
@@ -102,7 +102,7 @@ Vref VREF 0 dc 0.90 ac 0
 Ibias IBIAS 0 dc 2u
 * Operating point (issue #64 convention, substituted by run_e1op.sh; the
 * four E1 points are DR-0015's P1/P2/P5/P6: ESR = 0 everywhere).
-Iload VOUT 0 dc 0
+Iload VOUT 0 dc 0.001
 Cout VOUT 0 1u
 * ESR=0: Cout wired directly to ground (all four E1 points)
 
@@ -153,6 +153,6 @@ save all
 op
 echo "E1OP_VOUT_OP $&v(vout)"
 dc vin 3.299 3.301 0.001
-wrdata /home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-158/sim/ldo-cmos5l-pvt-sweep/corners/20261012-114732-405078c7/e1op_dyn_ff_-40c_rwcs_i0ua_c1000nf_e0mohm_dc.csv v(vout) v(eaout) v(fb) v(fbamp) v(vref) v(en) v(ibias) v(xamp.g1) v(xamp.mz) v(xamp.n1) v(xamp.tail) v(xamp.enb) v(reptop) i(vdivsense) i(vin) i(vbreak) @n.xmpass.nsg13_hv_pmos[ids] @n.xmpass.nsg13_hv_pmos[gm] @n.xmpass.nsg13_hv_pmos[gds] @n.xmen.nsg13_hv_pmos[ids] @n.xmen.nsg13_hv_pmos[gm] @n.xmen.nsg13_hv_pmos[gds] @n.xmbdis.nsg13_hv_pmos[ids] @n.xmbdis.nsg13_hv_pmos[gm] @n.xmbdis.nsg13_hv_pmos[gds] @n.xamp.xmb0.nsg13_hv_pmos[ids] @n.xamp.xmb0.nsg13_hv_pmos[gm] @n.xamp.xmb0.nsg13_hv_pmos[gds] @n.xamp.xmtail.nsg13_hv_pmos[ids] @n.xamp.xmtail.nsg13_hv_pmos[gm] @n.xamp.xmtail.nsg13_hv_pmos[gds] @n.xamp.xmload2.nsg13_hv_pmos[ids] @n.xamp.xmload2.nsg13_hv_pmos[gm] @n.xamp.xmload2.nsg13_hv_pmos[gds] @n.xamp.xminp.nsg13_hv_pmos[ids] @n.xamp.xminp.nsg13_hv_pmos[gm] @n.xamp.xminp.nsg13_hv_pmos[gds] @n.xamp.xminn.nsg13_hv_pmos[ids] @n.xamp.xminn.nsg13_hv_pmos[gm] @n.xamp.xminn.nsg13_hv_pmos[gds] @n.xamp.xminvp.nsg13_hv_pmos[ids] @n.xamp.xminvp.nsg13_hv_pmos[gm] @n.xamp.xminvp.nsg13_hv_pmos[gds] @n.xamp.xmn1.nsg13_hv_nmos[ids] @n.xamp.xmn1.nsg13_hv_nmos[gm] @n.xamp.xmn1.nsg13_hv_nmos[gds] @n.xamp.xmn2.nsg13_hv_nmos[ids] @n.xamp.xmn2.nsg13_hv_nmos[gm] @n.xamp.xmn2.nsg13_hv_nmos[gds] @n.xamp.xmn3.nsg13_hv_nmos[ids] @n.xamp.xmn3.nsg13_hv_nmos[gm] @n.xamp.xmn3.nsg13_hv_nmos[gds] @n.xamp.xminvn.nsg13_hv_nmos[ids] @n.xamp.xminvn.nsg13_hv_nmos[gm] @n.xamp.xminvn.nsg13_hv_nmos[gds] @n.xamp.xmpd.nsg13_hv_nmos[ids] @n.xamp.xmpd.nsg13_hv_nmos[gm] @n.xamp.xmpd.nsg13_hv_nmos[gds] @n.xmpass.nsg13_hv_pmos[cgs] @n.xmpass.nsg13_hv_pmos[cgd] @n.xmpass.nsg13_hv_pmos[cdd] @n.xmpass.nsg13_hv_pmos[vth] @n.xamp.xmn3.nsg13_hv_nmos[cgs] @n.xamp.xmn3.nsg13_hv_nmos[cgd]
+wrdata /home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-158/sim/ldo-cmos5l-pvt-sweep/corners/20261012-115531-cfa681f9/e1op_dyn_ss_125c_rbcs_i1000ua_c1000nf_e0mohm_dc.csv v(vout) v(eaout) v(fb) v(fbamp) v(vref) v(en) v(ibias) v(xamp.g1) v(xamp.mz) v(xamp.n1) v(xamp.tail) v(xamp.enb) v(reptop) i(vdivsense) i(vin) i(vbreak) @n.xmpass.nsg13_hv_pmos[ids] @n.xmpass.nsg13_hv_pmos[gm] @n.xmpass.nsg13_hv_pmos[gds] @n.xmen.nsg13_hv_pmos[ids] @n.xmen.nsg13_hv_pmos[gm] @n.xmen.nsg13_hv_pmos[gds] @n.xmbdis.nsg13_hv_pmos[ids] @n.xmbdis.nsg13_hv_pmos[gm] @n.xmbdis.nsg13_hv_pmos[gds] @n.xamp.xmb0.nsg13_hv_pmos[ids] @n.xamp.xmb0.nsg13_hv_pmos[gm] @n.xamp.xmb0.nsg13_hv_pmos[gds] @n.xamp.xmtail.nsg13_hv_pmos[ids] @n.xamp.xmtail.nsg13_hv_pmos[gm] @n.xamp.xmtail.nsg13_hv_pmos[gds] @n.xamp.xmload2.nsg13_hv_pmos[ids] @n.xamp.xmload2.nsg13_hv_pmos[gm] @n.xamp.xmload2.nsg13_hv_pmos[gds] @n.xamp.xminp.nsg13_hv_pmos[ids] @n.xamp.xminp.nsg13_hv_pmos[gm] @n.xamp.xminp.nsg13_hv_pmos[gds] @n.xamp.xminn.nsg13_hv_pmos[ids] @n.xamp.xminn.nsg13_hv_pmos[gm] @n.xamp.xminn.nsg13_hv_pmos[gds] @n.xamp.xminvp.nsg13_hv_pmos[ids] @n.xamp.xminvp.nsg13_hv_pmos[gm] @n.xamp.xminvp.nsg13_hv_pmos[gds] @n.xamp.xmn1.nsg13_hv_nmos[ids] @n.xamp.xmn1.nsg13_hv_nmos[gm] @n.xamp.xmn1.nsg13_hv_nmos[gds] @n.xamp.xmn2.nsg13_hv_nmos[ids] @n.xamp.xmn2.nsg13_hv_nmos[gm] @n.xamp.xmn2.nsg13_hv_nmos[gds] @n.xamp.xmn3.nsg13_hv_nmos[ids] @n.xamp.xmn3.nsg13_hv_nmos[gm] @n.xamp.xmn3.nsg13_hv_nmos[gds] @n.xamp.xminvn.nsg13_hv_nmos[ids] @n.xamp.xminvn.nsg13_hv_nmos[gm] @n.xamp.xminvn.nsg13_hv_nmos[gds] @n.xamp.xmpd.nsg13_hv_nmos[ids] @n.xamp.xmpd.nsg13_hv_nmos[gm] @n.xamp.xmpd.nsg13_hv_nmos[gds] @n.xmpass.nsg13_hv_pmos[cgs] @n.xmpass.nsg13_hv_pmos[cgd] @n.xmpass.nsg13_hv_pmos[cdd] @n.xmpass.nsg13_hv_pmos[vth] @n.xamp.xmn3.nsg13_hv_nmos[cgs] @n.xamp.xmn3.nsg13_hv_nmos[cgd]
 .endc
 .end

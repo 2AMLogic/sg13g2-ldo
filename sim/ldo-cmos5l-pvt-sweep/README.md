@@ -2038,7 +2038,7 @@ unit mistakes must all fail the checks.
     python3 sim/ldo-cmos5l-pvt-sweep/e1_oppoints.py record-md --record <id>
     python3 sim/ldo-cmos5l-pvt-sweep/e1_oppoints.py check   --record <id>   # byte-compare
 
-**Result** (record `20261012-114732-405078c7`, PDK pin `f7bca326...`
+**Result** (record `20261012-115531-cfa681f9`, PDK pin `f7bca326...`
 -- the #155 re-stamp, read from the install and fail-closed-checked by
 `run_e1op.sh`): every point converged with all
 declared quantities; all checks pass. Headline numbers (full table in

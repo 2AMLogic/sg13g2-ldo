@@ -620,18 +620,18 @@ on the current design bytes and PDK pin, and what that does to the
 class-1 (zero-load) analysis above. It authorizes no compensation change.
 
 - **Record of evidence**:
-  `sim/ldo-cmos5l-pvt-sweep/records/20261012-114732-405078c7.e1op.md`
+  `sim/ldo-cmos5l-pvt-sweep/records/20261012-115531-cfa681f9.e1op.md`
   (reduction `…​.e1op.csv`, raw exports and fleet provenance under
-  `sim/ldo-cmos5l-pvt-sweep/corners/20261012-114732-405078c7/`; bench
+  `sim/ldo-cmos5l-pvt-sweep/corners/20261012-115531-cfa681f9/`; bench
   `tb_e1op_cmos5l.spice.tmpl`, campaign `run_e1op.sh`, reducer
   `e1_oppoints.py`). One batch-fleet request, four corners, job
-  `klt-sim-f98b99d68a9e`; every point's operating point converged with all
+  `klt-sim-043a7dd1431f`; every point's operating point converged with all
   declared quantities present, finite and sign-consistent (the record's
   per-point checks: break current ~ 0, KCL at VOUT closed to within the
   node's measured leakage, VOUT in regulation, the fleet liveness
   measurement in agreement).
 - **Vintage (explicit, per the brief's reconciliation requirement)**: E1
-  ran on the design netlists as committed at record id `…-405078c7`
+  ran on the design netlists as committed at record id `…-cfa681f9`
   (sha256 in the record manifest; identical bytes to the #155-era design)
   and the **current** PDK pin `f7bca326…` (the #155 re-stamp) --
   `run_e1op.sh` reads the resolved install's version marker at run time,
