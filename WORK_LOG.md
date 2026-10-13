@@ -4,6 +4,10 @@ Chronological record of recently merged pull requests and closed issues, maintai
 
 ### 2026-10-12
 
+- **PR #161**: sim: E1 DC operating-point campaign for DR-0015 (four-point device measurement)
+- **PR #160**: sim: #155 second increment -- EN-deck Monte Carlo, startup ext/halfstep, PDK-only controls, re-reductions
+- **Issue #158** (closed): SG13CMOS5L: measure four device operating points for DR-0015 E1
+- **Issue #155** (closed): Re-stamp SG13CMOS5L PDK pin from klayout-tools (IHP-Open-PDK dev f7bca326)
 - **PR #157**: Re-stamp SG13CMOS5L PDK pin to IHP-Open-PDK dev f7bca326 and re-run evidence (#155)
 
 ### 2026-10-11
