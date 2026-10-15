@@ -5,7 +5,7 @@ This roadmap is generated from the repository's current Loom label state.
 <!-- guide:plan-body:start -->
 ## Operator Attention: Merge-Risk-Hold Pileup
 
-Judge-approved PRs stuck under a `loom:operator` merge-risk hold — implementation work is done, only a human merge decision is missing.
+Judge-approved PRs under a hold (`loom:blocked` or `loom:operator`) — only a human merge decision is missing.
 
 _None._
 
@@ -62,6 +62,7 @@ Issues carrying `loom:curated`.
 ## Epics
 
 - **#5**: Track the gap to T1 sim-validated / bronze (klayout-tools design-evidence tiers)
+- **#62**: SG13CMOS5L startup: add enable input and transient testbench for spec row 9
 - **#62**: SG13CMOS5L startup: add enable input and transient testbench for spec row 9
 
 ## Backlog Balance
