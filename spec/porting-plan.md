@@ -568,6 +568,12 @@ in a committed filename order:
    uses) from the start, informed by gf180's `DR-0005` negative-result
    pattern rather than repeating gf180's own path of ratifying an
    unreachable window first and re-deriving it after measurement.
+   *Update: [`DR-0017`](decision-records/DR-0017-sg13cmos5l-current-limiter-plan.md)
+   (Proposed) is the SG13CMOS5L topology/sizing and validation plan for
+   this item. It keeps 65–80 mA and builds the threshold from an
+   `rhigh` unit ratio and the external `IBIAS`, so global `rhigh` spread
+   cancels instead of setting the window. No limiter is implemented yet and
+   row 8 stays Open.*
 7. **Startup/soft-start settling window** (§2.3) — checked for the same
    ramp-rate-vs-settling-time mutual consistency gf180's `DR-0006` found
    broken, before the two bounds are drafted into this repo's own spec
