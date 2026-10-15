@@ -63,7 +63,6 @@ Issues carrying `loom:curated`.
 
 - **#5**: Track the gap to T1 sim-validated / bronze (klayout-tools design-evidence tiers)
 - **#62**: SG13CMOS5L startup: add enable input and transient testbench for spec row 9
-- **#62**: SG13CMOS5L startup: add enable input and transient testbench for spec row 9
 
 ## Backlog Balance
 
