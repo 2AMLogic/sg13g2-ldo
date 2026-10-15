@@ -2,6 +2,12 @@
 
 Chronological record of recently merged pull requests and closed issues, maintained by the Loom Guide role.
 
+### 2026-10-15
+
+- **PR #163**: docs(spec): DR-0017 proposed SG13CMOS5L current-limiter plan for row 8
+- **Issue #63** (closed): SG13CMOS5L current limiter: topology and sizing design plan for row 8
+- **Issue #57** (closed): Post-layout: klt pex extraction of the LDO core and spec re-run on the extracted netlist (T1 item 7)
+
 ### 2026-10-12
 
 - **PR #161**: sim: E1 DC operating-point campaign for DR-0015 (four-point device measurement)

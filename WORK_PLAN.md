@@ -19,7 +19,7 @@ _None._
 
 `loom:important`; taken before unlabelled work.
 
-_None._
+- **#55**: Corner verification: klt sim corner-matrix envelopes against the ratified spec (T1 item 5)
 
 ## Ready
 
@@ -51,15 +51,13 @@ Issues carrying `loom:curated`.
 
 - **#55**: Corner verification: klt sim corner-matrix envelopes against the ratified spec (T1 item 5) *(curated)*
 - **#56**: Monte Carlo: klt yield evidence for the statistical ratified spec rows (T1 item 6) *(curated)*
-- **#57**: Post-layout: klt pex extraction of the LDO core and spec re-run on the extracted netlist (T1 item 7) *(curated)*
-- **#63**: SG13CMOS5L current limiter: topology and sizing design plan for row 8 *(curated)*
 - **#64**: sim: parameterise loop-gain/PSRR benches over load, Cout and ESR for rows 3, 6, 10 dynamic coverage *(curated)*
 - **#71**: Clarify row 4 branch status: ratified target, SG13CMOS5L pass, SG13G2 gap *(curated)*
+- **#165**: SG13CMOS5L: implement ldo_ilimit_cmos5l per DR-0017 and instantiate in core *(curated)*
 
 ## Proposed (Architect / Hermit)
 
 - **#62**: SG13CMOS5L startup: add enable input and transient testbench for spec row 9 *(architect)*
-- **#63**: SG13CMOS5L current limiter: topology and sizing design plan for row 8 *(architect)*
 
 ## Epics
 
@@ -72,12 +70,12 @@ Issues carrying `loom:curated`.
 |------|-------|
 | Operator merge-risk holds | 0 |
 | Very important | 0 |
-| Important | 0 |
+| Important | 1 |
 | Ready (`loom:issue`) | 0 |
 | In Progress (`loom:building`) | 0 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
-| Curated | 6 |
-| Architect / Hermit proposals | 2 |
+| Curated | 5 |
+| Architect / Hermit proposals | 1 |
 | Active epics | 2 |
 <!-- guide:plan-body:end -->
