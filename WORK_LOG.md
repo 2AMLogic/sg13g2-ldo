@@ -5,6 +5,7 @@ Chronological record of recently merged pull requests and closed issues, maintai
 ### 2026-10-15
 
 - **PR #163**: docs(spec): DR-0017 proposed SG13CMOS5L current-limiter plan for row 8
+- **Issue #62** (closed): SG13CMOS5L startup: add enable input and transient testbench for spec row 9
 - **Issue #63** (closed): SG13CMOS5L current limiter: topology and sizing design plan for row 8
 - **Issue #57** (closed): Post-layout: klt pex extraction of the LDO core and spec re-run on the extracted netlist (T1 item 7)
 
