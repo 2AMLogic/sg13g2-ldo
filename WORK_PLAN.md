@@ -57,12 +57,11 @@ Issues carrying `loom:curated`.
 
 ## Proposed (Architect / Hermit)
 
-- **#62**: SG13CMOS5L startup: add enable input and transient testbench for spec row 9 *(architect)*
+_None._
 
 ## Epics
 
 - **#5**: Track the gap to T1 sim-validated / bronze (klayout-tools design-evidence tiers)
-- **#62**: SG13CMOS5L startup: add enable input and transient testbench for spec row 9
 
 ## Backlog Balance
 
@@ -76,6 +75,6 @@ Issues carrying `loom:curated`.
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
 | Curated | 5 |
-| Architect / Hermit proposals | 1 |
-| Active epics | 2 |
+| Architect / Hermit proposals | 0 |
+| Active epics | 1 |
 <!-- guide:plan-body:end -->
