@@ -54,6 +54,7 @@ Issues carrying `loom:curated`.
 - **#64**: sim: parameterise loop-gain/PSRR benches over load, Cout and ESR for rows 3, 6, 10 dynamic coverage *(curated)*
 - **#71**: Clarify row 4 branch status: ratified target, SG13CMOS5L pass, SG13G2 gap *(curated)*
 - **#165**: SG13CMOS5L: implement ldo_ilimit_cmos5l per DR-0017 and instantiate in core *(curated)*
+- **#172**: Post-layout slice 1: klt pex stage in layout/run_flow.sh and a committed pex report for the CMOS5L core (T1 item 7) *(curated)*
 
 ## Proposed (Architect / Hermit)
 
@@ -74,7 +75,7 @@ _None._
 | In Progress (`loom:building`) | 0 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
-| Curated | 5 |
+| Curated | 6 |
 | Architect / Hermit proposals | 0 |
 | Active epics | 1 |
 <!-- guide:plan-body:end -->
