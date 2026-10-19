@@ -50,6 +50,9 @@ layout/
     erc-supply-spec.md                      its rationale (strict JSON allows no _comment)
     erc-tap-boxes.json                      the generator's tap bars (source of ties[].tap_boxes)
     erc_supply_report.json                  the `klt erc` run against the committed GDS
+    pex_report.json                         `klt pex --extract-only` (T1 item 7, slice 1, #172)
+    sg13cmos5l-ldo_core_cmos5l.pex.spice    its lumped-RC parasitic netlist
+  pex_check.py                              binds pex_report.json to its netlist; the pex negative control
 ```
 
 The directory is named `sg13cmos5l-<cell>` to match `sim/`'s own per-PDK prefix
@@ -401,6 +404,58 @@ Two contract notes for anyone re-running it:
 klt erc layout/sg13cmos5l-ldo_core_cmos5l/sg13cmos5l-ldo_core_cmos5l.gds \
   layout/sg13cmos5l-ldo_core_cmos5l/erc-supply-spec.json --format json
 ```
+
+## T1 item 7 — post-layout parasitic extraction, slice 1 (#172)
+
+`layout/run_flow.sh pex` extracts the lumped-RC parasitic netlist from the
+committed GDS and commits the `klt pex` report beside it. It is a separate
+mode, not part of the default run and not wired into `--check` or CI's
+`layout-check`: the build below is not the one `layout-check` pins, and a
+check under a pin that cannot reproduce it would fail for the wrong reason.
+Wiring it in belongs with the regeneration contract of slice 4.
+
+**This slice measures nothing.** It is extraction only (`klt pex
+--extract-only`, `measurement.mode: "extract-only"`, `status: "not_checked"`,
+exit 4, which the stage expects). There is no re-simulation, so there is no
+pre- versus post-layout delta, and the report is not evidence for any T1
+performance row. Those legs are later slices. `signoff/sg13g2-ldo.json` is
+unchanged here; the citation is slice 4.
+
+- **Pin.** The mode was added by klayout-tools#3739 (merged as #3758) and is in
+  no released klayout-tools: v0.7.0 refuses extraction-only (it demands a
+  testbench or a `--measure-command` measurement list). The stage therefore
+  runs `uvx --from git+https://github.com/2AMLogic/klayout-tools@97b6a54977d4dfedd57747f67d5c38808e7eebf0`,
+  an immutable merge commit, never the host `klt`. The report records it as
+  `provenance.klt_version` `0.7.1.dev1786+g97b6a54977d4`. Move to a release pin
+  once one carries #3758.
+- **Result.** 137 devices, 13 nets; `parasitic_integrity` reports no open
+  nets, islands, orphan nodes, suspicious resistors or capacitance mismatches.
+  Re-running reproduces both files byte for byte.
+- **`body_bias.status` is `biased`** (`unbiased_device_count: 0`, no unbiased
+  nets, no unbiased PMOS body nets): every device body reaches a tie. An
+  `unbiased` result would have to be called out here, and `pex_check.py`
+  prints a NOTE to stderr if it ever sees one.
+- **What the model does and does not account for** (`extraction.model`,
+  quoted from the report): capacitance is net-to-ground from each net's own
+  area/perimeter plus net-to-net for vertical-overlap coupling. Lateral
+  same-layer coupling is modelled only for nets named `--critical-net`; none
+  are named, so none is modelled, and fringe shielding is not modelled.
+  Resistance is a single lumped series resistance per net, a star across the
+  net's device terminals, not a distributed RC ladder (`distributed_rc:
+  false`). The model is quasi-static: one frequency-independent R and C per
+  net, no skin effect, no transmission-line behaviour.
+- **Negative control.** `klt pex` has no `--check` mode of its own, so
+  `pex_check.py` re-hashes the netlist against the report's
+  `extraction.netlist_sha256` and requires `measurement.mode` to be
+  `extract-only`. Stage 9b scales one extracted parasitic resistor by 1.5 in a
+  temporary copy; the check must fail, naming `extraction.netlist_sha256`,
+  and the stage fails if it does not. The perturbed copy lives in the
+  stage's temp directory and is never committed. The control shows the
+  report is bound to the netlist; it does not show the extraction is right.
+- **Deferred: measurement legs.** A re-simulation leg must go through `klt
+  sim` and the batch backend. Whether the batch backend accepts
+  `ihp-sg13cmos5l` is klayout-tools#2727, still open; the gap is recorded
+  here, not worked around with a local grid.
 
 ## Coverage, honestly
 
