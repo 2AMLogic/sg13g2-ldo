@@ -23,6 +23,11 @@
 #                    zero erc.missing_tie from CHECKED ties whose tap boxes are
 #                    derived from the generator's tap bars, plus a mutation
 #                    control that moves one tap box and MUST be flagged
+#   9. pex           klt pex --extract-only (T1 item 7, slice 1 of #172): the
+#                    lumped-RC parasitic netlist + report, pinned to a
+#                    klayout-tools build, plus a perturbed-netlist control
+#                    that MUST fail the report-vs-netlist binding. Runs only
+#                    when named: `layout/run_flow.sh pex`
 #
 # DECK SPLIT (stage 3). The PDK's own deck cannot run end to end against the
 # standalone KLayout on this host: several of its rules use a DRC-DSL
@@ -64,8 +69,18 @@ passiv pad metalslits lbe pin offgrid forbidden forbidden_cmos5l"
 # in the deck's own precheck mode, which skips exactly those sub-blocks.
 TABLES_PRECHECK="gatpoly metal1 metaln"
 
+# The pex stage's klt build. `klt pex --extract-only` (klayout-tools#3739,
+# merged as #3758) is in no released klayout-tools yet (v0.7.0 predates it), so
+# this is the immutable merge commit, run through a throwaway uvx environment
+# -- never the host `klt`. Its stamp (`provenance.klt_version`) is recorded in
+# pex_report.json and quoted in layout/README.md.
+PEX_KLT_FROM="git+https://github.com/2AMLogic/klayout-tools@97b6a54977d4dfedd57747f67d5c38808e7eebf0"
+PEX_NETLIST="${DIR}/sg13cmos5l-${CELL}.pex.spice"
+PEX_REPORT="${DIR}/pex_report.json"
+
 MODE="run"
 if [[ "${1:-}" == "--check" ]]; then MODE="check"; fi
+if [[ "${1:-}" == "pex" ]]; then MODE="pex"; fi
 
 say() { printf '\n=== %s\n' "$*"; }
 
@@ -92,6 +107,35 @@ run_pdk_deck() {  # <gds> <report> <extra deck args...>
   echo "${items}" > "${report}.count"
   echo "${rules}" > "${report}.rules"
 }
+
+pex_stage() {
+  say "9. pex -- klt pex --extract-only (pinned: ${PEX_KLT_FROM##*@})"
+  # Same relative-path discipline as stage 2. Exit 4 is the expected
+  # `not_checked` status: extraction-only has no measurement leg (see
+  # layout/README.md, "Post-layout parasitic extraction"), so the verdict
+  # here is the extraction model + body_bias, asserted below.
+  ( cd "${DIR}" && PDK_ROOT="${PDK_ROOT}" uvx --from "${PEX_KLT_FROM}" klt pex \
+      --extract-only --deck sg13cmos5l --pdk ihp-sg13cmos5l --top "${TOP}" \
+      --pins VIN,VOUT,VSS,VREF,IBIAS,EN \
+      -o "sg13cmos5l-${CELL}.pex.spice" --format json \
+      "sg13cmos5l-${CELL}.gds" > pex_report.json ) || test $? -eq 4
+  python3 "${HERE}/pex_check.py" "${PEX_REPORT}" "${PEX_NETLIST}"
+
+  say "9b. pex negative control -- one perturbed parasitic MUST be detected"
+  # Work on a copy; nothing perturbed is ever written into the cell directory.
+  python3 "${HERE}/pex_check.py" --perturb "${PEX_NETLIST}" "${WORK}/perturbed.pex.spice"
+  if python3 "${HERE}/pex_check.py" "${PEX_REPORT}" "${WORK}/perturbed.pex.spice"; then
+    echo "  perturbed netlist passed the check -- the control is void" >&2
+    exit 1
+  fi
+  echo "  perturbed netlist rejected, as required"
+}
+
+if [[ "${MODE}" == "pex" ]]; then
+  pex_stage
+  say "done (pex)"
+  exit 0
+fi
 
 if [[ "${MODE}" == "check" ]]; then
   say "check mode -- the committed artifacts must reproduce, byte for byte"
