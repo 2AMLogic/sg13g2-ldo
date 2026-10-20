@@ -58,7 +58,7 @@ Issues carrying `loom:curated`.
 
 ## Proposed (Architect / Hermit)
 
-- **#176**: Simplify design/netlist.py: delegate xschem export to klt netlist *(hermit)*
+_None._
 
 ## Epics
 
@@ -76,6 +76,6 @@ Issues carrying `loom:curated`.
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
 | Curated | 5 |
-| Architect / Hermit proposals | 1 |
+| Architect / Hermit proposals | 0 |
 | Active epics | 1 |
 <!-- guide:plan-body:end -->
