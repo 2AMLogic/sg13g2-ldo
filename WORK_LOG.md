@@ -2,6 +2,11 @@
 
 Chronological record of recently merged pull requests and closed issues, maintained by the Loom Guide role.
 
+### 2026-10-20
+
+- **PR #175**: feat(layout): add extraction-only pex stage and committed klt pex report
+- **Issue #172** (closed): Post-layout slice 1: klt pex stage in layout/run_flow.sh and a committed pex report for the CMOS5L core (T1 item 7)
+
 ### 2026-10-15
 
 - **PR #163**: docs(spec): DR-0017 proposed SG13CMOS5L current-limiter plan for row 8
