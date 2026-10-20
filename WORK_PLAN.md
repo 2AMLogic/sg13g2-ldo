@@ -32,7 +32,7 @@ _None._
 
 Issues currently being built (`loom:building`).
 
-- **#165**: SG13CMOS5L: implement ldo_ilimit_cmos5l per DR-0017 and instantiate in core
+_None._
 
 ## PRs Awaiting Review
 
@@ -72,7 +72,7 @@ Issues carrying `loom:curated`.
 | Very important | 0 |
 | Important | 2 |
 | Ready (`loom:issue`) | 0 |
-| In Progress (`loom:building`) | 1 |
+| In Progress (`loom:building`) | 0 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
 | Curated | 5 |
