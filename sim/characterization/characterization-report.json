@@ -65,7 +65,7 @@
     {
       "role": "design_netlist_freshness",
       "path": "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice",
-      "sha256": "08a7b857e1fad43dd7af1f575de97853a058e85541601ecc47567fbc28dbae57",
+      "sha256": "d7f00d620ff7f100de112601176e45ea9475e98a5faa0533a4b1fa7f051550f8",
       "pinned": true
     },
     {
@@ -119,7 +119,7 @@
     {
       "role": "startup_design_core_freshness",
       "path": "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice",
-      "sha256": "08a7b857e1fad43dd7af1f575de97853a058e85541601ecc47567fbc28dbae57",
+      "sha256": "d7f00d620ff7f100de112601176e45ea9475e98a5faa0533a4b1fa7f051550f8",
       "pinned": true
     },
     {
@@ -155,19 +155,19 @@
     {
       "role": "target_table",
       "path": "README.md",
-      "sha256": "baf7bacdaa45c69c1d0be0c6ac42365cef2434ee64f958d9c2c3ae3a851d7e57",
+      "sha256": "e4dc8a69e2f8a8a65efdc94066ec17e1d90a5f10debb92f3513d918091ff48ae",
       "pinned": false
     }
   ],
   "design_freshness": {
-    "state": "current",
+    "state": "stale_against_design",
     "basis": "These are the design netlist hashes the selected record ran against. The record md states both sha256 values, so freshness is recorded rather than inferred. The record was made by run_sweep.sh --batch on the EDA batch fleet (issue #89) after the G1 disable pull-down changed ldo_erramp_cmos5l.spice and ldo_core_cmos5l.spice (DR-0008 addendum). It replaces 20261010-025634-60a3e81, which was current against the six-pin-amplifier netlists 7953b25b...222cc1 / 7982d728...c8e38c and is now historical. If either netlist changes, the evidence is classified stale against the design, and the envelope verdict becomes fail until a new record is selected. Record 20261011-070111-5391c68 (issue #128) re-ran the same grid on the same design netlists with only the loop-gain AC ceiling raised to 10 GHz; it replaces 20261011-051956-eda9285, which is now historical.",
     "pins": [
       {
         "path": "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice",
         "pinned_sha256": "08a7b857e1fad43dd7af1f575de97853a058e85541601ecc47567fbc28dbae57",
-        "actual_sha256": "08a7b857e1fad43dd7af1f575de97853a058e85541601ecc47567fbc28dbae57",
-        "matches": true
+        "actual_sha256": "d7f00d620ff7f100de112601176e45ea9475e98a5faa0533a4b1fa7f051550f8",
+        "matches": false
       },
       {
         "path": "design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice",
@@ -270,7 +270,7 @@
         "record": "spec/decision-records/DR-0007-target-spec-row-ratification.md"
       },
       "verdict": "pass_partial_coverage",
-      "evidence_state": "current",
+      "evidence_state": "stale_against_design",
       "coverage": {
         "state": "partial",
         "gaps": [
@@ -358,7 +358,7 @@
         "record": "spec/decision-records/DR-0007-target-spec-row-ratification.md"
       },
       "verdict": "pass_partial_coverage",
-      "evidence_state": "current",
+      "evidence_state": "stale_against_design",
       "coverage": {
         "state": "partial",
         "gaps": [
@@ -450,7 +450,7 @@
         "record": "spec/decision-records/DR-0007-target-spec-row-ratification.md"
       },
       "verdict": "pass_full_coverage",
-      "evidence_state": "current",
+      "evidence_state": "stale_against_design",
       "coverage": {
         "state": "full",
         "gaps": []
@@ -505,7 +505,7 @@
         "record": "spec/decision-records/DR-0007-target-spec-row-ratification.md"
       },
       "verdict": "pass_partial_coverage",
-      "evidence_state": "current",
+      "evidence_state": "stale_against_design",
       "coverage": {
         "state": "partial",
         "gaps": [
@@ -838,7 +838,7 @@
         "record": "spec/decision-records/DR-0007-target-spec-row-ratification.md"
       },
       "verdict": "pass_partial_coverage",
-      "evidence_state": "current",
+      "evidence_state": "stale_against_design",
       "coverage": {
         "state": "partial",
         "gaps": [
@@ -924,7 +924,7 @@
         "record": "spec/decision-records/DR-0007-target-spec-row-ratification.md"
       },
       "verdict": "pass_partial_coverage",
-      "evidence_state": "current",
+      "evidence_state": "stale_against_design",
       "coverage": {
         "state": "partial",
         "gaps": [
@@ -1051,7 +1051,7 @@
         "record": "spec/decision-records/DR-0007-target-spec-row-ratification.md"
       },
       "verdict": "fail",
-      "evidence_state": "current",
+      "evidence_state": "stale_against_design",
       "coverage": {
         "state": "partial",
         "gaps": [
@@ -1261,15 +1261,17 @@
         },
         "missing": [],
         "design_freshness": {
-          "state": "current",
-          "stale_components": [],
+          "state": "stale_against_design",
+          "stale_components": [
+            "core"
+          ],
           "basis": "The core hash is the one the campaign manifest records in source_sha256 (the generator requires the manifest value, this pin and the current file to agree). The campaign manifest does not record an error-amplifier hash, so that pin is the hash of ldo_erramp_cmos5l.spice at the time of the campaign: the campaign (issue #89) was run after the G1 disable pull-down changed that file (DR-0008 addendum), from commit df3f802, and it is the same byte content that the selected legacy circuit_record pins. It replaces 20261010-104827-91e92aa, which ran against the six-pin amplifier and is now historical. If either netlist changes the startup evidence is classified stale against the design and the envelope turns fail until a new campaign is selected. Record 20261011-070146-0c95530 (issue #130) is a re-collection, with the amended cold-start disabled-window evaluator, of the committed traces of 20261011-031426-df3f802 (no new simulation); the netlist hashes above are those of that source campaign, and its manifest carries them unchanged in source_sha256. 20261011-031426-df3f802 is retained, unmodified, as the earlier record.",
           "components": {
             "core": {
               "path": "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice",
               "pinned_sha256": "08a7b857e1fad43dd7af1f575de97853a058e85541601ecc47567fbc28dbae57",
-              "actual_sha256": "08a7b857e1fad43dd7af1f575de97853a058e85541601ecc47567fbc28dbae57",
-              "matches": true,
+              "actual_sha256": "d7f00d620ff7f100de112601176e45ea9475e98a5faa0533a4b1fa7f051550f8",
+              "matches": false,
               "recorded_in_manifest": true,
               "manifest_sha256": "08a7b857e1fad43dd7af1f575de97853a058e85541601ecc47567fbc28dbae57"
             },
@@ -1510,7 +1512,7 @@
         "record": "spec/decision-records/DR-0007-target-spec-row-ratification.md"
       },
       "verdict": "ambiguous",
-      "evidence_state": "current",
+      "evidence_state": "stale_against_design",
       "coverage": {
         "state": "partial",
         "gaps": [
@@ -2099,7 +2101,7 @@
     ]
   },
   "completeness": {
-    "status": "complete",
+    "status": "incomplete",
     "checks": [
       {
         "check": "all selected records exist and match their sha256 pins",
@@ -2153,13 +2155,13 @@
       },
       {
         "check": "startup evidence is current against the design (core and error amplifier checked independently)",
-        "ok": true,
-        "detail": "core and error-amplifier netlist hashes match the startup freshness pins"
+        "ok": false,
+        "detail": "stale against the design: core"
       },
       {
         "check": "selected record is current against the design netlists",
-        "ok": true,
-        "detail": "design netlist hashes match the freshness pins"
+        "ok": false,
+        "detail": "design netlist changed since the selected record: select a newer record"
       }
     ],
     "meaning": "Artifact completeness/freshness only -- NOT circuit spec compliance."

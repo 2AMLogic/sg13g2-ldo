@@ -16,7 +16,7 @@
         "path": "signoff/evidence/item10-repo-hygiene.inventory.json",
         "scope": "repo"
       },
-      "content_hash": "sha256:79cb3ea0123892b7f93924eae7d51fba8e6d3d0edae2587439acc3d2f296ef77",
+      "content_hash": "sha256:7f7e593d8ba44dc1a6e59de9821ca05b1ac09b6f18528fb69a66dd932ab10d65",
       "role": "inventory"
     },
     "generator": {

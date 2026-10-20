@@ -1,0 +1,137 @@
+# ldo-cmos5l-ilimit — current-limiter smoke checks (issue #165)
+
+Nominal smoke evidence for `design/sg13cmos5l/ldo_ilimit_cmos5l` as
+instantiated in `ldo_core_cmos5l` (plan:
+[`DR-0017`](../../spec/decision-records/DR-0017-sg13cmos5l-current-limiter-plan.md)).
+**One operating point only: tt MOS, typical resistor, 27 °C, VIN = 3.30 V,
+ideal VREF = 0.90 V and ideal 2 µA IBIAS sink.** This is not a PVT sweep, not a
+Monte Carlo, and not a row-8 measurement: the requests declare **no limits**,
+the candidate dimensions are unchanged from DR-0017 §3 (except the unit
+resistor length, see `design/README.md`), and nothing here ratifies, relaxes
+or validates row 8 or any other row. Authority for the scope is the operator
+ruling on issue #165 of 2026-10-19; cloud runs, a campaign, the 135-point grid,
+transients, layout and thermal claims are not authorised and were not done.
+
+## Entry point
+
+```bash
+PDK=ihp-sg13cmos5l source sim/env.sh        # exports PDK_ROOT
+NGSPICE_BIN=/path/to/ngspice-46 sim/ldo-cmos5l-ilimit/run_smoke.sh <record-dir> [forced-vout|load-sweep|disabled ...]
+```
+
+Each request is a single unit run with `klt sim --backend local`.
+`run_smoke.sh` has no loop over corners and must not grow one: a grid goes
+through a `klt sim` corner request on the batch fleet.
+
+| Request | Deck | What it answers |
+|---|---|---|
+| `forced-vout` | `tb_forced_vout.spice` | DR-0017 DC bench item 1: `VOUT` forced 1.80 → 0.00 V in 10 mV steps; `I_out`, engagement nodes, supply overhead |
+| `load-sweep` | `tb_load_sweep.spice` | closed-loop regulator under a resistive load whose conductance is swept; no engagement at 50 mA |
+| `disabled` | `tb_disabled.spice` | `EN` low parks the limiter (DR-0017 §6) |
+
+## Record `records/20261020-052146-b3c66c07`
+
+Raw `klt sim` reports in `raw/*.sim.json`, ngspice artifacts in
+`artifacts/`. Sources were committed at `b3c66c07` before the run.
+Executor: ngspice 46 (binary sha256 `0af169ea…251241e`, recorded in each
+report) with the PDK's OSDI v0.4 models from the host PDK store
+(`ihp-sg13cmos5l` `f7bca32694fe`, per its `.pdk-store.json`). The decks stub
+`cap_cmomi` (`Ccl`) as an open circuit in DC, so **no AC or transient result
+may be read from them**.
+
+### Forced-VOUT sweep (1.80 → 0.00 V, downward only)
+
+| `VOUT` forced | `I_out` |
+|---|---|
+| 1.764 V (2 % droop, `I_onset`) | 72.588 mA |
+| 1.5 V | 72.486 mA |
+| 1.2 V | 72.440 mA |
+| 0.9 V | 72.424 mA |
+| 0.5 V | 72.424 mA |
+| 0.1 V | 72.447 mA |
+| 0.0 V (`I_short`) | 72.461 mA |
+
+Over 0 – 1.764 V (10 mV grid): min 72.422 mA, max 72.586 mA, `max/min` =
+1.0023; `I_short/I_onset` = 0.998. At this one point that is a flat plateau
+at +0.14 … +0.37 % against DR-0017's calculated 72.32 mA. It is **one nominal
+point**: the DR's brickwall classification and its 65 – 80 mA window apply to
+every plateau point over 135 PVT combinations, which was not run. The upward
+(hysteresis) sweep was not run either.
+
+Engagement, DR-0017's two conditions, at the sampled points:
+
+| `VOUT` | `V(ISNS) − V(VTH)` | `V(VIN) − V(CLG)` | `V(VIN) − V(EAOUT)` | `I(VIN) − I_out` |
+|---|---|---|---|---|
+| 1.764 V | +5.7 µV | 1.465 V | 1.532 V | 0.92 mA |
+| 0.9 V | −73.2 µV | 1.537 V | 1.522 V | 1.07 mA |
+| 0.0 V | −157.6 µV | 1.540 V | 1.516 V | 1.08 mA |
+
+The `CLG` condition (`< V(VIN) − 0.3 V`) holds at all three. The
+`V(ISNS) >= V(VTH)` condition holds only at 1.764 V: at 0.9 V and 0 V the
+comparator input difference is slightly negative (finite loop gain holds the
+sense node just below threshold while the clamp conducts). Under DR-0017's
+literal definition those two points are therefore not "engaged"; this is
+recorded rather than reinterpreted, and the definition is for the DR's
+follow-up to settle. The fault supply overhead `I(VIN) − I_out` (amplifier
+and bias plus contention) is 0.9 – 1.1 mA at these points, under the DR's
+2 mA revisit trigger, **at nominal only**. `|Vsg(Mpass)|` is 1.52 – 1.53 V in
+the DC state; transient peak stress, which is the gate-rating question, was
+not simulated.
+
+### Closed-loop resistive load (conductance swept 0 → 60 mS)
+
+| Load `G` | `I_out` | `VOUT` | `V(ISNS) − VOUT` / `V(VTH) − VOUT` | `V(VIN) − V(CLG)` |
+|---|---|---|---|---|
+| 0.556 mS (≈ 1 mA) | 1.000 mA | 1.80026 V | 2.2 mV / 161.0 mV | 0.15 µV |
+| 27.78 mS (36 Ω, ≈ 50 mA) | 50.004 mA | 1.80015 V | 111.2 mV / 161.0 mV | 0.15 µV |
+| 40 mS (25 Ω, ≈ 72 mA) | 72.005 mA | 1.80012 V | 159.7 mV / 161.0 mV | 0.29 µV |
+| 50 mS (20 Ω) | 72.474 mA | 1.4495 V | 161.1 mV / 161.1 mV | 1.527 V |
+
+**No engagement at 50 mA**, by DR-0017's own test: `V(ISNS) − VOUT` =
+111.2 mV ≤ 0.8 × 161.0 mV = 128.8 mV, and `V(VIN) − V(CLG)` = 0.15 µV ≤ 50 mV.
+At 25 Ω the sense node sits at 99.2 % of threshold and the output is still
+regulating; at 20 Ω the limiter holds the load current at 72.47 mA and
+`VOUT` falls to 1.45 V.
+
+### EN low
+
+`I(VIN)` = 2.001 µA, `V(VIN) − V(CLG)` = 9.5 nV, `V(CO)` = 23 nV,
+`V(VIN) − V(EAOUT)` = 0.5 nV, `VOUT` = 0.37 mV, no load. That is the core's
+own off-state level (the startup bench's disabled samples were 2.000 –
+2.264 µA, DR-0017 §6) with the clamp off and no extra static draw visible at
+this resolution and corner. Other corners, temperatures and `VIN` were not run.
+
+## Findings (not fixed here)
+
+1. **An ideal current-sink load does not solve to the regulating state.**
+   With the limiter in the core, a from-scratch `.op` (and a DC sweep) with
+   an ideal `Iload` sink of 1 mA converged to a non-physical state —
+   `VOUT` ≈ −18 V, `EAOUT` ≈ 3.13 V, clamp on, `Mpass` held off — which the
+   pre-limiter core (same bench) does not reach (it regulates at 1.80 V at
+   1, 50 and 80 mA). The regulating solution exists: a resistor load gives it
+   at every point above. Whether the bad state is only a solver artefact of
+   an ideal sink at a node that can go below `VSS`, or a real latch to be
+   defended against, is **not determined**. `load-sweep` uses a swept
+   conductance for that reason; DR-0017's transient plan already prescribes a
+   resistor. A follow-up should probe recovery from `VOUT` < 0 and decide.
+2. The engagement definition's `V(ISNS) >= V(VTH)` leg is marginal on the
+   plateau (see above).
+3. Everything in DR-0017 §4 – §5 that needs corners, mismatch, AC or
+   transients (statistical yield, plateau tilt over PVT, loop gain and phase
+   margin, clamp delay, recovery, `|Vsg|`/`|Vds|` stress, short power) is
+   untouched and still open.
+
+## Tooling notes
+
+- This host's ngspice 42 cannot load the PDK's OSDI v0.4 models. The runs
+  used a pre-existing ngspice 46 build under `/tmp` that an earlier session
+  had left; nothing was installed or changed on the host. A reviewer with
+  access to the batch fleet may repeat the single points there.
+- The host xschem 3.4.4 has the `top_is_subckt` regression
+  (`design/netlist.py` header); the netlists were exported with a
+  pre-existing xschem 3.4.7 build under `/tmp`, against a read-only symlink
+  view of the older PDK tree (`607e18d4…`) because the current host PDK
+  store's symbols add `mm_ok=1` to MOS lines and so does not reproduce the
+  committed netlists even on `main`. With that view `design/netlist.py
+  --design sg13cmos5l --check` reproduces all three netlists byte-for-byte,
+  ERC clean.
