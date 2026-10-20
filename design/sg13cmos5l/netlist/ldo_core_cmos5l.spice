@@ -9,6 +9,7 @@ XRbot FB VSS VSS rhigh w=1e-6 l=25.43e-6 m=1 b=7
 Xamp FB VREF EAOUT VIN VSS IBIAS EN ldo_erramp_cmos5l
 XMen EAOUT EN VIN VIN sg13_hv_pmos w=40u l=0.5u ng=1 m=1
 XMbdis IBIAS EN VIN VIN sg13_hv_pmos w=5u l=0.5u ng=1 m=1
+Xilim VIN VOUT EAOUT IBIAS EN VSS ldo_ilimit_cmos5l
 .ends
 
 * expanding   symbol:  ldo_erramp_cmos5l.sym # of pins=7
@@ -29,4 +30,62 @@ XRz MZ G1 VSS rhigh w=1e-6 l=28.81e-6 m=1 b=39
 XMinvp ENB EN VDD VDD sg13_hv_pmos w=1u l=1u ng=1 m=1
 XMinvn ENB EN VSS VSS sg13_hv_nmos w=1u l=1u ng=1 m=1
 XMpd G1 ENB VSS VSS sg13_hv_nmos w=1u l=1u ng=1 m=1
+.ends
+
+
+* expanding   symbol:  ldo_ilimit_cmos5l.sym # of pins=6
+** sym_path: design/sg13cmos5l/ldo_ilimit_cmos5l.sym
+** sch_path: design/sg13cmos5l/ldo_ilimit_cmos5l.sch
+.subckt ldo_ilimit_cmos5l VIN VOUT EAOUT IBIAS EN VSS
+*.PININFO VIN:B VOUT:B EAOUT:B IBIAS:B EN:I VSS:B
+XMsense ISNS EAOUT VIN VIN sg13_hv_pmos w=25u l=0.5u ng=1 m=1
+XRsns ISNS VOUT VSS rhigh w=2e-6 l=7.09e-6 m=20 b=0
+XMref1 REFM IBIAS VIN VIN sg13_hv_pmos w=5u l=2u ng=1 m=1
+XMref2 VTH IBIAS REFM VIN sg13_hv_pmos w=5u l=2u ng=1 m=1
+XRref1 VTH RN1 VSS rhigh w=2e-6 l=7.09e-6 m=1 b=0
+XRref2 RN1 RN2 VSS rhigh w=2e-6 l=7.09e-6 m=1 b=0
+XRref3 RN2 RN3 VSS rhigh w=2e-6 l=7.09e-6 m=1 b=0
+XRref4 RN3 RN4 VSS rhigh w=2e-6 l=7.09e-6 m=1 b=0
+XRref5 RN4 RN5 VSS rhigh w=2e-6 l=7.09e-6 m=1 b=0
+XRref6 RN5 RN6 VSS rhigh w=2e-6 l=7.09e-6 m=1 b=0
+XRref7 RN6 RN7 VSS rhigh w=2e-6 l=7.09e-6 m=1 b=0
+XRref8 RN7 RN8 VSS rhigh w=2e-6 l=7.09e-6 m=1 b=0
+XRref9 RN8 RN9 VSS rhigh w=2e-6 l=7.09e-6 m=1 b=0
+XRref10 RN9 RN10 VSS rhigh w=2e-6 l=7.09e-6 m=1 b=0
+XRref11 RN10 RN11 VSS rhigh w=2e-6 l=7.09e-6 m=1 b=0
+XRref12 RN11 RN12 VSS rhigh w=2e-6 l=7.09e-6 m=1 b=0
+XRref13 RN12 RN13 VSS rhigh w=2e-6 l=7.09e-6 m=1 b=0
+XRref14 RN13 RN14 VSS rhigh w=2e-6 l=7.09e-6 m=1 b=0
+XRref15 RN14 RN15 VSS rhigh w=2e-6 l=7.09e-6 m=1 b=0
+XRref16 RN15 RN16 VSS rhigh w=2e-6 l=7.09e-6 m=1 b=0
+XRref17 RN16 RN17 VSS rhigh w=2e-6 l=7.09e-6 m=1 b=0
+XRref18 RN17 RN18 VSS rhigh w=2e-6 l=7.09e-6 m=1 b=0
+XRref19 RN18 RN19 VSS rhigh w=2e-6 l=7.09e-6 m=1 b=0
+XRref20 RN19 RN20 VSS rhigh w=2e-6 l=7.09e-6 m=1 b=0
+XRref21 RN20 RN21 VSS rhigh w=2e-6 l=7.09e-6 m=1 b=0
+XRref22 RN21 RN22 VSS rhigh w=2e-6 l=7.09e-6 m=1 b=0
+XRref23 RN22 RN23 VSS rhigh w=2e-6 l=7.09e-6 m=1 b=0
+XRref24 RN23 RN24 VSS rhigh w=2e-6 l=7.09e-6 m=1 b=0
+XRref25 RN24 RN25 VSS rhigh w=2e-6 l=7.09e-6 m=1 b=0
+XRref26 RN25 RN26 VSS rhigh w=2e-6 l=7.09e-6 m=1 b=0
+XRref27 RN26 RN27 VSS rhigh w=2e-6 l=7.09e-6 m=1 b=0
+XRref28 RN27 RN28 VSS rhigh w=2e-6 l=7.09e-6 m=1 b=0
+XRref29 RN28 RN29 VSS rhigh w=2e-6 l=7.09e-6 m=1 b=0
+XRref30 RN29 RN30 VSS rhigh w=2e-6 l=7.09e-6 m=1 b=0
+XRref31 RN30 RN31 VSS rhigh w=2e-6 l=7.09e-6 m=1 b=0
+XRref32 RN31 VOUT VSS rhigh w=2e-6 l=7.09e-6 m=1 b=0
+XMca CN ISNS TAIL VIN sg13_hv_pmos w=40u l=2u ng=1 m=1
+XMcb CO VTH TAIL VIN sg13_hv_pmos w=40u l=2u ng=1 m=1
+XMna CN CN VSS VSS sg13_hv_nmos w=10u l=8u ng=1 m=1
+XMnb CO CN VSS VSS sg13_hv_nmos w=10u l=8u ng=1 m=1
+XRtail TAILP TAIL VSS rhigh w=1e-6 l=26.1e-6 m=1 b=14
+XMen_t TAILP ENB VIN VIN sg13_hv_pmos w=5u l=0.5u ng=1 m=1
+XCcl CO VSS cap_cmomi w=22e-6 l=22e-6 mmin=1 mmax=4 feed=double subblock=0 m=1 mm_ok=1
+XMen_co CO ENB VSS VSS sg13_hv_nmos w=1u l=1u ng=1 m=1
+XMg2 CLG CO VSS VSS sg13_hv_nmos w=10u l=1u ng=1 m=1
+XMlg CLG IBIAS VIN VIN sg13_hv_pmos w=5u l=2u ng=1 m=1
+XMcoff CLG EN VIN VIN sg13_hv_pmos w=2u l=0.5u ng=1 m=1
+XMclamp EAOUT CLG VIN VIN sg13_hv_pmos w=40u l=0.5u ng=1 m=1
+XMinvp ENB EN VIN VIN sg13_hv_pmos w=1u l=1u ng=1 m=1
+XMinvn ENB EN VSS VSS sg13_hv_nmos w=1u l=1u ng=1 m=1
 .ends
