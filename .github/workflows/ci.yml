@@ -709,6 +709,10 @@ jobs:
     steps:
       - name: Check out sg13g2-ldo
         uses: actions/checkout@v4
+        with:
+          # The PR head SHA checked below is the merge commit's second parent;
+          # a depth-1 clone does not contain it.
+          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
