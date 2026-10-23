@@ -12,6 +12,11 @@ sim/build/
 # startup campaign (issue #69): klt per-corner artifacts (rawfiles ~2 MB each) are
 # not committed; their sha256 and the reduced traces are in records/.
 sim/*/startup/**/artifacts/
+# scratch for NEW evidence runs (issue #183): bulk outputs (rawfiles, per-corner
+# .cir/.csv/.log) are staged here, stored with `klt artifact put`, and only the
+# manifest under manifests/artifacts/ plus the summary are committed. This does
+# not un-track anything already committed (history is untouched).
+sim/.work/
 # synthesis / P&R scratch
 flow/build/
 # local klt install, created by the setup script
