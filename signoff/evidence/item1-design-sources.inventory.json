@@ -6,7 +6,7 @@
   "files": [
     {
       "path": "design/README.md",
-      "sha256": "sha256:d14f98ad39a77aa99b7d5867ed3b0bfbc687d58ef331224fd41ca63fa4134eca"
+      "sha256": "sha256:385b0e0c6c88adde490eda2376086d8f24158257831faeba512d1793039f8d26"
     },
     {
       "path": "design/netlist.py",
@@ -14,7 +14,7 @@
     },
     {
       "path": "design/sg13cmos5l/ldo_core_cmos5l.sch",
-      "sha256": "sha256:775af6a071805a13e15bb2c6778f3ac5989c60225de51bbf4cc683983d328c19"
+      "sha256": "sha256:e08b9b39bfbce0c0de34a8280f5dcc7c103a18800610fe6bff1ee1d6de35ce81"
     },
     {
       "path": "design/sg13cmos5l/ldo_core_cmos5l.sym",
@@ -38,7 +38,7 @@
     },
     {
       "path": "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice",
-      "sha256": "sha256:d7f00d620ff7f100de112601176e45ea9475e98a5faa0533a4b1fa7f051550f8"
+      "sha256": "sha256:08a7b857e1fad43dd7af1f575de97853a058e85541601ecc47567fbc28dbae57"
     },
     {
       "path": "design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice",

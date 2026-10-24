@@ -559,9 +559,13 @@ which #35's wider `Cc` is what closes
 
 Issue #165, child of #164. Plan:
 [`DR-0017`](../spec/decision-records/DR-0017-sg13cmos5l-current-limiter-plan.md)
-§1–§3, §5–§6. Pins `VIN VOUT EAOUT IBIAS EN VSS`. The core gains exactly one
-instance, `Xilim VIN VOUT EAOUT IBIAS EN VSS ldo_ilimit_cmos5l`; the core's
-six ports are unchanged.
+§1–§3, §5–§6. Pins `VIN VOUT EAOUT IBIAS EN VSS`. The cell is a **standalone
+cell**: `ldo_core_cmos5l` does **not** instantiate it, and the core schematic
+and netlist are unchanged from `main`. Integration (`Xilim VIN VOUT EAOUT IBIAS
+EN VSS ldo_ilimit_cmos5l` in the core) is deferred to #190, because it makes the
+selected PVT/startup/loop-gain records stale and needs the refreshed-evidence
+campaign. The nominal smoke decks instead wrap the core plus the limiter in a
+testbench-local subckt (`sim/ldo-cmos5l-ilimit/gen_core_with_ilimit.sh`).
 
 **Status.** Row 8 (65–80 mA brickwall over PVT, short-survivable) is still
 **Open** and nothing here ratifies it. Every size is a DR-0017 §3 *candidate*;

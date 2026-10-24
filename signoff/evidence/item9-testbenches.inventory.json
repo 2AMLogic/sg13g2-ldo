@@ -142,7 +142,15 @@
     },
     {
       "path": "sim/ldo-cmos5l-ilimit/README.md",
-      "sha256": "sha256:24da2c4be16f17caf860619f93d040eb17502b42e94a6e2cd0e779232b70297e"
+      "sha256": "sha256:d220651bc787f5a42c1419d117de7260b2e97188c35440992e5f777cd4f300a6"
+    },
+    {
+      "path": "sim/ldo-cmos5l-ilimit/core_with_ilimit.spice",
+      "sha256": "sha256:bcc462c70c4096282181d94b0ba5e56bace015b8c56288b8531fc9b4160451f9"
+    },
+    {
+      "path": "sim/ldo-cmos5l-ilimit/gen_core_with_ilimit.sh",
+      "sha256": "sha256:090d7153189866a8d80e9039c7e0b084df031267a278326b334a192bc5305140"
     },
     {
       "path": "sim/ldo-cmos5l-ilimit/ilimit-corners.lib",
@@ -162,19 +170,19 @@
     },
     {
       "path": "sim/ldo-cmos5l-ilimit/run_smoke.sh",
-      "sha256": "sha256:c5193f80d9bb6f7d99cc00ae7d5dd1e602ec2c526d6c52dab456409a78b20f37"
+      "sha256": "sha256:b87ee2dd4da7e880027880a2da2bd9b3d3cf01037bedd6693c5f96e85d484115"
     },
     {
       "path": "sim/ldo-cmos5l-ilimit/tb_disabled.spice",
-      "sha256": "sha256:cb9dfdfe6d0248c9a9b20f50b290b5bcb4f7360d5553706f5046a9faebac50a2"
+      "sha256": "sha256:462e8ed0a5c737df1795f9cf66d4a4f271a18149e98dcd9c7c18a4a1abc0e44c"
     },
     {
       "path": "sim/ldo-cmos5l-ilimit/tb_forced_vout.spice",
-      "sha256": "sha256:cf9e027fe3ded75ef374ae0c21c2d2ab2af306089d5305857b212629f66a86b6"
+      "sha256": "sha256:596168b88dcbfb432bcaff7f36eb684889884a4b466156b115e74607e045458b"
     },
     {
       "path": "sim/ldo-cmos5l-ilimit/tb_load_sweep.spice",
-      "sha256": "sha256:b61c838dae788ae69439de69658b2ea84bd1d9df4f15d76c54eb12ac1a3e587e"
+      "sha256": "sha256:2ffed63883dba470254af959f9e32caf05084e527658842b260109fe69ab9687"
     },
     {
       "path": "sim/ldo-cmos5l-monte-carlo/README.md",

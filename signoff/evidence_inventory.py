@@ -211,6 +211,8 @@ ITEMS = {
             # issue #165: current-limiter nominal smoke decks (sim/ldo-cmos5l-ilimit/)
             "sim/ldo-cmos5l-ilimit/README.md",
             "sim/ldo-cmos5l-ilimit/run_smoke.sh",
+            "sim/ldo-cmos5l-ilimit/gen_core_with_ilimit.sh",
+            "sim/ldo-cmos5l-ilimit/core_with_ilimit.spice",
             "sim/ldo-cmos5l-ilimit/ilimit-corners.lib",
             "sim/ldo-cmos5l-ilimit/tb_disabled.spice",
             "sim/ldo-cmos5l-ilimit/tb_forced_vout.spice",

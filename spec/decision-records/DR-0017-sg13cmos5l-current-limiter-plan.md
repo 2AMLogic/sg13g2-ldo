@@ -217,6 +217,14 @@ A new internal cell **`ldo_ilimit_cmos5l`** (`design/sg13cmos5l/ldo_ilimit_cmos5
 Xilim VIN VOUT EAOUT IBIAS EN VSS ldo_ilimit_cmos5l
 ```
 
+> **Integration deferred (#165, operator ruling of 2026-10-24 on #165).**
+> The instance above is the planned integration, not what #165 delivers.
+> `ldo_ilimit_cmos5l` lands as a standalone cell and `ldo_core_cmos5l` is
+> unchanged; instantiating it in the core is deferred to #190, which carries
+> the refreshed PVT/startup/loop-gain evidence. The nominal tt/27 °C/3.30 V
+> smoke wraps the core plus `Xilim` in a testbench-local subckt. Nothing in
+> this note ratifies row 8 or relaxes any gate.
+
 ### 2. Threshold equation and candidate values
 
 At trip, `Isns·Rsns = Iref·Rref + Vos`. The core's output current is
