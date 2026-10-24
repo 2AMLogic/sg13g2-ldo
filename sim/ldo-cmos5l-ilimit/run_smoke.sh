@@ -22,6 +22,7 @@ PDK=ihp-sg13cmos5l source "${HERE}/../env.sh" >/dev/null
 shim="$(mktemp -d)"; trap 'rm -rf "${shim}"' EXIT
 ln -s "${NGSPICE_BIN}" "${shim}/ngspice"
 export PATH="${shim}:${PATH}"
+"${HERE}/gen_core_with_ilimit.sh" > "${HERE}/core_with_ilimit.spice"
 mkdir -p "${rec}/raw"
 for n in "${NAMES[@]}"; do
   set +e

@@ -231,14 +231,7 @@ v {xschem version=3.4.7 file_version=1.3
 * pull-down (sizes and the option analysis: ldo_erramp_cmos5l.sch's header
 * and the DR-0008 addendum). This core's own port list is unchanged.
 *
-* CURRENT LIMITER (issue #165, DR-0017). Xilim = ldo_ilimit_cmos5l senses a
-* 1/112 replica of Mpass and, above a threshold set by IBIAS, pulls EAOUT
-* toward VIN through its own clamp. It takes the core's VIN, VOUT, EAOUT,
-* IBIAS, EN and VSS nets; the core's six ports are unchanged. Row 8 is NOT
-* ratified and the limiter's sizing is a candidate -- see
-* ldo_ilimit_cmos5l.sch and design/README.md.
-*
-* NO SOFT START, NO OUTPUT CAP, NO LOAD. Same scope
+* NO CURRENT LIMIT, NO SOFT START, NO OUTPUT CAP, NO LOAD. Same scope
 * boundary as the SG13G2 branch. Verification of the EN change is
 * schematic-level only (see DR-0008); no layout/DRC/LVS exists for it
 * (#68). PVT verification is phase 3 (#21); layout/DRC/LVS is phase 4 (#22).
@@ -311,16 +304,3 @@ N 630 450 570 450 {}
 C {lab_pin.sym} 570 450 0 0 {name=l21 lab=EN}
 N 670 450 740 450 {}
 C {lab_pin.sym} 740 450 0 0 {name=l22 lab=VIN}
-C {ldo_ilimit_cmos5l.sym} 1000 900 0 0 {name=Xilim}
-N 920 860 860 860 {}
-C {lab_pin.sym} 860 860 0 0 {name=l24 lab=VIN}
-N 1080 860 1140 860 {}
-C {lab_pin.sym} 1140 860 0 0 {name=l25 lab=VOUT}
-N 1080 940 1140 940 {}
-C {lab_pin.sym} 1140 940 0 0 {name=l26 lab=EAOUT}
-N 1040 820 1040 760 {}
-C {lab_pin.sym} 1040 760 0 0 {name=l27 lab=IBIAS}
-N 960 980 960 1040 {}
-C {lab_pin.sym} 960 1040 0 0 {name=l28 lab=EN}
-N 1040 980 1040 1040 {}
-C {lab_pin.sym} 1040 1040 0 0 {name=l29 lab=VSS}
