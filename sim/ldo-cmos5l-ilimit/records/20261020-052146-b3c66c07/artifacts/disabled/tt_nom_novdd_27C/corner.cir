@@ -1,0 +1,21 @@
+* klt sim -- generated corner deck, do not edit
+.lib /home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-165/sim/ldo-cmos5l-ilimit/ilimit-corners.lib tt_nom
+.include /home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-165/sim/ldo-cmos5l-ilimit/tb_disabled.spice
+.temp 27
+.meas dc isup_en0 FIND par('-i(vin)') AT=3.3
+.meas dc vin_minus_clg_en0 FIND par('v(vin)-v(xtop.xilim.clg)') AT=3.3
+.meas dc co_en0 FIND par('v(xtop.xilim.co)') AT=3.3
+.meas dc vsg_pass_en0 FIND par('v(vin)-v(xtop.eaout)') AT=3.3
+.meas dc vout_en0 FIND par('v(out)') AT=3.3
+.meas dc iout_en0 FIND par('i(vmeas)') AT=3.3
+.meas dc ibias_node_vin_minus_en0 FIND par('v(vin)-v(ibias)') AT=3.3
+.control
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/psp103.osdi
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/psp103_nqs.osdi
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/mosvar.osdi
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/r3_cmc.osdi
+save all
+dc Vin 3.2 3.4 0.1
+quit
+.endc
+.end

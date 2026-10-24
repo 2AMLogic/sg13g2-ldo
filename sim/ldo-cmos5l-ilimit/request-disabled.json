@@ -1,0 +1,67 @@
+{
+  "netlist": "tb_disabled.spice",
+  "backend": "local",
+  "models": {
+    "lib": "ilimit-corners.lib"
+  },
+  "analysis": {
+    "kind": "dc",
+    "args": "Vin 3.2 3.4 0.1"
+  },
+  "measurements": [
+    {
+      "name": "isup_en0",
+      "spice": ".meas dc isup_en0 FIND par('-i(vin)') AT=3.3",
+      "unit": "A"
+    },
+    {
+      "name": "vin_minus_clg_en0",
+      "spice": ".meas dc vin_minus_clg_en0 FIND par('v(vin)-v(xtop.xilim.clg)') AT=3.3",
+      "unit": "V"
+    },
+    {
+      "name": "co_en0",
+      "spice": ".meas dc co_en0 FIND par('v(xtop.xilim.co)') AT=3.3",
+      "unit": "V"
+    },
+    {
+      "name": "vsg_pass_en0",
+      "spice": ".meas dc vsg_pass_en0 FIND par('v(vin)-v(xtop.eaout)') AT=3.3",
+      "unit": "V"
+    },
+    {
+      "name": "vout_en0",
+      "spice": ".meas dc vout_en0 FIND par('v(out)') AT=3.3",
+      "unit": "V"
+    },
+    {
+      "name": "iout_en0",
+      "spice": ".meas dc iout_en0 FIND par('i(vmeas)') AT=3.3",
+      "unit": "A"
+    },
+    {
+      "name": "ibias_node_vin_minus_en0",
+      "spice": ".meas dc ibias_node_vin_minus_en0 FIND par('v(vin)-v(ibias)') AT=3.3",
+      "unit": "V"
+    }
+  ],
+  "corners": {
+    "process": [
+      "tt_nom"
+    ],
+    "temperature_c": [
+      27
+    ]
+  },
+  "options": {
+    "timeout_s": 300,
+    "keep_artifacts": true,
+    "stage_model_inputs": true,
+    "osdi_preload": [
+      "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/psp103.osdi",
+      "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/psp103_nqs.osdi",
+      "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/mosvar.osdi",
+      "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/r3_cmc.osdi"
+    ]
+  }
+}

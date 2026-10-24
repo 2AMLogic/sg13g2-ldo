@@ -1,0 +1,38 @@
+* klt sim -- generated corner deck, do not edit
+.lib /home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-165/sim/ldo-cmos5l-ilimit/ilimit-corners.lib tt_nom
+.include /home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-165/sim/ldo-cmos5l-ilimit/tb_forced_vout.spice
+.temp 27
+.meas dc iout_v1p764 FIND par('i(vmeas)') AT=1.764
+.meas dc iout_v1p5 FIND par('i(vmeas)') AT=1.5
+.meas dc iout_v1p2 FIND par('i(vmeas)') AT=1.2
+.meas dc iout_v0p9 FIND par('i(vmeas)') AT=0.9
+.meas dc iout_v0p5 FIND par('i(vmeas)') AT=0.5
+.meas dc iout_v0p1 FIND par('i(vmeas)') AT=0.1
+.meas dc iout_v0p0 FIND par('i(vmeas)') AT=0.0
+.meas dc iout_max_plateau MAX par('i(vmeas)') FROM=0 TO=1.764
+.meas dc iout_min_plateau MIN par('i(vmeas)') FROM=0 TO=1.764
+.meas dc isns_minus_vth_v1p764 FIND par('v(xtop.xilim.isns)-v(xtop.xilim.vth)') AT=1.764
+.meas dc vin_minus_clg_v1p764 FIND par('v(vin)-v(xtop.xilim.clg)') AT=1.764
+.meas dc eaout_v1p764 FIND par('v(xtop.eaout)') AT=1.764
+.meas dc vsg_pass_v1p764 FIND par('v(vin)-v(xtop.eaout)') AT=1.764
+.meas dc isup_minus_iout_v1p764 FIND par('-i(vin)-i(vmeas)') AT=1.764
+.meas dc isns_minus_vth_v0p9 FIND par('v(xtop.xilim.isns)-v(xtop.xilim.vth)') AT=0.9
+.meas dc vin_minus_clg_v0p9 FIND par('v(vin)-v(xtop.xilim.clg)') AT=0.9
+.meas dc eaout_v0p9 FIND par('v(xtop.eaout)') AT=0.9
+.meas dc vsg_pass_v0p9 FIND par('v(vin)-v(xtop.eaout)') AT=0.9
+.meas dc isup_minus_iout_v0p9 FIND par('-i(vin)-i(vmeas)') AT=0.9
+.meas dc isns_minus_vth_v0p0 FIND par('v(xtop.xilim.isns)-v(xtop.xilim.vth)') AT=0.0
+.meas dc vin_minus_clg_v0p0 FIND par('v(vin)-v(xtop.xilim.clg)') AT=0.0
+.meas dc eaout_v0p0 FIND par('v(xtop.eaout)') AT=0.0
+.meas dc vsg_pass_v0p0 FIND par('v(vin)-v(xtop.eaout)') AT=0.0
+.meas dc isup_minus_iout_v0p0 FIND par('-i(vin)-i(vmeas)') AT=0.0
+.control
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/psp103.osdi
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/psp103_nqs.osdi
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/mosvar.osdi
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/r3_cmc.osdi
+save all
+dc Vforce 1.8 0 -0.01
+quit
+.endc
+.end
