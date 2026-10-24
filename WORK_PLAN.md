@@ -21,6 +21,8 @@ _None._
 
 - **#55**: Corner verification: klt sim corner-matrix envelopes against the ratified spec (T1 item 5)
 - **#165**: SG13CMOS5L: implement ldo_ilimit_cmos5l per DR-0017 and instantiate in core
+- **#185**: main CI: loopgain2 generate.py --check differs from regeneration
+- **#186**: main CI: openvaf-r cannot load libxml2.so.2 in pass-device-screening --check-env
 
 ## Ready
 
@@ -32,7 +34,9 @@ _None._
 
 Issues currently being built (`loom:building`).
 
-_None._
+- **#183**: Adopt the common artifact store for sim evidence (manifests in git, bytes via klt artifact)
+- **#185**: main CI: loopgain2 generate.py --check differs from regeneration
+- **#186**: main CI: openvaf-r cannot load libxml2.so.2 in pass-device-screening --check-env
 
 ## PRs Awaiting Review
 
@@ -55,6 +59,9 @@ Issues carrying `loom:curated`.
 - **#64**: sim: parameterise loop-gain/PSRR benches over load, Cout and ESR for rows 3, 6, 10 dynamic coverage *(curated)*
 - **#71**: Clarify row 4 branch status: ratified target, SG13CMOS5L pass, SG13G2 gap *(curated)*
 - **#165**: SG13CMOS5L: implement ldo_ilimit_cmos5l per DR-0017 and instantiate in core *(curated)*
+- **#183**: Adopt the common artifact store for sim evidence (manifests in git, bytes via klt artifact) *(curated)*
+- **#185**: main CI: loopgain2 generate.py --check differs from regeneration *(curated)*
+- **#186**: main CI: openvaf-r cannot load libxml2.so.2 in pass-device-screening --check-env *(curated)*
 
 ## Proposed (Architect / Hermit)
 
@@ -70,12 +77,12 @@ _None._
 |------|-------|
 | Operator merge-risk holds | 0 |
 | Very important | 0 |
-| Important | 2 |
+| Important | 4 |
 | Ready (`loom:issue`) | 0 |
-| In Progress (`loom:building`) | 0 |
+| In Progress (`loom:building`) | 3 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
-| Curated | 5 |
+| Curated | 8 |
 | Architect / Hermit proposals | 0 |
 | Active epics | 1 |
 <!-- guide:plan-body:end -->
