@@ -44,7 +44,7 @@
 | startup_manifest_json | `sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.manifest.json` | `3ec537f955f03dbd081870a068d01825106a886cd0f5ac0698289932cf5a7c95` | yes |
 | startup_record_md | `sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.md` | `908c108fd44b729846b51c0d9a75b35daf3dee4d7bc4c9fab3f091d8a06b307c` | yes |
 | superseded_evidence_statement | `sim/ldo-cmos5l-pvt-sweep/README.md` | `b8122211cc9d679b80ee04533f3237c3cebb0f024e417e0f77abf8d5ee383d44` | recorded |
-| target_table | `README.md` | `baf7bacdaa45c69c1d0be0c6ac42365cef2434ee64f958d9c2c3ae3a851d7e57` | recorded |
+| target_table | `README.md` | `dbb54dc9a1ff4ff8332680a80aa393528651c59fddd8821ded670e02e23adc29` | recorded |
 
 ## Per-row summary
 
@@ -119,7 +119,7 @@ Verdict key: `pass_*` = measured metrics meet the bound at the stated conditions
 ### 4. Dropout @ 50 mA -- pass_full_coverage
 
 - Target: < 300 mV worst corner; stretch: < 200 mV
-- Ratification: ratified (README: RATIFIED (stretch not ratified); DR-0007: Ratified as written, deterministic)
+- Ratification: ratified (README: RATIFIED as a shared target (stretch not ratified); branch compliance differs — see the row 4 branch note below; DR-0007: Ratified as written, deterministic)
 - Stretch: stretch < 200 mV is NOT ratified and is not demonstrated: 9 of 45 points exceed 0.20 V; 36 points are censored at the floor so cannot demonstrate a strict '< 0.20 V'.
 
 - **dropout at 50 mA** (V): pass; bound lt 0.3 V; 45/45 pass, 0 fail, 0 ambiguous, 36 censored upper bound
