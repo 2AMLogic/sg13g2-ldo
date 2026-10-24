@@ -76,7 +76,7 @@ changed by the record.
 - **SG13CMOS5L: meets the target at schematic level.** `design/sg13cmos5l/netlist/ldo_core_cmos5l.spice` has a `w=2800u` pass device behind a transistor-level error amplifier, and its closed-loop PVT sweep ratified the row.
 - **SG13G2: not evidenced; predicted to miss with the committed provisional sizing.** `design/netlist/ldo_core.spice` still has `w=300u` behind a behavioural VCVS amplifier, and the ratifying sweep is not SG13G2 evidence. PR #65's engineering-key review derived, from the committed bare-device screen, about 47 ohm (about 2.35 V at 50 mA) and an implied width of 2169–2351 µm. That is a screening-derived prediction, **not** a closed-loop SG13G2 measurement. Resizing the pass device, a transistor-level amplifier and a closed-loop dropout bench are future work and are not part of this correction.
 
-The target value and row disposition are unchanged.
+The target value and row disposition are unchanged. The branch note is recorded in [`DR-0018`](spec/decision-records/DR-0018-row4-branch-status-clarification.md), a follow-on to DR-0007.
 
 Maturity ladder: spec ratified → schematic simulated across PVT → layout
 DRC/LVS-clean → post-layout re-verification → shuttle seat → measured

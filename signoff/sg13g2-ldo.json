@@ -20,7 +20,7 @@
     },
     "8": {
       "file": "sim/characterization/characterization-envelope.json",
-      "content_hash": "sha256:39082ce685a3643574db7e3cecb49313a61b878e244fdf4afbc87cb32c67401f"
+      "content_hash": "sha256:30cfcf4cbbe178d98c3f5e17b98765544eecf8c689e1b123aa72fc8612a48755"
     },
     "9": {
       "file": "signoff/evidence/item9-testbenches.envelope.json",
@@ -28,7 +28,7 @@
     },
     "10": {
       "file": "signoff/evidence/item10-repo-hygiene.envelope.json",
-      "content_hash": "sha256:e0e36b2fea9c420d59ed11909809338f7929e2037bcfa7e2bebf6ba65f629edc"
+      "content_hash": "sha256:4c912210083d1e0a2f12ed8efcdb5a24269c9e793a8a61604160e2b65ac77ed7"
     },
     "11": [
       {

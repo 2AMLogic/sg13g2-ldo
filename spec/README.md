@@ -23,7 +23,8 @@ being present; ratification state is stated per row.
   evidence and is predicted to miss with that sizing (PR #65 review's
   screening-derived estimate of about 47 ohm / about 2.35 V at 50 mA, implied
   width 2169–2351 µm; not a closed-loop measurement; snapshot `origin/main`
-  `028a3f8`, 2026-10-10).
+  `028a3f8`, 2026-10-10). See
+  [`DR-0018`](decision-records/DR-0018-row4-branch-status-clarification.md).
 - [`DR-0012`](decision-records/DR-0012-row4-dropout-measurement.md)
   (**proposed**, not ratified) defines how row 4 (dropout @ 50 mA) is
   measured: 1 % loss against the corner's own regulated output, interpolated
