@@ -259,7 +259,10 @@ jobs:
 
   pass-device-screening-check:
     name: sim/pass-device-screening{,-hbt} run_sweep.sh --check-env (ngspice + ihp-sg13g2 PDK + klt)
-    runs-on: ubuntu-latest
+    # Pinned to 24.04 (noble): ubuntu-latest rolled to 26.04, which lacks the
+    # libxml2.so.2 that the pinned openvaf-r links against (#186). The pins in
+    # sim/tools/build-osdi.sh (openvaf-r, noble libllvm21) are noble-specific.
+    runs-on: ubuntu-24.04
     steps:
       - name: Check out sg13g2-ldo
         uses: actions/checkout@v4
@@ -498,7 +501,9 @@ jobs:
     # content_hash pin against the envelope. A generator error or an
     # incomplete/stale artifact fails the job -- it never leaves a passing
     # envelope behind.
-    runs-on: ubuntu-latest
+    # Pinned to the last-green image: the committed loopgain2 report stopped
+    # reproducing on the ubuntu-latest -> ubuntu-26.04 roll-forward.
+    runs-on: ubuntu-24.04
     steps:
       - name: Check out sg13g2-ldo
         uses: actions/checkout@v4
