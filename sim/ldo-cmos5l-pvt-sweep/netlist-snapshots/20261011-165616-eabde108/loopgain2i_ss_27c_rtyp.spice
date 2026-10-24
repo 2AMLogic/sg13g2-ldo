@@ -1,0 +1,143 @@
+* sg13g2-ldo -- SG13CMOS5L loop-gain bench, two-injection CURRENT run (issue #135).
+* Generated from
+* sim/ldo-cmos5l-pvt-sweep/testbench/tb_loopgain2i_cmos5l.spice.tmpl by
+* sim/ldo-cmos5l-pvt-sweep/run_loopgain2.sh -- do not edit a generated
+* netlist-snapshots/*.spice file directly. Full methodology (the Middlebrook
+* two-injection derivation, sign conventions and combination formula) is in
+* sim/ldo-cmos5l-pvt-sweep/README.md "Loop-gain measurement method --
+* two-injection (Middlebrook) reconstruction"; this header is a short pointer.
+*
+* Generated for: corner=mos_ss temp=27C res=res_typ
+* cap=cap_typ Cc_w=170u (nominal)
+* PDK: ihp-sg13cmos5l /home/ubuntu/share/pdk (see sim/pdk-cmos5l.json for the pinned release)
+* OSDI models: /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi (built by sim/tools/build-osdi.sh)
+* Design netlist under test (frozen at this repo's git sha in the record):
+*   /home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-135/design/sg13cmos5l/netlist/ldo_core_cmos5l.spice
+*
+* THIS DECK IS THE CURRENT-INJECTION HALF of the two-injection measurement.
+* Where tb_loopgain_cmos5l (and tb_loopgain2v) BREAK the loop with a series
+* AC source at FB, this deck leaves the loop INTACT and injects a shunt AC
+* current at the same point:
+*
+*   Vmeas FB FBAMP 0 dc 0     0 V ammeter across the former break: FB and
+*                             FBAMP sit at the same potential (DC and AC),
+*                             so the DC operating point and the AC loading
+*                             are the unbroken circuit's -- no L/C blocking
+*                             network needed, for the same reason the
+*                             single-injection bench needs none (the only
+*                             element hanging off FBAMP is a MOSFET gate).
+*   Iinx 0 FBAMP dc 0 ac 1    shunt AC current source injecting 1 A (AC
+*                             magnitude) into the DRIVEN side (FBAMP, the
+*                             amplifier input), so the injected current
+*                             splits between the load impedance (the amp
+*                             input, Zl) and the source impedance (the
+*                             divider side looking back from FB, Zt): both
+*                             impedances are seen, which is what makes the
+*                             current injection carry information the
+*                             voltage injection cannot.
+*
+* The ammeter reports i(vmeas) = i_m, the current flowing FROM the divider
+* side TO the load side THROUGH the bridge (ngspice reports a positive
+* branch current for `Vmeas n+ n-` flowing n+ -> n- through the source;
+* validated against the analytic fixture in test_loopgain2.py and against
+* the single-injection bench by run_loopgain2.sh --validate before any
+* fleet run). i_m is the BRIDGE current, not the load current: KCL on the
+* two injection nodes gives the load current i_l = ix + i_m (ix = 1) and
+* the current returning into the divider side i_s = -i_m, so
+*
+*   Hi(s) = i_s/i_l = -i_m/(1 + i_m) = (1 - T')/u      (u = Zt/Zl)
+*
+* and, with the voltage-injection deck's Hv(s) = v(fbamp)/v(fb), the
+* Middlebrook combination gives the true loop transfer with NO assumption on
+* the gate current:
+*
+*   T(s)  = (1 + Hi/Hv)/(1 + Hi)            (L = -T in this repo's convention)
+*
+* The ratio Hi = (1-T)/u(u = Zt/Zl) is what the voltage injection cannot
+* see: it vanishes as u -> 0 (zero gate current) exactly where the
+* single-injection method becomes valid, and dominates where that method's
+* zero-gate-current premise fails. The combination is ill-conditioned only
+* where |1 + Hi| ~ 0 (the shunt injection seeing a near-open circuit);
+* loopgain2.py detects and reports that per frequency instead of writing a
+* silently wrong trace.
+*
+* THIS BENCH FLATTENS ldo_core_cmos5l ONE LEVEL, exactly like
+* tb_loopgain_cmos5l.spice.tmpl. The XMpass/XRtop/XRbot/Xamp/XMen/XMbdis
+* instantiation lines below are reproduced VERBATIM from
+* design/sg13cmos5l/netlist/ldo_core_cmos5l.spice's ldo_core_cmos5l subckt
+* body (only FB -> FBAMP on Xamp's first pin, plus the inserted Vmeas/Iinx
+* pair, differ) -- run_sweep.sh asserts this file's copy still matches the
+* generated netlist's topology every run (its two-injection variant), so a
+* future schematic edit that changes this connectivity fails loudly here.
+*
+* Loop-gain sign convention (same as the single-injection bench): Loop Gain
+* L(s) = -T(s), flipped so a healthy negative-feedback loop shows a large
+* POSITIVE real L(0), phase near 0 at DC.
+*
+* ENABLE (issue #67, DR-0008): EN tied to VIN (enabled), as in every
+* loop-gain bench of this experiment; see tb_loopgain_cmos5l.spice.tmpl's
+* header for the enable-state argument.
+
+.lib "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/models/cornerMOShv.lib" mos_ss
+.lib "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/models/cornerRES.lib" res_typ
+.lib "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/models/cornerCAP.lib" cap_typ
+
+.options temp=27 tnom=27
+
+.include "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-135/design/sg13cmos5l/netlist/ldo_core_cmos5l.spice"
+
+Vin VIN 0 dc 3.30
+Vref VREF 0 dc 0.90 ac 0
+Ibias IBIAS 0 dc 2u
+* Operating point: the same defaults as the single-injection bench (issue #64
+* substitutions; this campaign runs the legacy 1mA / 1uF / 0 ohm point).
+Iload VOUT 0 dc 0.001
+Cout VOUT 0 1u
+* ESR=0: Cout wired directly to ground (campaign default)
+
+* --- flattened ldo_core_cmos5l, loop INTACT, shunt-injected at FB (see
+* header). VSS is tied to global ground by the ideal 0V Vgnd source below
+* (never aliased to node "0" directly in the four mirrored lines) so this
+* block stays a byte-for-byte copy of ldo_core_cmos5l's subckt body, FB->
+* FBAMP on Xamp's first pin excepted -- exactly what run_sweep.sh's
+* assert_loopgain_topology_sync() diffs against the generated netlist. ---
+Vgnd VSS 0 dc 0
+XMpass VOUT EAOUT VIN VIN sg13_hv_pmos w=2800u l=0.5u ng=1 m=1
+XRtop VOUT FB VSS rhigh w=1e-6 l=25.43e-6 m=1 b=7
+XRbot FB VSS VSS rhigh w=1e-6 l=25.43e-6 m=1 b=7
+Vmeas FB FBAMP 0 dc 0
+Iinx 0 FBAMP dc 0 ac 1
+Xamp FBAMP VREF EAOUT VIN VSS IBIAS EN ldo_erramp_cmos5l
+XMen EAOUT EN VIN VIN sg13_hv_pmos w=40u l=0.5u ng=1 m=1
+XMbdis IBIAS EN VIN VIN sg13_hv_pmos w=5u l=0.5u ng=1 m=1
+* EN tied to VIN (enabled): Men's and Mbdis's gates sit at VIN, so both are
+* off and contribute only drain junction/overlap loading (EAOUT, IBIAS);
+* inside Xamp (issue #89) ENB sits at VSS, so the G1 pull-down Mpd is off
+* and contributes only its drain loading and leakage on G1.
+Ven EN VIN dc 0
+
+.control
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/psp103.osdi
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/psp103_nqs.osdi
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/mosvar.osdi
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/r3_cmc.osdi
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/cap_cmomi.osdi
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/cap_cmomf.osdi
+
+op
+echo "LOOPGAIN2I_VOUT_OP $&v(vout)"
+
+ac dec 20 1 1e10
+* Raw complex probe response for the two-injection reconstruction
+* (loopgain2.py): i(vmeas) = i_l, the current the loop pushes from the
+* divider side into the amplifier input. wrdata writes one (freq, value)
+* pair per vector, so this is a 4-column file: f, re i(vmeas), f, im
+* i(vmeas). The batch fleet path rebuilds these columns from the corner's
+* ASCII rawfile in batch_backend.py (wrdata_rows), which accepts ONLY this
+* exact let block -- a template edit fails loudly there instead of being
+* silently mistranslated.
+let il_re = real(i(vmeas))
+let il_im = imag(i(vmeas))
+wrdata /home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-135/sim/ldo-cmos5l-pvt-sweep/corners/20261011-165616-eabde108/loopgain2i_ss_27c_rtyp_ac.csv il_re il_im
+.endc
+.end

@@ -51,6 +51,10 @@
 * state. Numerical identity with pre-#67 records is NOT promised (Men adds
 * a device); schematic-level evidence only -- no layout/LVS exists for the
 * EN-bearing design until #68.
+* Since issue #89 (DR-0008 addendum "G1 disable pull-down") Xamp also takes
+* EN as its seventh pin (an inverter + G1 pull-down inside the amplifier);
+* with EN tied to VIN that pull-down is off, so this bench still measures
+* the regulating state.
 
 .lib "@@PDK_ROOT@@/@@PDK@@/libs.tech/ngspice/models/cornerMOShv.lib" @@MOS_SECTION@@
 .lib "@@PDK_ROOT@@/@@PDK@@/libs.tech/ngspice/models/cornerRES.lib" @@RES_SECTION@@
@@ -85,11 +89,13 @@ XMpass VOUT EAOUT VIN VIN sg13_hv_pmos w=2800u l=0.5u ng=1 m=1
 XRtop VOUT FB VSS rhigh w=1e-6 l=25.43e-6 m=1 b=7
 XRbot FB VSS VSS rhigh w=1e-6 l=25.43e-6 m=1 b=7
 Vbreak FB FBAMP 0 ac 1
-Xamp FBAMP VREF EAOUT VIN VSS IBIAS ldo_erramp_cmos5l
+Xamp FBAMP VREF EAOUT VIN VSS IBIAS EN ldo_erramp_cmos5l
 XMen EAOUT EN VIN VIN sg13_hv_pmos w=40u l=0.5u ng=1 m=1
 XMbdis IBIAS EN VIN VIN sg13_hv_pmos w=5u l=0.5u ng=1 m=1
 * EN tied to VIN (enabled): Men's and Mbdis's gates sit at VIN, so both are
-* off and contribute only drain junction/overlap loading (EAOUT, IBIAS).
+* off and contribute only drain junction/overlap loading (EAOUT, IBIAS);
+* inside Xamp (issue #89) ENB sits at VSS, so the G1 pull-down Mpd is off
+* and contributes only its drain loading and leakage on G1.
 Ven EN VIN dc 0
 
 .control
@@ -103,7 +109,7 @@ pre_osdi @@OSDI_DIR@@/cap_cmomf.osdi
 op
 echo "LOOPGAIN_VOUT_OP $&v(vout)"
 
-ac dec 20 1 100meg
+ac dec 20 1 @@LG_AC_MAX@@
 let loopgain = -v(fb)/v(fbamp)
 let loopgain_db = db(loopgain)
 let loopgain_deg = ph(loopgain)*180/3.14159265358979

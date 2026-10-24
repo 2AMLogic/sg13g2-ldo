@@ -1,0 +1,1054 @@
+{
+  "schema_version": 3,
+  "file": "npn13G2.gds",
+  "deck": "sg13g2",
+  "top": "npn13G2",
+  "dbu_um": 0.001,
+  "netlist_path": "npn13G2.extracted.spice",
+  "netlist_sha256": "c737df17d796460e1ce8f66179474a122c39bb61a32e93a64555517d719153b4",
+  "status": "extracted",
+  "device_count": 0,
+  "net_count": 1,
+  "pin_count": 1,
+  "device_counts": {},
+  "dummy_devices_dropped": 0,
+  "ignored_layers": [
+    {
+      "layer": 1,
+      "datatype": 20,
+      "shapes": 9
+    },
+    {
+      "layer": 26,
+      "datatype": 0,
+      "shapes": 9
+    },
+    {
+      "layer": 33,
+      "datatype": 0,
+      "shapes": 18
+    },
+    {
+      "layer": 51,
+      "datatype": 0,
+      "shapes": 18
+    },
+    {
+      "layer": 63,
+      "datatype": 0,
+      "shapes": 45
+    }
+  ],
+  "device_recognition_only_layers": [
+    {
+      "layer": 7,
+      "datatype": 21,
+      "shapes": 9
+    },
+    {
+      "layer": 8,
+      "datatype": 2,
+      "shapes": 18
+    },
+    {
+      "layer": 10,
+      "datatype": 2,
+      "shapes": 9
+    }
+  ],
+  "device_classes": [
+    "nfet",
+    "pfet",
+    "cap_cmim",
+    "rfcmim",
+    "cap_cmomi",
+    "cap_cmomf",
+    "resistor",
+    "dantenna",
+    "dpantenna"
+  ],
+  "devices": [],
+  "nets": [
+    {
+      "name": "vsubs",
+      "pin": true,
+      "device_count": 0,
+      "net_id": 18,
+      "pin_index": 0,
+      "label_positions_um": []
+    }
+  ],
+  "warnings": [
+    "found 0 pin-name label(s) on any of this deck's label layers (5/1, 8/25, 10/25, 30/25, 50/25, 67/25, 126/25, 134/25) anywhere in 'npn13G2' -- no net can be named, so 0 top-level pins will be promoted below and `klt lvs` will have no net/device anchor to seed a match against a reference netlist. Compare the layers `klt layers` reports for this GDS against the list above; for a `klt place-and-route` layout in particular, check that request.io.layer_h/layer_v chose a layer this --deck actually scans for pin labels (issue #1385)",
+    "72 routing-stack clusters (96 shapes on 10/0, 19/0, 8/0) join no extracted net -- no via lands on this geometry and no same-layer wiring touches it, so it is invisible to the extracted netlist and to every downstream `klt lvs`/`klt sim` view; deliberate dead metal (artwork, fill) is expected here, unexplained dead metal usually means the connection you intended is missing -- see dead_metal[] for the per-cluster layer/bbox/shape count.",
+    "5 layers (1/20, 26/0, 33/0, 51/0, 63/0) carrying 99 shapes are outside 'sg13g2' deck's connectivity graph -- this geometry is invisible to extraction, so a net routed only through it extracts as multiple disconnected nets instead of one, which will silently mismatch a downstream `klt lvs` reference netlist -- see ignored_layers[] for the full per-layer shape counts. See docs/cli/extract.md's 'ignored_layers' field documentation."
+  ],
+  "black_box_regions": [],
+  "abstracted_cells": [],
+  "unmodelled_poly": [],
+  "merged_net_labels": [],
+  "voltage_domain_warnings": [],
+  "unbiased_pmos_body_nets": [],
+  "single_terminal_nets": [],
+  "dead_metal": [
+    {
+      "role": "metal0",
+      "layer": 8,
+      "datatype": 0,
+      "bbox_um": {
+        "left": -9.275,
+        "bottom": -27.234,
+        "right": 22.675,
+        "top": -21.02
+      },
+      "shapes": 7,
+      "area_um2": 21.027
+    },
+    {
+      "role": "metal0",
+      "layer": 8,
+      "datatype": 0,
+      "bbox_um": {
+        "left": -9.225,
+        "bottom": -18.99,
+        "right": 22.625,
+        "top": -11.601
+      },
+      "shapes": 7,
+      "area_um2": 22.0625
+    },
+    {
+      "role": "metal0",
+      "layer": 8,
+      "datatype": 0,
+      "bbox_um": {
+        "left": -8.65,
+        "bottom": -20.785,
+        "right": -7.95,
+        "top": -19.23
+      },
+      "shapes": 1,
+      "area_um2": 1.0885
+    },
+    {
+      "role": "metal0",
+      "layer": 8,
+      "datatype": 0,
+      "bbox_um": {
+        "left": -0.975,
+        "bottom": -1.26,
+        "right": 0.975,
+        "top": -1.02
+      },
+      "shapes": 1,
+      "area_um2": 0.468
+    },
+    {
+      "role": "metal0",
+      "layer": 8,
+      "datatype": 0,
+      "bbox_um": {
+        "left": -0.925,
+        "bottom": 1.01,
+        "right": 0.925,
+        "top": 1.25
+      },
+      "shapes": 1,
+      "area_um2": 0.444
+    },
+    {
+      "role": "metal0",
+      "layer": 8,
+      "datatype": 0,
+      "bbox_um": {
+        "left": -0.35,
+        "bottom": -0.785,
+        "right": 0.35,
+        "top": 0.77
+      },
+      "shapes": 1,
+      "area_um2": 1.0885
+    },
+    {
+      "role": "metal0",
+      "layer": 8,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 1.35,
+        "bottom": -20.785,
+        "right": 2.05,
+        "top": -19.23
+      },
+      "shapes": 1,
+      "area_um2": 1.0885
+    },
+    {
+      "role": "metal0",
+      "layer": 8,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 10.725,
+        "bottom": -1.26,
+        "right": 22.675,
+        "top": -1.02
+      },
+      "shapes": 3,
+      "area_um2": 2.546
+    },
+    {
+      "role": "metal0",
+      "layer": 8,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 10.775,
+        "bottom": 1.01,
+        "right": 22.625,
+        "top": 1.25
+      },
+      "shapes": 3,
+      "area_um2": 2.518
+    },
+    {
+      "role": "metal0",
+      "layer": 8,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 11.35,
+        "bottom": -20.785,
+        "right": 12.05,
+        "top": -19.23
+      },
+      "shapes": 1,
+      "area_um2": 1.0885
+    },
+    {
+      "role": "metal0",
+      "layer": 8,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 11.35,
+        "bottom": -0.785,
+        "right": 12.05,
+        "top": 0.77
+      },
+      "shapes": 1,
+      "area_um2": 1.0885
+    },
+    {
+      "role": "metal0",
+      "layer": 8,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 21.35,
+        "bottom": -20.785,
+        "right": 22.05,
+        "top": -19.23
+      },
+      "shapes": 1,
+      "area_um2": 1.0885
+    },
+    {
+      "role": "metal0",
+      "layer": 8,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 21.35,
+        "bottom": -0.785,
+        "right": 22.05,
+        "top": 0.77
+      },
+      "shapes": 1,
+      "area_um2": 1.0885
+    },
+    {
+      "role": "metal1",
+      "layer": 10,
+      "datatype": 0,
+      "bbox_um": {
+        "left": -9.225,
+        "bottom": -20.785,
+        "right": 22.625,
+        "top": -19.23
+      },
+      "shapes": 7,
+      "area_um2": 16.39833
+    },
+    {
+      "role": "metal1",
+      "layer": 10,
+      "datatype": 0,
+      "bbox_um": {
+        "left": -0.925,
+        "bottom": -0.785,
+        "right": 0.925,
+        "top": 0.77
+      },
+      "shapes": 1,
+      "area_um2": 2.87675
+    },
+    {
+      "role": "metal1",
+      "layer": 10,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 10.775,
+        "bottom": -0.785,
+        "right": 22.625,
+        "top": 0.77
+      },
+      "shapes": 3,
+      "area_um2": 7.3835
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": -8.6,
+        "bottom": -20.72,
+        "right": -8.41,
+        "top": -20.53
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": -8.6,
+        "bottom": -20.31,
+        "right": -8.41,
+        "top": -20.12
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": -8.6,
+        "bottom": -19.9,
+        "right": -8.41,
+        "top": -19.71
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": -8.6,
+        "bottom": -19.49,
+        "right": -8.41,
+        "top": -19.3
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": -8.19,
+        "bottom": -20.72,
+        "right": -8.0,
+        "top": -20.53
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": -8.19,
+        "bottom": -20.31,
+        "right": -8.0,
+        "top": -20.12
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": -8.19,
+        "bottom": -19.9,
+        "right": -8.0,
+        "top": -19.71
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": -8.19,
+        "bottom": -19.49,
+        "right": -8.0,
+        "top": -19.3
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": -0.3,
+        "bottom": -0.72,
+        "right": -0.11,
+        "top": -0.53
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": -0.3,
+        "bottom": -0.31,
+        "right": -0.11,
+        "top": -0.12
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": -0.3,
+        "bottom": 0.1,
+        "right": -0.11,
+        "top": 0.29
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": -0.3,
+        "bottom": 0.51,
+        "right": -0.11,
+        "top": 0.7
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 0.11,
+        "bottom": -0.72,
+        "right": 0.3,
+        "top": -0.53
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 0.11,
+        "bottom": -0.31,
+        "right": 0.3,
+        "top": -0.12
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 0.11,
+        "bottom": 0.1,
+        "right": 0.3,
+        "top": 0.29
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 0.11,
+        "bottom": 0.51,
+        "right": 0.3,
+        "top": 0.7
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 1.4,
+        "bottom": -20.72,
+        "right": 1.59,
+        "top": -20.53
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 1.4,
+        "bottom": -20.31,
+        "right": 1.59,
+        "top": -20.12
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 1.4,
+        "bottom": -19.9,
+        "right": 1.59,
+        "top": -19.71
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 1.4,
+        "bottom": -19.49,
+        "right": 1.59,
+        "top": -19.3
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 1.81,
+        "bottom": -20.72,
+        "right": 2.0,
+        "top": -20.53
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 1.81,
+        "bottom": -20.31,
+        "right": 2.0,
+        "top": -20.12
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 1.81,
+        "bottom": -19.9,
+        "right": 2.0,
+        "top": -19.71
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 1.81,
+        "bottom": -19.49,
+        "right": 2.0,
+        "top": -19.3
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 11.4,
+        "bottom": -20.72,
+        "right": 11.59,
+        "top": -20.53
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 11.4,
+        "bottom": -20.31,
+        "right": 11.59,
+        "top": -20.12
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 11.4,
+        "bottom": -19.9,
+        "right": 11.59,
+        "top": -19.71
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 11.4,
+        "bottom": -19.49,
+        "right": 11.59,
+        "top": -19.3
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 11.4,
+        "bottom": -0.72,
+        "right": 11.59,
+        "top": -0.53
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 11.4,
+        "bottom": -0.31,
+        "right": 11.59,
+        "top": -0.12
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 11.4,
+        "bottom": 0.1,
+        "right": 11.59,
+        "top": 0.29
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 11.4,
+        "bottom": 0.51,
+        "right": 11.59,
+        "top": 0.7
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 11.81,
+        "bottom": -20.72,
+        "right": 12.0,
+        "top": -20.53
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 11.81,
+        "bottom": -20.31,
+        "right": 12.0,
+        "top": -20.12
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 11.81,
+        "bottom": -19.9,
+        "right": 12.0,
+        "top": -19.71
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 11.81,
+        "bottom": -19.49,
+        "right": 12.0,
+        "top": -19.3
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 11.81,
+        "bottom": -0.72,
+        "right": 12.0,
+        "top": -0.53
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 11.81,
+        "bottom": -0.31,
+        "right": 12.0,
+        "top": -0.12
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 11.81,
+        "bottom": 0.1,
+        "right": 12.0,
+        "top": 0.29
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 11.81,
+        "bottom": 0.51,
+        "right": 12.0,
+        "top": 0.7
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 21.4,
+        "bottom": -20.72,
+        "right": 21.59,
+        "top": -20.53
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 21.4,
+        "bottom": -20.31,
+        "right": 21.59,
+        "top": -20.12
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 21.4,
+        "bottom": -19.9,
+        "right": 21.59,
+        "top": -19.71
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 21.4,
+        "bottom": -19.49,
+        "right": 21.59,
+        "top": -19.3
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 21.4,
+        "bottom": -0.72,
+        "right": 21.59,
+        "top": -0.53
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 21.4,
+        "bottom": -0.31,
+        "right": 21.59,
+        "top": -0.12
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 21.4,
+        "bottom": 0.1,
+        "right": 21.59,
+        "top": 0.29
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 21.4,
+        "bottom": 0.51,
+        "right": 21.59,
+        "top": 0.7
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 21.81,
+        "bottom": -20.72,
+        "right": 22.0,
+        "top": -20.53
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 21.81,
+        "bottom": -20.31,
+        "right": 22.0,
+        "top": -20.12
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 21.81,
+        "bottom": -19.9,
+        "right": 22.0,
+        "top": -19.71
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 21.81,
+        "bottom": -19.49,
+        "right": 22.0,
+        "top": -19.3
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 21.81,
+        "bottom": -0.72,
+        "right": 22.0,
+        "top": -0.53
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 21.81,
+        "bottom": -0.31,
+        "right": 22.0,
+        "top": -0.12
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 21.81,
+        "bottom": 0.1,
+        "right": 22.0,
+        "top": 0.29
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    },
+    {
+      "role": "via0",
+      "layer": 19,
+      "datatype": 0,
+      "bbox_um": {
+        "left": 21.81,
+        "bottom": 0.51,
+        "right": 22.0,
+        "top": 0.7
+      },
+      "shapes": 1,
+      "area_um2": 0.0361
+    }
+  ],
+  "matched_device_groups": [],
+  "pdk": null,
+  "provenance": {
+    "klt_version": "0.5.0+gb15edf5e3a2e",
+    "klayout_version": "0.30.12",
+    "pdk": null,
+    "deck": {
+      "name": "sg13g2",
+      "content_hash": "sha256:894326a4e37fb24fef2f7ffc6ae1da55a0e262b0f0bc1c09adc4862909278fda",
+      "released": true
+    },
+    "input": {
+      "content_hash": "sha256:cb381d067c1862b0df2a0d7a9303423cf0a3737cddf4dc98d39e32ede8c5853d",
+      "role": "layout"
+    }
+  },
+  "parasitics": null,
+  "spef_path": null,
+  "metrics": {
+    "extract__device__count": 0,
+    "extract__net__count": 1,
+    "extract__pin__count": 1
+  }
+}

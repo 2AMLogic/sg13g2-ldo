@@ -1,0 +1,154 @@
+{
+  "netlist": "tb_npn13G2_vcesweep.spice",
+  "backend": "batch",
+  "batch": {
+    "runner_version_check": "warn",
+    "capacity_wait_s": 1800
+  },
+  "models": {
+    "lib": "hbt-corners.lib"
+  },
+  "analysis": {
+    "kind": "dc",
+    "args": "Vsw 0.02 1.8 0.01"
+  },
+  "measurements": [
+    {
+      "name": "vce_l50_b1",
+      "spice": ".meas dc vce_l50_b1 FIND v(cc) WHEN i(vs_l50_b1)=0.05",
+      "unit": "V"
+    },
+    {
+      "name": "vb_l50_b1",
+      "spice": ".meas dc vb_l50_b1 FIND v(b_l50_b1) WHEN i(vs_l50_b1)=0.05",
+      "unit": "V"
+    },
+    {
+      "name": "icmax_l50_b1",
+      "spice": ".meas dc icmax_l50_b1 MAX i(vs_l50_b1)",
+      "unit": "A"
+    },
+    {
+      "name": "vce_l50_b10",
+      "spice": ".meas dc vce_l50_b10 FIND v(cc) WHEN i(vs_l50_b10)=0.05",
+      "unit": "V"
+    },
+    {
+      "name": "vb_l50_b10",
+      "spice": ".meas dc vb_l50_b10 FIND v(b_l50_b10) WHEN i(vs_l50_b10)=0.05",
+      "unit": "V"
+    },
+    {
+      "name": "icmax_l50_b10",
+      "spice": ".meas dc icmax_l50_b10 MAX i(vs_l50_b10)",
+      "unit": "A"
+    },
+    {
+      "name": "vce_l50_b20",
+      "spice": ".meas dc vce_l50_b20 FIND v(cc) WHEN i(vs_l50_b20)=0.05",
+      "unit": "V"
+    },
+    {
+      "name": "vb_l50_b20",
+      "spice": ".meas dc vb_l50_b20 FIND v(b_l50_b20) WHEN i(vs_l50_b20)=0.05",
+      "unit": "V"
+    },
+    {
+      "name": "icmax_l50_b20",
+      "spice": ".meas dc icmax_l50_b20 MAX i(vs_l50_b20)",
+      "unit": "A"
+    },
+    {
+      "name": "vce_l50_b50",
+      "spice": ".meas dc vce_l50_b50 FIND v(cc) WHEN i(vs_l50_b50)=0.05",
+      "unit": "V"
+    },
+    {
+      "name": "vb_l50_b50",
+      "spice": ".meas dc vb_l50_b50 FIND v(b_l50_b50) WHEN i(vs_l50_b50)=0.05",
+      "unit": "V"
+    },
+    {
+      "name": "icmax_l50_b50",
+      "spice": ".meas dc icmax_l50_b50 MAX i(vs_l50_b50)",
+      "unit": "A"
+    },
+    {
+      "name": "vce_l100_b1",
+      "spice": ".meas dc vce_l100_b1 FIND v(cc) WHEN i(vs_l100_b1)=0.1",
+      "unit": "V"
+    },
+    {
+      "name": "vb_l100_b1",
+      "spice": ".meas dc vb_l100_b1 FIND v(b_l100_b1) WHEN i(vs_l100_b1)=0.1",
+      "unit": "V"
+    },
+    {
+      "name": "icmax_l100_b1",
+      "spice": ".meas dc icmax_l100_b1 MAX i(vs_l100_b1)",
+      "unit": "A"
+    },
+    {
+      "name": "vce_l100_b10",
+      "spice": ".meas dc vce_l100_b10 FIND v(cc) WHEN i(vs_l100_b10)=0.1",
+      "unit": "V"
+    },
+    {
+      "name": "vb_l100_b10",
+      "spice": ".meas dc vb_l100_b10 FIND v(b_l100_b10) WHEN i(vs_l100_b10)=0.1",
+      "unit": "V"
+    },
+    {
+      "name": "icmax_l100_b10",
+      "spice": ".meas dc icmax_l100_b10 MAX i(vs_l100_b10)",
+      "unit": "A"
+    },
+    {
+      "name": "vce_l100_b20",
+      "spice": ".meas dc vce_l100_b20 FIND v(cc) WHEN i(vs_l100_b20)=0.1",
+      "unit": "V"
+    },
+    {
+      "name": "vb_l100_b20",
+      "spice": ".meas dc vb_l100_b20 FIND v(b_l100_b20) WHEN i(vs_l100_b20)=0.1",
+      "unit": "V"
+    },
+    {
+      "name": "icmax_l100_b20",
+      "spice": ".meas dc icmax_l100_b20 MAX i(vs_l100_b20)",
+      "unit": "A"
+    },
+    {
+      "name": "vce_l100_b50",
+      "spice": ".meas dc vce_l100_b50 FIND v(cc) WHEN i(vs_l100_b50)=0.1",
+      "unit": "V"
+    },
+    {
+      "name": "vb_l100_b50",
+      "spice": ".meas dc vb_l100_b50 FIND v(b_l100_b50) WHEN i(vs_l100_b50)=0.1",
+      "unit": "V"
+    },
+    {
+      "name": "icmax_l100_b50",
+      "spice": ".meas dc icmax_l100_b50 MAX i(vs_l100_b50)",
+      "unit": "A"
+    }
+  ],
+  "corners": {
+    "process": [
+      "bcs",
+      "typ",
+      "wcs"
+    ],
+    "temperature_c": [
+      -40,
+      27,
+      125
+    ]
+  },
+  "options": {
+    "timeout_s": 120,
+    "keep_artifacts": false,
+    "stage_model_inputs": true
+  }
+}

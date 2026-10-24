@@ -29,6 +29,16 @@ Runs on every push to `main`, every pull request, and on manual
   sweep and never mints a `sim/pass-device-screening/records/` entry — see
   "What it does NOT check (known gaps)" below and `sim/README.md`'s "CI:
   syntax/`--check-env` only, never a `records/` entry".
+- **`sim/pass-device-screening-hbt/run_sweep.sh --check-env`** (same job,
+  issue #139) — the HBT (`npn13G2` family / `pnpMPA`) screening deck. Its
+  bipolar models are native ngspice, so no OSDI build; it needs `klt`
+  (installed from the pinned `klayout-tools` checkout) and runs one real
+  `typ`/27°C corner of each of the 8 requests through `klt sim --backend
+  local`. It is **not** the 72-unit matrix (that runs on the batch fleet) and
+  never mints a `sim/pass-device-screening-hbt/records/` entry. The committed
+  record is re-verified offline, byte for byte, by the
+  `characterization-report` job's "HBT screening decks and record reproduce"
+  step.
 
 To do any of that, the job needs `xschem >= 3.4.7` on `PATH` and a real
 `ihp-sg13g2` PDK install — `design/netlist.py --check` isn't a syntax check,
@@ -55,8 +65,13 @@ it's a reproducibility + ERC check against the actual PDK. The workflow:
 3. Caches the fetched PDK (`actions/cache`, keyed on the pinned version) so
    the ~350 MB download only happens once per cache generation, not on
    every run.
-4. Fetches the `ihp-sg13cmos5l` PDK (pinned commit, checksum-verified,
-   installed as a sibling of `ihp-sg13g2` because its symbols are relative
+4. Fetches the `ihp-sg13cmos5l` PDK (the `ihp-sg13cmos5l/` subtree of
+   `IHP-GmbH/IHP-Open-PDK` `dev` @ `f7bca32694fe3d58be0cc7d9df4b9f5db7161a14`,
+   tarball sha256 `5eb6f8a9...0dc70b` verified by the fetch script, which
+   stamps `.fetched-version`; the fetch script is checked out from the
+   immutable klayout-tools commit `159527a5...` in `KLAYOUT_TOOLS_REF`, since
+   v0.7.0 still pointed at the archived `IHP-GmbH/ihp-sg13cmos5l` repo, and
+   `IHP_SG13CMOS5L_COMMIT` in the cache key moves with it; installed as a sibling of `ihp-sg13g2` because its symbols are relative
    symlinks into it), then runs `python3 design/netlist.py --check -v` and
    `python3 design/netlist.py --design sg13cmos5l --check -v` with
    `PDK_ROOT` pointed at the fetched install.
@@ -93,7 +108,8 @@ with `actions/cache` absorbing the repeat-fetch cost instead.
   {-40,27,125}°C` grid and never mints a `sim/pass-device-screening/records/`
   entry. Per `sim/README.md` "CI: syntax/`--check-env` only, never a
   `records/` entry", minting actual evidence stays a human/agent action run
-  locally against a real PDK + OSDI install. If/when another `sim/`
+  locally against a real PDK + OSDI install (the HBT deck's batch matrix
+  likewise: `--check-env` only in CI). If/when another `sim/`
   experiment lands, add an equivalent `--check-env`-style CI step for it too.
 - **No linter/formatter.** `package.json`'s `lint` and `check:ci` scripts
   are honest "not configured" placeholders. Add a CI job for either if/when

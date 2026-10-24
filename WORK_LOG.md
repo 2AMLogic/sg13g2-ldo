@@ -2,8 +2,80 @@
 
 Chronological record of recently merged pull requests and closed issues, maintained by the Loom Guide role.
 
+### 2026-10-20
+
+- **PR #175**: feat(layout): add extraction-only pex stage and committed klt pex report
+- **Issue #172** (closed): Post-layout slice 1: klt pex stage in layout/run_flow.sh and a committed pex report for the CMOS5L core (T1 item 7)
+
+### 2026-10-15
+
+- **PR #163**: docs(spec): DR-0017 proposed SG13CMOS5L current-limiter plan for row 8
+- **Issue #62** (closed): SG13CMOS5L startup: add enable input and transient testbench for spec row 9
+- **Issue #63** (closed): SG13CMOS5L current limiter: topology and sizing design plan for row 8
+- **Issue #57** (closed): Post-layout: klt pex extraction of the LDO core and spec re-run on the extracted netlist (T1 item 7)
+
+### 2026-10-12
+
+- **PR #161**: sim: E1 DC operating-point campaign for DR-0015 (four-point device measurement)
+- **PR #160**: sim: #155 second increment -- EN-deck Monte Carlo, startup ext/halfstep, PDK-only controls, re-reductions
+- **Issue #158** (closed): SG13CMOS5L: measure four device operating points for DR-0015 E1
+- **Issue #155** (closed): Re-stamp SG13CMOS5L PDK pin from klayout-tools (IHP-Open-PDK dev f7bca326)
+- **PR #157**: Re-stamp SG13CMOS5L PDK pin to IHP-Open-PDK dev f7bca326 and re-run evidence (#155)
+
+### 2026-10-11
+
+- **Issue #153** (closed): Guard decision review: keep rm-scope-unresolved-var flagged
+
+- **PR #152**: layout: add an SG13G2 HBT vendor-fixture extraction/LVS probe witnessing the upstream bipolar gap
+- **PR #151**: sim: two-injection (Middlebrook) loop-gain bench and 45-point fleet comparison (#135)
+- **PR #149**: spec: DR-0016 keep in-tree error amplifier; reuse.lock evaluate -> kept
+- **PR #148**: docs: complete README repo-layout block (#147)
+- **PR #145**: sim: import fresh fleet rerun bcc60e2 evidence for the four reused groups (#132)
+- **PR #144**: sim: HBT pass-device screening deck, record and DR-0001a addendum (#139)
+- **PR #143**: docs: explicit PDK/model provenance table in sim/README (#141)
+- **PR #142**: ci: run each sim/tools test suite once under its matching step
+- **PR #140**: spec: add proposed DR-0015 — dynamic-window stability diagnosis and remedy ranking
+- **PR #137**: test+CI: gate startup_offstate.py so the DR-0008 disabled-state current stays reproducible
+- **PR #136**: sim: extend the loop-gain AC sweep to 10 GHz on the 45-point grid; row 10 stays ambiguous (#128)
+- **PR #134**: startup_eval: sample off-state current in the disabled plateau, not the EN edge (#130)
+- **PR #131**: SG13CMOS5L erramp: pull down the floating Mn3 gate (G1) when EN is low (#89)
+- **PR #129**: spec+sim: classify row-10 margins under proposed DR-0014
+- **PR #127**: characterization: integrate measured startup failures into the row-9 report (#112)
+- **PR #124**: Characterization: consume pinned loaded DC evidence for rows 5 and 7
+- **PR #122**: sim: validate complete DC grids before live sweep summaries
+- **Issue #150** (closed): layout: add an SG13G2 HBT extraction/LVS probe that witnesses the upstream bipolar gaps
+- **Issue #147** (closed): docs: README repo-layout block omits signoff/, ratification/, docs/ and root planning files
+- **Issue #146** (closed): Decision record: close reuse.lock.json error-amplifier 'evaluate' (keep in-tree vs adopt sg13g2-opamp)
+- **Issue #141** (closed): Docs: distinguish design branch and fleet PDK provenance in the simulation guide
+- **Issue #139** (closed): BiCMOS: screen SG13G2 HBTs as pass device to back (or revisit) DR-0001's unmeasured bipolar ruling
+- **Issue #138** (closed): CI: sim/tools unittest discovery runs twice in two jobs under mismatched step names
+- **Issue #135** (closed): sim: two-injection (Middlebrook/Tian) loop-gain bench to resolve the 10 GHz plateau left by #128
+- **Issue #133** (closed): test+CI: gate startup_offstate.py so the DR-0008 disabled-state current stays reproducible
+- **Issue #132** (closed): Resubmit the 4 reused fleet groups of record 20261011-051956-eda9285 to prove their input bytes (follow-up to PR #131)
+- **Issue #130** (closed): startup_eval: off_supply_current_a is sampled inside the EN edge, not in the off state
+- **Issue #128** (closed): sim: resolve DR-0014 ceiling_unbounded row-10 points (extend loop-gain sweep ceiling or two-injection bench)
+- **Issue #126** (closed): spec: define how row 10 margins are measured (multi-crossing PM, no -180 deg crossing GM) and classify existing traces
+- **Issue #125** (closed): SG13CMOS5L stability: bounded offline diagnosis and compensation remedy proposal
+- **Issue #123** (closed): Characterization: consume existing loaded DC evidence for rows 5 and 7
+- **Issue #120** (closed): sim: validate complete DC grids before live sweep summaries
+- **Issue #119** (closed): Guard decision review: keep gh-api-rawfield-body-literal-at flagged
+- **Issue #112** (closed): Characterization: integrate measured startup failures into the row-9 report
+- **Issue #89** (closed): SG13CMOS5L erramp: pull down the floating Mn3 gate when EN is low (disabled supply current)
+
 ### 2026-10-10
 
+- **PR #118**: test: direct contract tests with negative controls for ac_metrics.py
+- **PR #116**: sim: version the row-2 MC bench for the six-port EN core (#88)
+- **PR #115**: test: offline unit tests for layout/ and design/ helpers (#114)
+- **PR #111**: ci: enforce the append-only rule for sim/ evidence records (#102)
+- **PR #110**: CI: gate layout/run_flow.sh --check; fix check mode passing on stale artifacts (#101)
+- **PR #109**: docs: surface signoff regeneration contract in CLAUDE.md and AGENTS.md (#107)
+- **Issue #117** (closed): test: unit tests with negative controls for sim ac_metrics.py (PM/GM/PSRR parsers)
+- **Issue #114** (closed): Add offline unit tests with negative controls for layout/ and design/ helpers
+- **Issue #107** (closed): Prevent repeated stale signoff evidence in agent PRs
+- **Issue #102** (closed): CI: enforce the append-only rule for sim/ evidence records
+- **Issue #101** (closed): CI: run layout/run_flow.sh --check so committed layout reports cannot go stale
+- **Issue #88** (closed): sim: migrate tb_row2_accuracy.spice (Monte Carlo) to the six-port EN core
 - **PR #108**: spec+sim: propose DR-0012 row-4 dropout measurement and re-score on a 5 mV batch campaign (#70)
 - **Issue #70** (closed): spec: define how dropout is measured for row 4 (worst corner is 0.255 V at 1 % loss, a 45 mV margin)
 - **PR #105**: SG13CMOS5L startup measurements: transient bench, evaluator and bounded PVT campaign (#69)

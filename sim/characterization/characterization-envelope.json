@@ -2,7 +2,7 @@
   "schema_version": 1,
   "kind": "generic",
   "status": "pass",
-  "summary": "T1 item 8 characterization artifact: all 10 target-spec rows present once with explicit verdicts, pinned sources verified, evidence current against the design. Verdict covers artifact completeness/freshness only, NOT circuit spec compliance; row verdicts: ambiguous=1, not_implemented=2, not_measured=1, pass_full_coverage=1, pass_partial_coverage=5",
+  "summary": "T1 item 8 characterization artifact: all 10 target-spec rows present once with explicit verdicts, pinned sources verified, evidence current against the design. Verdict covers artifact completeness/freshness only, NOT circuit spec compliance; row verdicts: ambiguous=1, fail=1, not_implemented=1, not_measured=1, pass_full_coverage=1, pass_partial_coverage=5",
   "source": "sim/characterization/characterization-report.md",
   "t1_item": 8,
   "verdict_semantics": "pass = the characterization artifact is complete and fresh (every target row present exactly once with an explicit state, every selected source verified against its pin, the PVT grid whole, the record current against the design netlists). It is NOT a claim that the circuit meets its spec: failing, ambiguous, unmeasured, unimplemented and unratified rows are listed as such in the report. klt does not read `source`; this repository's generator and CI verify the content.",
@@ -12,7 +12,7 @@
     "pdk": null,
     "deck": null,
     "input": {
-      "content_hash": "sha256:15acb32dc5b5faab61e4b6bbcd54b7e40e0d6e313370451044c82ff44daf0361",
+      "content_hash": "sha256:39082ce685a3643574db7e3cecb49313a61b878e244fdf4afbc87cb32c67401f",
       "role": "characterization-report"
     },
     "generator": {

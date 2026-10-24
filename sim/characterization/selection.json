@@ -3,20 +3,20 @@
   "policy": "Explicit selection only. The generator never discovers records by directory listing or filesystem order: the circuit record below is named here, its bytes are pinned by sha256, and a record that is missing or whose bytes differ from its pin is a hard generator error. Moving to a newer record is a deliberate edit to this file in the same change that regenerates the report. Historical records (other ids under sim/*/records/) are never read except where listed under superseded_evidence, and then only as a quoted, clearly-labelled statement about an older design, never as a current measurement.",
   "circuit_record": {
     "experiment": "ldo-cmos5l-pvt-sweep",
-    "id": "20261010-025634-60a3e81",
-    "design_branch": "design/sg13cmos5l (SG13CMOS5L branch; DR-0007 'The evidence base'; EN interface per DR-0008, EN tied to VIN)",
+    "id": "20261011-070111-5391c68",
+    "design_branch": "design/sg13cmos5l (SG13CMOS5L branch; DR-0007 'The evidence base'; EN interface per DR-0008 with the G1 disable pull-down of its #89 addendum, EN tied to VIN)",
     "files": {
       "pvt_csv": {
-        "path": "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv",
-        "sha256": "d0c1e057c8cbbf0aaaab3df57b753fcca8557375372ee8bf6f6103a0b946c981"
+        "path": "sim/ldo-cmos5l-pvt-sweep/records/20261011-070111-5391c68.csv",
+        "sha256": "b7a41cfeccfe3100758daf0ef8de87ea765ef4d77a1c987aba4d57f373eb6e6d"
       },
       "record_md": {
-        "path": "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.md",
-        "sha256": "89239ec65964818a9678ba92d9a13f353be38540d73006a24e2fd0ff04d44f22"
+        "path": "sim/ldo-cmos5l-pvt-sweep/records/20261011-070111-5391c68.md",
+        "sha256": "1c63b44f4ea0032ce4dc6317ceae8a93eac919b6dbda09eb1a19baaec9077e9b"
       },
       "cc_tolerance_csv": {
-        "path": "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.cc-tolerance.csv",
-        "sha256": "4a9edd748c5df94530ee9ff010d4aa4b9272e0720d32a386e842c3741216e6f8"
+        "path": "sim/ldo-cmos5l-pvt-sweep/records/20261011-070111-5391c68.cc-tolerance.csv",
+        "sha256": "e5a6b19d220a655e2517e08e67ff1f2beb4cdd25bcc78e0a37bf4ea24d6a0320"
       }
     },
     "bench_conditions": {
@@ -30,14 +30,28 @@
     "design_freshness_pins": [
       {
         "path": "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice",
-        "sha256": "7953b25be4cb00053f8df5f283bee0500f60a826b7a2d6519b88a8578d222cc1"
+        "sha256": "08a7b857e1fad43dd7af1f575de97853a058e85541601ecc47567fbc28dbae57"
       },
       {
         "path": "design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice",
-        "sha256": "7982d728a2db933165eedcae69feaa4985dbddf54c269fc68b82d88577c8e38c"
+        "sha256": "75ee39ce0c48b54cab6c8a31acd1f199c37c1ccd1ac074a3515dee81cc656fb4"
       }
     ],
-    "design_freshness_basis": "These are the design netlist hashes the selected record ran against. The record md states both sha256 values, so freshness is recorded rather than inferred. The record was made by run_sweep.sh --batch on the EDA batch fleet (PR #87, #67) after the EN interface changed ldo_core_cmos5l.spice (DR-0008). It replaces 20260917-023832-7061e8f, which was current against the pre-EN netlist c6e630e9...f11041 and is now historical. If either netlist changes, the evidence is classified stale against the design, and the envelope verdict becomes fail until a new record is selected."
+    "design_freshness_basis": "These are the design netlist hashes the selected record ran against. The record md states both sha256 values, so freshness is recorded rather than inferred. The record was made by run_sweep.sh --batch on the EDA batch fleet (issue #89) after the G1 disable pull-down changed ldo_erramp_cmos5l.spice and ldo_core_cmos5l.spice (DR-0008 addendum). It replaces 20261010-025634-60a3e81, which was current against the six-pin-amplifier netlists 7953b25b...222cc1 / 7982d728...c8e38c and is now historical. If either netlist changes, the evidence is classified stale against the design, and the envelope verdict becomes fail until a new record is selected. Record 20261011-070111-5391c68 (issue #128) re-ran the same grid on the same design netlists with only the loop-gain AC ceiling raised to 10 GHz; it replaces 20261011-051956-eda9285, which is now historical."
+  },
+  "dc_informational_evidence": {
+    "circuit_record_id": "20261011-070111-5391c68",
+    "policy": "Informational current-design DC summaries (item-5 derivation, issue #55) for the SAME circuit record id as above. Both files are pinned; the inventory must name the pinned PVT csv and record md, the pinned design netlists and the pinned generator bytes, and every raw DC grid it lists must match its recorded hash. The summary must cover exactly the 45 corners once each, with finite values and True/False validity fields, and must agree with the pinned PVT csv where they overlap. Any violation is a hard generator error; invalid points are counted, never dropped. These are informational measurements of Open rows 5 and 7, not item-5 grading evidence.",
+    "files": {
+      "summary_csv": {
+        "path": "sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/dc-informational-summary.csv",
+        "sha256": "e6e16b6107569201961f8daac844a3d356f44d81a43cbe77e56c9d01ed279641"
+      },
+      "coverage_inventory_json": {
+        "path": "sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/coverage-inventory.json",
+        "sha256": "87fb438c820002e11d5eca42507d89b670e75c50c59adeb6668a1a5aebcac0a5"
+      }
+    }
   },
   "device_context_record": {
     "experiment": "pass-device-screening",
@@ -61,5 +75,105 @@
       "quoted_substring": "23.05uA-23.08uA",
       "describes": "Iq at full load, from the #25 record, which was run against a superseded netlist (pre-#28 behavioural divider, pre-#35 Cc). Quoted only to show a full-load number once existed; it is NOT evidence about the current design."
     }
-  ]
+  ],
+  "startup_evidence": {
+    "experiment": "ldo-cmos5l-pvt-sweep",
+    "id": "20261011-070146-0c95530",
+    "stage": "grid",
+    "policy": "Explicit startup selection, independent of the legacy DC/AC circuit_record: the record id, stage and every file below are named here and pinned by sha256; the generator never discovers a newer startup record by directory listing. The campaign is PROPOSED methodology (DR-0009), schematic-level, and DR-0007 row 9 stays Open: the generator reports the measurements and infers no ratification. Core and error-amplifier freshness are validated independently of design_freshness_pins on circuit_record. Per-point trace files are verified against the trace_sha256 column. A tampered or missing selected file, a duplicate or unexpected campaign point, or a stale design is a hard error or an incomplete artifact (envelope fail); a missing requested point or an insufficient trace is reported as missing/insufficient and can never be a pass.",
+    "files": {
+      "record_md": {
+        "path": "sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.md",
+        "sha256": "908c108fd44b729846b51c0d9a75b35daf3dee4d7bc4c9fab3f091d8a06b307c"
+      },
+      "grid_csv": {
+        "path": "sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.csv",
+        "sha256": "bc4ea61162a51f3b7ecbefad4c82663f6928139d64f3ba09875c22fe7d2df3d1"
+      },
+      "manifest_json": {
+        "path": "sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.manifest.json",
+        "sha256": "3ec537f955f03dbd081870a068d01825106a886cd0f5ac0698289932cf5a7c95"
+      }
+    },
+    "traces_dir": "sim/ldo-cmos5l-pvt-sweep/records/20261011-031426-df3f802-startup-grid.traces",
+    "requested_grid": {
+      "process": [
+        "tt",
+        "ss",
+        "ff",
+        "sf",
+        "fs"
+      ],
+      "temp_c": [
+        -40,
+        27,
+        125
+      ],
+      "res": [
+        "typ",
+        "bcs",
+        "wcs"
+      ],
+      "vin_v": [
+        2.97,
+        3.3,
+        3.63
+      ],
+      "load_ma": [
+        1
+      ],
+      "cout_nf": [
+        1000
+      ],
+      "esr_mohm": [
+        0
+      ],
+      "tmax_ns": [
+        1000
+      ]
+    },
+    "design_freshness_pins": {
+      "core": {
+        "path": "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice",
+        "sha256": "08a7b857e1fad43dd7af1f575de97853a058e85541601ecc47567fbc28dbae57",
+        "recorded_in_manifest": true
+      },
+      "error_amp": {
+        "path": "design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice",
+        "sha256": "75ee39ce0c48b54cab6c8a31acd1f199c37c1ccd1ac074a3515dee81cc656fb4",
+        "recorded_in_manifest": false
+      }
+    },
+    "design_freshness_basis": "The core hash is the one the campaign manifest records in source_sha256 (the generator requires the manifest value, this pin and the current file to agree). The campaign manifest does not record an error-amplifier hash, so that pin is the hash of ldo_erramp_cmos5l.spice at the time of the campaign: the campaign (issue #89) was run after the G1 disable pull-down changed that file (DR-0008 addendum), from commit df3f802, and it is the same byte content that the selected legacy circuit_record pins. It replaces 20261010-104827-91e92aa, which ran against the six-pin amplifier and is now historical. If either netlist changes the startup evidence is classified stale against the design and the envelope turns fail until a new campaign is selected. Record 20261011-070146-0c95530 (issue #130) is a re-collection, with the amended cold-start disabled-window evaluator, of the committed traces of 20261011-031426-df3f802 (no new simulation); the netlist hashes above are those of that source campaign, and its manifest carries them unchanged in source_sha256. 20261011-031426-df3f802 is retained, unmodified, as the earlier record.",
+    "proposed_methodology": {
+      "reference": "spec/decision-records/DR-0009-sg13cmos5l-startup-measurement-methodology.md",
+      "evaluator": "sim/ldo-cmos5l-pvt-sweep/startup_eval.py",
+      "band_v": [
+        1.764,
+        1.836
+      ],
+      "settle_limit_s": 0.003,
+      "monotonic_tolerance_v": 0.001,
+      "note": "Overshoot is read as peak VOUT above the +2 % band edge (1.836 V) and monotonicity as maximum downward excursion <= 1 mV before settling. 'controlled ramp' has no numeric bound in the target text and is not graded. Cold-start disabled window (DR-0009 amendment, issue #130): the contiguous initial EN <= 1 mV plateau before the first rising ramp; off_supply_current_a is -ivin at its last sample. Selected record 20261011-070146-0c95530 re-collects 20261011-031426-df3f802's traces with that evaluator (the evaluator and campaign sha256 are in its manifest source_sha256).",
+      "supersedes_selection": {
+        "id": "20261011-031426-df3f802",
+        "reason": "its off_supply_current_a was sampled inside the EN edge (issue #130); traces unchanged and referenced in place by the selected record"
+      }
+    }
+  },
+  "row10_margin_evidence": {
+    "circuit_record_id": "20261011-070111-5391c68",
+    "decision_record": "spec/decision-records/DR-0014-row10-stability-margin-classification.md",
+    "policy": "Row 10 PM/GM verdicts follow the PROPOSED DR-0014 classification of the SAME circuit record's committed loop-gain traces, derived offline by sim/ldo-cmos5l-pvt-sweep/row10_margins.py's classifier, run on this record through the row10_record.py wrapper (#89; no simulation). Both files are pinned. The generator also requires: the classification names the pinned PVT csv; its classifier sources still hash to the bytes it records; every one of the 45 traces it lists sits under corners/<record-id>/ and matches its sha256; the 45 corners appear once each; its record_* columns equal the PVT csv; every pass/fail agrees with its own number against the unchanged 45 deg / 10 dB bounds; and every point the PVT csv shows below a bound is a fail (no miss is upgraded). Any violation is a hard generator error. DR-0014 is proposed and row 10 stays Open (DR-0007).",
+    "files": {
+      "classification_csv": {
+        "path": "sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/row10-margins.csv",
+        "sha256": "59f7ef734078ded1fadb74460674cccb0685b2369c867c873bb4a331e375d17f"
+      },
+      "classification_json": {
+        "path": "sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/row10-margins.json",
+        "sha256": "5b41ddab09eb2db87e9abe55fd5cd9757742020db35405b62a36733d0818ae9e"
+      }
+    }
+  }
 }

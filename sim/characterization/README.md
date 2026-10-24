@@ -29,7 +29,7 @@ build ([`signoff/README.md`](../../signoff/README.md)).
 | `characterization-report.json` | Canonical aggregate: per row — target, stretch, ratification, verdict, coverage gaps, per-metric worst case with its (process, temperature, resistor corner), bench conditions, counts, source record/column. Also every source path + sha256. |
 | `characterization-report.md` | The same content rendered for reading. |
 | `characterization-envelope.json` | The klt generic envelope (`schema_version: 1`, `kind: generic`, `status`, `source`, `t1_item: 8`, `provenance`). |
-| `test_generate.py` | Row mapping, unit conversion, worst-case retention, censored dropout, ambiguous crossings, draft/stale classification, and the negative controls. |
+| `test_generate.py` | Row mapping, unit conversion, worst-case retention, censored dropout, DR-0014 row-10 classification, draft/stale classification, and the negative controls. |
 
 ## Selection policy (reproducible, never filesystem order)
 
@@ -42,6 +42,96 @@ one quoted sentence from `sim/ldo-cmos5l-pvt-sweep/README.md` that is shown as
 *superseded* context for Iq at full load, never as a current measurement. The
 bare pass-device screen is used only as labelled device context on the Input
 row, never as a closed-loop measurement.
+
+## Informational DC evidence for rows 5 and 7 (issue #123)
+
+`selection.json` also pins, under `dc_informational_evidence`, the item-5
+derivation outputs for the **same** circuit record: the
+`dc-informational-summary.csv` and its provenance `coverage-inventory.json`
+(both under `sim/ldo-cmos5l-pvt-sweep/evidence/<record-id>/`). The generator
+consumes them offline (no simulator, no new sweep) and fails closed unless:
+
+- both files match their pins and sit under the selected record id;
+- the inventory names the pinned PVT csv and record md, the pinned design
+  netlists and the pinned `item5_evidence.py` bytes, and all 45 raw DC grids it
+  lists match their recorded hashes;
+- the summary has exactly the expected columns (units are in the column names),
+  45 corners once each (no duplicate or missing corner), finite numbers,
+  `True`/`False` validity fields, and agrees with the PVT csv where they overlap.
+
+Row 5 then reports line regulation at each swept load (0, 12.5, 25, 37.5,
+50 mA) and load regulation at each measured supply (2.97, 3.30, 3.63 V); row 7
+reports full-load Iq with the load current excluded. The legacy record-column
+metrics stay beside them, labelled `legacy`. Points the summary marks invalid
+are counted as ambiguous and never dropped, so a bad point blocks a clean
+verdict instead of disappearing. The measurements are discrete samples on a
+45-corner grid with an ideal reference; full-load Iq keeps its published
+precision caveat (a difference of two ~50 mA currents, quantized at 1e-10 A).
+Rows 5 and 7 stay Open/unratified and this is not T1 item-5 grading evidence.
+
+## Startup evidence for row 9 (issue #112)
+
+`selection.json` pins, under `startup_evidence`, one committed startup
+campaign by id and stage (`20261011-031426-df3f802` / `grid`: the issue #69
+campaign re-run on the issue #89 design; `20261010-104827-91e92aa` before it): the
+record `.md`, the per-point `.csv` and the `.manifest.json`, each by sha256,
+plus the requested grid (5 process x 3 temperature x 3 resistor corner x 3 Vin
+= 135 points). The record is chosen explicitly; a newer startup directory is
+never picked up automatically. The generator reads it offline (no PDK, no
+simulator) and:
+
+- verifies every per-point trace file against its recorded `trace_sha256`
+  and sample count; a missing or tampered file is a hard error;
+- rejects a duplicate point, a point outside the requested grid, a manifest
+  that disagrees with the csv, and a csv `pass` that its own metrics
+  contradict;
+- validates freshness for the core and the error amplifier **independently**
+  of the legacy `design_freshness_pins` (the manifest records the core hash;
+  the error-amplifier pin is explained in `design_freshness_basis`), and
+  reports each component's state; either mismatch makes the evidence
+  `stale_against_design` and turns the envelope `fail`;
+- reports requested / evaluated / missing / insufficient counts. A missing
+  requested point makes the artifact incomplete (envelope `fail`); an
+  `insufficient` point is counted and can never be a pass;
+- scores settling (3 ms), overshoot (peak above 1.836 V) and monotonicity
+  (downward excursion over 1 mV) as **separate** metrics, for the cold start
+  and the re-enable, with the full conditions and the coordinates of every
+  extremum. Settling inside 3 ms does not override an overshoot or
+  monotonicity failure; a measured failure is never masked by missing or
+  insufficient points (`startup_row_verdict`).
+
+The methodology is **proposed** (DR-0009) and disclosed on the row. Row 9
+stays Open: nothing here ratifies a target or claims whole-spec compliance,
+and the envelope still means artifact completeness/freshness only.
+
+## Row-10 margin classification (issue #126)
+
+`selection.json` pins, under `row10_margin_evidence`, the DR-0014 (proposed)
+classification of the selected record's own committed loop-gain traces:
+`row10-margins.csv` and `row10-margins.json` under
+`sim/ldo-cmos5l-pvt-sweep/evidence/<record-id>/`, written offline by
+`sim/ldo-cmos5l-pvt-sweep/row10_margins.py`. The generator fails closed unless:
+
+- both files match their pins and sit under the selected record id, and the
+  json names the pinned PVT csv;
+- the classifier sources the json lists (`ac_metrics.py`, `dc_metrics.py`,
+  `row10_margins.py`) still hash to the recorded bytes;
+- the bounds are the row-10 targets (45 deg, 10 dB);
+- the 45 corners appear once each, every listed trace is under the record's
+  `corners/` directory and matches its sha256, and the `record_*` columns
+  equal the PVT csv;
+- every `pass` or `fail` agrees with its own number against the bound (a GM
+  pass also needs the ceiling lower bound), and every point the PVT csv shows
+  below a bound is a `fail`, so no recorded miss is upgraded.
+
+Row 10's PM and GM metrics then come from that classification. The
+pre-DR-0014 first-crossing reading is still shown, labelled as superseded
+context, never as a verdict. The sweep ceiling is read from the last frequency of
+the sha256-verified traces (all 45 must agree) and quoted in the report. Today
+no trace bounds the sweep ceiling (10 GHz for the selected record, #128: the
+loop gain flattens at +0.4..+1.2 dB and drifts down about 0.5 dB per decade),
+so both metrics are `ambiguous` at all 45 points (`ceiling_unbounded`), and the
+row stays `ambiguous` and Open.
 
 ## What the envelope verdict means (and does not)
 
@@ -61,8 +151,8 @@ row, never as a closed-loop measurement.
 It does **not** mean the circuit meets its spec. Row verdicts are reported
 separately and today include `not_measured` (Input), `pass_partial_coverage`
 (Output, Load, Line/load, PSRR, Iq), `pass_full_coverage` (Dropout, the one
-ratified row), `ambiguous` (Stability) and `not_implemented` (Current limit,
-Startup). A `pass_*` verdict is a measurement against the target at the
+ratified row), `ambiguous` (Stability), `fail` (Startup: measured, see below) and
+`not_implemented` (Current limit). A `pass_*` verdict is a measurement against the target at the
 stated conditions only; nine of ten targets are still unratified (DR-0007).
 `klt signoff` trusts the envelope's status and does not read the report;
 the `--check` gate here and in CI is what verifies content and freshness.

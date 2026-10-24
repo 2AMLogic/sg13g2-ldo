@@ -13,6 +13,10 @@
 #     dynamic DoE (load x Cout x ESR) on the batch fleet; README.md
 #     "Dynamic DoE" (refinement: --doe-extra/--doe-only-extra/--doe-base).
 #
+#   sim/ldo-cmos5l-pvt-sweep/run_sweep.sh --batch --loopgain-ac-max=10g   # issue #128
+#     loop-gain AC sweep ceiling (default 100meg; also SWEEP_LOOPGAIN_AC_MAX;
+#     exact power of ten, 20 points/decade, 1 Hz floor -- ac_sweep.py).
+#
 #   sim/ldo-cmos5l-pvt-sweep/run_sweep.sh --check-env   # CI-weight preflight:
 #     generates + syntax-checks one netlist per bench (mos_tt/27C), without
 #     running the full corner grid or writing a records/ entry.
@@ -90,6 +94,7 @@ set -euo pipefail
 
 CHECK_ENV=0
 CHECK_GUARD=0
+CHECK_TOPOLOGY=0
 DOE_GENERATE=0
 DOE_EXTRA=""
 DOE_ONLY_EXTRA=0
@@ -101,21 +106,40 @@ DOE_BASE=""
 # in both modes; only the step that runs the simulator changes. See
 # batch_backend.py's docstring and README.md "Batch backend".
 BATCH=0
+# --loopgain-ac-max=<f> (issue #128): upper end of the loop-gain AC sweep,
+# default 100meg (the historical `ac dec 20 1 100meg`). Also settable as
+# SWEEP_LOOPGAIN_AC_MAX. Must be an exact power of ten (ac_sweep.py); the
+# floor (1 Hz) and 20 points/decade are fixed. It is rendered into
+# tb_loopgain_cmos5l.spice.tmpl and sets the loop-gain completeness row
+# count. The PSRR bench is unaffected.
+LOOPGAIN_AC_MAX="${SWEEP_LOOPGAIN_AC_MAX:-100meg}"
 for arg in "$@"; do
   case "${arg}" in
     --check-env) CHECK_ENV=1 ;;
     --check-topology-guard) CHECK_GUARD=1 ;;
+    --check-topology) CHECK_TOPOLOGY=1 ;;
     --doe-generate) DOE_GENERATE=1 ;;   # issue #64: netlists + manifest only, no simulation
     --doe-extra=*) DOE_EXTRA="${arg#--doe-extra=}" ;;
     --doe-only-extra) DOE_ONLY_EXTRA=1 ;;   # with --doe-extra: simulate only the refinement points
     --doe-base=*) DOE_BASE="${arg#--doe-base=}" ;;   # record id whose corners/ the analysis also reads
     --batch) BATCH=1 ;;
+    --loopgain-ac-max=*) LOOPGAIN_AC_MAX="${arg#--loopgain-ac-max=}" ;;
     -h|--help) sed -n '2,40p' "${BASH_SOURCE[0]}"; exit 0 ;;
     *) echo "run_sweep.sh: unknown argument '${arg}'" >&2; exit 2 ;;
   esac
 done
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Validate and canonicalise the loop-gain ceiling before anything else runs.
+LG_AC_MAX="$(python3 "${SCRIPT_DIR}/ac_sweep.py" ceiling "${LOOPGAIN_AC_MAX}")" || {
+  echo "run_sweep.sh: invalid --loopgain-ac-max / SWEEP_LOOPGAIN_AC_MAX '${LOOPGAIN_AC_MAX}'." >&2
+  exit 2
+}
+if [[ ${DOE_GENERATE} -eq 1 && "${LG_AC_MAX}" != "100meg" ]]; then
+  echo "run_sweep.sh: --loopgain-ac-max other than the default is not supported with --doe-generate" >&2
+  echo "run_sweep.sh: (dynamic_doe.py expects the default sweep)." >&2
+  exit 2
+fi
 SIM_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 REPO_ROOT="$(cd "${SIM_DIR}/.." && pwd)"
 
@@ -135,19 +159,27 @@ DESIGN_NETLIST="${REPO_ROOT}/design/sg13cmos5l/netlist/ldo_core_cmos5l.spice"
 # normalised before (b) compares, and Vbreak's own connectivity is
 # asserted separately, so the loop break cannot silently move or vanish.
 # This block deliberately needs neither a PDK nor ngspice, so
-# --check-topology-guard (the negative controls) runs anywhere. ---
+# --check-topology-guard (the negative controls) runs anywhere.
+# Since issue #89 Xamp carries EN as its seventh pin (the amplifier's own G1
+# disable pull-down, DR-0008 addendum), so the expected body and both
+# copies name EN on Xamp too; a template that still instantiates the
+# six-pin amplifier is rejected by the negative controls below. ---
 LOOPGAIN_MIRRORED_RE='^(XMpass|XRtop|XRbot|Xamp|XMen|XMbdis) '
 LOOPGAIN_EXPECTED_BODY='XMpass VOUT EAOUT VIN VIN sg13_hv_pmos w=2800u l=0.5u ng=1 m=1
 XRtop VOUT FB VSS rhigh w=1e-6 l=25.43e-6 m=1 b=7
 XRbot FB VSS VSS rhigh w=1e-6 l=25.43e-6 m=1 b=7
-Xamp FB VREF EAOUT VIN VSS IBIAS ldo_erramp_cmos5l
+Xamp FB VREF EAOUT VIN VSS IBIAS EN ldo_erramp_cmos5l
 XMen EAOUT EN VIN VIN sg13_hv_pmos w=40u l=0.5u ng=1 m=1
 XMbdis IBIAS EN VIN VIN sg13_hv_pmos w=5u l=0.5u ng=1 m=1'
 
-# topology_sync_problem <netlist> <template>: prints a diagnostic and returns
-# 1 on any mismatch, 0 when every comparison agrees.
+# topology_sync_problem <netlist> <template> [variant]: prints a diagnostic
+# and returns 1 on any mismatch, 0 when every comparison agrees. variant
+# selects the loop-break assertion: "vbreak" (default -- the series-break
+# benches tb_loopgain_cmos5l and, since issue #135, its circuit-identical
+# twin tb_loopgain2v) or "shunt" (tb_loopgain2i's intact-loop shunt
+# injection, also issue #135).
 topology_sync_problem() {
-  local netlist="$1" template="$2" body mirrored breaks
+  local netlist="$1" template="$2" variant="${3:-vbreak}" body mirrored breaks vmeas iinx
   body="$(awk '/^\.subckt ldo_core_cmos5l /,/^\.ends/' "${netlist}" | grep -E "${LOOPGAIN_MIRRORED_RE}" || true)"
   if [[ "${body}" != "${LOOPGAIN_EXPECTED_BODY}" ]]; then
     echo "run_sweep.sh: generated netlist ${netlist}: ldo_core_cmos5l's top-level instantiation lines differ from the expected body." >&2
@@ -165,75 +197,174 @@ topology_sync_problem() {
     diff <(echo "${LOOPGAIN_EXPECTED_BODY}") <(echo "${mirrored}") >&2 || true
     return 1
   fi
-  if ! grep -qE '^Xamp FBAMP ' "${template}"; then
-    echo "run_sweep.sh: ${template}: Xamp is not driven from FBAMP (loop break missing)." >&2
-    return 1
-  fi
-  breaks="$(grep -cE '^Vbreak FB FBAMP 0 ac 1$' "${template}" || true)"
-  if [[ "${breaks}" != "1" ]]; then
-    echo "run_sweep.sh: ${template}: expected exactly one 'Vbreak FB FBAMP 0 ac 1' loop break, found ${breaks}." >&2
-    return 1
-  fi
+  case "${variant}" in
+    vbreak)
+      # The series-break benches: exactly one ideal AC source between FB and
+      # FBAMP. (tb_loopgain2v's circuit is byte-identical to tb_loopgain's;
+      # only its .control export differs -- see the template headers.)
+      if ! grep -qE '^Xamp FBAMP ' "${template}"; then
+        echo "run_sweep.sh: ${template}: Xamp is not driven from FBAMP (loop break missing)." >&2
+        return 1
+      fi
+      breaks="$(grep -cE '^Vbreak FB FBAMP 0 ac 1$' "${template}" || true)"
+      if [[ "${breaks}" != "1" ]]; then
+        echo "run_sweep.sh: ${template}: expected exactly one 'Vbreak FB FBAMP 0 ac 1' loop break, found ${breaks}." >&2
+        return 1
+      fi
+      ;;
+    shunt)
+      # tb_loopgain2i (issue #135): the loop is INTACT -- a 0 V ammeter
+      # Vmeas bridges FB to FBAMP and a shunt AC current source Iinx injects
+      # into the driven side (FBAMP), so both the source and the load
+      # impedance are seen. A series AC source here would be a second,
+      # unintended injection: explicitly rejected.
+      if ! grep -qE '^Xamp FBAMP ' "${template}"; then
+        echo "run_sweep.sh: ${template}: Xamp is not driven from FBAMP (measurement point missing)." >&2
+        return 1
+      fi
+      vmeas="$(grep -cE '^Vmeas FB FBAMP 0 dc 0$' "${template}" || true)"
+      if [[ "${vmeas}" != "1" ]]; then
+        echo "run_sweep.sh: ${template}: expected exactly one 'Vmeas FB FBAMP 0 dc 0' ammeter, found ${vmeas}." >&2
+        return 1
+      fi
+      iinx="$(grep -cE '^Iinx 0 FBAMP dc 0 ac 1$' "${template}" || true)"
+      if [[ "${iinx}" != "1" ]]; then
+        echo "run_sweep.sh: ${template}: expected exactly one 'Iinx 0 FBAMP dc 0 ac 1' shunt injection, found ${iinx}." >&2
+        return 1
+      fi
+      if grep -qE '^Vbreak ' "${template}"; then
+        echo "run_sweep.sh: ${template}: the current-injection bench must NOT break the loop (found a Vbreak line)." >&2
+        return 1
+      fi
+      ;;
+    *)
+      echo "run_sweep.sh: unknown topology variant '${variant}'" >&2
+      return 1
+      ;;
+  esac
   return 0
 }
 
 assert_loopgain_topology_sync() {
-  if ! topology_sync_problem "${DESIGN_NETLIST}" "${SCRIPT_DIR}/testbench/tb_loopgain_cmos5l.spice.tmpl"; then
-    echo "run_sweep.sh: FATAL -- loop-gain bench topology is out of sync with ldo_core_cmos5l." >&2
-    echo "run_sweep.sh: update tb_loopgain_cmos5l.spice.tmpl's flattened copy (and LOOPGAIN_EXPECTED_BODY) to match, then re-run." >&2
-    exit 4
-  fi
+  local tmpl variant rc=0
+  for tmpl in loopgain loopgain2v loopgain2i e1op; do
+    case "${tmpl}" in
+      loopgain2i) variant=shunt ;;
+      *)          variant=vbreak ;;
+    esac
+    if ! topology_sync_problem "${DESIGN_NETLIST}" \
+        "${SCRIPT_DIR}/testbench/tb_${tmpl}_cmos5l.spice.tmpl" "${variant}"; then
+      echo "run_sweep.sh: FATAL -- tb_${tmpl}_cmos5l bench topology is out of sync with ldo_core_cmos5l." >&2
+      echo "run_sweep.sh: update tb_${tmpl}_cmos5l.spice.tmpl's flattened copy (and LOOPGAIN_EXPECTED_BODY) to match, then re-run." >&2
+      rc=1
+    fi
+  done
+  [[ ${rc} -eq 0 ]] || exit 4
 }
 
 # Negative controls for the guard above: each mutation of the real netlist or
-# template MUST be rejected. Run with --check-topology-guard.
+# template MUST be rejected. Run with --check-topology-guard. Three suites:
+# tb_loopgain_cmos5l (the series-break bench, issues #21/#67/#89),
+# tb_loopgain2v (issue #135: circuit-identical twin, its own file guarded)
+# and tb_loopgain2i (issue #135: the intact-loop shunt-injection variant).
+# Each mutation line is "name<TAB>sed-expression<TAB>target(netlist|template)".
 check_topology_guard() {
   local tmp rc=0
   tmp="$(mktemp -d)"
-  local tmpl="${SCRIPT_DIR}/testbench/tb_loopgain_cmos5l.spice.tmpl"
-  if ! topology_sync_problem "${DESIGN_NETLIST}" "${tmpl}" 2>"${tmp}/base.err"; then
-    echo "run_sweep.sh: --check-topology-guard: the UNMUTATED pair is already rejected:" >&2
-    cat "${tmp}/base.err" >&2
-    rm -rf "${tmp}"
-    return 1
-  fi
-  echo "run_sweep.sh: guard accepts the real netlist/template pair."
-  neg() { # name sed-expr target(netlist|template)
-    local name="$1" expr="$2" target="$3" n="${tmp}/ldo.spice" t="${tmp}/tb.tmpl"
-    cp "${DESIGN_NETLIST}" "${n}"
-    cp "${tmpl}" "${t}"
-    if [[ "${target}" == netlist ]]; then sed -i -E "${expr}" "${n}"; else sed -i -E "${expr}" "${t}"; fi
-    if cmp -s "${n}" "${DESIGN_NETLIST}" && cmp -s "${t}" "${tmpl}"; then
-      echo "run_sweep.sh: NEGATIVE CONTROL INEFFECTIVE (mutation changed nothing): ${name}" >&2
+  guard_suite() {
+    local tmpl_base="$1" variant="$2"
+    local tmpl="${SCRIPT_DIR}/testbench/tb_${tmpl_base}_cmos5l.spice.tmpl"
+    if ! topology_sync_problem "${DESIGN_NETLIST}" "${tmpl}" "${variant}" 2>"${tmp}/base.err"; then
+      echo "run_sweep.sh: --check-topology-guard: the UNMUTATED ${tmpl_base} pair is already rejected:" >&2
+      cat "${tmp}/base.err" >&2
       rc=1
-    elif topology_sync_problem "${n}" "${t}" 2>/dev/null; then
-      echo "run_sweep.sh: NEGATIVE CONTROL NOT REJECTED: ${name}" >&2
-      rc=1
-    else
-      echo "run_sweep.sh: rejected (as required): ${name}"
+      return 0
     fi
+    echo "run_sweep.sh: guard accepts the real ${tmpl_base} netlist/template pair."
+    neg() { # name sed-expr target(netlist|template)
+      local name="$1" expr="$2" target="$3" n="${tmp}/ldo.spice" t="${tmp}/tb.tmpl"
+      cp "${DESIGN_NETLIST}" "${n}"
+      cp "${tmpl}" "${t}"
+      if [[ "${target}" == netlist ]]; then sed -i -E "${expr}" "${n}"; else sed -i -E "${expr}" "${t}"; fi
+      if cmp -s "${n}" "${DESIGN_NETLIST}" && cmp -s "${t}" "${tmpl}"; then
+        echo "run_sweep.sh: NEGATIVE CONTROL INEFFECTIVE (${tmpl_base}; mutation changed nothing): ${name}" >&2
+        rc=1
+      elif topology_sync_problem "${n}" "${t}" "${variant}" 2>/dev/null; then
+        echo "run_sweep.sh: NEGATIVE CONTROL NOT REJECTED (${tmpl_base}): ${name}" >&2
+        rc=1
+      else
+        echo "run_sweep.sh: rejected (${tmpl_base}, as required): ${name}"
+      fi
+    }
+    local name expr target
+    while IFS=$'\t' read -r name expr target; do
+      [[ -n "${name}" ]] || continue
+      neg "${name}" "${expr}" "${target}"
+    done
   }
-  neg "template omits XMen"                 '/^XMen /d'                                template
-  neg "template XMen gate (EN) tied to VSS" 's/^XMen EAOUT EN /XMen EAOUT VSS /'       template
-  neg "template XMen drain moved to FB"     's/^XMen EAOUT /XMen FB /'                 template
-  neg "template XMen body moved to VSS"     's/^(XMen EAOUT EN VIN) VIN /\1 VSS /'     template
-  neg "template XMen width changed"         's/^(XMen .* w=)40u/\130u/'                template
-  neg "template omits XMbdis"               '/^XMbdis /d'                              template
-  neg "template XMbdis drain moved to FB"   's/^XMbdis IBIAS /XMbdis FB /'             template
-  neg "template XMbdis gate (EN) tied to VIN" 's/^XMbdis IBIAS EN /XMbdis IBIAS VIN /' template
-  neg "netlist omits XMbdis"                '/^XMbdis /d'                              netlist
-  neg "template Xamp loop break removed"    's/^Xamp FBAMP /Xamp FB /'                 template
-  neg "template Vbreak removed"             '/^Vbreak /d'                              template
-  neg "netlist omits XMen"                  '/^XMen /d'                                netlist
-  neg "netlist XMen gate moved to VIN"      's/^XMen EAOUT EN /XMen EAOUT VIN /'       netlist
-  neg "netlist EN port dropped from header" 's/^(\.subckt ldo_core_cmos5l .*) EN$/\1/' netlist
-  rm -rf "${tmp}"
+
+  # --- tb_loopgain_cmos5l: the series-break bench (issues #21/#67/#89) ---
+  guard_suite loopgain vbreak <<'MUTATIONS'
+template omits XMen	/^XMen /d	template
+template XMen gate (EN) tied to VSS	s/^XMen EAOUT EN /XMen EAOUT VSS /	template
+template XMen drain moved to FB	s/^XMen EAOUT /XMen FB /	template
+template XMen body moved to VSS	s/^(XMen EAOUT EN VIN) VIN /\1 VSS /	template
+template XMen width changed	s/^(XMen .* w=)40u/\130u/	template
+template omits XMbdis	/^XMbdis /d	template
+template XMbdis drain moved to FB	s/^XMbdis IBIAS /XMbdis FB /	template
+template XMbdis gate (EN) tied to VIN	s/^XMbdis IBIAS EN /XMbdis IBIAS VIN /	template
+netlist omits XMbdis	/^XMbdis /d	netlist
+template Xamp loop break removed	s/^Xamp FBAMP /Xamp FB /	template
+template Vbreak removed	/^Vbreak /d	template
+netlist omits XMen	/^XMen /d	netlist
+netlist XMen gate moved to VIN	s/^XMen EAOUT EN /XMen EAOUT VIN /	netlist
+netlist EN port dropped from header	s/^(\.subckt ldo_core_cmos5l .*) EN$/\1/	netlist
+template Xamp EN pin dropped (six-pin amp)	s/^(Xamp FBAMP VREF EAOUT VIN VSS IBIAS) EN /\1 /	template
+template Xamp EN pin tied to VIN	s/^(Xamp FBAMP VREF EAOUT VIN VSS IBIAS) EN /\1 VIN /	template
+netlist Xamp EN pin dropped	s/^(Xamp FB VREF EAOUT VIN VSS IBIAS) EN /\1 /	netlist
+MUTATIONS
+
+  # --- tb_loopgain2v (issue #135): circuit-identical twin of the break bench;
+  # the same connectivity mutations must be rejected against ITS file too,
+  # plus the break-amplitude mutation the reconstruction relies on. ---
+  guard_suite loopgain2v vbreak <<'MUTATIONS'
+template Xamp loop break removed	s/^Xamp FBAMP /Xamp FB /	template
+template Vbreak removed	/^Vbreak /d	template
+template Vbreak AC amplitude changed	s/^Vbreak FB FBAMP 0 ac 1$/Vbreak FB FBAMP 0 ac 2/	template
+template omits XMen	/^XMen /d	template
+template omits XMbdis	/^XMbdis /d	template
+MUTATIONS
+
+  # --- tb_loopgain2i (issue #135): the intact-loop shunt-injection bench. ---
+  guard_suite loopgain2i shunt <<'MUTATIONS'
+template ammeter removed (loop left open)	/^Vmeas /d	template
+template ammeter given an AC injection	s/^Vmeas FB FBAMP 0 dc 0$/Vmeas FB FBAMP 0 dc 0 ac 1/	template
+template shunt injection removed	/^Iinx /d	template
+template shunt injection moved to the divider side	s/^Iinx 0 FBAMP dc 0 ac 1$/Iinx 0 FB dc 0 ac 1/	template
+template shunt injection polarity flipped	s/^Iinx 0 FBAMP dc 0 ac 1$/Iinx FBAMP 0 dc 0 ac 1/	template
+template ammeter nodes swapped	s/^Vmeas FB FBAMP 0 dc 0$/Vmeas FBAMP FB 0 dc 0/	template
+template Vbreak smuggled in	s/^Vmeas FB FBAMP 0 dc 0$/Vbreak FB FBAMP 0 ac 1/	template
+template omits XMen	/^XMen /d	template
+template omits XMbdis	/^XMbdis /d	template
+netlist omits XMbdis	/^XMbdis /d	netlist
+template Xamp EN pin dropped (six-pin amp)	s/^(Xamp FBAMP VREF EAOUT VIN VSS IBIAS) EN /\1 /	template
+MUTATIONS
+
+    rm -rf "${tmp}"
   return ${rc}
 }
-
 if [[ ${CHECK_GUARD} -eq 1 ]]; then
   check_topology_guard
   exit $?
+fi
+
+# --check-topology (issue #135): the POSITIVE assertion only (every
+# loop-gain bench template still mirrors ldo_core_cmos5l), no PDK, no
+# ngspice, no mutations. run_loopgain2.sh calls this before rendering.
+if [[ ${CHECK_TOPOLOGY} -eq 1 ]]; then
+  assert_loopgain_topology_sync
+  echo "run_sweep.sh: all loop-gain bench templates are in sync with ldo_core_cmos5l."
+  exit 0
 fi
 
 
@@ -291,7 +422,20 @@ assert_loopgain_topology_sync
 # these, every point fails loudly -- the same "fail loudly rather than go
 # silently stale" posture assert_loopgain_topology_sync() takes above.
 EXPECT_ROWS_DC=820
-EXPECT_ROWS_AC=161
+EXPECT_ROWS_AC=161      # psrr bench (ac dec 20 1 100meg)
+# Loop-gain bench: derived from the configured ceiling (issue #128) and
+# cross-checked against the rendered template line below, so a template and
+# a count that drift apart fail loudly here instead of at every point.
+EXPECT_ROWS_LG="$(python3 "${SCRIPT_DIR}/ac_sweep.py" rows "${LG_AC_MAX}")"
+LG_AC_LINE="$(python3 "${SCRIPT_DIR}/ac_sweep.py" line "${LG_AC_MAX}")"
+if ! grep -qxF "ac dec 20 1 @@LG_AC_MAX@@" "${SCRIPT_DIR}/testbench/tb_loopgain_cmos5l.spice.tmpl"; then
+  echo "run_sweep.sh: tb_loopgain_cmos5l.spice.tmpl no longer has 'ac dec 20 1 @@LG_AC_MAX@@'; update ac_sweep.py/EXPECT_ROWS_LG with it." >&2
+  exit 3
+fi
+if [[ ${LG_AC_MAX} == 100meg && ${EXPECT_ROWS_LG} -ne ${EXPECT_ROWS_AC} ]]; then
+  echo "run_sweep.sh: default loop-gain row count ${EXPECT_ROWS_LG} != ${EXPECT_ROWS_AC}." >&2
+  exit 3
+fi
 
 if [[ ${CHECK_ENV} -eq 1 ]]; then
   echo "run_sweep.sh: --check-env: syntax-checking all three benches at mos_tt/27C, no records written."
@@ -309,6 +453,7 @@ if [[ ${CHECK_ENV} -eq 1 ]]; then
       -e "s|@@RES_SECTION@@|res_typ|g" \
       -e "s|@@CAP_SECTION@@|cap_typ|g" \
       -e "s|@@TEMP@@|27|g" \
+      -e "s|@@LG_AC_MAX@@|${LG_AC_MAX}|g" \
       -e "s|@@CC_W@@|nominal (--check-env)|g" \
       -e "s|@@LOAD_A@@|0.001|g" \
       -e "s|@@COUT_F@@|1u|g" \
@@ -321,7 +466,7 @@ if [[ ${CHECK_ENV} -eq 1 ]]; then
     log="${tmp}/${bench}_check.log"
     case "${bench}" in
       dcsweep)  vargs=(--wrdata "${tmp}/${bench}_check_dc.csv:8:${EXPECT_ROWS_DC}") ;;
-      loopgain) vargs=(--wrdata "${tmp}/${bench}_check_ac.csv:4:${EXPECT_ROWS_AC}" --marker LOOPGAIN_VOUT_OP) ;;
+      loopgain) vargs=(--wrdata "${tmp}/${bench}_check_ac.csv:4:${EXPECT_ROWS_LG}" --marker LOOPGAIN_VOUT_OP) ;;
       psrr)     vargs=(--wrdata "${tmp}/${bench}_check_ac.csv:2:${EXPECT_ROWS_AC}") ;;
     esac
     preflight_bench_ok "${bench}" "${netlist}" "${log}" "${vargs[@]}" || rc=1
@@ -372,11 +517,22 @@ RES_LABELS=(typ bcs wcs)
 # It uses the same benches (EN tied to VIN reproduces the pre-#67
 # connectivity) and the same full 45-point grid, so the delta table isolates
 # what the enable devices change.
-BASELINE_CSV="${RECORDS_DIR}/20260917-023832-7061e8f.csv"
+#
+# RE-BASELINED BY #89, from the #35 record to the #67 one
+# (20261010-025634-60a3e81, PR #87). That is the last main-grid record
+# before the G1 disable pull-down (DR-0008 addendum), run on the batch fleet
+# against the six-pin-Xamp netlist (core sha256 7953b25b...222cc1). Same
+# benches (EN tied to VIN), same full 45-point grid, so the delta table
+# isolates what the three added amplifier devices change in the enabled
+# state.
+BASELINE_CSV="${RECORDS_DIR}/20261010-025634-60a3e81.csv"
 # The newest committed main-grid record (issue #67, EN design, batch fleet).
 # The dynamic DoE (issue #64) compares its legacy 1 mA / 1 uF / 0 ohm point
-# against BOTH this and BASELINE_CSV.
+# against BOTH this and the pre-EN #35 record. #89 moved BASELINE_CSV to the
+# #67 record, so the DoE keeps naming the #35 record explicitly (its
+# comparison is unchanged by that re-baselining).
 CURRENT_RECORD_CSV="${RECORDS_DIR}/20261010-025634-60a3e81.csv"
+DOE_LEGACY_BASELINE_CSV="${RECORDS_DIR}/20260917-023832-7061e8f.csv"
 
 total=0
 passed=0
@@ -418,6 +574,7 @@ gen_netlist() {
     -e "s|@@RES_SECTION@@|${res_section}|g" \
     -e "s|@@CAP_SECTION@@|${cap_section}|g" \
     -e "s|@@TEMP@@|${temp}|g" \
+    -e "s|@@LG_AC_MAX@@|${LG_AC_MAX}|g" \
     -e "s|@@CC_W@@|${cc_w_desc}|g" \
     -e "s|@@DESIGN_NETLIST@@|${design_netlist}|g" \
     -e "s|@@LOAD_A@@|${load_a}|g" \
@@ -462,6 +619,7 @@ screen_point() {
   local out_csv expect_rows got_rows
   case "${point_id}" in
     dcsweep_*) out_csv="${CORNERS_OUT}/${point_id}_dc.csv"; expect_rows=${EXPECT_ROWS_DC} ;;
+    loopgain_*) out_csv="${CORNERS_OUT}/${point_id}_ac.csv"; expect_rows=${EXPECT_ROWS_LG} ;;
     *)         out_csv="${CORNERS_OUT}/${point_id}_ac.csv"; expect_rows=${EXPECT_ROWS_AC} ;;
   esac
   total=$((total + 1))
@@ -498,6 +656,15 @@ screen_point() {
     return 1
   fi
 
+  # Loop-gain traces must also span exactly the configured floor..ceiling
+  # (issue #128): the row count alone would accept a wrong-range sweep.
+  if [[ "${point_id}" == loopgain_* ]] \
+     && ! python3 "${SCRIPT_DIR}/ac_sweep.py" check-trace "${out_csv}" "${LG_AC_MAX}"; then
+    echo "run_sweep.sh: FAILED ${point_id} -- loop-gain trace does not match the configured ${LG_AC_LINE}" >&2
+    failed_points+=("${point_id}")
+    return 1
+  fi
+
   if grep -qiE "^[[:space:]]*Warning: singular matrix" "${log}"; then
     recoverable_warning_points+=("${point_id}")
   fi
@@ -509,6 +676,11 @@ screen_point() {
 # main grid and the --doe-generate --batch campaign, issue #64).
 # SWEEP_BATCH_CONCURRENCY (default 2) bounds how many klt sim requests are
 # in flight at once; it is fleet-side work, the submitting host only waits.
+# SWEEP_BATCH_REUSE_WORK=<earlier batch work dir> (issue #89) reuses the
+# completed fleet report of any group whose request there is byte-identical
+# (batch_backend.py --reuse-work), so a run whose client was interrupted
+# after most jobs finished does not resubmit them. Reused groups are listed
+# in corners/<id>/_batch/reused-reports.tsv. Nothing ever runs locally.
 run_batch_queue() {
   # Run every queued point on the fleet. batch_backend.py writes the same
   # <point_id>.log and *_dc/_ac.csv files the local loop writes. A failed
@@ -520,6 +692,7 @@ run_batch_queue() {
     --work "${BATCH_WORK}" --osdi-dir "${OSDI_DIR}" \
     --submit-concurrency "${SWEEP_BATCH_CONCURRENCY:-2}" \
     "${BATCH_EXTRA_ARGS[@]}" \
+    ${SWEEP_BATCH_REUSE_WORK:+--reuse-work "${SWEEP_BATCH_REUSE_WORK}"} \
     ${SWEEP_BATCH_PLAN_ONLY:+--plan-only} || batch_rc=$?
   if [[ -n "${SWEEP_BATCH_PLAN_ONLY:-}" ]]; then
     echo "run_sweep.sh: SWEEP_BATCH_PLAN_ONLY set -- plan printed, nothing submitted;" >&2
@@ -611,7 +784,7 @@ if [[ ${DOE_GENERATE} -eq 1 ]]; then
   [[ -n "${DOE_EXTRA}" ]] && doe_args+=(--extra "${DOE_EXTRA}")
   doe_rc=0
   python3 "${SCRIPT_DIR}/dynamic_doe.py" analyse "${doe_dirs[@]}" "${doe_args[@]}" \
-    --legacy-record "${BASELINE_CSV}" \
+    --legacy-record "${DOE_LEGACY_BASELINE_CSV}" \
     --legacy-record "${CURRENT_RECORD_CSV}" \
     --out-prefix "${RECORDS_DIR}/${RECORD_ID}.dynamic-doe" || doe_rc=$?
   python3 "${SCRIPT_DIR}/dynamic_doe.py" refine "${doe_dirs[@]}" "${doe_args[@]}" \
@@ -796,7 +969,13 @@ VIN_MIN, VIN_MAX, VIN_STEP = 2.00, 3.63, 0.01
 sys.path.insert(0, os.environ["SWEEP_SCRIPT_DIR"])
 import dc_metrics as _dcm
 read_wrdata = _dcm.read_wrdata
-dc_metrics = _dcm.dc_metrics
+# Complete-grid contract (issue #120): the same validator item5_evidence.py
+# uses. dc_metrics.py stays byte-identical (its sha256 is pinned by landed
+# artifacts); a grid that fails validation yields {"error": ...}, never a
+# nearest-point numeric summary.
+import dc_grid as _dcg
+dc_metrics = _dcg.validated_dc_metrics
+dc_grid_errors = {}
 
 
 # Shared AC parsers (issue #64): extracted verbatim to ac_metrics.py.
@@ -813,6 +992,9 @@ for corner in CORNERS:
             row = {"corner": corner, "temp_c": temp, "res_section": f"res_{rlabel}"}
             sfx = f"{corner}_{temp}c_r{rlabel}"
             dc = dc_metrics(f"{corners_dir}/dcsweep_{sfx}_dc.csv")
+            if dc and "error" in dc:
+                dc_grid_errors[f"dcsweep_{sfx}"] = dc["error"]
+                dc = None  # no metrics from an invalid grid; error kept below
             lg = loopgain_metrics(f"{corners_dir}/loopgain_{sfx}_ac.csv")
             ps = psrr_metrics(f"{corners_dir}/psrr_{sfx}_ac.csv")
             for src in (dc, lg, ps):
@@ -836,6 +1018,14 @@ with open(csv_out, "w", newline="") as f:
     w.writeheader()
     for row in main_rows:
         w.writerow({k: ("" if row.get(k) is None else row.get(k)) for k in fieldnames})
+
+# Invalid DC grids keep their failure reason: written to a sidecar the shell
+# folds into failed_points (-> INCOMPLETE + exit 1) after the outputs exist.
+if dc_grid_errors:
+    with open(os.path.join(corners_dir, "_dc_grid_errors.tsv"), "w") as f:
+        for pid, err in dc_grid_errors.items():
+            print(f"run_sweep.sh: INVALID DC GRID {pid}: {err}", file=sys.stderr)
+            f.write(f"{pid}\t{err}\n")
 
 # --- Sensitivity CSV: Cc value sweep + resistor corner sweep, tt/27C only ---
 sens_rows = []
@@ -1173,6 +1363,18 @@ print(f"run_sweep.sh (post-process): wrote {len(main_rows)} main rows, "
       f"{len(attr_rows)} divider-attribution rows")
 PYEOF
 
+# Fold invalid-DC-grid points (#120) into the failed-point accounting.
+DC_GRID_ERRORS_TSV="${CORNERS_OUT}/_dc_grid_errors.tsv"
+DC_GRID_ERROR_LINES=()
+if [[ -s "${DC_GRID_ERRORS_TSV}" ]]; then
+  while IFS=$'\t' read -r _pid _err; do
+    DC_GRID_ERROR_LINES+=("${_pid}: ${_err}")
+    if [[ " ${failed_points[*]-} " != *" ${_pid} "* ]]; then
+      failed_points+=("${_pid}")
+    fi
+  done < "${DC_GRID_ERRORS_TSV}"
+fi
+
 # --- Completeness matrix: every (corner,temp,res_section) has all 3
 # benches present ---
 COMPLETENESS_OK=1
@@ -1208,9 +1410,18 @@ done
   echo "  across the whole grid), or #35 (the \`Cc\` re-compensation that"
   echo "  closes the res_bcs/125C phase-margin gap #31 found), or #67 (the"
   echo "  active-high \`EN\` interface, DR-0008, run with EN tied to VIN)."
+  # Installed-revision provenance is READ from the install (issue #155): the
+  # fetcher's .fetched-version marker, else a git checkout's HEAD, else
+  # "not recorded" -- never a hard-coded commit string.
+  pdk_installed="not recorded (no .fetched-version marker, not a git checkout)"
+  if [[ -f "${PDK_ROOT}/${PDK}/.fetched-version" ]]; then
+    pdk_installed="$(cat "${PDK_ROOT}/${PDK}/.fetched-version") (read from ${PDK}/.fetched-version)"
+  elif git -C "${PDK_ROOT}/${PDK}" rev-parse HEAD >/dev/null 2>&1; then
+    pdk_installed="$(git -C "${PDK_ROOT}/${PDK}" rev-parse HEAD) (git rev-parse HEAD)"
+  fi
   echo "- **PDK**: \`${PDK}\` at \`${PDK_ROOT}\` -- pinned revision: see"
-  echo "  \`sim/pdk-cmos5l.json\` (commit \`607e18d\`, re-verified against the"
-  echo "  installed checkout)."
+  echo "  \`sim/pdk-cmos5l.json\`. Installed revision as read from the install:"
+  echo "  \`${pdk_installed}\`."
   echo "- **OSDI models**: \`${OSDI_DIR}\` -- built by"
   echo "  \`PDK=${PDK} sim/tools/build-osdi.sh\`."
   echo "- **ngspice**: \`${NGSPICE_VERSION}\`"
@@ -1242,10 +1453,18 @@ done
   echo "- **Result**: ${passed}/${total} points PASS (ngspice exit 0, no"
   echo "  convergence/model-load error strings in the log, and the expected"
   echo "  full result set written -- ${EXPECT_ROWS_DC} rows per dcsweep point,"
-  echo "  ${EXPECT_ROWS_AC} per AC point)."
+  echo "  ${EXPECT_ROWS_LG} per loopgain point, ${EXPECT_ROWS_AC} per psrr point)."
+  echo "- **Loop-gain AC sweep** (issue #128): \`${LG_AC_LINE}\` (ceiling"
+  echo "  \`${LG_AC_MAX}\`, floor 1 Hz, 20 points/decade, ${EXPECT_ROWS_LG} rows per"
+  echo "  loopgain trace) in every loopgain deck, requested through"
+  echo "  \`--loopgain-ac-max\` / \`SWEEP_LOOPGAIN_AC_MAX\`. The psrr bench is"
+  echo "  \`ac dec 20 1 100meg\`."
   if [[ ${#failed_points[@]} -gt 0 ]]; then
     echo "- **Failed points**: ${failed_points[*]}"
   fi
+  for _l in "${DC_GRID_ERROR_LINES[@]-}"; do
+    [[ -n "${_l}" ]] && echo "- **Invalid DC grid** (#120): ${_l}"
+  done
   echo "- **Recovered \`Warning: singular matrix\` points**: ${#recoverable_warning_points[@]}"
   echo "  of ${total}. ngspice emitted its recoverable singular-matrix"
   echo "  warning at these points while walking its own convergence-aid"

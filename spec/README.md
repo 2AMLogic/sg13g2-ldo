@@ -37,6 +37,14 @@ being present; ratification state is stated per row.
   `dropout_campaign.py`) belong to `DR-0012`, not to
   [`DR-0009`](decision-records/DR-0009-sg13cmos5l-startup-measurement-methodology.md)
   (startup measurement methodology).
+- [`DR-0014`](decision-records/DR-0014-row10-stability-margin-classification.md)
+  (**proposed**, not ratified) defines how row 10 (stability) margins are read
+  from a loop-gain trace: every 0 dB and -180 deg crossing in the sweep counts
+  (minimum; PM signed by in-band encirclement), a miss inside the sweep is a
+  fail, and a pass needs a bounded sweep ceiling. A trace with no -180 deg
+  crossing is neither a miss nor infinite margin. It keeps the
+  `PM >= 45 deg` / `GM >= 10 dB` targets unchanged, and row 10 stays Open in
+  `DR-0007`.
 - [`porting-plan.md`](porting-plan.md) — informational port plan from the
   gf180/sky130 siblings; not a spec and not a decision record.
 

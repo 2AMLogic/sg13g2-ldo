@@ -41,7 +41,7 @@ REPO = os.path.abspath(os.path.join(HERE, "..", ".."))
 sys.path.insert(0, HERE)
 import dc_metrics as dcm  # noqa: E402
 
-RECORD_ID = "20261010-025634-60a3e81"
+RECORD_ID = "20261011-070111-5391c68"
 RECORD_CSV = f"sim/ldo-cmos5l-pvt-sweep/records/{RECORD_ID}.csv"
 RECORD_MD = f"sim/ldo-cmos5l-pvt-sweep/records/{RECORD_ID}.md"
 CORNERS_DIR = f"sim/ldo-cmos5l-pvt-sweep/corners/{RECORD_ID}"
@@ -52,13 +52,15 @@ DESIGN_NETLISTS = [
 ]
 # Hashes the record ran against (its own record md lists them). Before #67
 # this pinned record 20260917-023832-7061e8f to the pre-EN netlist hashes
-# DR-0007 judged it current against; that record's evidence directory is
-# kept unchanged as history.
+# DR-0007 judged it current against; before #89 it pinned record
+# 20261010-025634-60a3e81 to the six-pin-amplifier netlists (core 7953b25b...,
+# erramp 7982d728...). Both evidence directories are kept unchanged as
+# history.
 DESIGN_PINS = {
-    DESIGN_NETLISTS[0]: "7953b25be4cb00053f8df5f283bee0500f60a826b7a2d6519b88a8578d222cc1",
-    DESIGN_NETLISTS[1]: "7982d728a2db933165eedcae69feaa4985dbddf54c269fc68b82d88577c8e38c",
+    DESIGN_NETLISTS[0]: "08a7b857e1fad43dd7af1f575de97853a058e85541601ecc47567fbc28dbae57",
+    DESIGN_NETLISTS[1]: "75ee39ce0c48b54cab6c8a31acd1f199c37c1ccd1ac074a3515dee81cc656fb4",
 }
-RECORD_CSV_PIN = "d0c1e057c8cbbf0aaaab3df57b753fcca8557375372ee8bf6f6103a0b946c981"
+RECORD_CSV_PIN = "b7a41cfeccfe3100758daf0ef8de87ea765ef4d77a1c987aba4d57f373eb6e6d"
 OUT_DIR = f"sim/ldo-cmos5l-pvt-sweep/evidence/{RECORD_ID}"
 
 CORNERS = ["tt", "ff", "ss", "sf", "fs"]
@@ -497,9 +499,9 @@ def main():
             "raw_dc_grids": raw_hashes,
         },
         "provenance_caveats": [
-            "Record 20261010-025634-60a3e81 was made by run_sweep.sh --batch at PR #87 branch commit 60a3e81, which may not resolve after a squash merge. main's #64 changes were merged into the branch afterwards. Regenerating all 214 decks with the merged harness gives decks that are line-for-line identical apart from comments, and that check was run. Its netlist snapshots .include the design by an absolute worktree path, but the record md states the sha256 of both design netlists it ran against, and those equal the pins here, so netlist freshness is recorded rather than inferred.",
+            "Record 20261011-070111-5391c68 was made by run_sweep.sh --batch --loopgain-ac-max=10g at issue #128 branch commit 5391c68, which may not resolve after a squash merge. All 22 of its fleet requests were submitted afresh (no reused reports). Its netlist snapshots .include the design by an absolute worktree path, but the record md states the sha256 of both design netlists it ran against, and those equal the pins here, so netlist freshness is recorded rather than inferred. Only the loop-gain AC ceiling differs from the previous record 20261011-051956-eda9285 (10 GHz instead of 100 MHz); every DC and PSRR column of the PVT csv is identical to it.",
             "Every point ran on the EDA batch fleet (runner klt 0.5.0, ngspice-46) at PDK commit 607e18d (sim/pdk-cmos5l.json). The six OSDI binaries, including cap_cmomi, were staged from the submitting host's build, and their sha256 appears in every per-point log. The rawfile-to-wrdata reduction reproduced six points of the local ngspice-46 record 20260917-023832-7061e8f byte-for-byte (sim/ldo-cmos5l-pvt-sweep/backend-validation/20261010-025044/).",
-            "The design under test carries the #67 EN interface (DR-0008), with EN tied to VIN in every bench. The disabled state is not part of this grid.",
+            "The design under test carries the #67 EN interface (DR-0008) and the #89 G1 disable pull-down inside the error amplifier (DR-0008 addendum), with EN tied to VIN in every bench, so the pull-down is off. The disabled state is not part of this grid.",
             "Cap model: cornerCAP.lib maps every section to one nominal cap_cmomi, so Cc has no process-corner spread; this affects the AC rows (6, 10) not the DC grid used here.",
             "Reference is an ideal 0.90 V source; supply is swept 2.00-3.63 V; Ibias is an ideal 2 uA sink; loads are ideal DC current sources; Cout = 1 uF is irrelevant at DC.",
         ],

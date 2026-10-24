@@ -200,16 +200,8 @@ LOOM_OWNED_PREFIXES=(
     ".loom/sweep-run/"
     # The two per-host credential pools, never committed and never quarantined:
     # the Claude OAuth token pool and the provider-neutral API-key account pool
-    # (#8401). They share one physical line, and the reason is not stylistic:
-    # this file is `contract` in scripts/shell-allowlist.txt, so epic #7810's
-    # shell-budget ratchet counts code LINES and refuses a new one here. Putting
-    # the second entry on the existing line makes that count read +0. Nothing
-    # was removed elsewhere to pay for it, so this is NOT the ratchet's option 2
-    # -- it sidesteps the line count, because the gate offers no path for a pure
-    # data row. Whether that is acceptable is an open policy question raised on
-    # PR #8428; do not treat this line as precedent for adding further entries.
-    # The Rust mirror (loom-daemon/src/main_health_gate/owned_paths.rs) is under
-    # no such budget and lists them one per line.
+    # (#8401). They share one physical line. The Rust mirror
+    # (loom-daemon/src/main_health_gate/owned_paths.rs) lists them one per line.
     ".loom/tokens/" ".loom/api-keys/"
     ".loom/accounts.env"
     ".loom/exit-codes/"
@@ -278,14 +270,16 @@ is_loom_owned() {
 # filter_loom_owned <porcelain-text> -> the same text with Loom-owned transient
 # lines removed. Parses each `git status --porcelain` v1 line (2 status chars +
 # space + path; rename lines carry "old -> new" and are keyed on the new path).
+# Only an R/C status splits on " -> ": a non-rename path containing one always
+# arrives C-quoted (`?? "a -> b"`) and must be evaluated whole (#11149). A
+# QUOTED rename side that itself contains " -> " still mis-splits here — the
+# result is a path that matches nothing Loom-owned, so the line is kept.
 filter_loom_owned() {
     local in="$1" line path out=""
     while IFS= read -r line; do
         [[ -z "$line" ]] && continue
         path="${line:3}"
-        if [[ "$path" == *" -> "* ]]; then
-            path="${path##* -> }"
-        fi
+        if [[ "${line:0:2}" == *[RC]* ]]; then path="${path##* -> }"; fi
         path="${path%\"}"
         path="${path#\"}"
         if is_loom_owned "$path"; then
@@ -737,12 +731,21 @@ EOF
 
 # Collect the offending (NEW) paths from the porcelain lines. Rename lines
 # ("old -> new") contribute BOTH sides so the rename is undone as a whole.
+# Only an R/C status is split (#11149): `?? "a -> b"` is one quoted path. A
+# QUOTED rename side containing " -> " is still mis-split (pre-existing,
+# contrived); the bogus pathspec matches nothing, so the stash is unaffected.
+#
+# A STAGED deletion (`D  old.txt`) is unstaged here: `git stash push -- <path>`
+# fails ("did not match any files") on a path in neither the index nor the
+# worktree. A rename into a build tree leaves exactly that once its build-tree
+# side is unstaged (#11149); the stash still records the worktree deletion.
 collect_offending_paths() {
     local line path
     while IFS= read -r line; do
         [[ -z "$line" ]] && continue
         path="${line:3}"
-        if [[ "$path" == *" -> "* ]]; then
+        if [[ "${line:0:2}" == "D " ]]; then git -C "$main_root" reset -q -- ":(literal,top)$(unquote_path "$path")" >/dev/null 2>&1 || true; fi
+        if [[ "${line:0:2}" == *[RC]* && "$path" == *" -> "* ]]; then
             OFFENDING_PATHS+=("$(unquote_path "${path%% -> *}")")
             path="${path##* -> }"
         fi
@@ -792,6 +795,9 @@ if [[ -n "$effective_status" && "$QUARANTINE" -eq 1 ]]; then
         done < <("$bt_bin" stashes build-trees --workspace "$main_root" -z 2>/dev/null && printf '\0')
     fi
     if [[ "$bt_ok" -eq 0 ]]; then
+        # A subcommand that printed some directories and then failed must not
+        # leave them excluded: the warning promises include-everything (#11149).
+        TAG_DIRS=()
         echo "WARNING: check-main-clean.sh: no loom-daemon with \`stashes build-trees\` (${bt_bin:-not found});" >&2
         echo "         cargo build trees will NOT be excluded and may be stashed into refs/stash (#11075)." >&2
         echo "         Update loom-daemon (\`loom update\`) to restore the exclusion." >&2

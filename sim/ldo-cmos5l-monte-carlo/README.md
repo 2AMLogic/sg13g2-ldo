@@ -30,6 +30,42 @@ against the **proposed** row-2 window, 1.8 V ±2 % = **1.764–1.836 V**.
 - **Complementary, not overlapping:** #55 owns the deterministic corner
   evidence (T1 item 5). #62 owns startup.
 
+## Bench versions (issue #88)
+
+Issue #67 (DR-0008) appended an active-high `EN` port to the core, so its
+port order is now `VIN VOUT VSS VREF IBIAS EN`. The bench is versioned by
+file rather than edited in place:
+
+| Deck | Core instance | Status |
+|---|---|---|
+| `tb_row2_accuracy.spice` (sha256 `b994dbb0…dbd45`) | `Xtop VIN VOUT 0 VREF IBIAS ldo_core_cmos5l` (five-port) | **Historical, immutable.** Record `20261009-003009-3ee8306` ran it, and every raw report there pins these bytes in `environment.netlist_closure`. It no longer elaborates against the current six-port core. It is kept only as the provenance of that record. |
+| `tb_row2_accuracy_en.spice` | `Xtop VIN VOUT 0 VREF IBIAS VIN ldo_core_cmos5l` (`EN` tied to `VIN`, as in the `ldo-cmos5l-pvt-sweep` templates) | **Live.** All `request-row2-*.json` submit it. Apart from that one instance and its header comment, it is the historical deck card for card. |
+
+Why a new file: `run_campaign.sh check` re-derives a record only from its
+raw reports and never hashes the deck. An in-place edit would therefore
+keep CI green while making the record's "the committed files hash
+identically" statement false. `test_deck_versioning.py` (run by the
+`monte-carlo-record` CI job) enforces the split. It checks that the
+historical deck keeps its bytes, that every bench file a committed raw
+report cites from this directory still hashes to the cited value, that every
+live request selects the successor, and that the successor's instance
+matches the current core's port count with `EN` = `VIN`. It also ships
+negative controls.
+
+**Row-2 results for the EN design: record `20261012-093854-934dbd7`**
+(issue #155, on the re-stamped PDK `f7bca326`). It ran the live
+`tb_row2_accuracy_en.spice` deck through `run_campaign.sh submit` on a new
+record id; 2000/2000 draws in window, the same ≥ 99.08 % (95 %) statement
+per population as before, and the same gmin-stepping caveat. The
+measurement definition below applies unchanged. Its numbers agree with the
+pre-EN record `20261009-003009-3ee8306` to ≤ 1 nV per draw at −40/27 °C and
+≤ 1.75 µV at 125 °C; the staged model files are byte-identical between the
+two, so that residue is attributed to the design, not the PDK (record md,
+"Comparison"). The pre-EN record stays historical: old pin, five-port core.
+`request-row2-smoke-en.json` is a one-unit bench check (tt_nom, 27 °C,
+MC off). Its batch run is non-gating evidence, not a record:
+[`evidence/20261010-193208-028a3f8-en-smoke/`](evidence/20261010-193208-028a3f8-en-smoke/README.md).
+
 ## Measurement definition (row 2, as measured here)
 
 Row 2 reads "Output 1.8 V ±2 % (fixed)". DR-0007 notes the table does not
@@ -43,7 +79,7 @@ does **not** decide the row's wording:
 | Load | none (0 A) | The committed corner record's `vout_no_load_v` condition (`sim/ldo-cmos5l-pvt-sweep/run_sweep.sh`). The 0–50 mA load span belongs to row 5 (load regulation, 0.0076–0.025 % in that record, i.e. under 0.5 mV). |
 | `IBIAS` | 2 µA, sunk externally | The design's documented bias point. |
 | `VREF` | **ideal 0.900 V source** | **Reference error is excluded.** This is *regulator-only* accuracy: error-amplifier offset, bias/mirror mismatch and divider-ratio mismatch. A real reference's own spread must be added (root-sum-square for independent sources) before this number can be read against a system-level ±2 % budget. |
-| `Cout`, `Cc` | not in the DC solution | `Cc` (`cap_cmomi`) is replaced by a DC-only 1 pF stand-in (`tb_row2_accuracy.spice`): its OSDI model is not in the fleet image and it has no mismatch model. A capacitor is open at DC, so this cannot move `VOUT`. |
+| `Cout`, `Cc` | not in the DC solution | `Cc` (`cap_cmomi`) is replaced by a DC-only 1 pF stand-in (in both bench versions): its OSDI model is not in the fleet image and it has no mismatch model. A capacitor is open at DC, so this cannot move `VOUT`. |
 | Limits | 1.764 ≤ `VOUT` ≤ 1.836 V, both inclusive | `klt yield`'s default `>=`/`<=` semantics, pinned by `test_build_yield_inputs.py`. |
 
 ## Variation coverage
@@ -158,7 +194,12 @@ sim/ldo-cmos5l-monte-carlo/run_campaign.sh submit  sim/ldo-cmos5l-monte-carlo/re
 KLT_YIELD=/path/to/klt-with-native \
 sim/ldo-cmos5l-monte-carlo/run_campaign.sh analyse sim/ldo-cmos5l-monte-carlo/records/<record-id>
 python3 -m unittest sim/ldo-cmos5l-monte-carlo/test_build_yield_inputs.py \
-                    sim/ldo-cmos5l-monte-carlo/test_crosscheck.py
+                    sim/ldo-cmos5l-monte-carlo/test_crosscheck.py \
+                    sim/ldo-cmos5l-monte-carlo/test_deck_versioning.py
+# one-unit bench check of the live deck (not part of `submit`; non-gating evidence):
+klt sim sim/ldo-cmos5l-monte-carlo/request-row2-smoke-en.json --backend batch \
+  -o sim/ldo-cmos5l-monte-carlo/evidence/<id>/artifacts --format json \
+  > sim/ldo-cmos5l-monte-carlo/evidence/<id>/raw/row2-smoke-en.sim.json
 ```
 
 `analyse` alone re-derives every committed yield report, `crosscheck.json`
@@ -212,4 +253,17 @@ in CI, klayout-tools#2900).
 ## Records
 
 - [`records/20261009-003009-3ee8306.md`](records/20261009-003009-3ee8306.md):
-  the first campaign (issue #56).
+  the first campaign (issue #56), five-port pre-EN core, bench
+  `tb_row2_accuracy.spice`, old PDK pin `607e18d`. Historical.
+- [`records/20261012-093854-934dbd7.md`](records/20261012-093854-934dbd7.md):
+  the same campaign on the six-port EN core (current design), bench
+  `tb_row2_accuracy_en.spice`, PDK pin `f7bca326` (issue #155). `klt yield`
+  reports from klt `0.7.0+gb82427b30c96` with the native extension built in
+  a scratch venv; that build reproduces the first record's reports byte for
+  byte.
+
+Non-gating evidence (not a record; `run_campaign.sh check` does not read it):
+
+- [`evidence/20261010-193208-028a3f8-en-smoke/`](evidence/20261010-193208-028a3f8-en-smoke/README.md):
+  one-corner batch smoke of `tb_row2_accuracy_en.spice` on the six-port EN
+  core (issue #88). It elaborates and completes, and makes no row-2 claim.

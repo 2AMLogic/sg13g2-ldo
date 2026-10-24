@@ -9,26 +9,42 @@
 - Open (unratified) targets are not passing requirements; a numeric 'pass' on an open row is a measurement against a draft target at the stated conditions.
 - All closed-loop numbers are SG13CMOS5L-branch evidence (DR-0007 'What evidence exists'); no closed-loop evidence exists on the SG13G2 branch.
 - No post-layout (extracted) performance evidence exists for any row; layout reports in layout/ are DRC/LVS/ERC and carry no performance metrics.
+- Row 9 (Startup) reports the explicitly selected committed startup campaign: measured failures are measured failures, missing or insufficient points are never passes, and the evaluation methodology is PROPOSED (DR-0009), not ratified. Row 9 stays Open.
+- Row 10 (Stability) PM/GM verdicts follow the PROPOSED margin classification DR-0014, applied offline to the selected record's committed loop-gain traces: a miss inside the sweep is a fail, a pass needs a bounded sweep ceiling, everything else stays ambiguous with its reason. Row 10 stays Open.
 - Other T1 items are not declared satisfied by this artifact.
 
 ## Selection and sources
 
-- Circuit record (explicitly selected, hash-pinned): `ldo-cmos5l-pvt-sweep` / `20261010-025634-60a3e81`
+- Circuit record (explicitly selected, hash-pinned): `ldo-cmos5l-pvt-sweep` / `20261011-070111-5391c68`
 - Bare-device context record: `20260909-220347-ed18110` (never used as a closed-loop measurement)
-- Selection file: `sim/characterization/selection.json` sha256 `c9aca911794aa9c6aa5b73e6cff24456e35ad1d2df17171e0048812905e6e174`
+- Startup campaign (explicitly selected, hash-pinned, proposed methodology): `20261011-070146-0c95530` stage `grid`
+- Selection file: `sim/characterization/selection.json` sha256 `71c5c2b5f12836d61b96f7bc296706273fc9cc04cf6d96615b32f8ab0e152268`
 - Design freshness: **current**
 
 | Role | Path | sha256 | Pinned |
 |---|---|---|---|
 | bare_device_screening_csv | `sim/pass-device-screening/records/20260909-220347-ed18110.csv` | `5652ffd472abe8c279348efe2665cec2161be0c974bc9bd40f84be7011b020fe` | yes |
-| circuit_cc_tolerance_csv | `sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.cc-tolerance.csv` | `4a9edd748c5df94530ee9ff010d4aa4b9272e0720d32a386e842c3741216e6f8` | yes |
-| circuit_pvt_csv | `sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv` | `d0c1e057c8cbbf0aaaab3df57b753fcca8557375372ee8bf6f6103a0b946c981` | yes |
-| circuit_record_md | `sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.md` | `89239ec65964818a9678ba92d9a13f353be38540d73006a24e2fd0ff04d44f22` | yes |
-| design_netlist_freshness | `design/sg13cmos5l/netlist/ldo_core_cmos5l.spice` | `7953b25be4cb00053f8df5f283bee0500f60a826b7a2d6519b88a8578d222cc1` | yes |
-| design_netlist_freshness | `design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice` | `7982d728a2db933165eedcae69feaa4985dbddf54c269fc68b82d88577c8e38c` | yes |
-| ratification_record | `spec/decision-records/DR-0007-target-spec-row-ratification.md` | `04983cdf2c8e7819d0f68d4dfbcda4ce575b4502ed88c062bb467eeec7927847` | recorded |
-| superseded_evidence_statement | `sim/ldo-cmos5l-pvt-sweep/README.md` | `d290e6470053f56bff033e2f2eb006f4425ed77cde2a449008f45c0e5df2b3f4` | recorded |
-| target_table | `README.md` | `340b92176ef3b4bc39958e6c8be9a2d621a71304dfc458251d9af607fd211aa9` | recorded |
+| circuit_cc_tolerance_csv | `sim/ldo-cmos5l-pvt-sweep/records/20261011-070111-5391c68.cc-tolerance.csv` | `e5a6b19d220a655e2517e08e67ff1f2beb4cdd25bcc78e0a37bf4ea24d6a0320` | yes |
+| circuit_pvt_csv | `sim/ldo-cmos5l-pvt-sweep/records/20261011-070111-5391c68.csv` | `b7a41cfeccfe3100758daf0ef8de87ea765ef4d77a1c987aba4d57f373eb6e6d` | yes |
+| circuit_record_md | `sim/ldo-cmos5l-pvt-sweep/records/20261011-070111-5391c68.md` | `1c63b44f4ea0032ce4dc6317ceae8a93eac919b6dbda09eb1a19baaec9077e9b` | yes |
+| dc_coverage_inventory_json | `sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/coverage-inventory.json` | `87fb438c820002e11d5eca42507d89b670e75c50c59adeb6668a1a5aebcac0a5` | yes |
+| dc_informational_summary_csv | `sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/dc-informational-summary.csv` | `e6e16b6107569201961f8daac844a3d356f44d81a43cbe77e56c9d01ed279641` | yes |
+| design_netlist_freshness | `design/sg13cmos5l/netlist/ldo_core_cmos5l.spice` | `08a7b857e1fad43dd7af1f575de97853a058e85541601ecc47567fbc28dbae57` | yes |
+| design_netlist_freshness | `design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice` | `75ee39ce0c48b54cab6c8a31acd1f199c37c1ccd1ac074a3515dee81cc656fb4` | yes |
+| ratification_record | `spec/decision-records/DR-0007-target-spec-row-ratification.md` | `74496ee0800de6de36ff2f045796a7c2f802f6d647439255df5a8c8e69451556` | recorded |
+| row10_classification_csv | `sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/row10-margins.csv` | `59f7ef734078ded1fadb74460674cccb0685b2369c867c873bb4a331e375d17f` | yes |
+| row10_classification_json | `sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/row10-margins.json` | `5b41ddab09eb2db87e9abe55fd5cd9757742020db35405b62a36733d0818ae9e` | yes |
+| row10_classifier_source | `sim/ldo-cmos5l-pvt-sweep/ac_metrics.py` | `6e96859b839bcb19aaa702eb20a593bfc8914b7b388a8783298e416e65fefd5e` | yes |
+| row10_classifier_source | `sim/ldo-cmos5l-pvt-sweep/dc_metrics.py` | `782319eb4ef619b040f3a4001af67a10def775c9cf17e37fe15b4dd8f3340c81` | yes |
+| row10_classifier_source | `sim/ldo-cmos5l-pvt-sweep/row10_margins.py` | `a6f6d1129095b2fcb73c8c9462eb54b7588259d4118aa932d86c5b01f2a227f7` | yes |
+| row10_classifier_source | `sim/ldo-cmos5l-pvt-sweep/row10_record.py` | `3632a86707f7cf793715667581407b5547511ea2b734dd24503a001df371dcab` | yes |
+| startup_design_core_freshness | `design/sg13cmos5l/netlist/ldo_core_cmos5l.spice` | `08a7b857e1fad43dd7af1f575de97853a058e85541601ecc47567fbc28dbae57` | yes |
+| startup_design_error_amp_freshness | `design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice` | `75ee39ce0c48b54cab6c8a31acd1f199c37c1ccd1ac074a3515dee81cc656fb4` | yes |
+| startup_grid_csv | `sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.csv` | `bc4ea61162a51f3b7ecbefad4c82663f6928139d64f3ba09875c22fe7d2df3d1` | yes |
+| startup_manifest_json | `sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.manifest.json` | `3ec537f955f03dbd081870a068d01825106a886cd0f5ac0698289932cf5a7c95` | yes |
+| startup_record_md | `sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.md` | `908c108fd44b729846b51c0d9a75b35daf3dee4d7bc4c9fab3f091d8a06b307c` | yes |
+| superseded_evidence_statement | `sim/ldo-cmos5l-pvt-sweep/README.md` | `b8122211cc9d679b80ee04533f3237c3cebb0f024e417e0f77abf8d5ee383d44` | recorded |
+| target_table | `README.md` | `3e0d9a72910e8fa625153c753d397c24d1c39ddac647bf0253684cc4a199837d` | recorded |
 
 ## Per-row summary
 
@@ -40,9 +56,9 @@
 | 4 | Dropout @ 50 mA | < 300 mV worst corner | ratified (deterministic) | **pass_full_coverage** | full | current |
 | 5 | Line / load regulation | < 5 mV/V; < 1% over full load, inside the accuracy window | open_unratified (deterministic) | **pass_partial_coverage** | partial | current |
 | 6 | PSRR | > 50 dB @ 1 kHz, > 20 dB @ 100 kHz | open_unratified (deterministic) | **pass_partial_coverage** | partial | current |
-| 7 | Iq (excluding load) | < 30 µA at no load and at full load | open_unratified (deterministic) | **pass_partial_coverage** | partial | current_partial_superseded_other_half |
+| 7 | Iq (excluding load) | < 30 µA at no load and at full load | open_unratified (deterministic) | **pass_partial_coverage** | partial | current |
 | 8 | Current limit | 65–80 mA brickwall over PVT; short-survivable | open_unratified (statistical) | **not_implemented** | none | none |
-| 9 | Startup | monotonic, controlled ramp, inside ±2% within 3 ms of enable | open_unratified (deterministic) | **not_implemented** | none | none |
+| 9 | Startup | monotonic, controlled ramp, inside ±2% within 3 ms of enable | open_unratified (deterministic) | **fail** | partial | current |
 | 10 | Stability | 0–50 mA, C_out 0.33–4.7 µF effective, ESR 0–500 mΩ; PM ≥ 45°, GM ≥ 10 dB worst corner | open_unratified (deterministic) | **ambiguous** | partial | current |
 
 Verdict key: `pass_*` = measured metrics meet the bound at the stated conditions (not a compliance claim); `fail` = a measured point violates the bound; `ambiguous` = scalar not trustworthy at some points; `not_measured` = no current measurement; `not_implemented` = function absent from the design.
@@ -73,12 +89,12 @@ Verdict key: `pass_*` = measured metrics meet the bound at the stated conditions
 - **VOUT no load, lower bound 1.8 V -2 %** (V): pass; bound ge 1.764 V; 45/45 pass, 0 fail, 0 ambiguous, 0 censored upper bound
   - worst case 1.80022787 at ss/-40C/res_bcs
   - conditions: no load, Vin = 3.30 V (record md: dcsweep bench)
-  - source: `sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv` column `vout_no_load_v`
-  - observed range 1.80022787..1.80065464 V
+  - source: `sim/ldo-cmos5l-pvt-sweep/records/20261011-070111-5391c68.csv` column `vout_no_load_v`
+  - observed range 1.80022787..1.80065381 V
 - **VOUT no load, upper bound 1.8 V +2 %** (V): pass; bound le 1.836 V; 45/45 pass, 0 fail, 0 ambiguous, 0 censored upper bound
-  - worst case 1.80065464 at ff/125C/res_wcs
+  - worst case 1.80065381 at ff/125C/res_wcs
   - conditions: no load, Vin = 3.30 V (record md: dcsweep bench)
-  - source: `sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv` column `vout_no_load_v`
+  - source: `sim/ldo-cmos5l-pvt-sweep/records/20261011-070111-5391c68.csv` column `vout_no_load_v`
 
 ### 3. Load -- pass_partial_coverage
 
@@ -93,11 +109,11 @@ Verdict key: `pass_*` = measured metrics meet the bound at the stated conditions
 - **VOUT at 50 mA, lower bound 1.8 V -2 %** (V): pass; bound ge 1.764 V; 45/45 pass, 0 fail, 0 ambiguous, 0 censored upper bound
   - worst case 1.80014429 at ss/-40C/res_typ (first of 3 points at this value)
   - conditions: 50 mA load, Vin = 3.63 V (record md: dcsweep bench)
-  - source: `sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv` column `vout_at_vinmax_50ma_v`
+  - source: `sim/ldo-cmos5l-pvt-sweep/records/20261011-070111-5391c68.csv` column `vout_at_vinmax_50ma_v`
 - **VOUT at 50 mA, upper bound 1.8 V +2 %** (V): pass; bound le 1.836 V; 45/45 pass, 0 fail, 0 ambiguous, 0 censored upper bound
-  - worst case 1.80028532 at ff/125C/res_typ (first of 2 points at this value)
+  - worst case 1.80028448 at ff/125C/res_typ (first of 3 points at this value)
   - conditions: 50 mA load, Vin = 3.63 V (record md: dcsweep bench)
-  - source: `sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv` column `vout_at_vinmax_50ma_v`
+  - source: `sim/ldo-cmos5l-pvt-sweep/records/20261011-070111-5391c68.csv` column `vout_at_vinmax_50ma_v`
 - **dynamic behaviour at 0 mA (no external preload)**: not_measured -- AC loop-gain and PSRR benches run at 1 mA only; no 0 mA dynamic evidence.
 
 ### 4. Dropout @ 50 mA -- pass_full_coverage
@@ -109,60 +125,116 @@ Verdict key: `pass_*` = measured metrics meet the bound at the stated conditions
 - **dropout at 50 mA** (V): pass; bound lt 0.3 V; 45/45 pass, 0 fail, 0 ambiguous, 36 censored upper bound
   - worst case 0.24 at ss/125C/res_typ (first of 3 points at this value)
   - conditions: 50 mA load; 1 % VOUT-loss definition; sweep floor 0.20 V (values at the floor are upper bounds)
-  - source: `sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv` column `dropout_v_50ma`
+  - source: `sim/ldo-cmos5l-pvt-sweep/records/20261011-070111-5391c68.csv` column `dropout_v_50ma`
   - note: Values equal to the sweep floor are censored: the true dropout is <= the reported value. For a '<' target an upper bound that already satisfies the bound is sufficient; the worst case is an exact (uncensored) measurement.
 
 ### 5. Line / load regulation -- pass_partial_coverage
 
 - Target: < 5 mV/V; < 1% over full load, inside the accuracy window; stretch: —
-- Ratification: open_unratified (README: OPEN — unratified (loaded line / multi-Vin load regulation missing); DR-0007: Open, deterministic)
+- Ratification: open_unratified (README: OPEN — unratified (informational loaded line / multi-Vin load regulation measured at discrete points; not ratified); DR-0007: Open, deterministic)
 - Coverage of the row as written: partial. Gaps:
-  - line regulation measured at no load only
-  - load regulation measured at Vin = 3.63 V only; not at 3.30/2.97 V
-  - 'inside the accuracy window' (Vin window) not covered for either metric (#55)
+  - line regulation sampled at 5 discrete loads (0, 12.5, 25, 37.5, 50 mA) over Vin 2.97-3.63 V; load regulation sampled at 3 discrete supplies (2.97, 3.30, 3.63 V) -- not continuous coverage of the window
+  - 'inside the accuracy window' (coupling with the statistical VOUT row, #56) not covered for either metric
+  - ideal 0.90 V reference: reference error is excluded; corner grid only, no Monte Carlo
 
-- **line regulation** (mV/V): pass; bound lt 5.0 mV/V; 45/45 pass, 0 fail, 0 ambiguous, 0 censored upper bound
-  - worst case 0.245757576 at ff/125C/res_wcs
+- **line regulation, legacy record column (no load)** (mV/V): pass; bound lt 5.0 mV/V; 45/45 pass, 0 fail, 0 ambiguous, 0 censored upper bound
+  - worst case 0.245772727 at ff/125C/res_wcs
   - conditions: no load only
-  - source: `sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv` column `line_reg_mv_per_v`
-- **load regulation** (%): pass; bound lt 1.0 %; 45/45 pass, 0 fail, 0 ambiguous, 0 censored upper bound
-  - worst case 0.0253750917 at ff/125C/res_wcs
+  - source: `sim/ldo-cmos5l-pvt-sweep/records/20261011-070111-5391c68.csv` column `line_reg_mv_per_v`
+- **load regulation, legacy record column (Vin = 3.63 V)** (%): pass; bound lt 1.0 %; 45/45 pass, 0 fail, 0 ambiguous, 0 censored upper bound
+  - worst case 0.0253756587 at ff/125C/res_wcs
   - conditions: 0-50 mA, Vin = 3.63 V only
-  - source: `sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv` column `load_reg_pct`
+  - source: `sim/ldo-cmos5l-pvt-sweep/records/20261011-070111-5391c68.csv` column `load_reg_pct`
+- **line regulation at 0 mA load (Vin 2.97-3.63 V)** (mV/V): pass; bound lt 5.0 mV/V; 45/45 pass, 0 fail, 0 ambiguous, 0 censored upper bound
+  - worst case 0.245772727 at ff/125C/res_wcs
+  - conditions: line regulation |dVOUT/dVin| over Vin 2.97-3.63 V at the labelled load; ideal 0.90 V reference; 45-point corner grid
+  - source: `sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/dc-informational-summary.csv` column `line_reg_mv_per_v_0mA`
+  - validity: 45 valid, 0 invalid (invalid points are counted, not dropped)
+  - note: Informational DC summary (derived offline from the committed raw DC grids, no new simulation). A point is valid only if both end points are within 1 % of 1.8 V; invalid points are counted as ambiguous and never dropped. Discrete sampled loads/supplies only: not a continuous-window claim.
+- **line regulation at 12.5 mA load (Vin 2.97-3.63 V)** (mV/V): pass; bound lt 5.0 mV/V; 45/45 pass, 0 fail, 0 ambiguous, 0 censored upper bound
+  - worst case 0.179454545 at ff/125C/res_typ (first of 3 points at this value)
+  - conditions: line regulation |dVOUT/dVin| over Vin 2.97-3.63 V at the labelled load; ideal 0.90 V reference; 45-point corner grid
+  - source: `sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/dc-informational-summary.csv` column `line_reg_mv_per_v_12p5mA`
+  - validity: 45 valid, 0 invalid (invalid points are counted, not dropped)
+  - note: Informational DC summary (derived offline from the committed raw DC grids, no new simulation). A point is valid only if both end points are within 1 % of 1.8 V; invalid points are counted as ambiguous and never dropped. Discrete sampled loads/supplies only: not a continuous-window claim.
+- **line regulation at 25 mA load (Vin 2.97-3.63 V)** (mV/V): pass; bound lt 5.0 mV/V; 45/45 pass, 0 fail, 0 ambiguous, 0 censored upper bound
+  - worst case 0.176318182 at ff/125C/res_typ (first of 3 points at this value)
+  - conditions: line regulation |dVOUT/dVin| over Vin 2.97-3.63 V at the labelled load; ideal 0.90 V reference; 45-point corner grid
+  - source: `sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/dc-informational-summary.csv` column `line_reg_mv_per_v_25mA`
+  - validity: 45 valid, 0 invalid (invalid points are counted, not dropped)
+  - note: Informational DC summary (derived offline from the committed raw DC grids, no new simulation). A point is valid only if both end points are within 1 % of 1.8 V; invalid points are counted as ambiguous and never dropped. Discrete sampled loads/supplies only: not a continuous-window claim.
+- **line regulation at 37.5 mA load (Vin 2.97-3.63 V)** (mV/V): pass; bound lt 5.0 mV/V; 45/45 pass, 0 fail, 0 ambiguous, 0 censored upper bound
+  - worst case 0.176 at fs/125C/res_typ (first of 3 points at this value)
+  - conditions: line regulation |dVOUT/dVin| over Vin 2.97-3.63 V at the labelled load; ideal 0.90 V reference; 45-point corner grid
+  - source: `sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/dc-informational-summary.csv` column `line_reg_mv_per_v_37p5mA`
+  - validity: 45 valid, 0 invalid (invalid points are counted, not dropped)
+  - note: Informational DC summary (derived offline from the committed raw DC grids, no new simulation). A point is valid only if both end points are within 1 % of 1.8 V; invalid points are counted as ambiguous and never dropped. Discrete sampled loads/supplies only: not a continuous-window claim.
+- **line regulation at 50 mA load (Vin 2.97-3.63 V)** (mV/V): pass; bound lt 5.0 mV/V; 45/45 pass, 0 fail, 0 ambiguous, 0 censored upper bound
+  - worst case 0.177863636 at fs/125C/res_typ (first of 3 points at this value)
+  - conditions: line regulation |dVOUT/dVin| over Vin 2.97-3.63 V at the labelled load; ideal 0.90 V reference; 45-point corner grid
+  - source: `sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/dc-informational-summary.csv` column `line_reg_mv_per_v_50mA`
+  - validity: 45 valid, 0 invalid (invalid points are counted, not dropped)
+  - note: Informational DC summary (derived offline from the committed raw DC grids, no new simulation). A point is valid only if both end points are within 1 % of 1.8 V; invalid points are counted as ambiguous and never dropped. Discrete sampled loads/supplies only: not a continuous-window claim.
+- **load regulation 0-50 mA at Vin = 2.97 V** (%): pass; bound lt 1.0 %; 45/45 pass, 0 fail, 0 ambiguous, 0 censored upper bound
+  - worst case 0.0228476479 at ff/125C/res_wcs
+  - conditions: load regulation (V(0 mA) - V(50 mA)) / V(0 mA) at the labelled fixed Vin; ideal 0.90 V reference; 45-point corner grid
+  - source: `sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/dc-informational-summary.csv` column `load_reg_pct_vin2p97`
+  - validity: 45 valid, 0 invalid (invalid points are counted, not dropped)
+  - note: Informational DC summary (derived offline from the committed raw DC grids, no new simulation). A point is valid only if both end points are within 1 % of 1.8 V; invalid points are counted as ambiguous and never dropped. Discrete sampled loads/supplies only: not a continuous-window claim.
+- **load regulation 0-50 mA at Vin = 3.30 V** (%): pass; bound lt 1.0 %; 45/45 pass, 0 fail, 0 ambiguous, 0 censored upper bound
+  - worst case 0.0237136088 at ff/125C/res_wcs
+  - conditions: load regulation (V(0 mA) - V(50 mA)) / V(0 mA) at the labelled fixed Vin; ideal 0.90 V reference; 45-point corner grid
+  - source: `sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/dc-informational-summary.csv` column `load_reg_pct_vin3p30`
+  - validity: 45 valid, 0 invalid (invalid points are counted, not dropped)
+  - note: Informational DC summary (derived offline from the committed raw DC grids, no new simulation). A point is valid only if both end points are within 1 % of 1.8 V; invalid points are counted as ambiguous and never dropped. Discrete sampled loads/supplies only: not a continuous-window claim.
+- **load regulation 0-50 mA at Vin = 3.63 V** (%): pass; bound lt 1.0 %; 45/45 pass, 0 fail, 0 ambiguous, 0 censored upper bound
+  - worst case 0.0253756587 at ff/125C/res_wcs
+  - conditions: load regulation (V(0 mA) - V(50 mA)) / V(0 mA) at the labelled fixed Vin; ideal 0.90 V reference; 45-point corner grid
+  - source: `sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/dc-informational-summary.csv` column `load_reg_pct_vin3p63`
+  - validity: 45 valid, 0 invalid (invalid points are counted, not dropped)
+  - note: Informational DC summary (derived offline from the committed raw DC grids, no new simulation). A point is valid only if both end points are within 1 % of 1.8 V; invalid points are counted as ambiguous and never dropped. Discrete sampled loads/supplies only: not a continuous-window claim.
 
 ### 6. PSRR -- pass_partial_coverage
 
 - Target: > 50 dB @ 1 kHz, > 20 dB @ 100 kHz; stretch: > 60 dB @ 1 kHz
 - Ratification: open_unratified (README: OPEN — unratified (1 mA / 1 µF only; `Cc` un-cornered); DR-0007: Open, deterministic)
 - Stretch: stretch > 60 dB @ 1 kHz not met: 45 of 45 points are <= 60 dB; stretch is not ratified.
-- Note: Cc value tolerance (ss/125C only, sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.cc-tolerance.csv): all of PM, GM and PSRR rows hold for Cc in x0.647..x1.524 of nominal.
+- Note: Cc value tolerance (ss/125C only, sim/ldo-cmos5l-pvt-sweep/records/20261011-070111-5391c68.cc-tolerance.csv): all of PM, GM and PSRR rows hold for Cc in x0.647..x1.524 of nominal.
 - Coverage of the row as written: partial. Gaps:
   - single AC condition: Vin = 3.30 V, 1 mA, 1 uF, ESR 0 -- not 50 mA, not the Cout/ESR window
   - Cc is un-cornered (MoM-cap model has no corner spread; record labels PSRR insufficient-evidence)
 
 - **PSRR @ 1 kHz** (dB): pass; bound gt 50.0 dB; 45/45 pass, 0 fail, 0 ambiguous, 0 censored upper bound
-  - worst case 53.6428867 at ss/125C/res_wcs
+  - worst case 53.6428785 at ss/125C/res_wcs
   - conditions: Vin = 3.30 V, Iload = 1 mA, Cout = 1 uF, ESR = 0, ideal 0.90 V reference; Cc nominal (MoM-cap model has no corner spread at this PDK pin)
-  - source: `sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv` column `psrr_db_1khz`
+  - source: `sim/ldo-cmos5l-pvt-sweep/records/20261011-070111-5391c68.csv` column `psrr_db_1khz`
 - **PSRR @ 100 kHz** (dB): pass; bound gt 20.0 dB; 45/45 pass, 0 fail, 0 ambiguous, 0 censored upper bound
-  - worst case 33.2341904 at ff/27C/res_bcs
+  - worst case 33.2340884 at ff/27C/res_bcs
   - conditions: Vin = 3.30 V, Iload = 1 mA, Cout = 1 uF, ESR = 0, ideal 0.90 V reference; Cc nominal (MoM-cap model has no corner spread at this PDK pin)
-  - source: `sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv` column `psrr_db_100khz`
+  - source: `sim/ldo-cmos5l-pvt-sweep/records/20261011-070111-5391c68.csv` column `psrr_db_100khz`
 
 ### 7. Iq (excluding load) -- pass_partial_coverage
 
 - Target: < 30 µA at no load and at full load; stretch: < 10 µA
-- Ratification: open_unratified (README: OPEN — unratified (no current full-load record); DR-0007: Open, deterministic)
-- Stretch: stretch < 10 uA not met: max observed Iq 24.72 uA.
+- Ratification: open_unratified (README: OPEN — unratified (informational full-load Iq measured at Vin = 3.30 V only; not ratified); DR-0007: Open, deterministic)
+- Stretch: stretch < 10 uA not met: max observed no-load Iq 24.72 uA, max full-load Iq 24.89 uA.
 - Coverage of the row as written: partial. Gaps:
-  - full-load half of the row has no current-design measurement
+  - Iq at full load is measured at Vin = 3.30 V only (no other supplies)
+  - full-load Iq is a difference of two ~50 mA currents; quantized at 1e-10 A, solver noise not bounded beyond that
+  - ideal 0.90 V reference and ideal Ibias sink: reference/bias-generator current excluded; corner grid only
 
 - **Iq, no load** (uA): pass; bound lt 30.0 uA; 45/45 pass, 0 fail, 0 ambiguous, 0 censored upper bound
-  - worst case 24.7221613 at ss/125C/res_bcs
+  - worst case 24.7221724 at ss/125C/res_bcs
   - conditions: no load, Vin = 3.30 V (record md: dcsweep bench)
-  - source: `sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv` column `iq_a`
+  - source: `sim/ldo-cmos5l-pvt-sweep/records/20261011-070111-5391c68.csv` column `iq_a`
   - note: column iq_a is in A; converted to uA (x1e6) for the row's unit
-- **Iq at full load**: not_measured -- The selected record reports no full-load Iq. An older record's full-load figure (23.05uA-23.08uA) is on a superseded design and is NOT used as current evidence.
+- **Iq at full load (50 mA), load current excluded** (uA): pass; bound lt 30.0 uA; 45/45 pass, 0 fail, 0 ambiguous, 0 censored upper bound
+  - worst case 24.8874 at ff/125C/res_bcs
+  - conditions: 50 mA load, Vin = 3.30 V, |i(Vin)| - Iload; ideal 0.90 V reference and 2 uA Ibias sink; 45-point corner grid
+  - source: `sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/dc-informational-summary.csv` column `iq_fullload_excl_load_a`
+  - validity: 45 valid, 0 invalid (invalid points are counted, not dropped)
+  - precision floor: print quantum 1e-10 A; solver-noise proxy 0.000100000008 uA
+  - note: Derived offline as |i(Vin)| - Iload from the committed raw DC grid (column in A, converted to uA). Precision caveat: the grid is printed to 9 significant digits, so a ~22 uA difference of two ~50 mA currents is quantized at 1e-10 A (0.0001 uA); solver noise beyond that floor is not bounded by this data. Invalid points are counted as ambiguous, never dropped. An older record's full-load figure (23.05uA-23.08uA) is on a superseded design and is NOT used.
 
 ### 8. Current limit -- not_implemented
 
@@ -173,46 +245,96 @@ Verdict key: `pass_*` = measured metrics meet the bound at the stated conditions
 
 - **current limit window**: not_implemented -- No current limiter in the design; record md lists current limit as 'not implemented'.
 
-### 9. Startup -- not_implemented
+### 9. Startup -- fail
 
 - Target: monotonic, controlled ramp, inside ±2% within 3 ms of enable; stretch: —
-- Ratification: open_unratified (README: OPEN — unratified (not implemented); DR-0007: Open, deterministic)
-- Coverage of the row as written: none. Gaps:
-  - no enable input, no transient testbench
+- Ratification: open_unratified (README: OPEN — unratified (measured on the SG13CMOS5L core with proposed methodology: all 135 grid points fail the overshoot / monotonicity checks; not ratified); DR-0007: Open, deterministic)
+- Note: Measured: 135 of 135 requested points evaluated, 135 fail, 0 pass, 0 insufficient, 0 missing (sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.csv). 135 of 135 points that settle within 3 ms still fail the proposed overshoot / monotonicity checks.
+- Note: Proposed methodology, not ratified: DR-0007 row 9 stays Open; no ratification and no whole-spec pass is inferred.
+- Coverage of the row as written: partial. Gaps:
+  - proposed methodology (DR-0009) only; the target's 'controlled ramp' has no numeric bound and is not graded
+  - one load/Cout/ESR point only: 1 mA, 1 uF, 0 ohm ESR -- not 0-50 mA, 0.33-4.7 uF, 0-500 mohm
+  - Vin grid is 2.97/3.30/3.63 V; Cc and the 0.90 V reference are not cornered; schematic level, no post-layout evidence
 
-- **startup**: not_implemented -- No enable input and no transient testbench; record md lists startup as 'not implemented'.
+- **Startup campaign (measured; PROPOSED methodology, row stays Open; no ratification inferred)**
+  - record `20261011-070146-0c95530` stage `grid` (sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.md, sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.csv)
+  - requested 135, result rows 135, evaluated 135, missing 0, insufficient 0; csv verdicts pass 0 / fail 135 / insufficient 0
+  - 135 of 135 points settle within 3 ms and still fail the proposed overshoot / monotonicity checks
+  - failure reasons (points): reen_downward excursion 135, reen_peak 135, start_downward excursion 135, start_peak 135
+  - design freshness: **current**; core matches (`design/sg13cmos5l/netlist/ldo_core_cmos5l.spice`); error_amp matches (`design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice`)
+  - start overshoot above 1.8 V [V]: min 0.0583933 at ss/-40C/res_typ/Vin 2.97V/1mA/1000nF/ESR 0mohm; max 0.538852 at ff/125C/res_wcs/Vin 3.63V/1mA/1000nF/ESR 0mohm
+  - start peak VOUT [V]: min 1.85839 at ss/-40C/res_typ/Vin 2.97V/1mA/1000nF/ESR 0mohm; max 2.33885 at ff/125C/res_wcs/Vin 3.63V/1mA/1000nF/ESR 0mohm
+  - start settle time [s]: min 2.84714e-05 at ss/-40C/res_typ/Vin 2.97V/1mA/1000nF/ESR 0mohm; max 0.000440999 at ff/125C/res_wcs/Vin 3.63V/1mA/1000nF/ESR 0mohm
+  - start max downward excursion [V]: min 0.022407 at ss/-40C/res_typ/Vin 2.97V/1mA/1000nF/ESR 0mohm; max 0.50375 at ff/125C/res_wcs/Vin 3.63V/1mA/1000nF/ESR 0mohm
+  - re-enable overshoot [V]: min 0.0449093 at ss/125C/res_wcs/Vin 2.97V/1mA/1000nF/ESR 0mohm; max 0.449052 at ff/-40C/res_wcs/Vin 3.63V/1mA/1000nF/ESR 0mohm
+  - re-enable max downward excursion [V]: min 0.00927083 at ss/125C/res_wcs/Vin 2.97V/1mA/1000nF/ESR 0mohm; max 0.413312 at ff/-40C/res_wcs/Vin 3.63V/1mA/1000nF/ESR 0mohm
+  - proposed methodology: band 1.764-1.836 V, settle <= 0.003 s, monotonic tolerance 0.001 V (spec/decision-records/DR-0009-sg13cmos5l-startup-measurement-methodology.md); Overshoot is read as peak VOUT above the +2 % band edge (1.836 V) and monotonicity as maximum downward excursion <= 1 mV before settling. 'controlled ramp' has no numeric bound in the target text and is not graded. Cold-start disabled window (DR-0009 amendment, issue #130): the contiguous initial EN <= 1 mV plateau before the first rising ramp; off_supply_current_a is -ivin at its last sample. Selected record 20261011-070146-0c95530 re-collects 20261011-031426-df3f802's traces with that evaluator (the evaluator and campaign sha256 are in its manifest source_sha256).
+  - none inferred: row 9 stays Open (DR-0007); proposed methodology only
+
+- **start: settle time into the +/-2 % band (3 ms limit)** (s): pass; bound le 0.003 s; 135/135 pass, 0 fail, 0 ambiguous, 0 censored upper bound
+  - worst case 0.000440999416 at ff/125C/res_wcs/Vin 3.63V/1mA/1000nF/ESR 0mohm
+  - conditions: EN-bearing core (DR-0008), EN = VIN * CTL step at t = 1 ms, schematic level; grid process {tt,ss,ff,sf,fs} x temperature {-40,27,125} C x resistor corner {typ,bcs,wcs} x Vin {2.97,3.30,3.63} V; resistive load 1 mA (1.8 kohm), Cout 1 uF, ESR 0, Cc nominal; ideal 0.90 V reference; 135 requested points. Time zero is the EN = VIN/2 crossing; PROPOSED methodology (DR-0009), not ratified
+  - source: `sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.csv` column `start_settle_time_s`
+  - note: Numeric settling success does not override the monotonicity and overshoot metrics below; each is scored independently and any failure fails the row. A point that never settled is scored at its observation length (a lower bound).
+- **start: peak VOUT above the +2 % band edge (overshoot, proposed bound 1.836 V)** (V): fail; bound le 1.836 V; 0/135 pass, 135 fail, 0 ambiguous, 0 censored upper bound
+  - worst case 2.33885177 at ff/125C/res_wcs/Vin 3.63V/1mA/1000nF/ESR 0mohm
+  - conditions: EN-bearing core (DR-0008), EN = VIN * CTL step at t = 1 ms, schematic level; grid process {tt,ss,ff,sf,fs} x temperature {-40,27,125} C x resistor corner {typ,bcs,wcs} x Vin {2.97,3.30,3.63} V; resistive load 1 mA (1.8 kohm), Cout 1 uF, ESR 0, Cc nominal; ideal 0.90 V reference; 135 requested points. Time zero is the EN = VIN/2 crossing; PROPOSED methodology (DR-0009), not ratified
+  - source: `sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.csv` column `start_peak_vout_v`
+- **start: max downward excursion before settling (monotonicity, proposed 1 mV tolerance)** (V): fail; bound le 0.001 V; 0/135 pass, 135 fail, 0 ambiguous, 0 censored upper bound
+  - worst case 0.50375 at ff/125C/res_wcs/Vin 3.63V/1mA/1000nF/ESR 0mohm
+  - conditions: EN-bearing core (DR-0008), EN = VIN * CTL step at t = 1 ms, schematic level; grid process {tt,ss,ff,sf,fs} x temperature {-40,27,125} C x resistor corner {typ,bcs,wcs} x Vin {2.97,3.30,3.63} V; resistive load 1 mA (1.8 kohm), Cout 1 uF, ESR 0, Cc nominal; ideal 0.90 V reference; 135 requested points. Time zero is the EN = VIN/2 crossing; PROPOSED methodology (DR-0009), not ratified
+  - source: `sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.csv` column `start_max_down_excursion_v`
+- **re-enable: peak VOUT above the +2 % band edge (proposed bound 1.836 V)** (V): fail; bound le 1.836 V; 0/135 pass, 135 fail, 0 ambiguous, 0 censored upper bound
+  - worst case 2.24905157 at ff/-40C/res_wcs/Vin 3.63V/1mA/1000nF/ESR 0mohm
+  - conditions: EN-bearing core (DR-0008), EN = VIN * CTL step at t = 1 ms, schematic level; grid process {tt,ss,ff,sf,fs} x temperature {-40,27,125} C x resistor corner {typ,bcs,wcs} x Vin {2.97,3.30,3.63} V; resistive load 1 mA (1.8 kohm), Cout 1 uF, ESR 0, Cc nominal; ideal 0.90 V reference; 135 requested points. Time zero is the EN = VIN/2 crossing; PROPOSED methodology (DR-0009), not ratified
+  - source: `sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.csv` column `reen_peak_vout_v`
+- **re-enable: max downward excursion (proposed 1 mV tolerance)** (V): fail; bound le 0.001 V; 0/135 pass, 135 fail, 0 ambiguous, 0 censored upper bound
+  - worst case 0.41331208 at ff/-40C/res_wcs/Vin 3.63V/1mA/1000nF/ESR 0mohm
+  - conditions: EN-bearing core (DR-0008), EN = VIN * CTL step at t = 1 ms, schematic level; grid process {tt,ss,ff,sf,fs} x temperature {-40,27,125} C x resistor corner {typ,bcs,wcs} x Vin {2.97,3.30,3.63} V; resistive load 1 mA (1.8 kohm), Cout 1 uF, ESR 0, Cc nominal; ideal 0.90 V reference; 135 requested points. Time zero is the EN = VIN/2 crossing; PROPOSED methodology (DR-0009), not ratified
+  - source: `sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.csv` column `reen_max_down_excursion_v`
 
 ### 10. Stability -- ambiguous
 
 - Target: 0–50 mA, C_out 0.33–4.7 µF effective, ESR 0–500 mΩ; PM ≥ 45°, GM ≥ 10 dB worst corner; stretch: capless variant (separate fork)
 - Ratification: open_unratified (README: OPEN — unratified (one load/C_out/ESR point only); DR-0007: Open, deterministic)
-- Note: Cc value tolerance (ss/125C only, sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.cc-tolerance.csv): PM, GM and PSRR all hold for Cc in x0.647..x1.524 of nominal.
+- Note: Cc value tolerance (ss/125C only, sim/ldo-cmos5l-pvt-sweep/records/20261011-070111-5391c68.cc-tolerance.csv): PM, GM and PSRR all hold for Cc in x0.647..x1.524 of nominal (first-crossing reading, pre-DR-0014).
+- Note: PM/GM verdicts follow the PROPOSED margin classification spec/decision-records/DR-0014-row10-stability-margin-classification.md applied offline to the committed traces (sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/row10-margins.csv); row 10 stays Open (DR-0007) and nothing is ratified.
 - Coverage of the row as written: partial. Gaps:
   - one (Cout, ESR, load) point only: 1 uF, 0 ohm, 1 mA -- not 0.33-4.7 uF, 0-500 mohm, 0-50 mA
   - Cc is un-cornered; Cc tolerance checked at ss/125C only
-  - 15 of 45 points have more than one 0 dB crossing (ambiguous scalar PM)
+  - sweep ceiling 10 GHz bounded at 0 of 45 points (loop gain 0.398..1.17 dB and falling at the ceiling): no PM or GM pass can be scored under DR-0014 until a bench bounds the loop gain above 10 GHz
+  - 45 of 45 points have two 0 dB crossings
 
-- **phase margin (first 0 dB crossing)** (deg): ambiguous; bound ge 45.0 deg; 30/45 pass, 0 fail, 15 ambiguous, 0 censored upper bound
-  - worst case 53.8710338 at ss/125C/res_bcs
-  - conditions: Vin = 3.30 V, Iload = 1 mA, Cout = 1 uF, ESR = 0, ideal 0.90 V reference; Cc nominal (MoM-cap model has no corner spread at this PDK pin)
-  - source: `sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv` column `phase_margin_deg`
-  - ambiguous points: tt/-40C/res_typ, tt/-40C/res_wcs, tt/27C/res_wcs, ss/-40C/res_wcs, ff/-40C/res_typ, ff/-40C/res_bcs, ff/-40C/res_wcs, ff/27C/res_typ, ff/27C/res_wcs, sf/-40C/res_typ, sf/-40C/res_bcs, sf/-40C/res_wcs, sf/27C/res_wcs, fs/-40C/res_typ, fs/-40C/res_wcs
-  - at those points: first-crossing PM 74.3390934..76.7959245 deg, record phase_margin_worst_deg -166.185006..-158.026268 deg (unresolved)
-  - note: Points with more than one 0 dB crossing are not scored: the scalar PM is the first crossing only and the record's phase_margin_worst_deg is reported beside it unresolved. No scalar pass is manufactured for them.
-- **gain margin (first -180 deg crossing)** (dB): pass; bound ge 10.0 dB; 45/45 pass, 0 fail, 0 ambiguous, 0 censored upper bound
-  - worst case 13.8525525 at ff/-40C/res_wcs
-  - conditions: Vin = 3.30 V, Iload = 1 mA, Cout = 1 uF, ESR = 0, ideal 0.90 V reference; Cc nominal (MoM-cap model has no corner spread at this PDK pin)
-  - source: `sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv` column `gain_margin_db`
+- **phase margin, DR-0014: minimum over every 0 dB crossing in the sweep** (deg): ambiguous; bound ge 45.0 deg; 0/45 pass, 0 fail, 45 ambiguous, 0 censored upper bound
+  - conditions: Vin = 3.30 V, Iload = 1 mA, Cout = 1 uF, ESR = 0, ideal 0.90 V reference; Cc nominal (MoM-cap model has no corner spread at this PDK pin); loop-gain trace 1 Hz-10 GHz, 20 points/decade (the committed bench's sweep floor and ceiling); PROPOSED classification (DR-0014), not ratified
+  - source: `sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/row10-margins.csv` column `pm_deg`
+  - ambiguous points: tt/-40C/res_typ, tt/-40C/res_bcs, tt/-40C/res_wcs, tt/27C/res_typ, tt/27C/res_bcs, tt/27C/res_wcs, tt/125C/res_typ, tt/125C/res_bcs, tt/125C/res_wcs, ss/-40C/res_typ, ss/-40C/res_bcs, ss/-40C/res_wcs, ss/27C/res_typ, ss/27C/res_bcs, ss/27C/res_wcs, ss/125C/res_typ, ss/125C/res_bcs, ss/125C/res_wcs, ff/-40C/res_typ, ff/-40C/res_bcs, ff/-40C/res_wcs, ff/27C/res_typ, ff/27C/res_bcs, ff/27C/res_wcs, ff/125C/res_typ, ff/125C/res_bcs, ff/125C/res_wcs, sf/-40C/res_typ, sf/-40C/res_bcs, sf/-40C/res_wcs, sf/27C/res_typ, sf/27C/res_bcs, sf/27C/res_wcs, sf/125C/res_typ, sf/125C/res_bcs, sf/125C/res_wcs, fs/-40C/res_typ, fs/-40C/res_bcs, fs/-40C/res_wcs, fs/27C/res_typ, fs/27C/res_bcs, fs/27C/res_wcs, fs/125C/res_typ, fs/125C/res_bcs, fs/125C/res_wcs
+  - reasons (points): ceiling_unbounded 45
+  - sweep ceiling bounded at 0 of 45 points: loop gain at 10 GHz 0.3979..1.17 dB, change over the last decade -0.5642..-0.4254 dB (falling); low-end premise holds at 45 of 45
+  - 45 points have two 0 dB crossings: first-crossing margin 53.87..76.93 deg, second (rising) crossing 156.6..166.2 deg from the critical point; the record's phase_margin_worst_deg (-166.2..-156.6) is 180 + unwrapped phase, not a margin
+  - superseded first-crossing reading (pre-DR-0014, not a verdict): 0 of 45 scored >= 45 deg, 45 unscored; range 53.87..76.93 deg
+  - note: Per-crossing margin = angular distance of the crossing phase from the critical point (180 deg mod 360), signed negative after an in-band encirclement. A miss inside the sweep is a fail; a pass also needs a bounded sweep ceiling (loop gain <= -10 dB and non-increasing over the last decade) and a sample bracket clear of the bound. Anything else stays ambiguous with its reason.
+- **gain margin, DR-0014: minimum over every -180 deg crossing in the sweep** (dB): ambiguous; bound ge 10.0 dB; 0/45 pass, 0 fail, 45 ambiguous, 0 censored upper bound
+  - conditions: Vin = 3.30 V, Iload = 1 mA, Cout = 1 uF, ESR = 0, ideal 0.90 V reference; Cc nominal (MoM-cap model has no corner spread at this PDK pin); loop-gain trace 1 Hz-10 GHz, 20 points/decade (the committed bench's sweep floor and ceiling); PROPOSED classification (DR-0014), not ratified
+  - source: `sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/row10-margins.csv` column `gm_db`
+  - ambiguous points: tt/-40C/res_typ, tt/-40C/res_bcs, tt/-40C/res_wcs, tt/27C/res_typ, tt/27C/res_bcs, tt/27C/res_wcs, tt/125C/res_typ, tt/125C/res_bcs, tt/125C/res_wcs, ss/-40C/res_typ, ss/-40C/res_bcs, ss/-40C/res_wcs, ss/27C/res_typ, ss/27C/res_bcs, ss/27C/res_wcs, ss/125C/res_typ, ss/125C/res_bcs, ss/125C/res_wcs, ff/-40C/res_typ, ff/-40C/res_bcs, ff/-40C/res_wcs, ff/27C/res_typ, ff/27C/res_bcs, ff/27C/res_wcs, ff/125C/res_typ, ff/125C/res_bcs, ff/125C/res_wcs, sf/-40C/res_typ, sf/-40C/res_bcs, sf/-40C/res_wcs, sf/27C/res_typ, sf/27C/res_bcs, sf/27C/res_wcs, sf/125C/res_typ, sf/125C/res_bcs, sf/125C/res_wcs, fs/-40C/res_typ, fs/-40C/res_bcs, fs/-40C/res_wcs, fs/27C/res_typ, fs/27C/res_bcs, fs/27C/res_wcs, fs/125C/res_typ, fs/125C/res_bcs, fs/125C/res_wcs
+  - reasons (points): ceiling_unbounded 45
+  - superseded first -180 deg crossing reading (pre-DR-0014, not a verdict): 45 of 45 >= 10 dB, range 13.84..29.87 dB; no committed trace bounds the sweep ceiling (10 GHz), so none of these is a pass under DR-0014
+  - note: A trace with no -180 deg crossing is never scored as a miss or as infinite margin: it passes only with a bounded sweep ceiling, which bounds the margin above the ceiling below by -(loop gain at the ceiling) >= 10 dB.
 
 ## Completeness checks
 
-- [x] all selected records exist and match their sha256 pins -- 6 pinned sources verified
+- [x] all selected records exist and match their sha256 pins -- 19 pinned sources verified
 - [x] README target table: 10 rows, expected names and target text
 - [x] DR-0007 ratification table covers rows 1-10 exactly once and agrees with README
 - [x] PVT grid complete (5 process x 3 temperature x 3 resistor corner = 45 points, all numeric fields finite)
+- [x] DC informational summary: pinned, same record, 45 corners once each, finite, validity fields True/False, raw grids match inventory hashes
 - [x] every target row appears exactly once -- rows: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 - [x] every row carries an allowed verdict
 - [x] every row cites a source or an explicit unavailability reason
+- [x] startup campaign: selected record, csv, manifest and every trace match their pins; no duplicate or unexpected point; manifest agrees with the csv -- 135 requested points, 135 result rows
+- [x] startup campaign has a result row for every requested point -- 0 of 135 requested points missing
+- [x] startup evidence is current against the design (core and error amplifier checked independently) -- core and error-amplifier netlist hashes match the startup freshness pins
 - [x] selected record is current against the design netlists -- design netlist hashes match the freshness pins
 
 ## Regenerating

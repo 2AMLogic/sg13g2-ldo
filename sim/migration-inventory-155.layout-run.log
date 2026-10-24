@@ -1,0 +1,63 @@
+
+=== 1. generate
+wrote sg13cmos5l-ldo_core_cmos5l.gds
+  top cell   : sg13cmos5l_ldo_core_cmos5l
+  bbox       : (-3.00, -110.68) - (209.98, 170.50) um  [212.98 x 281.18]
+  shapes     : 12399 (all axis-aligned boxes)
+  Mpass      : 4 rows x 28 fingers x 25.0 um = 2800.0 um
+  area       : 59.9 x 1000 um^2
+  reference netlist regenerated
+
+=== 2. DRC -- klt's curated sg13cmos5l deck
+klt: warning: resolved klayout engine version '0.30.12' differs from klayout==0.30.10, the version this klayout-tools build/commit was tested against -- DRC/LVS report counts (deck content hash, rules_skipped, category_counts, ...) may differ from a report generated with klayout==0.30.10, even though the verdict itself is unaffected. To reproduce the exact engine: `uv tool install "klayout-tools @ git+...@<sha>" --with klayout==0.30.10` -- see docs/json-contract.md's "Shared `provenance` block".
+  status: clean  violations: 0  {}
+  rule categories in scope: 8 -> 5.16 Metal1, 5.17 Metaln, 5.19 Via1, 5.20 Vian, 5.21 TopVia1, 5.22 TopMetal1, 5.5 Activ, 5.8 GatPoly
+
+=== 3. DRC -- the PDK's own ihp-sg13cmos5l deck
+ 3a. full-strength tables
+  rules executed: 183   violations: 0
+ 3b. precheck-mode tables (gatpoly metal1 metaln)
+  rules executed: 39   violations: 0
+  wrote drc_pdk_deck_report.json: 222 rules, 0 violations
+
+=== 4. DRC negative control -- a deliberately broken copy must NOT be clean
+klt: warning: resolved klayout engine version '0.30.12' differs from klayout==0.30.10, the version this klayout-tools build/commit was tested against -- DRC/LVS report counts (deck content hash, rules_skipped, category_counts, ...) may differ from a report generated with klayout==0.30.10, even though the verdict itself is unaffected. To reproduce the exact engine: `uv tool install "klayout-tools @ git+...@<sha>" --with klayout==0.30.10` -- see docs/json-contract.md's "Shared `provenance` block".
+  curated deck on the broken copy: violations {'metal1.width.1': 1}
+  rules executed: 183   violations: 1
+  both decks flagged the planted defects: they are really checking this geometry
+
+=== 5. extract
+  devices: {'cap_cmomi': 1, 'nfet': 5, 'pfet': 128, 'rhigh': 3}
+  nets:    ['EAOUT', 'EN', 'ENB', 'FB', 'G1', 'IBIAS', 'MZ', 'N1', 'TAIL', 'VIN', 'VOUT', 'VREF', 'VSS']
+
+=== 5b. HV-flavour control -- the same layout without its ThickGateOx marker
+  as drawn: 133 devices bind to sg13_hv_*; without ThickGateOx: 133 bind to sg13_lv_*
+
+=== 6. LVS
+klt: warning: resolved klayout engine version '0.30.12' differs from klayout==0.30.10, the version this klayout-tools build/commit was tested against -- DRC/LVS report counts (deck content hash, rules_skipped, category_counts, ...) may differ from a report generated with klayout==0.30.10, even though the verdict itself is unaffected. To reproduce the exact engine: `uv tool install "klayout-tools @ git+...@<sha>" --with klayout==0.30.10` -- see docs/json-contract.md's "Shared `provenance` block".
+  status: match
+  counts: {'nets': {'layout': 13, 'reference': 13, 'matched': 15}, 'devices': {'layout': 17, 'reference': 17, 'matched': 17}, 'pins': {'layout': 6, 'reference': 6, 'matched': 8}}
+
+=== 7. LVS negative controls -- every mutation MUST mismatch
+klt: warning: resolved klayout engine version '0.30.12' differs from klayout==0.30.10, the version this klayout-tools build/commit was tested against -- DRC/LVS report counts (deck content hash, rules_skipped, category_counts, ...) may differ from a report generated with klayout==0.30.10, even though the verdict itself is unaffected. To reproduce the exact engine: `uv tool install "klayout-tools @ git+...@<sha>" --with klayout==0.30.10` -- see docs/json-contract.md's "Shared `provenance` block".
+  topology-control (Mn3 gate G1 -> N1): status=mismatch  ['device.unmatched']
+klt: warning: resolved klayout engine version '0.30.12' differs from klayout==0.30.10, the version this klayout-tools build/commit was tested against -- DRC/LVS report counts (deck content hash, rules_skipped, category_counts, ...) may differ from a report generated with klayout==0.30.10, even though the verdict itself is unaffected. To reproduce the exact engine: `uv tool install "klayout-tools @ git+...@<sha>" --with klayout==0.30.10` -- see docs/json-contract.md's "Shared `provenance` block".
+  parameter-control (Mpass W 2800u -> 2772u): status=mismatch  ['device.property']
+klt: warning: resolved klayout engine version '0.30.12' differs from klayout==0.30.10, the version this klayout-tools build/commit was tested against -- DRC/LVS report counts (deck content hash, rules_skipped, category_counts, ...) may differ from a report generated with klayout==0.30.10, even though the verdict itself is unaffected. To reproduce the exact engine: `uv tool install "klayout-tools @ git+...@<sha>" --with klayout==0.30.10` -- see docs/json-contract.md's "Shared `provenance` block".
+  pulldown-presence-control (Mpd deleted from the reference): status=mismatch  ['device.unmatched']
+klt: warning: resolved klayout engine version '0.30.12' differs from klayout==0.30.10, the version this klayout-tools build/commit was tested against -- DRC/LVS report counts (deck content hash, rules_skipped, category_counts, ...) may differ from a report generated with klayout==0.30.10, even though the verdict itself is unaffected. To reproduce the exact engine: `uv tool install "klayout-tools @ git+...@<sha>" --with klayout==0.30.10` -- see docs/json-contract.md's "Shared `provenance` block".
+  cap-presence-control (Cc deleted from the reference): status=mismatch  ['topology']
+klt: warning: resolved klayout engine version '0.30.12' differs from klayout==0.30.10, the version this klayout-tools build/commit was tested against -- DRC/LVS report counts (deck content hash, rules_skipped, category_counts, ...) may differ from a report generated with klayout==0.30.10, even though the verdict itself is unaffected. To reproduce the exact engine: `uv tool install "klayout-tools @ git+...@<sha>" --with klayout==0.30.10` -- see docs/json-contract.md's "Shared `provenance` block".
+  cap-topology-control (Cc MZ -> G1): status=mismatch  ['topology']
+klt: warning: resolved klayout engine version '0.30.12' differs from klayout==0.30.10, the version this klayout-tools build/commit was tested against -- DRC/LVS report counts (deck content hash, rules_skipped, category_counts, ...) may differ from a report generated with klayout==0.30.10, even though the verdict itself is unaffected. To reproduce the exact engine: `uv tool install "klayout-tools @ git+...@<sha>" --with klayout==0.30.10` -- see docs/json-contract.md's "Shared `provenance` block".
+  cap-parameter-control (Cc W 170u -> 85u): status=mismatch  ['topology']
+
+=== 8. ERC -- klt erc supply spec (T1 item 11)
+  spec ties[] == generator tap bars (3 ties)
+{
+  "schema_version": 1,
+  "error": {
+    "command": "erc",
+    "message": "spec 'layout/sg13cmos5l-ldo_core_cmos5l/erc-supply-spec.json': ties[2].well_layer must be '<layer>/<datatype>' with integer layer/datatype (got 'None')"
+  }
+}

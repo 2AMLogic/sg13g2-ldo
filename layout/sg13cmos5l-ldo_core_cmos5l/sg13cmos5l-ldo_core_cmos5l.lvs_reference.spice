@@ -25,6 +25,9 @@ MMn3 EAOUT G1 VSS VSS nfet L=1U W=20U
 XCc EAOUT MZ cap_cmomi PARAMS: W=170 L=30
 * Rz: rhigh w=1u l=28.81u b=39 (40 stripes) -- deck model 1576811.2 ohm, PDK ngspice model 1700012.2 ohm
 RRz MZ G1 VSS 1576811.2 rhigh
+MMinvp ENB EN VIN VIN pfet L=1U W=1U
+MMinvn ENB EN VSS VSS nfet L=1U W=1U
+MMpd G1 ENB VSS VSS nfet L=1U W=1U
 MMen EAOUT EN VIN VIN pfet L=0.5U W=40U
 MMbdis IBIAS EN VIN VIN pfet L=0.5U W=5U
 .ENDS sg13cmos5l_ldo_core_cmos5l

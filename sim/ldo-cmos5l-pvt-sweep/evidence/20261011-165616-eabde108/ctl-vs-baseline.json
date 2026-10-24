@@ -1,0 +1,143 @@
+{
+ "baseline_record": "20261011-070111-5391c68",
+ "per_point": {
+  "ff_-40c_rbcs": {
+   "max_abs_db_diff": 0.0
+  },
+  "ff_-40c_rtyp": {
+   "max_abs_db_diff": 0.0
+  },
+  "ff_-40c_rwcs": {
+   "max_abs_db_diff": 0.0
+  },
+  "ff_125c_rbcs": {
+   "max_abs_db_diff": 0.0
+  },
+  "ff_125c_rtyp": {
+   "max_abs_db_diff": 0.0
+  },
+  "ff_125c_rwcs": {
+   "max_abs_db_diff": 0.0
+  },
+  "ff_27c_rbcs": {
+   "max_abs_db_diff": 0.0
+  },
+  "ff_27c_rtyp": {
+   "max_abs_db_diff": 0.0
+  },
+  "ff_27c_rwcs": {
+   "max_abs_db_diff": 0.0
+  },
+  "fs_-40c_rbcs": {
+   "max_abs_db_diff": 0.0
+  },
+  "fs_-40c_rtyp": {
+   "max_abs_db_diff": 0.0
+  },
+  "fs_-40c_rwcs": {
+   "max_abs_db_diff": 0.0
+  },
+  "fs_125c_rbcs": {
+   "max_abs_db_diff": 0.0
+  },
+  "fs_125c_rtyp": {
+   "max_abs_db_diff": 0.0
+  },
+  "fs_125c_rwcs": {
+   "max_abs_db_diff": 0.0
+  },
+  "fs_27c_rbcs": {
+   "max_abs_db_diff": 0.0
+  },
+  "fs_27c_rtyp": {
+   "max_abs_db_diff": 0.0
+  },
+  "fs_27c_rwcs": {
+   "max_abs_db_diff": 0.0
+  },
+  "sf_-40c_rbcs": {
+   "max_abs_db_diff": 0.0
+  },
+  "sf_-40c_rtyp": {
+   "max_abs_db_diff": 0.0
+  },
+  "sf_-40c_rwcs": {
+   "max_abs_db_diff": 0.0
+  },
+  "sf_125c_rbcs": {
+   "max_abs_db_diff": 0.0
+  },
+  "sf_125c_rtyp": {
+   "max_abs_db_diff": 0.0
+  },
+  "sf_125c_rwcs": {
+   "max_abs_db_diff": 0.0
+  },
+  "sf_27c_rbcs": {
+   "max_abs_db_diff": 0.0
+  },
+  "sf_27c_rtyp": {
+   "max_abs_db_diff": 0.0
+  },
+  "sf_27c_rwcs": {
+   "max_abs_db_diff": 0.0
+  },
+  "ss_-40c_rbcs": {
+   "max_abs_db_diff": 0.0
+  },
+  "ss_-40c_rtyp": {
+   "max_abs_db_diff": 0.0
+  },
+  "ss_-40c_rwcs": {
+   "max_abs_db_diff": 0.0
+  },
+  "ss_125c_rbcs": {
+   "max_abs_db_diff": 0.0
+  },
+  "ss_125c_rtyp": {
+   "max_abs_db_diff": 0.0
+  },
+  "ss_125c_rwcs": {
+   "max_abs_db_diff": 0.0
+  },
+  "ss_27c_rbcs": {
+   "max_abs_db_diff": 0.0
+  },
+  "ss_27c_rtyp": {
+   "max_abs_db_diff": 0.0
+  },
+  "ss_27c_rwcs": {
+   "max_abs_db_diff": 0.0
+  },
+  "tt_-40c_rbcs": {
+   "max_abs_db_diff": 0.0
+  },
+  "tt_-40c_rtyp": {
+   "max_abs_db_diff": 0.0
+  },
+  "tt_-40c_rwcs": {
+   "max_abs_db_diff": 0.0
+  },
+  "tt_125c_rbcs": {
+   "max_abs_db_diff": 0.0
+  },
+  "tt_125c_rtyp": {
+   "max_abs_db_diff": 0.0
+  },
+  "tt_125c_rwcs": {
+   "max_abs_db_diff": 0.0
+  },
+  "tt_27c_rbcs": {
+   "max_abs_db_diff": 0.0
+  },
+  "tt_27c_rtyp": {
+   "max_abs_db_diff": 0.0
+  },
+  "tt_27c_rwcs": {
+   "max_abs_db_diff": 0.0
+  }
+ },
+ "max_abs_db_diff_over_points": 0.0,
+ "errors": [],
+ "expectation": "same design bytes, PDK pin and analysis line: the traces must agree to solver/reduction precision; > 1 dB fails the campaign"
+}

@@ -50,6 +50,29 @@
    *insufficient*, never a pass. Incomplete coverage is reported as such.
 9. **Cc tolerance stays unverified**; no Cc axis is added here.
 
+## Amendment: cold-start disabled window (issue #130)
+
+Decision 5 says "off state" without saying which samples. `startup_eval.py`
+sampled `off_supply_current_a` and the off-state `VOUT` at the last sample
+before the `EN = VIN/2` crossing, which is inside the 1 us `EN` edge, not in
+the off state. The methodology is amended (proposed, like the rest of this
+record): time zero stays the `EN = VIN/2` crossing (decision 2), but the
+cold-start off state is the contiguous initial run of samples with `EN <= 1 mV`
+(documented numerical tolerance, `Config.off_en_tol_v`) before the first rising
+ramp, and `off_supply_current_a` is `-ivin` at its last sample. Off-state `VOUT`
+metrics and the 50 mV bound use the same window. No usable plateau is
+*insufficient* (decision 8), never an edge sample. Thresholds, bounds and the
+re-enable window are unchanged.
+
+Migration: no re-simulation. Record `20261011-070146-0c95530-startup-grid` re-evaluates the
+committed traces of `20261011-031426-df3f802-startup-grid` (verified by
+sha256, referenced in place) with the amended evaluator; earlier records are
+unchanged and remain as historical evidence of the earlier sampling.
+`sim/characterization/selection.json` is deliberately re-pointed to the new
+record. Verdicts do not change (135 of 135 still fail overshoot and
+monotonicity); the off-state supply current is 2.000-2.264 uA instead of
+6.0-28.3 uA. Row 9 stays Open.
+
 ## What the first evidence shows (schematic-level)
 
 Not a ratification. At 135 of 135 requested PVT/supply points (and the

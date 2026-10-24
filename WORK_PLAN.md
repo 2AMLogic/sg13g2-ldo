@@ -5,15 +5,22 @@ This roadmap is generated from the repository's current Loom label state.
 <!-- guide:plan-body:start -->
 ## Operator Attention: Merge-Risk-Hold Pileup
 
-Judge-approved PRs stuck under a `loom:operator` merge-risk hold — implementation work is done, only a human merge decision is missing.
+Judge-approved PRs under a hold (`loom:blocked` or `loom:operator`) — only a human merge decision is missing.
 
 _None._
 
-## Operator Priority
+## Very Important
 
-Issues the operator starred (`loom:operator-priority`); land these first.
+`loom:very-important` (one counts per workspace); every stage takes these first.
 
 _None._
+
+## Important
+
+`loom:important`; taken before unlabelled work.
+
+- **#55**: Corner verification: klt sim corner-matrix envelopes against the ratified spec (T1 item 5)
+- **#165**: SG13CMOS5L: implement ldo_ilimit_cmos5l per DR-0017 and instantiate in core
 
 ## Ready
 
@@ -25,15 +32,13 @@ _None._
 
 Issues currently being built (`loom:building`).
 
-- **#64**: sim: parameterise loop-gain/PSRR benches over load, Cout and ESR for rows 3, 6, 10 dynamic coverage
-- **#101**: CI: run layout/run_flow.sh --check so committed layout reports cannot go stale
-- **#107**: Prevent repeated stale signoff evidence in agent PRs
+_None._
 
 ## PRs Awaiting Review
 
 PRs waiting on Judge (`loom:review-requested`).
 
-- **#109**: docs: surface signoff regeneration contract in CLAUDE.md and AGENTS.md (#107)
+_None._
 
 ## Approved (Awaiting Merge)
 
@@ -47,32 +52,30 @@ Issues carrying `loom:curated`.
 
 - **#55**: Corner verification: klt sim corner-matrix envelopes against the ratified spec (T1 item 5) *(curated)*
 - **#56**: Monte Carlo: klt yield evidence for the statistical ratified spec rows (T1 item 6) *(curated)*
-- **#57**: Post-layout: klt pex extraction of the LDO core and spec re-run on the extracted netlist (T1 item 7) *(curated)*
-- **#63**: SG13CMOS5L current limiter: topology and sizing design plan for row 8 *(curated)*
 - **#64**: sim: parameterise loop-gain/PSRR benches over load, Cout and ESR for rows 3, 6, 10 dynamic coverage *(curated)*
+- **#71**: Clarify row 4 branch status: ratified target, SG13CMOS5L pass, SG13G2 gap *(curated)*
+- **#165**: SG13CMOS5L: implement ldo_ilimit_cmos5l per DR-0017 and instantiate in core *(curated)*
 
 ## Proposed (Architect / Hermit)
 
-- **#62**: SG13CMOS5L startup: add enable input and transient testbench for spec row 9 *(architect)*
-- **#63**: SG13CMOS5L current limiter: topology and sizing design plan for row 8 *(architect)*
-- **#102**: CI: enforce the append-only rule for sim/ evidence records *(architect)*
+_None._
 
 ## Epics
 
 - **#5**: Track the gap to T1 sim-validated / bronze (klayout-tools design-evidence tiers)
-- **#62**: SG13CMOS5L startup: add enable input and transient testbench for spec row 9
 
 ## Backlog Balance
 
-| Tier | Count |
+| Bucket | Count |
 |------|-------|
 | Operator merge-risk holds | 0 |
-| Operator priority | 0 |
+| Very important | 0 |
+| Important | 2 |
 | Ready (`loom:issue`) | 0 |
-| In Progress (`loom:building`) | 3 |
-| PRs awaiting review | 1 |
+| In Progress (`loom:building`) | 0 |
+| PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
 | Curated | 5 |
-| Architect / Hermit proposals | 3 |
-| Active epics | 2 |
+| Architect / Hermit proposals | 0 |
+| Active epics | 1 |
 <!-- guide:plan-body:end -->

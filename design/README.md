@@ -187,6 +187,17 @@ Schematic capture for the SG13CMOS5L port, against the `ihp-sg13cmos5l` PDK
 (issue #20, phase 2/4 of the port tracked by #12, Epic `2AMLogic/2am#542`
 Phase 5A).
 
+> **PDK re-stamp (issue #155).** The `ihp-sg13cmos5l` PDK is now the
+> `IHP-Open-PDK` `dev` subtree at `f7bca326` (was the archived
+> `IHP-GmbH/ihp-sg13cmos5l` repository at `607e18d`). All figures quoted below
+> were measured against the old pin; which have been re-run on the new pin,
+> and how they moved, is in
+> [`sim/migration-inventory-155.md`](../sim/migration-inventory-155.md).
+> The upstream `rfnmos_minW`/`rfpmos_minW` change (0.15 um to 0.39 um) does not
+> touch this design: it instantiates only `sg13_hv_nmos`/`sg13_hv_pmos`,
+> `rhigh`/`rsil`/`rppd` and `cap_cmomi`, none of them an RF MOS (`sg13_lv_*`
+> RF flavour); no device was resized.
+
 > **Status: PVT-verified and re-compensated (issues #21, #25, #31, #35,
 > phases 3–4c) — every ratified spec row passes at all 45 grid points.**
 > #35 closed the `res_bcs`/125 °C phase-margin gap #31 found, with a
@@ -280,10 +291,13 @@ SG13G2 branch keeps its four-port invariant. #68 drew both devices and the
 against the six-port design; the pre-EN five-port layout reports are
 superseded. Post-layout (PEX) performance is still unclaimed.
 
-`ldo_erramp_cmos5l` pinout: `INP INN OUT VDD VSS IBIAS`. `VDD` and `IBIAS`
+`ldo_erramp_cmos5l` pinout: `INP INN OUT VDD VSS IBIAS EN`. `VDD` and `IBIAS`
 are the two pins the SG13G2 branch's ideal-VCVS placeholder did not need
 and which ["Error amplifier"](#error-amplifier) above predicted a real
-amplifier would; DR-0002's Consequences section anticipated the same.
+amplifier would; DR-0002's Consequences section anticipated the same. `EN`
+(appended by #89, DR-0008 addendum) is the core's enable, which the
+amplifier uses to hold its second-stage gate `G1` at `VSS` while disabled;
+the core's own six-port list is unchanged.
 
 `python3 design/netlist.py --design sg13cmos5l --check` asserts both port
 lists (and that each cell's `.sym` pin order matches its `.sch` port order),
@@ -367,6 +381,10 @@ DR-0002 Decision (b):
   source at `VSS`, drain at `OUT`, loaded by the `Mload2` `sg13_hv_pmos`
   current source from the rail.
 - **Compensation** — `Cc` (MoM) in series with `Rz` from `OUT` back to `G1`.
+- **Disable pull-down** (#89) — `Mpd` (`sg13_hv_nmos` w=1u l=1u) from `G1`
+  to `VSS`, gated by `ENB` from a local `Minvp`/`Minvn` inverter on `EN`.
+  Off when enabled; holds `Mn3` off when `EN` is low, so the disabled supply
+  current no longer depends on a floating node (DR-0008 addendum).
 - **`VREF` stays an external port.** No on-chip bandgap.
 
 Polarity check, re-derived in the schematic header: `FB` rises → `Minp`
@@ -605,19 +623,27 @@ which #35's wider `Cc` is what closes
   `layout/sg13cmos5l-ldo_core_cmos5l/generate.py`, and the schematic
   continues to state only the electrical total. DR-0003 records the original
   deferral.
-- **No enable, current limit, soft start, output capacitor, load, or
-  start-up circuit.** Same scope boundary as the SG13G2 branch. Note that a
+- **No current limit, soft start, output capacitor, load, or
+  start-up circuit.** `EN` has existed since issue #67 (DR-0008), and a
+  committed startup campaign (issue #69; record `20261011-031426-df3f802`,
+  re-run for #89's G1 disable pull-down) measures it; its proposed-methodology failures are reported in row 9 of
+  [`sim/characterization/characterization-report.md`](../sim/characterization/characterization-report.md).
+  Row 9 stays Open. The rest is the same scope boundary as the SG13G2 branch. Note that a
   self-biased mirror needs no start-up circuit only because `IBIAS` is
   externally driven — if the bias is ever moved on-block, start-up becomes a
   real requirement.
-- **No CI job** runs `--design sg13cmos5l --check`.
-  `.github/workflows/ci.yml` provisions `ihp-sg13g2` via klayout-tools'
-  `scripts/fetch-ihp-sg13g2.sh`, and no equivalent pinned fetch script
-  exists for `ihp-sg13cmos5l` — it is a separate upstream repository
-  (`IHP-GmbH/ihp-sg13cmos5l`), not a variant directory inside the
-  `IHP-Open-PDK` tarball that script downloads. Filed upstream as
-  `2AMLogic/klayout-tools#1929`. Until that lands, this branch's check is a
-  local/manual step.
+- **Install it with the upstream fetcher, not by cloning.**
+  `ihp-sg13cmos5l` is the `ihp-sg13cmos5l/` subtree of `IHP-GmbH/IHP-Open-PDK`
+  `dev` (commit `f7bca32694fe3d58be0cc7d9df4b9f5db7161a14`, tarball sha256
+  `5eb6f8a9b0b2ecc4fa08cc30627668406f85b1a97834f278036c43f0c0dbc70b`;
+  `sim/pdk-cmos5l.json`). Run klayout-tools' `scripts/fetch-ihp-sg13g2.sh`
+  and then `scripts/fetch-ihp-sg13cmos5l.sh` (the second refuses to run
+  without the first's sibling and verifies the checksum). The install
+  carries a `.fetched-version` marker, not a `.git`; read it to confirm what
+  is installed. `.github/workflows/ci.yml` runs `--design sg13cmos5l --check`
+  against exactly that install, taking the scripts from an immutable
+  klayout-tools commit. (Until issue #155 the PDK was the archived separate
+  repository `IHP-GmbH/ihp-sg13cmos5l`; klayout-tools#1929/#2720.)
 - **Install shape is a dispatch hazard.** `ihp-sg13cmos5l`'s device symbols
   and HV model cards are *relative* symlinks into a sibling `ihp-sg13g2`
   checkout (`../../../../ihp-sg13g2/...`). Install **both** variants under

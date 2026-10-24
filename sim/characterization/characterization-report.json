@@ -11,14 +11,18 @@
     "Open (unratified) targets are not passing requirements; a numeric 'pass' on an open row is a measurement against a draft target at the stated conditions.",
     "All closed-loop numbers are SG13CMOS5L-branch evidence (DR-0007 'What evidence exists'); no closed-loop evidence exists on the SG13G2 branch.",
     "No post-layout (extracted) performance evidence exists for any row; layout reports in layout/ are DRC/LVS/ERC and carry no performance metrics.",
+    "Row 9 (Startup) reports the explicitly selected committed startup campaign: measured failures are measured failures, missing or insufficient points are never passes, and the evaluation methodology is PROPOSED (DR-0009), not ratified. Row 9 stays Open.",
+    "Row 10 (Stability) PM/GM verdicts follow the PROPOSED margin classification DR-0014, applied offline to the selected record's committed loop-gain traces: a miss inside the sweep is a fail, a pass needs a bounded sweep ceiling, everything else stays ambiguous with its reason. Row 10 stays Open.",
     "Other T1 items are not declared satisfied by this artifact."
   ],
   "selection": {
     "file": "sim/characterization/selection.json",
-    "sha256": "c9aca911794aa9c6aa5b73e6cff24456e35ad1d2df17171e0048812905e6e174",
-    "circuit_record_id": "20261010-025634-60a3e81",
+    "sha256": "71c5c2b5f12836d61b96f7bc296706273fc9cc04cf6d96615b32f8ab0e152268",
+    "circuit_record_id": "20261011-070111-5391c68",
     "experiment": "ldo-cmos5l-pvt-sweep",
     "device_context_record_id": "20260909-220347-ed18110",
+    "startup_record_id": "20261011-070146-0c95530",
+    "startup_stage": "grid",
     "policy": "Explicit selection only. The generator never discovers records by directory listing or filesystem order: the circuit record below is named here, its bytes are pinned by sha256, and a record that is missing or whose bytes differ from its pin is a hard generator error. Moving to a newer record is a deliberate edit to this file in the same change that regenerates the report. Historical records (other ids under sim/*/records/) are never read except where listed under superseded_evidence, and then only as a quoted, clearly-labelled statement about an older design, never as a current measurement."
   },
   "sources": [
@@ -30,67 +34,145 @@
     },
     {
       "role": "circuit_cc_tolerance_csv",
-      "path": "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.cc-tolerance.csv",
-      "sha256": "4a9edd748c5df94530ee9ff010d4aa4b9272e0720d32a386e842c3741216e6f8",
+      "path": "sim/ldo-cmos5l-pvt-sweep/records/20261011-070111-5391c68.cc-tolerance.csv",
+      "sha256": "e5a6b19d220a655e2517e08e67ff1f2beb4cdd25bcc78e0a37bf4ea24d6a0320",
       "pinned": true
     },
     {
       "role": "circuit_pvt_csv",
-      "path": "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv",
-      "sha256": "d0c1e057c8cbbf0aaaab3df57b753fcca8557375372ee8bf6f6103a0b946c981",
+      "path": "sim/ldo-cmos5l-pvt-sweep/records/20261011-070111-5391c68.csv",
+      "sha256": "b7a41cfeccfe3100758daf0ef8de87ea765ef4d77a1c987aba4d57f373eb6e6d",
       "pinned": true
     },
     {
       "role": "circuit_record_md",
-      "path": "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.md",
-      "sha256": "89239ec65964818a9678ba92d9a13f353be38540d73006a24e2fd0ff04d44f22",
+      "path": "sim/ldo-cmos5l-pvt-sweep/records/20261011-070111-5391c68.md",
+      "sha256": "1c63b44f4ea0032ce4dc6317ceae8a93eac919b6dbda09eb1a19baaec9077e9b",
+      "pinned": true
+    },
+    {
+      "role": "dc_coverage_inventory_json",
+      "path": "sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/coverage-inventory.json",
+      "sha256": "87fb438c820002e11d5eca42507d89b670e75c50c59adeb6668a1a5aebcac0a5",
+      "pinned": true
+    },
+    {
+      "role": "dc_informational_summary_csv",
+      "path": "sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/dc-informational-summary.csv",
+      "sha256": "e6e16b6107569201961f8daac844a3d356f44d81a43cbe77e56c9d01ed279641",
       "pinned": true
     },
     {
       "role": "design_netlist_freshness",
       "path": "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice",
-      "sha256": "7953b25be4cb00053f8df5f283bee0500f60a826b7a2d6519b88a8578d222cc1",
+      "sha256": "08a7b857e1fad43dd7af1f575de97853a058e85541601ecc47567fbc28dbae57",
       "pinned": true
     },
     {
       "role": "design_netlist_freshness",
       "path": "design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice",
-      "sha256": "7982d728a2db933165eedcae69feaa4985dbddf54c269fc68b82d88577c8e38c",
+      "sha256": "75ee39ce0c48b54cab6c8a31acd1f199c37c1ccd1ac074a3515dee81cc656fb4",
       "pinned": true
     },
     {
       "role": "ratification_record",
       "path": "spec/decision-records/DR-0007-target-spec-row-ratification.md",
-      "sha256": "04983cdf2c8e7819d0f68d4dfbcda4ce575b4502ed88c062bb467eeec7927847",
+      "sha256": "74496ee0800de6de36ff2f045796a7c2f802f6d647439255df5a8c8e69451556",
       "pinned": false
+    },
+    {
+      "role": "row10_classification_csv",
+      "path": "sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/row10-margins.csv",
+      "sha256": "59f7ef734078ded1fadb74460674cccb0685b2369c867c873bb4a331e375d17f",
+      "pinned": true
+    },
+    {
+      "role": "row10_classification_json",
+      "path": "sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/row10-margins.json",
+      "sha256": "5b41ddab09eb2db87e9abe55fd5cd9757742020db35405b62a36733d0818ae9e",
+      "pinned": true
+    },
+    {
+      "role": "row10_classifier_source",
+      "path": "sim/ldo-cmos5l-pvt-sweep/ac_metrics.py",
+      "sha256": "6e96859b839bcb19aaa702eb20a593bfc8914b7b388a8783298e416e65fefd5e",
+      "pinned": true
+    },
+    {
+      "role": "row10_classifier_source",
+      "path": "sim/ldo-cmos5l-pvt-sweep/dc_metrics.py",
+      "sha256": "782319eb4ef619b040f3a4001af67a10def775c9cf17e37fe15b4dd8f3340c81",
+      "pinned": true
+    },
+    {
+      "role": "row10_classifier_source",
+      "path": "sim/ldo-cmos5l-pvt-sweep/row10_margins.py",
+      "sha256": "a6f6d1129095b2fcb73c8c9462eb54b7588259d4118aa932d86c5b01f2a227f7",
+      "pinned": true
+    },
+    {
+      "role": "row10_classifier_source",
+      "path": "sim/ldo-cmos5l-pvt-sweep/row10_record.py",
+      "sha256": "3632a86707f7cf793715667581407b5547511ea2b734dd24503a001df371dcab",
+      "pinned": true
+    },
+    {
+      "role": "startup_design_core_freshness",
+      "path": "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice",
+      "sha256": "08a7b857e1fad43dd7af1f575de97853a058e85541601ecc47567fbc28dbae57",
+      "pinned": true
+    },
+    {
+      "role": "startup_design_error_amp_freshness",
+      "path": "design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice",
+      "sha256": "75ee39ce0c48b54cab6c8a31acd1f199c37c1ccd1ac074a3515dee81cc656fb4",
+      "pinned": true
+    },
+    {
+      "role": "startup_grid_csv",
+      "path": "sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.csv",
+      "sha256": "bc4ea61162a51f3b7ecbefad4c82663f6928139d64f3ba09875c22fe7d2df3d1",
+      "pinned": true
+    },
+    {
+      "role": "startup_manifest_json",
+      "path": "sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.manifest.json",
+      "sha256": "3ec537f955f03dbd081870a068d01825106a886cd0f5ac0698289932cf5a7c95",
+      "pinned": true
+    },
+    {
+      "role": "startup_record_md",
+      "path": "sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.md",
+      "sha256": "908c108fd44b729846b51c0d9a75b35daf3dee4d7bc4c9fab3f091d8a06b307c",
+      "pinned": true
     },
     {
       "role": "superseded_evidence_statement",
       "path": "sim/ldo-cmos5l-pvt-sweep/README.md",
-      "sha256": "d290e6470053f56bff033e2f2eb006f4425ed77cde2a449008f45c0e5df2b3f4",
+      "sha256": "b8122211cc9d679b80ee04533f3237c3cebb0f024e417e0f77abf8d5ee383d44",
       "pinned": false
     },
     {
       "role": "target_table",
       "path": "README.md",
-      "sha256": "340b92176ef3b4bc39958e6c8be9a2d621a71304dfc458251d9af607fd211aa9",
+      "sha256": "3e0d9a72910e8fa625153c753d397c24d1c39ddac647bf0253684cc4a199837d",
       "pinned": false
     }
   ],
   "design_freshness": {
     "state": "current",
-    "basis": "These are the design netlist hashes the selected record ran against. The record md states both sha256 values, so freshness is recorded rather than inferred. The record was made by run_sweep.sh --batch on the EDA batch fleet (PR #87, #67) after the EN interface changed ldo_core_cmos5l.spice (DR-0008). It replaces 20260917-023832-7061e8f, which was current against the pre-EN netlist c6e630e9...f11041 and is now historical. If either netlist changes, the evidence is classified stale against the design, and the envelope verdict becomes fail until a new record is selected.",
+    "basis": "These are the design netlist hashes the selected record ran against. The record md states both sha256 values, so freshness is recorded rather than inferred. The record was made by run_sweep.sh --batch on the EDA batch fleet (issue #89) after the G1 disable pull-down changed ldo_erramp_cmos5l.spice and ldo_core_cmos5l.spice (DR-0008 addendum). It replaces 20261010-025634-60a3e81, which was current against the six-pin-amplifier netlists 7953b25b...222cc1 / 7982d728...c8e38c and is now historical. If either netlist changes, the evidence is classified stale against the design, and the envelope verdict becomes fail until a new record is selected. Record 20261011-070111-5391c68 (issue #128) re-ran the same grid on the same design netlists with only the loop-gain AC ceiling raised to 10 GHz; it replaces 20261011-051956-eda9285, which is now historical.",
     "pins": [
       {
         "path": "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice",
-        "pinned_sha256": "7953b25be4cb00053f8df5f283bee0500f60a826b7a2d6519b88a8578d222cc1",
-        "actual_sha256": "7953b25be4cb00053f8df5f283bee0500f60a826b7a2d6519b88a8578d222cc1",
+        "pinned_sha256": "08a7b857e1fad43dd7af1f575de97853a058e85541601ecc47567fbc28dbae57",
+        "actual_sha256": "08a7b857e1fad43dd7af1f575de97853a058e85541601ecc47567fbc28dbae57",
         "matches": true
       },
       {
         "path": "design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice",
-        "pinned_sha256": "7982d728a2db933165eedcae69feaa4985dbddf54c269fc68b82d88577c8e38c",
-        "actual_sha256": "7982d728a2db933165eedcae69feaa4985dbddf54c269fc68b82d88577c8e38c",
+        "pinned_sha256": "75ee39ce0c48b54cab6c8a31acd1f199c37c1ccd1ac074a3515dee81cc656fb4",
+        "actual_sha256": "75ee39ce0c48b54cab6c8a31acd1f199c37c1ccd1ac074a3515dee81cc656fb4",
         "matches": true
       }
     ]
@@ -116,6 +198,13 @@
       "res_bcs",
       "res_wcs"
     ]
+  },
+  "dc_informational_evidence": {
+    "summary": "sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/dc-informational-summary.csv",
+    "inventory": "sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/coverage-inventory.json",
+    "raw_dc_grids_verified": 45,
+    "points": 45,
+    "status": "informational only; rows 5 and 7 remain Open/unratified; not item-5 grading evidence"
   },
   "rows": [
     {
@@ -215,12 +304,12 @@
           "verdict": "pass",
           "conditions": "no load, Vin = 3.30 V (record md: dcsweep bench)",
           "source": {
-            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv",
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261011-070111-5391c68.csv",
             "column": "vout_no_load_v"
           },
           "observed_range": {
             "min": 1.80022787,
-            "max": 1.80065464
+            "max": 1.80065381
           }
         },
         {
@@ -237,7 +326,7 @@
           "n_censored_upper_bound": 0,
           "n_ambiguous": 0,
           "worst_case": {
-            "value": 1.80065464,
+            "value": 1.80065381,
             "at": {
               "corner": "ff",
               "temp_c": 125,
@@ -248,7 +337,7 @@
           "verdict": "pass",
           "conditions": "no load, Vin = 3.30 V (record md: dcsweep bench)",
           "source": {
-            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv",
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261011-070111-5391c68.csv",
             "column": "vout_no_load_v"
           }
         }
@@ -304,7 +393,7 @@
           "verdict": "pass",
           "conditions": "50 mA load, Vin = 3.63 V (record md: dcsweep bench)",
           "source": {
-            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv",
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261011-070111-5391c68.csv",
             "column": "vout_at_vinmax_50ma_v"
           }
         },
@@ -322,18 +411,18 @@
           "n_censored_upper_bound": 0,
           "n_ambiguous": 0,
           "worst_case": {
-            "value": 1.80028532,
+            "value": 1.80028448,
             "at": {
               "corner": "ff",
               "temp_c": 125,
               "res_section": "res_typ"
             },
-            "n_points_at_this_value": 2
+            "n_points_at_this_value": 3
           },
           "verdict": "pass",
           "conditions": "50 mA load, Vin = 3.63 V (record md: dcsweep bench)",
           "source": {
-            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv",
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261011-070111-5391c68.csv",
             "column": "vout_at_vinmax_50ma_v"
           }
         },
@@ -392,7 +481,7 @@
           "verdict": "pass",
           "conditions": "50 mA load; 1 % VOUT-loss definition; sweep floor 0.20 V (values at the floor are upper bounds)",
           "source": {
-            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv",
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261011-070111-5391c68.csv",
             "column": "dropout_v_50ma"
           },
           "note": "Values equal to the sweep floor are censored: the true dropout is <= the reported value. For a '<' target an upper bound that already satisfies the bound is sufficient; the worst case is an exact (uncensored) measurement.",
@@ -410,7 +499,7 @@
       "stretch": "—",
       "ratification": {
         "state": "open_unratified",
-        "readme_status": "OPEN — unratified (loaded line / multi-Vin load regulation missing)",
+        "readme_status": "OPEN — unratified (informational loaded line / multi-Vin load regulation measured at discrete points; not ratified)",
         "dr0007_disposition": "Open",
         "dr0007_type": "deterministic",
         "record": "spec/decision-records/DR-0007-target-spec-row-ratification.md"
@@ -420,14 +509,14 @@
       "coverage": {
         "state": "partial",
         "gaps": [
-          "line regulation measured at no load only",
-          "load regulation measured at Vin = 3.63 V only; not at 3.30/2.97 V",
-          "'inside the accuracy window' (Vin window) not covered for either metric (#55)"
+          "line regulation sampled at 5 discrete loads (0, 12.5, 25, 37.5, 50 mA) over Vin 2.97-3.63 V; load regulation sampled at 3 discrete supplies (2.97, 3.30, 3.63 V) -- not continuous coverage of the window",
+          "'inside the accuracy window' (coupling with the statistical VOUT row, #56) not covered for either metric",
+          "ideal 0.90 V reference: reference error is excluded; corner grid only, no Monte Carlo"
         ]
       },
       "metrics": [
         {
-          "name": "line regulation",
+          "name": "line regulation, legacy record column (no load)",
           "unit": "mV/V",
           "bound": {
             "comparator": "lt",
@@ -440,7 +529,7 @@
           "n_censored_upper_bound": 0,
           "n_ambiguous": 0,
           "worst_case": {
-            "value": 0.245757576,
+            "value": 0.245772727,
             "at": {
               "corner": "ff",
               "temp_c": 125,
@@ -451,12 +540,12 @@
           "verdict": "pass",
           "conditions": "no load only",
           "source": {
-            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv",
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261011-070111-5391c68.csv",
             "column": "line_reg_mv_per_v"
           }
         },
         {
-          "name": "load regulation",
+          "name": "load regulation, legacy record column (Vin = 3.63 V)",
           "unit": "%",
           "bound": {
             "comparator": "lt",
@@ -469,7 +558,7 @@
           "n_censored_upper_bound": 0,
           "n_ambiguous": 0,
           "worst_case": {
-            "value": 0.0253750917,
+            "value": 0.0253756587,
             "at": {
               "corner": "ff",
               "temp_c": 125,
@@ -480,9 +569,257 @@
           "verdict": "pass",
           "conditions": "0-50 mA, Vin = 3.63 V only",
           "source": {
-            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv",
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261011-070111-5391c68.csv",
             "column": "load_reg_pct"
           }
+        },
+        {
+          "name": "line regulation at 0 mA load (Vin 2.97-3.63 V)",
+          "unit": "mV/V",
+          "bound": {
+            "comparator": "lt",
+            "value": 5.0,
+            "unit": "mV/V"
+          },
+          "n_points": 45,
+          "n_pass": 45,
+          "n_fail": 0,
+          "n_censored_upper_bound": 0,
+          "n_ambiguous": 0,
+          "worst_case": {
+            "value": 0.245772727,
+            "at": {
+              "corner": "ff",
+              "temp_c": 125,
+              "res_section": "res_wcs"
+            },
+            "n_points_at_this_value": 1
+          },
+          "verdict": "pass",
+          "conditions": "line regulation |dVOUT/dVin| over Vin 2.97-3.63 V at the labelled load; ideal 0.90 V reference; 45-point corner grid",
+          "source": {
+            "record": "sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/dc-informational-summary.csv",
+            "column": "line_reg_mv_per_v_0mA"
+          },
+          "note": "Informational DC summary (derived offline from the committed raw DC grids, no new simulation). A point is valid only if both end points are within 1 % of 1.8 V; invalid points are counted as ambiguous and never dropped. Discrete sampled loads/supplies only: not a continuous-window claim.",
+          "n_invalid": 0
+        },
+        {
+          "name": "line regulation at 12.5 mA load (Vin 2.97-3.63 V)",
+          "unit": "mV/V",
+          "bound": {
+            "comparator": "lt",
+            "value": 5.0,
+            "unit": "mV/V"
+          },
+          "n_points": 45,
+          "n_pass": 45,
+          "n_fail": 0,
+          "n_censored_upper_bound": 0,
+          "n_ambiguous": 0,
+          "worst_case": {
+            "value": 0.179454545,
+            "at": {
+              "corner": "ff",
+              "temp_c": 125,
+              "res_section": "res_typ"
+            },
+            "n_points_at_this_value": 3
+          },
+          "verdict": "pass",
+          "conditions": "line regulation |dVOUT/dVin| over Vin 2.97-3.63 V at the labelled load; ideal 0.90 V reference; 45-point corner grid",
+          "source": {
+            "record": "sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/dc-informational-summary.csv",
+            "column": "line_reg_mv_per_v_12p5mA"
+          },
+          "note": "Informational DC summary (derived offline from the committed raw DC grids, no new simulation). A point is valid only if both end points are within 1 % of 1.8 V; invalid points are counted as ambiguous and never dropped. Discrete sampled loads/supplies only: not a continuous-window claim.",
+          "n_invalid": 0
+        },
+        {
+          "name": "line regulation at 25 mA load (Vin 2.97-3.63 V)",
+          "unit": "mV/V",
+          "bound": {
+            "comparator": "lt",
+            "value": 5.0,
+            "unit": "mV/V"
+          },
+          "n_points": 45,
+          "n_pass": 45,
+          "n_fail": 0,
+          "n_censored_upper_bound": 0,
+          "n_ambiguous": 0,
+          "worst_case": {
+            "value": 0.176318182,
+            "at": {
+              "corner": "ff",
+              "temp_c": 125,
+              "res_section": "res_typ"
+            },
+            "n_points_at_this_value": 3
+          },
+          "verdict": "pass",
+          "conditions": "line regulation |dVOUT/dVin| over Vin 2.97-3.63 V at the labelled load; ideal 0.90 V reference; 45-point corner grid",
+          "source": {
+            "record": "sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/dc-informational-summary.csv",
+            "column": "line_reg_mv_per_v_25mA"
+          },
+          "note": "Informational DC summary (derived offline from the committed raw DC grids, no new simulation). A point is valid only if both end points are within 1 % of 1.8 V; invalid points are counted as ambiguous and never dropped. Discrete sampled loads/supplies only: not a continuous-window claim.",
+          "n_invalid": 0
+        },
+        {
+          "name": "line regulation at 37.5 mA load (Vin 2.97-3.63 V)",
+          "unit": "mV/V",
+          "bound": {
+            "comparator": "lt",
+            "value": 5.0,
+            "unit": "mV/V"
+          },
+          "n_points": 45,
+          "n_pass": 45,
+          "n_fail": 0,
+          "n_censored_upper_bound": 0,
+          "n_ambiguous": 0,
+          "worst_case": {
+            "value": 0.176,
+            "at": {
+              "corner": "fs",
+              "temp_c": 125,
+              "res_section": "res_typ"
+            },
+            "n_points_at_this_value": 3
+          },
+          "verdict": "pass",
+          "conditions": "line regulation |dVOUT/dVin| over Vin 2.97-3.63 V at the labelled load; ideal 0.90 V reference; 45-point corner grid",
+          "source": {
+            "record": "sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/dc-informational-summary.csv",
+            "column": "line_reg_mv_per_v_37p5mA"
+          },
+          "note": "Informational DC summary (derived offline from the committed raw DC grids, no new simulation). A point is valid only if both end points are within 1 % of 1.8 V; invalid points are counted as ambiguous and never dropped. Discrete sampled loads/supplies only: not a continuous-window claim.",
+          "n_invalid": 0
+        },
+        {
+          "name": "line regulation at 50 mA load (Vin 2.97-3.63 V)",
+          "unit": "mV/V",
+          "bound": {
+            "comparator": "lt",
+            "value": 5.0,
+            "unit": "mV/V"
+          },
+          "n_points": 45,
+          "n_pass": 45,
+          "n_fail": 0,
+          "n_censored_upper_bound": 0,
+          "n_ambiguous": 0,
+          "worst_case": {
+            "value": 0.177863636,
+            "at": {
+              "corner": "fs",
+              "temp_c": 125,
+              "res_section": "res_typ"
+            },
+            "n_points_at_this_value": 3
+          },
+          "verdict": "pass",
+          "conditions": "line regulation |dVOUT/dVin| over Vin 2.97-3.63 V at the labelled load; ideal 0.90 V reference; 45-point corner grid",
+          "source": {
+            "record": "sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/dc-informational-summary.csv",
+            "column": "line_reg_mv_per_v_50mA"
+          },
+          "note": "Informational DC summary (derived offline from the committed raw DC grids, no new simulation). A point is valid only if both end points are within 1 % of 1.8 V; invalid points are counted as ambiguous and never dropped. Discrete sampled loads/supplies only: not a continuous-window claim.",
+          "n_invalid": 0
+        },
+        {
+          "name": "load regulation 0-50 mA at Vin = 2.97 V",
+          "unit": "%",
+          "bound": {
+            "comparator": "lt",
+            "value": 1.0,
+            "unit": "%"
+          },
+          "n_points": 45,
+          "n_pass": 45,
+          "n_fail": 0,
+          "n_censored_upper_bound": 0,
+          "n_ambiguous": 0,
+          "worst_case": {
+            "value": 0.0228476479,
+            "at": {
+              "corner": "ff",
+              "temp_c": 125,
+              "res_section": "res_wcs"
+            },
+            "n_points_at_this_value": 1
+          },
+          "verdict": "pass",
+          "conditions": "load regulation (V(0 mA) - V(50 mA)) / V(0 mA) at the labelled fixed Vin; ideal 0.90 V reference; 45-point corner grid",
+          "source": {
+            "record": "sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/dc-informational-summary.csv",
+            "column": "load_reg_pct_vin2p97"
+          },
+          "note": "Informational DC summary (derived offline from the committed raw DC grids, no new simulation). A point is valid only if both end points are within 1 % of 1.8 V; invalid points are counted as ambiguous and never dropped. Discrete sampled loads/supplies only: not a continuous-window claim.",
+          "n_invalid": 0
+        },
+        {
+          "name": "load regulation 0-50 mA at Vin = 3.30 V",
+          "unit": "%",
+          "bound": {
+            "comparator": "lt",
+            "value": 1.0,
+            "unit": "%"
+          },
+          "n_points": 45,
+          "n_pass": 45,
+          "n_fail": 0,
+          "n_censored_upper_bound": 0,
+          "n_ambiguous": 0,
+          "worst_case": {
+            "value": 0.0237136088,
+            "at": {
+              "corner": "ff",
+              "temp_c": 125,
+              "res_section": "res_wcs"
+            },
+            "n_points_at_this_value": 1
+          },
+          "verdict": "pass",
+          "conditions": "load regulation (V(0 mA) - V(50 mA)) / V(0 mA) at the labelled fixed Vin; ideal 0.90 V reference; 45-point corner grid",
+          "source": {
+            "record": "sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/dc-informational-summary.csv",
+            "column": "load_reg_pct_vin3p30"
+          },
+          "note": "Informational DC summary (derived offline from the committed raw DC grids, no new simulation). A point is valid only if both end points are within 1 % of 1.8 V; invalid points are counted as ambiguous and never dropped. Discrete sampled loads/supplies only: not a continuous-window claim.",
+          "n_invalid": 0
+        },
+        {
+          "name": "load regulation 0-50 mA at Vin = 3.63 V",
+          "unit": "%",
+          "bound": {
+            "comparator": "lt",
+            "value": 1.0,
+            "unit": "%"
+          },
+          "n_points": 45,
+          "n_pass": 45,
+          "n_fail": 0,
+          "n_censored_upper_bound": 0,
+          "n_ambiguous": 0,
+          "worst_case": {
+            "value": 0.0253756587,
+            "at": {
+              "corner": "ff",
+              "temp_c": 125,
+              "res_section": "res_wcs"
+            },
+            "n_points_at_this_value": 1
+          },
+          "verdict": "pass",
+          "conditions": "load regulation (V(0 mA) - V(50 mA)) / V(0 mA) at the labelled fixed Vin; ideal 0.90 V reference; 45-point corner grid",
+          "source": {
+            "record": "sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/dc-informational-summary.csv",
+            "column": "load_reg_pct_vin3p63"
+          },
+          "note": "Informational DC summary (derived offline from the committed raw DC grids, no new simulation). A point is valid only if both end points are within 1 % of 1.8 V; invalid points are counted as ambiguous and never dropped. Discrete sampled loads/supplies only: not a continuous-window claim.",
+          "n_invalid": 0
         }
       ],
       "stretch_note": null,
@@ -524,7 +861,7 @@
           "n_censored_upper_bound": 0,
           "n_ambiguous": 0,
           "worst_case": {
-            "value": 53.6428867,
+            "value": 53.6428785,
             "at": {
               "corner": "ss",
               "temp_c": 125,
@@ -535,7 +872,7 @@
           "verdict": "pass",
           "conditions": "Vin = 3.30 V, Iload = 1 mA, Cout = 1 uF, ESR = 0, ideal 0.90 V reference; Cc nominal (MoM-cap model has no corner spread at this PDK pin)",
           "source": {
-            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv",
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261011-070111-5391c68.csv",
             "column": "psrr_db_1khz"
           }
         },
@@ -553,7 +890,7 @@
           "n_censored_upper_bound": 0,
           "n_ambiguous": 0,
           "worst_case": {
-            "value": 33.2341904,
+            "value": 33.2340884,
             "at": {
               "corner": "ff",
               "temp_c": 27,
@@ -564,14 +901,14 @@
           "verdict": "pass",
           "conditions": "Vin = 3.30 V, Iload = 1 mA, Cout = 1 uF, ESR = 0, ideal 0.90 V reference; Cc nominal (MoM-cap model has no corner spread at this PDK pin)",
           "source": {
-            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv",
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261011-070111-5391c68.csv",
             "column": "psrr_db_100khz"
           }
         }
       ],
       "stretch_note": "stretch > 60 dB @ 1 kHz not met: 45 of 45 points are <= 60 dB; stretch is not ratified.",
       "notes": [
-        "Cc value tolerance (ss/125C only, sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.cc-tolerance.csv): all of PM, GM and PSRR rows hold for Cc in x0.647..x1.524 of nominal."
+        "Cc value tolerance (ss/125C only, sim/ldo-cmos5l-pvt-sweep/records/20261011-070111-5391c68.cc-tolerance.csv): all of PM, GM and PSRR rows hold for Cc in x0.647..x1.524 of nominal."
       ]
     },
     {
@@ -581,17 +918,19 @@
       "stretch": "< 10 µA",
       "ratification": {
         "state": "open_unratified",
-        "readme_status": "OPEN — unratified (no current full-load record)",
+        "readme_status": "OPEN — unratified (informational full-load Iq measured at Vin = 3.30 V only; not ratified)",
         "dr0007_disposition": "Open",
         "dr0007_type": "deterministic",
         "record": "spec/decision-records/DR-0007-target-spec-row-ratification.md"
       },
       "verdict": "pass_partial_coverage",
-      "evidence_state": "current_partial_superseded_other_half",
+      "evidence_state": "current",
       "coverage": {
         "state": "partial",
         "gaps": [
-          "full-load half of the row has no current-design measurement"
+          "Iq at full load is measured at Vin = 3.30 V only (no other supplies)",
+          "full-load Iq is a difference of two ~50 mA currents; quantized at 1e-10 A, solver noise not bounded beyond that",
+          "ideal 0.90 V reference and ideal Ibias sink: reference/bias-generator current excluded; corner grid only"
         ]
       },
       "metrics": [
@@ -609,7 +948,7 @@
           "n_censored_upper_bound": 0,
           "n_ambiguous": 0,
           "worst_case": {
-            "value": 24.7221613,
+            "value": 24.7221724,
             "at": {
               "corner": "ss",
               "temp_c": 125,
@@ -620,23 +959,49 @@
           "verdict": "pass",
           "conditions": "no load, Vin = 3.30 V (record md: dcsweep bench)",
           "source": {
-            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv",
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261011-070111-5391c68.csv",
             "column": "iq_a"
           },
           "note": "column iq_a is in A; converted to uA (x1e6) for the row's unit"
         },
         {
-          "name": "Iq at full load",
+          "name": "Iq at full load (50 mA), load current excluded",
           "unit": "uA",
-          "verdict": "not_measured",
-          "reason": "The selected record reports no full-load Iq. An older record's full-load figure (23.05uA-23.08uA) is on a superseded design and is NOT used as current evidence.",
+          "bound": {
+            "comparator": "lt",
+            "value": 30.0,
+            "unit": "uA"
+          },
+          "n_points": 45,
+          "n_pass": 45,
+          "n_fail": 0,
+          "n_censored_upper_bound": 0,
+          "n_ambiguous": 0,
+          "worst_case": {
+            "value": 24.8874,
+            "at": {
+              "corner": "ff",
+              "temp_c": 125,
+              "res_section": "res_bcs"
+            },
+            "n_points_at_this_value": 1
+          },
+          "verdict": "pass",
+          "conditions": "50 mA load, Vin = 3.30 V, |i(Vin)| - Iload; ideal 0.90 V reference and 2 uA Ibias sink; 45-point corner grid",
           "source": {
-            "superseded_statement": "sim/ldo-cmos5l-pvt-sweep/README.md",
+            "record": "sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/dc-informational-summary.csv",
+            "column": "iq_fullload_excl_load_a"
+          },
+          "note": "Derived offline as |i(Vin)| - Iload from the committed raw DC grid (column in A, converted to uA). Precision caveat: the grid is printed to 9 significant digits, so a ~22 uA difference of two ~50 mA currents is quantized at 1e-10 A (0.0001 uA); solver noise beyond that floor is not bounded by this data. Invalid points are counted as ambiguous, never dropped. An older record's full-load figure (23.05uA-23.08uA) is on a superseded design and is NOT used.",
+          "n_invalid": 0,
+          "precision_floor_uA": 0.000100000008,
+          "superseded_statement": {
+            "source": "sim/ldo-cmos5l-pvt-sweep/README.md",
             "describes": "Iq at full load, from the #25 record, which was run against a superseded netlist (pre-#28 behavioural divider, pre-#35 Cc). Quoted only to show a full-load number once existed; it is NOT evidence about the current design."
           }
         }
       ],
-      "stretch_note": "stretch < 10 uA not met: max observed Iq 24.72 uA.",
+      "stretch_note": "stretch < 10 uA not met: max observed no-load Iq 24.72 uA, max full-load Iq 24.89 uA.",
       "notes": []
     },
     {
@@ -666,7 +1031,7 @@
           "verdict": "not_implemented",
           "reason": "No current limiter in the design; record md lists current limit as 'not implemented'.",
           "source": {
-            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.md"
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261011-070111-5391c68.md"
           }
         }
       ],
@@ -680,32 +1045,457 @@
       "stretch": "—",
       "ratification": {
         "state": "open_unratified",
-        "readme_status": "OPEN — unratified (not implemented)",
+        "readme_status": "OPEN — unratified (measured on the SG13CMOS5L core with proposed methodology: all 135 grid points fail the overshoot / monotonicity checks; not ratified)",
         "dr0007_disposition": "Open",
         "dr0007_type": "deterministic",
         "record": "spec/decision-records/DR-0007-target-spec-row-ratification.md"
       },
-      "verdict": "not_implemented",
-      "evidence_state": "none",
+      "verdict": "fail",
+      "evidence_state": "current",
       "coverage": {
-        "state": "none",
+        "state": "partial",
         "gaps": [
-          "no enable input, no transient testbench"
+          "proposed methodology (DR-0009) only; the target's 'controlled ramp' has no numeric bound and is not graded",
+          "one load/Cout/ESR point only: 1 mA, 1 uF, 0 ohm ESR -- not 0-50 mA, 0.33-4.7 uF, 0-500 mohm",
+          "Vin grid is 2.97/3.30/3.63 V; Cc and the 0.90 V reference are not cornered; schematic level, no post-layout evidence"
         ]
       },
       "metrics": [
         {
-          "name": "startup",
-          "unit": "ms",
-          "verdict": "not_implemented",
-          "reason": "No enable input and no transient testbench; record md lists startup as 'not implemented'.",
+          "name": "start: settle time into the +/-2 % band (3 ms limit)",
+          "unit": "s",
+          "bound": {
+            "comparator": "le",
+            "value": 0.003,
+            "unit": "s"
+          },
+          "n_points": 135,
+          "n_pass": 135,
+          "n_fail": 0,
+          "n_censored_upper_bound": 0,
+          "n_ambiguous": 0,
+          "worst_case": {
+            "value": 0.000440999416,
+            "at": {
+              "point": "st_ff_125c_rwcs_v3630mv_i1ma_c1000nf_e0mohm_t1000ns",
+              "corner": "ff",
+              "temp_c": 125,
+              "res_section": "res_wcs",
+              "vin_v": 3.63,
+              "load_ma": 1.0,
+              "cout_nf": 1000.0,
+              "esr_mohm": 0.0
+            },
+            "n_points_at_this_value": 1
+          },
+          "verdict": "pass",
+          "conditions": "EN-bearing core (DR-0008), EN = VIN * CTL step at t = 1 ms, schematic level; grid process {tt,ss,ff,sf,fs} x temperature {-40,27,125} C x resistor corner {typ,bcs,wcs} x Vin {2.97,3.30,3.63} V; resistive load 1 mA (1.8 kohm), Cout 1 uF, ESR 0, Cc nominal; ideal 0.90 V reference; 135 requested points. Time zero is the EN = VIN/2 crossing; PROPOSED methodology (DR-0009), not ratified",
           "source": {
-            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.md"
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.csv",
+            "column": "start_settle_time_s"
+          },
+          "note": "Numeric settling success does not override the monotonicity and overshoot metrics below; each is scored independently and any failure fails the row. A point that never settled is scored at its observation length (a lower bound)."
+        },
+        {
+          "name": "start: peak VOUT above the +2 % band edge (overshoot, proposed bound 1.836 V)",
+          "unit": "V",
+          "bound": {
+            "comparator": "le",
+            "value": 1.836,
+            "unit": "V"
+          },
+          "n_points": 135,
+          "n_pass": 0,
+          "n_fail": 135,
+          "n_censored_upper_bound": 0,
+          "n_ambiguous": 0,
+          "worst_case": {
+            "value": 2.33885177,
+            "at": {
+              "point": "st_ff_125c_rwcs_v3630mv_i1ma_c1000nf_e0mohm_t1000ns",
+              "corner": "ff",
+              "temp_c": 125,
+              "res_section": "res_wcs",
+              "vin_v": 3.63,
+              "load_ma": 1.0,
+              "cout_nf": 1000.0,
+              "esr_mohm": 0.0
+            },
+            "n_points_at_this_value": 1
+          },
+          "verdict": "fail",
+          "conditions": "EN-bearing core (DR-0008), EN = VIN * CTL step at t = 1 ms, schematic level; grid process {tt,ss,ff,sf,fs} x temperature {-40,27,125} C x resistor corner {typ,bcs,wcs} x Vin {2.97,3.30,3.63} V; resistive load 1 mA (1.8 kohm), Cout 1 uF, ESR 0, Cc nominal; ideal 0.90 V reference; 135 requested points. Time zero is the EN = VIN/2 crossing; PROPOSED methodology (DR-0009), not ratified",
+          "source": {
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.csv",
+            "column": "start_peak_vout_v"
+          }
+        },
+        {
+          "name": "start: max downward excursion before settling (monotonicity, proposed 1 mV tolerance)",
+          "unit": "V",
+          "bound": {
+            "comparator": "le",
+            "value": 0.001,
+            "unit": "V"
+          },
+          "n_points": 135,
+          "n_pass": 0,
+          "n_fail": 135,
+          "n_censored_upper_bound": 0,
+          "n_ambiguous": 0,
+          "worst_case": {
+            "value": 0.50375,
+            "at": {
+              "point": "st_ff_125c_rwcs_v3630mv_i1ma_c1000nf_e0mohm_t1000ns",
+              "corner": "ff",
+              "temp_c": 125,
+              "res_section": "res_wcs",
+              "vin_v": 3.63,
+              "load_ma": 1.0,
+              "cout_nf": 1000.0,
+              "esr_mohm": 0.0
+            },
+            "n_points_at_this_value": 1
+          },
+          "verdict": "fail",
+          "conditions": "EN-bearing core (DR-0008), EN = VIN * CTL step at t = 1 ms, schematic level; grid process {tt,ss,ff,sf,fs} x temperature {-40,27,125} C x resistor corner {typ,bcs,wcs} x Vin {2.97,3.30,3.63} V; resistive load 1 mA (1.8 kohm), Cout 1 uF, ESR 0, Cc nominal; ideal 0.90 V reference; 135 requested points. Time zero is the EN = VIN/2 crossing; PROPOSED methodology (DR-0009), not ratified",
+          "source": {
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.csv",
+            "column": "start_max_down_excursion_v"
+          }
+        },
+        {
+          "name": "re-enable: peak VOUT above the +2 % band edge (proposed bound 1.836 V)",
+          "unit": "V",
+          "bound": {
+            "comparator": "le",
+            "value": 1.836,
+            "unit": "V"
+          },
+          "n_points": 135,
+          "n_pass": 0,
+          "n_fail": 135,
+          "n_censored_upper_bound": 0,
+          "n_ambiguous": 0,
+          "worst_case": {
+            "value": 2.24905157,
+            "at": {
+              "point": "st_ff_-40c_rwcs_v3630mv_i1ma_c1000nf_e0mohm_t1000ns",
+              "corner": "ff",
+              "temp_c": -40,
+              "res_section": "res_wcs",
+              "vin_v": 3.63,
+              "load_ma": 1.0,
+              "cout_nf": 1000.0,
+              "esr_mohm": 0.0
+            },
+            "n_points_at_this_value": 1
+          },
+          "verdict": "fail",
+          "conditions": "EN-bearing core (DR-0008), EN = VIN * CTL step at t = 1 ms, schematic level; grid process {tt,ss,ff,sf,fs} x temperature {-40,27,125} C x resistor corner {typ,bcs,wcs} x Vin {2.97,3.30,3.63} V; resistive load 1 mA (1.8 kohm), Cout 1 uF, ESR 0, Cc nominal; ideal 0.90 V reference; 135 requested points. Time zero is the EN = VIN/2 crossing; PROPOSED methodology (DR-0009), not ratified",
+          "source": {
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.csv",
+            "column": "reen_peak_vout_v"
+          }
+        },
+        {
+          "name": "re-enable: max downward excursion (proposed 1 mV tolerance)",
+          "unit": "V",
+          "bound": {
+            "comparator": "le",
+            "value": 0.001,
+            "unit": "V"
+          },
+          "n_points": 135,
+          "n_pass": 0,
+          "n_fail": 135,
+          "n_censored_upper_bound": 0,
+          "n_ambiguous": 0,
+          "worst_case": {
+            "value": 0.41331208,
+            "at": {
+              "point": "st_ff_-40c_rwcs_v3630mv_i1ma_c1000nf_e0mohm_t1000ns",
+              "corner": "ff",
+              "temp_c": -40,
+              "res_section": "res_wcs",
+              "vin_v": 3.63,
+              "load_ma": 1.0,
+              "cout_nf": 1000.0,
+              "esr_mohm": 0.0
+            },
+            "n_points_at_this_value": 1
+          },
+          "verdict": "fail",
+          "conditions": "EN-bearing core (DR-0008), EN = VIN * CTL step at t = 1 ms, schematic level; grid process {tt,ss,ff,sf,fs} x temperature {-40,27,125} C x resistor corner {typ,bcs,wcs} x Vin {2.97,3.30,3.63} V; resistive load 1 mA (1.8 kohm), Cout 1 uF, ESR 0, Cc nominal; ideal 0.90 V reference; 135 requested points. Time zero is the EN = VIN/2 crossing; PROPOSED methodology (DR-0009), not ratified",
+          "source": {
+            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.csv",
+            "column": "reen_max_down_excursion_v"
           }
         }
       ],
       "stretch_note": null,
-      "notes": []
+      "notes": [
+        "Measured: 135 of 135 requested points evaluated, 135 fail, 0 pass, 0 insufficient, 0 missing (sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.csv). 135 of 135 points that settle within 3 ms still fail the proposed overshoot / monotonicity checks.",
+        "Proposed methodology, not ratified: DR-0007 row 9 stays Open; no ratification and no whole-spec pass is inferred."
+      ],
+      "startup_campaign": {
+        "record_id": "20261011-070146-0c95530",
+        "stage": "grid",
+        "requested_points": 135,
+        "result_rows": 135,
+        "evaluated_points": 135,
+        "missing_points": 0,
+        "insufficient_points": 0,
+        "csv_verdicts": {
+          "pass": 0,
+          "fail": 135,
+          "insufficient": 0
+        },
+        "settled_within_3ms_points": 135,
+        "settled_within_3ms_but_failing_points": 135,
+        "failure_reasons_point_counts": {
+          "reen_downward excursion": 135,
+          "reen_peak": 135,
+          "start_downward excursion": 135,
+          "start_peak": 135
+        },
+        "missing": [],
+        "design_freshness": {
+          "state": "current",
+          "stale_components": [],
+          "basis": "The core hash is the one the campaign manifest records in source_sha256 (the generator requires the manifest value, this pin and the current file to agree). The campaign manifest does not record an error-amplifier hash, so that pin is the hash of ldo_erramp_cmos5l.spice at the time of the campaign: the campaign (issue #89) was run after the G1 disable pull-down changed that file (DR-0008 addendum), from commit df3f802, and it is the same byte content that the selected legacy circuit_record pins. It replaces 20261010-104827-91e92aa, which ran against the six-pin amplifier and is now historical. If either netlist changes the startup evidence is classified stale against the design and the envelope turns fail until a new campaign is selected. Record 20261011-070146-0c95530 (issue #130) is a re-collection, with the amended cold-start disabled-window evaluator, of the committed traces of 20261011-031426-df3f802 (no new simulation); the netlist hashes above are those of that source campaign, and its manifest carries them unchanged in source_sha256. 20261011-031426-df3f802 is retained, unmodified, as the earlier record.",
+          "components": {
+            "core": {
+              "path": "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice",
+              "pinned_sha256": "08a7b857e1fad43dd7af1f575de97853a058e85541601ecc47567fbc28dbae57",
+              "actual_sha256": "08a7b857e1fad43dd7af1f575de97853a058e85541601ecc47567fbc28dbae57",
+              "matches": true,
+              "recorded_in_manifest": true,
+              "manifest_sha256": "08a7b857e1fad43dd7af1f575de97853a058e85541601ecc47567fbc28dbae57"
+            },
+            "error_amp": {
+              "path": "design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice",
+              "pinned_sha256": "75ee39ce0c48b54cab6c8a31acd1f199c37c1ccd1ac074a3515dee81cc656fb4",
+              "actual_sha256": "75ee39ce0c48b54cab6c8a31acd1f199c37c1ccd1ac074a3515dee81cc656fb4",
+              "matches": true,
+              "recorded_in_manifest": false
+            }
+          }
+        },
+        "proposed_methodology": {
+          "reference": "spec/decision-records/DR-0009-sg13cmos5l-startup-measurement-methodology.md",
+          "evaluator": "sim/ldo-cmos5l-pvt-sweep/startup_eval.py",
+          "band_v": [
+            1.764,
+            1.836
+          ],
+          "settle_limit_s": 0.003,
+          "monotonic_tolerance_v": 0.001,
+          "note": "Overshoot is read as peak VOUT above the +2 % band edge (1.836 V) and monotonicity as maximum downward excursion <= 1 mV before settling. 'controlled ramp' has no numeric bound in the target text and is not graded. Cold-start disabled window (DR-0009 amendment, issue #130): the contiguous initial EN <= 1 mV plateau before the first rising ramp; off_supply_current_a is -ivin at its last sample. Selected record 20261011-070146-0c95530 re-collects 20261011-031426-df3f802's traces with that evaluator (the evaluator and campaign sha256 are in its manifest source_sha256).",
+          "supersedes_selection": {
+            "id": "20261011-031426-df3f802",
+            "reason": "its off_supply_current_a was sampled inside the EN edge (issue #130); traces unchanged and referenced in place by the selected record"
+          }
+        },
+        "ratification": "none inferred: row 9 stays Open (DR-0007); proposed methodology only",
+        "extrema": {
+          "start overshoot above 1.8 V [V]": {
+            "min": {
+              "value": 0.05839328,
+              "at": {
+                "point": "st_ss_-40c_rtyp_v2970mv_i1ma_c1000nf_e0mohm_t1000ns",
+                "corner": "ss",
+                "temp_c": -40,
+                "res_section": "res_typ",
+                "vin_v": 2.97,
+                "load_ma": 1.0,
+                "cout_nf": 1000.0,
+                "esr_mohm": 0.0
+              },
+              "n_points_at_this_value": 1
+            },
+            "max": {
+              "value": 0.53885177,
+              "at": {
+                "point": "st_ff_125c_rwcs_v3630mv_i1ma_c1000nf_e0mohm_t1000ns",
+                "corner": "ff",
+                "temp_c": 125,
+                "res_section": "res_wcs",
+                "vin_v": 3.63,
+                "load_ma": 1.0,
+                "cout_nf": 1000.0,
+                "esr_mohm": 0.0
+              },
+              "n_points_at_this_value": 1
+            }
+          },
+          "start peak VOUT [V]": {
+            "min": {
+              "value": 1.85839328,
+              "at": {
+                "point": "st_ss_-40c_rtyp_v2970mv_i1ma_c1000nf_e0mohm_t1000ns",
+                "corner": "ss",
+                "temp_c": -40,
+                "res_section": "res_typ",
+                "vin_v": 2.97,
+                "load_ma": 1.0,
+                "cout_nf": 1000.0,
+                "esr_mohm": 0.0
+              },
+              "n_points_at_this_value": 1
+            },
+            "max": {
+              "value": 2.33885177,
+              "at": {
+                "point": "st_ff_125c_rwcs_v3630mv_i1ma_c1000nf_e0mohm_t1000ns",
+                "corner": "ff",
+                "temp_c": 125,
+                "res_section": "res_wcs",
+                "vin_v": 3.63,
+                "load_ma": 1.0,
+                "cout_nf": 1000.0,
+                "esr_mohm": 0.0
+              },
+              "n_points_at_this_value": 1
+            }
+          },
+          "start settle time [s]": {
+            "min": {
+              "value": 2.84714411e-05,
+              "at": {
+                "point": "st_ss_-40c_rtyp_v2970mv_i1ma_c1000nf_e0mohm_t1000ns",
+                "corner": "ss",
+                "temp_c": -40,
+                "res_section": "res_typ",
+                "vin_v": 2.97,
+                "load_ma": 1.0,
+                "cout_nf": 1000.0,
+                "esr_mohm": 0.0
+              },
+              "n_points_at_this_value": 1
+            },
+            "max": {
+              "value": 0.000440999416,
+              "at": {
+                "point": "st_ff_125c_rwcs_v3630mv_i1ma_c1000nf_e0mohm_t1000ns",
+                "corner": "ff",
+                "temp_c": 125,
+                "res_section": "res_wcs",
+                "vin_v": 3.63,
+                "load_ma": 1.0,
+                "cout_nf": 1000.0,
+                "esr_mohm": 0.0
+              },
+              "n_points_at_this_value": 1
+            }
+          },
+          "start max downward excursion [V]": {
+            "min": {
+              "value": 0.02240698,
+              "at": {
+                "point": "st_ss_-40c_rtyp_v2970mv_i1ma_c1000nf_e0mohm_t1000ns",
+                "corner": "ss",
+                "temp_c": -40,
+                "res_section": "res_typ",
+                "vin_v": 2.97,
+                "load_ma": 1.0,
+                "cout_nf": 1000.0,
+                "esr_mohm": 0.0
+              },
+              "n_points_at_this_value": 1
+            },
+            "max": {
+              "value": 0.50375,
+              "at": {
+                "point": "st_ff_125c_rwcs_v3630mv_i1ma_c1000nf_e0mohm_t1000ns",
+                "corner": "ff",
+                "temp_c": 125,
+                "res_section": "res_wcs",
+                "vin_v": 3.63,
+                "load_ma": 1.0,
+                "cout_nf": 1000.0,
+                "esr_mohm": 0.0
+              },
+              "n_points_at_this_value": 1
+            }
+          },
+          "re-enable overshoot [V]": {
+            "min": {
+              "value": 0.04490932,
+              "at": {
+                "point": "st_ss_125c_rwcs_v2970mv_i1ma_c1000nf_e0mohm_t1000ns",
+                "corner": "ss",
+                "temp_c": 125,
+                "res_section": "res_wcs",
+                "vin_v": 2.97,
+                "load_ma": 1.0,
+                "cout_nf": 1000.0,
+                "esr_mohm": 0.0
+              },
+              "n_points_at_this_value": 1
+            },
+            "max": {
+              "value": 0.44905157,
+              "at": {
+                "point": "st_ff_-40c_rwcs_v3630mv_i1ma_c1000nf_e0mohm_t1000ns",
+                "corner": "ff",
+                "temp_c": -40,
+                "res_section": "res_wcs",
+                "vin_v": 3.63,
+                "load_ma": 1.0,
+                "cout_nf": 1000.0,
+                "esr_mohm": 0.0
+              },
+              "n_points_at_this_value": 1
+            }
+          },
+          "re-enable max downward excursion [V]": {
+            "min": {
+              "value": 0.00927083,
+              "at": {
+                "point": "st_ss_125c_rwcs_v2970mv_i1ma_c1000nf_e0mohm_t1000ns",
+                "corner": "ss",
+                "temp_c": 125,
+                "res_section": "res_wcs",
+                "vin_v": 2.97,
+                "load_ma": 1.0,
+                "cout_nf": 1000.0,
+                "esr_mohm": 0.0
+              },
+              "n_points_at_this_value": 1
+            },
+            "max": {
+              "value": 0.41331208,
+              "at": {
+                "point": "st_ff_-40c_rwcs_v3630mv_i1ma_c1000nf_e0mohm_t1000ns",
+                "corner": "ff",
+                "temp_c": -40,
+                "res_section": "res_wcs",
+                "vin_v": 3.63,
+                "load_ma": 1.0,
+                "cout_nf": 1000.0,
+                "esr_mohm": 0.0
+              },
+              "n_points_at_this_value": 1
+            }
+          }
+        },
+        "campaign_provenance": {
+          "engines": [
+            "ngspice-46"
+          ],
+          "runner_klt": [
+            "0.5.0"
+          ],
+          "client_klt": "klt 0.7.0+g0d0312b30708",
+          "pdk_pinned_commit": "607e18d4bd9214a52575c194b4181ef449f9252f",
+          "pdk_installed_commit": "607e18d4bd9214a52575c194b4181ef449f9252f"
+        },
+        "source": {
+          "record_md": "sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.md",
+          "csv": "sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.csv"
+        }
+      }
     },
     {
       "id": 10,
@@ -726,12 +1516,13 @@
         "gaps": [
           "one (Cout, ESR, load) point only: 1 uF, 0 ohm, 1 mA -- not 0.33-4.7 uF, 0-500 mohm, 0-50 mA",
           "Cc is un-cornered; Cc tolerance checked at ss/125C only",
-          "15 of 45 points have more than one 0 dB crossing (ambiguous scalar PM)"
+          "sweep ceiling 10 GHz bounded at 0 of 45 points (loop gain 0.398..1.17 dB and falling at the ceiling): no PM or GM pass can be scored under DR-0014 until a bench bounds the loop gain above 10 GHz",
+          "45 of 45 points have two 0 dB crossings"
         ]
       },
       "metrics": [
         {
-          "name": "phase margin (first 0 dB crossing)",
+          "name": "phase margin, DR-0014: minimum over every 0 dB crossing in the sweep",
           "unit": "deg",
           "bound": {
             "comparator": "ge",
@@ -739,24 +1530,16 @@
             "unit": "deg"
           },
           "n_points": 45,
-          "n_pass": 30,
+          "n_pass": 0,
           "n_fail": 0,
           "n_censored_upper_bound": 0,
-          "n_ambiguous": 15,
-          "worst_case": {
-            "value": 53.8710338,
-            "at": {
-              "corner": "ss",
-              "temp_c": 125,
-              "res_section": "res_bcs"
-            },
-            "n_points_at_this_value": 1
-          },
+          "n_ambiguous": 45,
+          "worst_case": null,
           "verdict": "ambiguous",
-          "conditions": "Vin = 3.30 V, Iload = 1 mA, Cout = 1 uF, ESR = 0, ideal 0.90 V reference; Cc nominal (MoM-cap model has no corner spread at this PDK pin)",
+          "conditions": "Vin = 3.30 V, Iload = 1 mA, Cout = 1 uF, ESR = 0, ideal 0.90 V reference; Cc nominal (MoM-cap model has no corner spread at this PDK pin); loop-gain trace 1 Hz-10 GHz, 20 points/decade (the committed bench's sweep floor and ceiling); PROPOSED classification (DR-0014), not ratified",
           "source": {
-            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv",
-            "column": "phase_margin_deg"
+            "record": "sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/row10-margins.csv",
+            "column": "pm_deg"
           },
           "ambiguous_points": [
             {
@@ -767,7 +1550,22 @@
             {
               "corner": "tt",
               "temp_c": -40,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "tt",
+              "temp_c": -40,
               "res_section": "res_wcs"
+            },
+            {
+              "corner": "tt",
+              "temp_c": 27,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "tt",
+              "temp_c": 27,
+              "res_section": "res_bcs"
             },
             {
               "corner": "tt",
@@ -775,11 +1573,66 @@
               "res_section": "res_wcs"
             },
             {
+              "corner": "tt",
+              "temp_c": 125,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "tt",
+              "temp_c": 125,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "tt",
+              "temp_c": 125,
+              "res_section": "res_wcs"
+            },
+            {
+              "corner": "ss",
+              "temp_c": -40,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "ss",
+              "temp_c": -40,
+              "res_section": "res_bcs"
+            },
+            {
               "corner": "ss",
               "temp_c": -40,
               "res_section": "res_wcs"
             },
             {
+              "corner": "ss",
+              "temp_c": 27,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "ss",
+              "temp_c": 27,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "ss",
+              "temp_c": 27,
+              "res_section": "res_wcs"
+            },
+            {
+              "corner": "ss",
+              "temp_c": 125,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "ss",
+              "temp_c": 125,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "ss",
+              "temp_c": 125,
+              "res_section": "res_wcs"
+            },
+            {
               "corner": "ff",
               "temp_c": -40,
               "res_section": "res_typ"
@@ -802,6 +1655,26 @@
             {
               "corner": "ff",
               "temp_c": 27,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "ff",
+              "temp_c": 27,
+              "res_section": "res_wcs"
+            },
+            {
+              "corner": "ff",
+              "temp_c": 125,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "ff",
+              "temp_c": 125,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "ff",
+              "temp_c": 125,
               "res_section": "res_wcs"
             },
             {
@@ -822,6 +1695,31 @@
             {
               "corner": "sf",
               "temp_c": 27,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "sf",
+              "temp_c": 27,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "sf",
+              "temp_c": 27,
+              "res_section": "res_wcs"
+            },
+            {
+              "corner": "sf",
+              "temp_c": 125,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "sf",
+              "temp_c": 125,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "sf",
+              "temp_c": 125,
               "res_section": "res_wcs"
             },
             {
@@ -832,21 +1730,56 @@
             {
               "corner": "fs",
               "temp_c": -40,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "fs",
+              "temp_c": -40,
+              "res_section": "res_wcs"
+            },
+            {
+              "corner": "fs",
+              "temp_c": 27,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "fs",
+              "temp_c": 27,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "fs",
+              "temp_c": 27,
+              "res_section": "res_wcs"
+            },
+            {
+              "corner": "fs",
+              "temp_c": 125,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "fs",
+              "temp_c": 125,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "fs",
+              "temp_c": 125,
               "res_section": "res_wcs"
             }
           ],
-          "note": "Points with more than one 0 dB crossing are not scored: the scalar PM is the first crossing only and the record's phase_margin_worst_deg is reported beside it unresolved. No scalar pass is manufactured for them.",
-          "ambiguous_first_crossing_pm_range_deg": {
-            "min": 74.3390934,
-            "max": 76.7959245
+          "note": "Per-crossing margin = angular distance of the crossing phase from the critical point (180 deg mod 360), signed negative after an in-band encirclement. A miss inside the sweep is a fail; a pass also needs a bounded sweep ceiling (loop gain <= -10 dB and non-increasing over the last decade) and a sample bracket clear of the bound. Anything else stays ambiguous with its reason.",
+          "reasons": {
+            "ceiling_unbounded": 45
           },
-          "ambiguous_phase_margin_worst_deg_range": {
-            "min": -166.185006,
-            "max": -158.026268
-          }
+          "detail": [
+            "sweep ceiling bounded at 0 of 45 points: loop gain at 10 GHz 0.3979..1.17 dB, change over the last decade -0.5642..-0.4254 dB (falling); low-end premise holds at 45 of 45",
+            "45 points have two 0 dB crossings: first-crossing margin 53.87..76.93 deg, second (rising) crossing 156.6..166.2 deg from the critical point; the record's phase_margin_worst_deg (-166.2..-156.6) is 180 + unwrapped phase, not a margin",
+            "superseded first-crossing reading (pre-DR-0014, not a verdict): 0 of 45 scored >= 45 deg, 45 unscored; range 53.87..76.93 deg"
+          ]
         },
         {
-          "name": "gain margin (first -180 deg crossing)",
+          "name": "gain margin, DR-0014: minimum over every -180 deg crossing in the sweep",
           "unit": "dB",
           "bound": {
             "comparator": "ge",
@@ -854,38 +1787,284 @@
             "unit": "dB"
           },
           "n_points": 45,
-          "n_pass": 45,
+          "n_pass": 0,
           "n_fail": 0,
           "n_censored_upper_bound": 0,
-          "n_ambiguous": 0,
-          "worst_case": {
-            "value": 13.8525525,
-            "at": {
+          "n_ambiguous": 45,
+          "worst_case": null,
+          "verdict": "ambiguous",
+          "conditions": "Vin = 3.30 V, Iload = 1 mA, Cout = 1 uF, ESR = 0, ideal 0.90 V reference; Cc nominal (MoM-cap model has no corner spread at this PDK pin); loop-gain trace 1 Hz-10 GHz, 20 points/decade (the committed bench's sweep floor and ceiling); PROPOSED classification (DR-0014), not ratified",
+          "source": {
+            "record": "sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/row10-margins.csv",
+            "column": "gm_db"
+          },
+          "ambiguous_points": [
+            {
+              "corner": "tt",
+              "temp_c": -40,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "tt",
+              "temp_c": -40,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "tt",
+              "temp_c": -40,
+              "res_section": "res_wcs"
+            },
+            {
+              "corner": "tt",
+              "temp_c": 27,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "tt",
+              "temp_c": 27,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "tt",
+              "temp_c": 27,
+              "res_section": "res_wcs"
+            },
+            {
+              "corner": "tt",
+              "temp_c": 125,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "tt",
+              "temp_c": 125,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "tt",
+              "temp_c": 125,
+              "res_section": "res_wcs"
+            },
+            {
+              "corner": "ss",
+              "temp_c": -40,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "ss",
+              "temp_c": -40,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "ss",
+              "temp_c": -40,
+              "res_section": "res_wcs"
+            },
+            {
+              "corner": "ss",
+              "temp_c": 27,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "ss",
+              "temp_c": 27,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "ss",
+              "temp_c": 27,
+              "res_section": "res_wcs"
+            },
+            {
+              "corner": "ss",
+              "temp_c": 125,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "ss",
+              "temp_c": 125,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "ss",
+              "temp_c": 125,
+              "res_section": "res_wcs"
+            },
+            {
+              "corner": "ff",
+              "temp_c": -40,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "ff",
+              "temp_c": -40,
+              "res_section": "res_bcs"
+            },
+            {
               "corner": "ff",
               "temp_c": -40,
               "res_section": "res_wcs"
             },
-            "n_points_at_this_value": 1
+            {
+              "corner": "ff",
+              "temp_c": 27,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "ff",
+              "temp_c": 27,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "ff",
+              "temp_c": 27,
+              "res_section": "res_wcs"
+            },
+            {
+              "corner": "ff",
+              "temp_c": 125,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "ff",
+              "temp_c": 125,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "ff",
+              "temp_c": 125,
+              "res_section": "res_wcs"
+            },
+            {
+              "corner": "sf",
+              "temp_c": -40,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "sf",
+              "temp_c": -40,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "sf",
+              "temp_c": -40,
+              "res_section": "res_wcs"
+            },
+            {
+              "corner": "sf",
+              "temp_c": 27,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "sf",
+              "temp_c": 27,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "sf",
+              "temp_c": 27,
+              "res_section": "res_wcs"
+            },
+            {
+              "corner": "sf",
+              "temp_c": 125,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "sf",
+              "temp_c": 125,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "sf",
+              "temp_c": 125,
+              "res_section": "res_wcs"
+            },
+            {
+              "corner": "fs",
+              "temp_c": -40,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "fs",
+              "temp_c": -40,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "fs",
+              "temp_c": -40,
+              "res_section": "res_wcs"
+            },
+            {
+              "corner": "fs",
+              "temp_c": 27,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "fs",
+              "temp_c": 27,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "fs",
+              "temp_c": 27,
+              "res_section": "res_wcs"
+            },
+            {
+              "corner": "fs",
+              "temp_c": 125,
+              "res_section": "res_typ"
+            },
+            {
+              "corner": "fs",
+              "temp_c": 125,
+              "res_section": "res_bcs"
+            },
+            {
+              "corner": "fs",
+              "temp_c": 125,
+              "res_section": "res_wcs"
+            }
+          ],
+          "note": "A trace with no -180 deg crossing is never scored as a miss or as infinite margin: it passes only with a bounded sweep ceiling, which bounds the margin above the ceiling below by -(loop gain at the ceiling) >= 10 dB.",
+          "reasons": {
+            "ceiling_unbounded": 45
           },
-          "verdict": "pass",
-          "conditions": "Vin = 3.30 V, Iload = 1 mA, Cout = 1 uF, ESR = 0, ideal 0.90 V reference; Cc nominal (MoM-cap model has no corner spread at this PDK pin)",
-          "source": {
-            "record": "sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.csv",
-            "column": "gain_margin_db"
-          }
+          "detail": [
+            "superseded first -180 deg crossing reading (pre-DR-0014, not a verdict): 45 of 45 >= 10 dB, range 13.84..29.87 dB; no committed trace bounds the sweep ceiling (10 GHz), so none of these is a pass under DR-0014"
+          ]
         }
       ],
       "stretch_note": null,
       "notes": [
-        "Cc value tolerance (ss/125C only, sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81.cc-tolerance.csv): PM, GM and PSRR all hold for Cc in x0.647..x1.524 of nominal."
-      ]
+        "Cc value tolerance (ss/125C only, sim/ldo-cmos5l-pvt-sweep/records/20261011-070111-5391c68.cc-tolerance.csv): PM, GM and PSRR all hold for Cc in x0.647..x1.524 of nominal (first-crossing reading, pre-DR-0014).",
+        "PM/GM verdicts follow the PROPOSED margin classification spec/decision-records/DR-0014-row10-stability-margin-classification.md applied offline to the committed traces (sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/row10-margins.csv); row 10 stays Open (DR-0007) and nothing is ratified."
+      ],
+      "margin_classification": {
+        "decision_record": "spec/decision-records/DR-0014-row10-stability-margin-classification.md",
+        "status": "proposed",
+        "source": "sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/row10-margins.csv",
+        "points": 45,
+        "low_end_premise_holds": 45,
+        "ceiling_bounded": 0,
+        "ceiling_gain_db_range": {
+          "min": 0.397876474,
+          "max": 1.17049773
+        },
+        "ceiling_last_decade_change_db_range": {
+          "min": -0.564165553,
+          "max": -0.42542202
+        },
+        "multi_crossing_points": 45,
+        "sweep_ceiling_hz": 10000000000.0
+      }
     }
   ],
   "summary": {
     "rows_total": 10,
     "rows_by_verdict": {
       "ambiguous": 1,
-      "not_implemented": 2,
+      "fail": 1,
+      "not_implemented": 1,
       "not_measured": 1,
       "pass_full_coverage": 1,
       "pass_partial_coverage": 5
@@ -925,7 +2104,7 @@
       {
         "check": "all selected records exist and match their sha256 pins",
         "ok": true,
-        "detail": "6 pinned sources verified"
+        "detail": "19 pinned sources verified"
       },
       {
         "check": "README target table: 10 rows, expected names and target text",
@@ -943,6 +2122,11 @@
         "detail": ""
       },
       {
+        "check": "DC informational summary: pinned, same record, 45 corners once each, finite, validity fields True/False, raw grids match inventory hashes",
+        "ok": true,
+        "detail": ""
+      },
+      {
         "check": "every target row appears exactly once",
         "ok": true,
         "detail": "rows: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]"
@@ -956,6 +2140,21 @@
         "check": "every row cites a source or an explicit unavailability reason",
         "ok": true,
         "detail": ""
+      },
+      {
+        "check": "startup campaign: selected record, csv, manifest and every trace match their pins; no duplicate or unexpected point; manifest agrees with the csv",
+        "ok": true,
+        "detail": "135 requested points, 135 result rows"
+      },
+      {
+        "check": "startup campaign has a result row for every requested point",
+        "ok": true,
+        "detail": "0 of 135 requested points missing"
+      },
+      {
+        "check": "startup evidence is current against the design (core and error amplifier checked independently)",
+        "ok": true,
+        "detail": "core and error-amplifier netlist hashes match the startup freshness pins"
       },
       {
         "check": "selected record is current against the design netlists",

@@ -64,11 +64,11 @@ changed by the record.
 | Output | 1.8 V ±2% (fixed) | programmable variants deferred | OPEN — unratified (statistical; Monte Carlo missing) |
 | Load | 0–50 mA (no external preload assumed) | 100 mA | OPEN — unratified (no 0 mA dynamic evidence) |
 | Dropout @ 50 mA | < 300 mV worst corner | < 200 mV | RATIFIED as a shared target (stretch not ratified); branch compliance differs — see the row 4 branch note below |
-| Line / load regulation | < 5 mV/V; < 1% over full load, inside the accuracy window | — | OPEN — unratified (loaded line / multi-Vin load regulation missing) |
+| Line / load regulation | < 5 mV/V; < 1% over full load, inside the accuracy window | — | OPEN — unratified (informational loaded line / multi-Vin load regulation measured at discrete points; not ratified) |
 | PSRR | > 50 dB @ 1 kHz, > 20 dB @ 100 kHz | > 60 dB @ 1 kHz | OPEN — unratified (1 mA / 1 µF only; `Cc` un-cornered) |
-| Iq (excluding load) | < 30 µA at no load and at full load | < 10 µA | OPEN — unratified (no current full-load record) |
+| Iq (excluding load) | < 30 µA at no load and at full load | < 10 µA | OPEN — unratified (informational full-load Iq measured at Vin = 3.30 V only; not ratified) |
 | Current limit | 65–80 mA brickwall over PVT; short-survivable | — | OPEN — unratified (not implemented; statistical) |
-| Startup | monotonic, controlled ramp, inside ±2% within 3 ms of enable | — | OPEN — unratified (not implemented) |
+| Startup | monotonic, controlled ramp, inside ±2% within 3 ms of enable | — | OPEN — unratified (measured on the SG13CMOS5L core with proposed methodology: all 135 grid points fail the overshoot / monotonicity checks; not ratified) |
 | Stability | 0–50 mA, C_out 0.33–4.7 µF effective, ESR 0–500 mΩ; PM ≥ 45°, GM ≥ 10 dB worst corner | capless variant (separate fork) | OPEN — unratified (one load/C_out/ESR point only) |
 
 **Row 4 branch note (snapshot: `origin/main` `028a3f8`, 2026-10-10).** "Ratified" means the `< 300 mV` *target* is ratified for the shared table; it is not a statement that both implementation branches meet it. The two branches differ:
@@ -90,7 +90,17 @@ design/        schematics / netlists (xschem)
 sim/           testbenches + PVT corner results (ngspice)
 layout/        GDS + DRC/LVS reports (klayout-tools driven)
 measurements/  silicon characterization (empty until tape-out)
+signoff/       graded T1 report, evidence inventories, manifest
+ratification/  ee-key and market-key review skills (spec-row ratification)
+docs/          supporting proposals (docs/chipalooza/challenge-6-proposal.md)
+reuse.lock.json  sibling-block reuse lock
+WORK_PLAN.md   roadmap generated from Loom label state
+WORK_LOG.md    log of merged PRs and closed issues
 ```
+
+Regeneration contract for `signoff/`: [signoff/README.md#regenerating](signoff/README.md#regenerating).
+The `ratification/` skills produced the ratified row recorded in
+[DR-0007](spec/decision-records/DR-0007-target-spec-row-ratification.md).
 
 ## License
 

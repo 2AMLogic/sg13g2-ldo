@@ -19,6 +19,16 @@ Time zero of each case is the EN = VIN/2 crossing (linear interpolation).
 Cases: "start" (first rising crossing) and "reen" (the rising crossing that
 follows a falling one). The off state is the interval before the first
 crossing (cold start).
+
+The cold-start disabled plateau (issue #130) is NOT the interval before that
+crossing: the crossing lies half way up the EN edge, so samples before it
+include ramp samples. The plateau is the contiguous run of samples from the
+start of the trace while EN <= Config.off_en_tol_v (the first sample above it
+is the start of the first rising ramp), restricted to t >= off_window_skip_s.
+Off-state VOUT metrics use exactly this window, and off_supply_current_a is
+-ivin at its last sample. No EN-edge time is assumed: the ramp start is read
+from the trace. A trace whose EN does not start disabled, or whose plateau is
+empty after the skip, is "insufficient"; a ramp sample is never substituted.
 """
 import dataclasses
 import math
@@ -41,6 +51,8 @@ class Config:
     dt_slack: float = 1.01             # float formatting slack on the cap
     off_vout_limit_v: float = 0.05     # proposed: no sustained driven output
     off_window_skip_s: float = 0.0     # nothing skipped: op point is exact
+    off_en_tol_v: float = 1e-3         # EN at or below this is "disabled" (the
+                                       # bench holds EN at exactly 0 V until the ramp)
     stress_ref_v: float = 3.3          # DR-0002 VGS rating, informational
     expect_cases: tuple = ("start", "reen")
 
@@ -131,6 +143,20 @@ def _window(tr, t0, t1):
     a = next((i for i, x in enumerate(t) if x >= t0), len(t))
     b = next((i for i, x in enumerate(t) if x > t1), len(t))
     return a, b
+
+
+def _off_plateau(tr, cfg):
+    """Sample index range [ia, ib) of the cold-start disabled plateau: the
+    contiguous run of EN <= cfg.off_en_tol_v samples from the first sample,
+    cut at the first sample above the tolerance (the start of the first
+    rising ramp), keeping t >= cfg.off_window_skip_s. Empty ([0, 0)) if EN
+    does not start disabled or nothing remains after the skip."""
+    t, en = tr["t"], tr["en"]
+    end = next((i for i, e in enumerate(en) if e > cfg.off_en_tol_v), len(en))
+    if end == 0:
+        return 0, 0
+    ia = next((i for i in range(end) if t[i] >= cfg.off_window_skip_s), end)
+    return (ia, end) if ia < end else (0, 0)
 
 
 def _excursion(v, upto):
@@ -278,11 +304,14 @@ def evaluate(tr, cfg=Config()):
     vin_v = tr["vin"][0]
     out["vin_v"] = vin_v
     t_rise = edges[0][1]
-    # off state: everything before the EN edge's start (t < t_rise)
-    ia, ib = _window(tr, cfg.off_window_skip_s, t_rise)
+    # off state: the contiguous initial disabled plateau (EN <= off_en_tol_v)
+    # before the first rising ramp, NOT the interval before the VIN/2 crossing
+    # (that crossing is inside the EN edge; issue #130).
+    ia, ib = _off_plateau(tr, cfg)
     offv = vout[ia:ib]
     if not offv or t[0] > 0.5 * t_rise:
-        insuff.append("no cold-start off-state window")
+        insuff.append("no cold-start off-state window (EN is not disabled before "
+                      "the first rising ramp, or the disabled plateau is empty after the skip)")
     else:
         out["off_vout_max_v"] = max(offv)
         out["off_vout_min_v"] = min(offv)

@@ -47,6 +47,7 @@ SCOPE = (
 _SIM = "sim/ldo-cmos5l-pvt-sweep"
 _MC = "sim/ldo-cmos5l-monte-carlo"
 _PD = "sim/pass-device-screening"
+_HBT = "sim/pass-device-screening-hbt"
 _L = "layout/sg13cmos5l-ldo_core_cmos5l"
 
 ITEMS = {
@@ -102,13 +103,28 @@ ITEMS = {
             f"{_SIM}/README.md",
             f"{_SIM}/run_sweep.sh",
             f"{_SIM}/batch_backend.py",
+            # issue #128: loop-gain AC ceiling contract used by run_sweep.sh
+            f"{_SIM}/ac_sweep.py",
             f"{_SIM}/testbench/tb_dcsweep_cmos5l.spice.tmpl",
             f"{_SIM}/testbench/tb_loopgain_cmos5l.spice.tmpl",
+            # issue #135: two-injection (Middlebrook) loop-gain benches and campaign driver
+            f"{_SIM}/testbench/tb_loopgain2v_cmos5l.spice.tmpl",
+            f"{_SIM}/testbench/tb_loopgain2i_cmos5l.spice.tmpl",
+            f"{_SIM}/run_loopgain2.sh",
+            f"{_SIM}/loopgain2.py",
+            f"{_SIM}/row10_loopgain2.py",
+            # issue #158: E1 DC operating-point bench, campaign driver and reducer
+            f"{_SIM}/run_e1op.sh",
+            f"{_SIM}/e1_oppoints.py",
+            f"{_SIM}/test_e1_oppoints.py",
+            f"{_SIM}/testbench/tb_e1op_cmos5l.spice.tmpl",
             f"{_SIM}/testbench/tb_psrr_cmos5l.spice.tmpl",
             # issue #69: startup bench, its batch driver and evaluator
             f"{_SIM}/testbench/tb_startup_cmos5l.spice.tmpl",
             f"{_SIM}/startup_campaign.py",
             f"{_SIM}/startup_eval.py",
+            # issue #89: off-state supply current read from committed startup traces
+            f"{_SIM}/startup_offstate.py",
             # issue #70: row-4 dropout bench (DR-0012), its batch driver and reducer
             f"{_SIM}/testbench/tb_dropout_cmos5l.spice.tmpl",
             f"{_SIM}/dropout_campaign.py",
@@ -118,15 +134,42 @@ ITEMS = {
             f"{_MC}/runner-preamble.cir",
             f"{_MC}/row2-corners.lib",
             f"{_MC}/tb_row2_accuracy.spice",
+            # issue #88: EN-enabled successor deck (the live one) and its smoke request
+            f"{_MC}/tb_row2_accuracy_en.spice",
             f"{_MC}/request-row2-attribution.json",
             f"{_MC}/request-row2-mc.json",
             f"{_MC}/request-row2-negctl.json",
             f"{_MC}/request-row2-probe.json",
             f"{_MC}/request-row2-repro.json",
+            f"{_MC}/request-row2-smoke-en.json",
             f"{_PD}/README.md",
             f"{_PD}/run_sweep.sh",
             f"{_PD}/testbench/tb_dropout_pmos.spice.tmpl",
             f"{_PD}/testbench/tb_stress_pmos.spice.tmpl",
+            # issue #139: HBT (npn13G2 family / pnpMPA) screening deck
+            f"{_HBT}/README.md",
+            f"{_HBT}/run_sweep.sh",
+            f"{_HBT}/gen_decks.py",
+            f"{_HBT}/record.py",
+            f"{_HBT}/test_record.py",
+            f"{_HBT}/decks/hbt-corners.lib",
+            f"{_HBT}/decks/runner-preamble.cir",
+            f"{_HBT}/decks/tb_npn13G2_servo.spice",
+            f"{_HBT}/decks/tb_npn13G2_vcesweep.spice",
+            f"{_HBT}/decks/request-npn13G2-servo.json",
+            f"{_HBT}/decks/request-npn13G2-vcesweep.json",
+            f"{_HBT}/decks/tb_npn13G2l_servo.spice",
+            f"{_HBT}/decks/tb_npn13G2l_vcesweep.spice",
+            f"{_HBT}/decks/request-npn13G2l-servo.json",
+            f"{_HBT}/decks/request-npn13G2l-vcesweep.json",
+            f"{_HBT}/decks/tb_npn13G2v_servo.spice",
+            f"{_HBT}/decks/tb_npn13G2v_vcesweep.spice",
+            f"{_HBT}/decks/request-npn13G2v-servo.json",
+            f"{_HBT}/decks/request-npn13G2v-vcesweep.json",
+            f"{_HBT}/decks/tb_pnpMPA_servo.spice",
+            f"{_HBT}/decks/tb_pnpMPA_vcesweep.spice",
+            f"{_HBT}/decks/request-pnpMPA-servo.json",
+            f"{_HBT}/decks/request-pnpMPA-vcesweep.json",
             # issue #67: enable-interface smoke decks (sim/ldo-cmos5l-enable/)
             "sim/ldo-cmos5l-enable/README.md",
             "sim/ldo-cmos5l-enable/run_smoke.sh",
@@ -146,11 +189,14 @@ ITEMS = {
             "sim/ldo-cmos5l-enable/tb_enable_rload.spice",
             "sim/ldo-cmos5l-enable/tb_loopgain_baseline.spice",
             "sim/ldo-cmos5l-enable/tb_loopgain_en.spice",
+            # issue #89: versioned loop-gain deck (seven-pin Xamp) and the G1 probe request
+            "sim/ldo-cmos5l-enable/tb_loopgain_en_g1pd.spice",
             "sim/ldo-cmos5l-enable/tb_psrr_baseline.spice",
             "sim/ldo-cmos5l-enable/tb_psrr_en.spice",
             "sim/ldo-cmos5l-enable/request-baseline-loopgain.json",
             "sim/ldo-cmos5l-enable/request-baseline-psrr.json",
             "sim/ldo-cmos5l-enable/request-baseline-reg.json",
+            "sim/ldo-cmos5l-enable/request-disabled-g1.json",
             "sim/ldo-cmos5l-enable/request-disabled-reg.json",
             "sim/ldo-cmos5l-enable/request-disabled-rload.json",
             "sim/ldo-cmos5l-enable/request-enable-ensweep.json",
@@ -166,6 +212,7 @@ ITEMS = {
             "sim/**/tb_*.spice.tmpl",
             "sim/**/run_*.sh",
             f"{_MC}/request-*.json",
+            f"{_HBT}/decks/request-*.json",
         ],
     },
     10: {
@@ -192,6 +239,7 @@ ENTRY_POINTS = {
     _SIM: "run_sweep.sh",
     _MC: "run_campaign.sh",
     _PD: "run_sweep.sh",
+    _HBT: "run_sweep.sh",
     "sim/ldo-cmos5l-enable": "run_smoke.sh",
 }
 

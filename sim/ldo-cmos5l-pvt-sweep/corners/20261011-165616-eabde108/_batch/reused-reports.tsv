@@ -1,0 +1,4 @@
+group	reused_report
+g00_loopgain_ctl_tt_-40c_rtyp	/tmp/ldo-cmos5l-loopgain2.14kdfA/g00_loopgain_ctl_tt_-40c_rtyp/report.json
+g01_loopgain2v_tt_-40c_rtyp	/tmp/ldo-cmos5l-loopgain2.14kdfA/g01_loopgain2v_tt_-40c_rtyp/report.json
+g02_loopgain2i_tt_-40c_rtyp	/tmp/ldo-cmos5l-loopgain2.14kdfA/g02_loopgain2i_tt_-40c_rtyp/report.json

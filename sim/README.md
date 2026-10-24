@@ -12,19 +12,87 @@ testbench structure... transfers as the evidence schema for this repo's
 `sim/`... a convention shared across the fleet, not a PDK-specific
 artifact").
 
-## PDK pin
+## PDK pin and model provenance
 
-Every record in this tree's SG13G2-branch experiments (everything except
-`ldo-cmos5l-pvt-sweep/`) is generated against the PDK revision pinned in
-[`pdk.json`](pdk.json) (`IHP-Open-PDK` tag `v0.3.0`, fetchable via
-`klayout-tools`' `scripts/fetch-ihp-sg13g2.sh`). The SG13CMOS5L branch's own
-experiment (`ldo-cmos5l-pvt-sweep/`) traces instead to
-[`pdk-cmos5l.json`](pdk-cmos5l.json) (`IHP-GmbH/ihp-sg13cmos5l`, a separate
-upstream repository with no tagged releases, pinned by commit sha) — see
-that file for why the fetch/pin shape differs from `pdk.json`'s. `source
-env.sh` resolves `PDK_ROOT`/`PDK` the same way both sibling repos' `sim/env.sh` do (env vars
-first, then the usual `open_pdks` install prefixes) — every experiment's
-`run_*.sh` sources it, and an interactive `ngspice` session can too.
+Three different things are easy to conflate here, so they are kept apart:
+
+- **Design branch** -- which device family the experiment's circuit is built
+  from (SG13G2 pass-device screening, or the SG13CMOS5L regulator).
+- **Intended local PDK pin** -- the revision a local checkout is expected to
+  be at, per [`pdk.json`](pdk.json) (`IHP-Open-PDK` tag `v0.3.0`, fetchable
+  via `klayout-tools`' `scripts/fetch-ihp-sg13g2.sh`) or
+  [`pdk-cmos5l.json`](pdk-cmos5l.json) (the `ihp-sg13cmos5l/` subtree of
+  `IHP-GmbH/IHP-Open-PDK` `dev`, pinned by commit sha `f7bca326...`, tarball
+  sha256 `5eb6f8a9...`, fetched by `klayout-tools`'
+  `scripts/fetch-ihp-sg13cmos5l.sh` -- run after the SG13G2 fetch -- which
+  writes the `.fetched-version` marker; issue #155). Records committed before
+  that re-stamp were generated against the superseded archived-repository pin
+  `607e18d` (kept in `pdk-cmos5l.json` as `superseded_pin`); they stay
+  historical and are listed with their new-pin disposition in
+  [`migration-inventory-155.md`](migration-inventory-155.md). Two later
+  records also ran on the old install on purpose, as design-held-constant
+  PDK controls: dynamic DoE `20261012-100716-934dbd7c` and
+  `20261012-102846-934dbd7c` (same inventory, "Second increment").
+- **Recorded fleet-model provenance** -- what a given record's own committed
+  raw reports show the simulator actually loaded. Several records ran on the
+  EDA batch fleet, whose runner image bakes its own PDK and OSDI binaries
+  and whose klt is older than the submitting client. A local pin file does not
+  by itself describe those runs.
+
+The fleet facts below are read from the committed `klt sim` reports
+(`environment.remote`, `environment.staged_model_inputs`) and the experiments'
+`runner-preamble.cir`, not inferred. Every fleet report in this tree records
+`runner_klt_version: 0.5.0`, `runner_compatibility: mismatch` and AMI
+`ami-0e40e3245f1923ac8` (for the Monte Carlo aggregate, in each
+`remote.fleet[]` entry). The recorded ngspice is not uniform:
+
+- Most fleet reports record `engine_version: 46` and
+  `ngspice_binary: /usr/bin/ngspice`.
+- The 56 reports of the two `ldo-cmos5l-pvt-sweep/` startup campaigns
+  [`startup/20261010-075612-91e92aa/`](ldo-cmos5l-pvt-sweep/startup/20261010-075612-91e92aa/)
+  (13 reports) and
+  [`startup/20261010-104827-91e92aa/`](ldo-cmos5l-pvt-sweep/startup/20261010-104827-91e92aa/)
+  (43 reports) record `ngspice_binary: /home/ubuntu/.local/bin/ngspice`.
+  All 43 in `20261010-104827-91e92aa` and 5 of the 13 in
+  `20261010-075612-91e92aa` record `engine_version: 46`. The other 8 record
+  `engine_version: null`: `grid/` g000, g001, g002 and g004,
+  `grid-attempt1-aborted/` g000 and g002, and `probe/report2.json` and
+  `report4.json`. The reports do not establish which ngspice binary the runner
+  actually executed for these 56, or which version it was for those 8
+  (unknown).
+
+The reports do **not**
+record a PDK commit or release for the runner's baked tree, or for the local
+checkout that model cards were staged from; they record only sha256 values of
+the staged files. Where a revision is not recorded it is stated as unknown.
+
+| Experiment | Design branch | Intended local PDK pin | Recorded model provenance |
+|---|---|---|---|
+| [`pass-device-screening/`](pass-device-screening/README.md) | SG13G2 (`sg13_hv_pmos`) | [`pdk.json`](pdk.json): IHP-Open-PDK `v0.3.0` | Local ngspice-46 run against a local `ihp-sg13g2` install with locally built OSDI (record `20260909-220347-ed18110`). No fleet involvement. |
+| [`pass-device-screening-hbt/`](pass-device-screening-hbt/README.md) | SG13G2 (HBTs `npn13G2`, `npn13G2l`, `npn13G2v`, `pnpMPA`) | [`pdk.json`](pdk.json): IHP-Open-PDK `v0.3.0` | Fleet only (`run_sweep.sh submit`, `klt sim --backend batch`; record `20261011-145941-ccb529c8`). Model cards (`hbt-corners.lib` closure over the PDK's `cornerHBT.lib`) staged from the local PDK install (sha256 `fa66c1ef...` in each report). Native ngspice bipolar models, no OSDI. Runner klt `0.5.0`; client klt `0.7.0+g122d607d5c52`; reports record ngspice 46. The reports record no PDK revision (unknown; intended `v0.3.0`). |
+| [`ldo-cmos5l-pvt-sweep/`](ldo-cmos5l-pvt-sweep/README.md) | SG13CMOS5L | [`pdk-cmos5l.json`](pdk-cmos5l.json): `ihp-sg13cmos5l` commit `607e18d4` | Mixed. Records `20260916-083154-7aa1d3f`, `20260916-112842-c25ff53`, `20260916-210331-9d3ace1`, `20260917-023832-7061e8f` ran on local ngspice-46; each record names `ngspice-46` and states that commit `607e18d` was re-verified against the checkout. The local debug probe `20261010-032206-4d45f5d` ran locally against the local `ihp-sg13cmos5l` install (`/home/ubuntu/share/pdk/ihp-sg13cmos5l`, per its netlist snapshots) with locally built OSDI. Its ngspice version and that checkout's commit were not recorded (unknown). Records from `20261010-025634-60a3e81` onward (grid, dynamic DoE, dropout, startup, `20261011-051956-eda9285`, `20261011-070111-5391c68`) ran on the fleet via `run_sweep.sh --batch`: model cards staged from the local PDK install (sha256 in each `report.json`), all six OSDI binaries staged from the local build and loaded by `pre_osdi`. Runner klt `0.5.0`; client klt varies per record (`0.7.0+g5e5b55992a7f`, `+g8eec069c7576`, `+gca3089cd4b9f`, `+g0d0312b30708`). The local checkout's commit is not recorded in the fleet reports (unknown; intended `607e18d4`). |
+| [`ldo-cmos5l-enable/`](ldo-cmos5l-enable/README.md) | SG13CMOS5L (EN-bearing core) | [`pdk-cmos5l.json`](pdk-cmos5l.json) (`PDK=ihp-sg13cmos5l source sim/env.sh`) | Fleet only (`run_smoke.sh`, `klt sim --backend batch`). Model cards staged from the local PDK install (sha256 recorded). OSDI is the **runner's baked** `/opt/pdk/ihp-sg13g2/libs.tech/ngspice/osdi/{psp103,psp103_nqs,mosvar,r3_cmc}.osdi` via [`runner-preamble.cir`](ldo-cmos5l-enable/runner-preamble.cir); the image has no `cap_cmomi`, so `Cc` is a linear stand-in. Runner klt `0.5.0`; client klt `0.7.0+g5e5b55992a7f` (record `20261010-023648-4d45f5d`) and `0.7.0+g0d0312b30708` (`20261011-031743-df3f802`). The baked tree's revision is unknown from the reports; the experiment README and `runner-preamble.cir` cite 2am `batch-image-pins.env` (`BAKED_PDK_ROOT=/opt/pdk`), which is a claim, not something the reports verify. |
+| [`ldo-cmos5l-monte-carlo/`](ldo-cmos5l-monte-carlo/README.md) | SG13CMOS5L (five-port core for record `20261009-003009-3ee8306`; six-port EN smoke in evidence `20261010-193208-028a3f8-en-smoke`) | [`pdk-cmos5l.json`](pdk-cmos5l.json) for staged model cards (the experiment names no `models.pdk`) | Fleet only (`klt sim --backend batch`). The request [`request-row2-mc.json`](ldo-cmos5l-monte-carlo/request-row2-mc.json) sets `remote.hosts: 5`, and the `row2-mc` aggregate report's `remote.fleet[]` has 5 entries. Model cards (`row2-corners.lib` closure) staged from the local PDK install; OSDI is the runner's baked `/opt/pdk/ihp-sg13g2` binaries via the shared `runner-preamble.cir`, no `cap_cmomi` (DC-only stand-in). Runner klt `0.5.0`. Client klt `0.7.0+g4cbdfa769875` (record `20261009-003009-3ee8306`, five-port `tb_row2_*`) and `0.7.0+g39f6da54ae4c` (evidence [`20261010-193208-028a3f8-en-smoke/`](ldo-cmos5l-monte-carlo/evidence/20261010-193208-028a3f8-en-smoke/), six-port `tb_row2_accuracy_en.spice`). The experiment README states the image pins ihp-sg13g2 0.3.0 and ngspice 46. The reports record ngspice 46 (`/usr/bin/ngspice`) but no PDK revision, so the baked tree's version is unverified here. |
+
+Notes:
+
+- **`characterization/`** is not a row. It is an offline aggregate over one
+  hash-pinned record from the experiments above; it runs no simulator and has
+  no PDK of its own, so it inherits the provenance of whichever record it
+  selects (see its [README](characterization/README.md)).
+- Fleet runs mix a staged-from-local model-card closure with either locally
+  built OSDI (`ldo-cmos5l-pvt-sweep/`) or the runner's baked OSDI
+  (`ldo-cmos5l-enable/`, `ldo-cmos5l-monte-carlo/`). Cross-experiment
+  comparisons should keep that difference in view; the enable README's
+  like-for-like EN-vs-baseline deltas are unaffected because both sides use the
+  same stand-in and runner.
+- Historical records are unchanged by this table. It describes them; it does
+  not revise their pins or verdicts.
+
+`source env.sh` resolves `PDK_ROOT`/`PDK` the same way both sibling repos'
+`sim/env.sh` do (env vars first, then the usual `open_pdks` install prefixes)
+-- every local experiment's `run_*.sh` sources it, and an interactive
+`ngspice` session can too.
 
 ## Directory / naming convention
 
@@ -169,6 +237,13 @@ evidence-format checker: CI verifies shape/syntax, a human or agent mints
 the actual evidence.
 
 ## Experiments landed so far
+
+- [`pass-device-screening-hbt/`](pass-device-screening-hbt/README.md) —
+  screens SG13G2's HBTs (`npn13G2` family, `pnpMPA`) as a bipolar pass
+  element, the measurement behind
+  [`DR-0001a`](../spec/decision-records/DR-0001a-hbt-pass-device-screening.md)
+  (issue #139). The 72-unit matrix runs only through `klt sim --backend
+  batch`; CI runs `run_sweep.sh --check-env` (the same job as the MOS deck).
 
 - [`pass-device-screening/`](pass-device-screening/README.md) — screens
   `sg13_hv_pmos` (Mpass's flavor, `design/README.md` "Pass device") against

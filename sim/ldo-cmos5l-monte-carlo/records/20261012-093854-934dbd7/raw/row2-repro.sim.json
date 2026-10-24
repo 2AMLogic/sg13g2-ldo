@@ -1,0 +1,1915 @@
+{
+  "schema_version": 3,
+  "netlist": {
+    "path": "sim/ldo-cmos5l-monte-carlo/tb_row2_accuracy_en.spice",
+    "scope": "repo"
+  },
+  "status": "pass",
+  "corner_count": 50,
+  "passed": 50,
+  "failed": 0,
+  "errored": 0,
+  "inconclusive": 0,
+  "diagnostic_counts": {
+    "by_code": {
+      "singular_matrix": 6
+    },
+    "by_severity": {
+      "warning": 6
+    },
+    "corners_with_diagnostics": 6
+  },
+  "metrics": {
+    "sim__corner__count": 50,
+    "sim__corner__passed_count": 50,
+    "sim__corner__failed_count": 0,
+    "sim__corner__errored_count": 0,
+    "sim__corner__inconclusive_count": 0
+  },
+  "environment": {
+    "engine": "ngspice",
+    "engine_version": "46",
+    "ngspice_binary": "/home/ubuntu/.local/bin/ngspice",
+    "models_lib": {
+      "path": "sim/ldo-cmos5l-monte-carlo/row2-corners.lib",
+      "scope": "repo"
+    },
+    "models_lib_sha256": "a0b07d8e65c90cdb3e4659b0ae9d49fe3d41309cbe8426428ca90a1f35759383",
+    "netlist_sha256": "6cc1467a7ba54bab357cd89dd4a47f239c429c516e17c4e379333767e6d26800",
+    "netlist_closure": [
+      {
+        "path": "sim/ldo-cmos5l-monte-carlo/tb_row2_accuracy_en.spice",
+        "scope": "repo",
+        "sha256": "6cc1467a7ba54bab357cd89dd4a47f239c429c516e17c4e379333767e6d26800"
+      },
+      {
+        "path": "sim/ldo-cmos5l-monte-carlo/runner-preamble.cir",
+        "scope": "repo",
+        "sha256": "24a2581f33183c67a7cb530519c44b8637cd339e28ce753aff0e48303a53e4bf"
+      },
+      {
+        "path": "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice",
+        "scope": "repo",
+        "sha256": "08a7b857e1fad43dd7af1f575de97853a058e85541601ecc47567fbc28dbae57"
+      }
+    ],
+    "staged_model_inputs": [
+      {
+        "name": "row2-corners.lib",
+        "field": "models.lib",
+        "kind": "library",
+        "sha256": "d4679e956e0ea035f57fd8ca4b290be6996721a6bf3752aa5013b8819538cada",
+        "rewritten": true
+      },
+      {
+        "name": "cornerMOShv.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "40c4140415a2a2e92d2f42fd64e026d1c04d800708b7a5b663ef083206ddfd62",
+        "rewritten": true
+      },
+      {
+        "name": "cornerRES.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "8c27e705a59d4221a5107b8fe95d388f3e166414d0fe214acfd2f07dcbb22b61",
+        "rewritten": true
+      },
+      {
+        "name": "sg13g2_moshv_mod.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "a2800206343e9adfb4758e9cca40d50dae05fb42a33da3cde4fca8e0780e1bf9",
+        "rewritten": true
+      },
+      {
+        "name": "sg13g2_svaricaphv_mod.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "1462f67e80da7f5fa6f6b51efb0eb0e4dc7ef2da28d8bfde95a19ce2a780580a",
+        "rewritten": false
+      },
+      {
+        "name": "sg13g2_moshv_mismatch.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "2e9612bdb8252c281f422511039dc9b3ea983892aec89f8ef3361592e68fed09",
+        "rewritten": false
+      },
+      {
+        "name": "sg13g2_moshv_mod_mismatch.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "52d45aec4c933d78bf9309a8d6ab53d16fd3ef97251a9a293f2c9764e586e54e",
+        "rewritten": true
+      },
+      {
+        "name": "sg13g2_svaricaphv_mod_mismatch.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "16da7669ee7e963645a604f64770d2f8d871fa8483c34e3dddaa9fcf01c51f50",
+        "rewritten": false
+      },
+      {
+        "name": "sg13g2_moshv_stat.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "cd30f22637e41fdbbaba506ebe0f17746b8438027e4651a7a87b241a39d68903",
+        "rewritten": false
+      },
+      {
+        "name": "resistors_mod.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "c2329110bcb66894936e942d4cb73fc5eb9188c5230e1bebf18f60d9b00c5c7f",
+        "rewritten": false
+      },
+      {
+        "name": "resistors_mod_mismatch.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "f0aa7d90b6489112ed256aaf4cb0a11b9ab17ebe0c3ce092f4f8c5ecb1fd1e15",
+        "rewritten": false
+      },
+      {
+        "name": "resistors_stat.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "183eb9192bf711db991b8df87e031bab2ca5e559c73393edc756fa02a2720d40",
+        "rewritten": false
+      },
+      {
+        "name": "sg13g2_moshv_parm.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "eea5bbed39184cb1e2654ae29425a9ed6ee2f2341d6cb76c472591c75237bd35",
+        "rewritten": false
+      }
+    ],
+    "remote": {
+      "provider": "aws-batch-fleet",
+      "job_id": "klt-sim-7b2a6c3418d9",
+      "bucket": "2am-batch-jobs-221082181346",
+      "region": "us-east-1",
+      "instance_id": "i-087be150fd01c66a3",
+      "instance_type": "c7i.8xlarge",
+      "availability_zone": "us-east-1f",
+      "ami_id": "ami-0e40e3245f1923ac8",
+      "lifecycle": "spot",
+      "spot": true,
+      "state": "done",
+      "exit_code": "0",
+      "concurrency": "2",
+      "physical_cores": "16",
+      "elapsed_seconds": 132,
+      "runner_klt_version": "0.5.0",
+      "client_klt_version": "0.7.0+gff97d692a147",
+      "runner_compatibility": "mismatch",
+      "runner_compatibility_warning": "the fleet runner ran klt 0.5.0 but the submitting client is 0.7.0+gff97d692a147; request options the runner does not know may have been ignored -- update the runner image or use a compatible client"
+    },
+    "monte_carlo": {
+      "n": 50,
+      "seed": 56001,
+      "vary": "mismatch",
+      "family_mismatch": [
+        {
+          "family": "capacitor",
+          "active": null,
+          "note": "PDK family could not be determined for this request (set models.pdk) -- mismatch activity for the 'capacitor' family could not be verified; treat any sampled spread for it as unconfirmed."
+        },
+        {
+          "family": "other",
+          "active": null,
+          "note": "PDK family could not be determined for this request (set models.pdk) -- mismatch activity for the 'other' family could not be verified; treat any sampled spread for it as unconfirmed."
+        }
+      ],
+      "quantiles": [
+        0.135,
+        2.275,
+        50.0,
+        97.725,
+        99.865
+      ]
+    }
+  },
+  "coverage": {
+    "corners_simulated": 50,
+    "measurements_declared": 1,
+    "measurements_with_limits": 1,
+    "unrecognized_limit_keys": [],
+    "schema_version": 1,
+    "known": true,
+    "checked": [
+      "limit:[0,\"tt/novdd/27C/mc0\",\"vout_v\",\"max\"]",
+      "limit:[0,\"tt/novdd/27C/mc0\",\"vout_v\",\"min\"]",
+      "limit:[1,\"tt/novdd/27C/mc1\",\"vout_v\",\"max\"]",
+      "limit:[1,\"tt/novdd/27C/mc1\",\"vout_v\",\"min\"]",
+      "limit:[10,\"tt/novdd/27C/mc10\",\"vout_v\",\"max\"]",
+      "limit:[10,\"tt/novdd/27C/mc10\",\"vout_v\",\"min\"]",
+      "limit:[11,\"tt/novdd/27C/mc11\",\"vout_v\",\"max\"]",
+      "limit:[11,\"tt/novdd/27C/mc11\",\"vout_v\",\"min\"]",
+      "limit:[12,\"tt/novdd/27C/mc12\",\"vout_v\",\"max\"]",
+      "limit:[12,\"tt/novdd/27C/mc12\",\"vout_v\",\"min\"]",
+      "limit:[13,\"tt/novdd/27C/mc13\",\"vout_v\",\"max\"]",
+      "limit:[13,\"tt/novdd/27C/mc13\",\"vout_v\",\"min\"]",
+      "limit:[14,\"tt/novdd/27C/mc14\",\"vout_v\",\"max\"]",
+      "limit:[14,\"tt/novdd/27C/mc14\",\"vout_v\",\"min\"]",
+      "limit:[15,\"tt/novdd/27C/mc15\",\"vout_v\",\"max\"]",
+      "limit:[15,\"tt/novdd/27C/mc15\",\"vout_v\",\"min\"]",
+      "limit:[16,\"tt/novdd/27C/mc16\",\"vout_v\",\"max\"]",
+      "limit:[16,\"tt/novdd/27C/mc16\",\"vout_v\",\"min\"]",
+      "limit:[17,\"tt/novdd/27C/mc17\",\"vout_v\",\"max\"]",
+      "limit:[17,\"tt/novdd/27C/mc17\",\"vout_v\",\"min\"]",
+      "limit:[18,\"tt/novdd/27C/mc18\",\"vout_v\",\"max\"]",
+      "limit:[18,\"tt/novdd/27C/mc18\",\"vout_v\",\"min\"]",
+      "limit:[19,\"tt/novdd/27C/mc19\",\"vout_v\",\"max\"]",
+      "limit:[19,\"tt/novdd/27C/mc19\",\"vout_v\",\"min\"]",
+      "limit:[2,\"tt/novdd/27C/mc2\",\"vout_v\",\"max\"]",
+      "limit:[2,\"tt/novdd/27C/mc2\",\"vout_v\",\"min\"]",
+      "limit:[20,\"tt/novdd/27C/mc20\",\"vout_v\",\"max\"]",
+      "limit:[20,\"tt/novdd/27C/mc20\",\"vout_v\",\"min\"]",
+      "limit:[21,\"tt/novdd/27C/mc21\",\"vout_v\",\"max\"]",
+      "limit:[21,\"tt/novdd/27C/mc21\",\"vout_v\",\"min\"]",
+      "limit:[22,\"tt/novdd/27C/mc22\",\"vout_v\",\"max\"]",
+      "limit:[22,\"tt/novdd/27C/mc22\",\"vout_v\",\"min\"]",
+      "limit:[23,\"tt/novdd/27C/mc23\",\"vout_v\",\"max\"]",
+      "limit:[23,\"tt/novdd/27C/mc23\",\"vout_v\",\"min\"]",
+      "limit:[24,\"tt/novdd/27C/mc24\",\"vout_v\",\"max\"]",
+      "limit:[24,\"tt/novdd/27C/mc24\",\"vout_v\",\"min\"]",
+      "limit:[25,\"tt/novdd/27C/mc25\",\"vout_v\",\"max\"]",
+      "limit:[25,\"tt/novdd/27C/mc25\",\"vout_v\",\"min\"]",
+      "limit:[26,\"tt/novdd/27C/mc26\",\"vout_v\",\"max\"]",
+      "limit:[26,\"tt/novdd/27C/mc26\",\"vout_v\",\"min\"]",
+      "limit:[27,\"tt/novdd/27C/mc27\",\"vout_v\",\"max\"]",
+      "limit:[27,\"tt/novdd/27C/mc27\",\"vout_v\",\"min\"]",
+      "limit:[28,\"tt/novdd/27C/mc28\",\"vout_v\",\"max\"]",
+      "limit:[28,\"tt/novdd/27C/mc28\",\"vout_v\",\"min\"]",
+      "limit:[29,\"tt/novdd/27C/mc29\",\"vout_v\",\"max\"]",
+      "limit:[29,\"tt/novdd/27C/mc29\",\"vout_v\",\"min\"]",
+      "limit:[3,\"tt/novdd/27C/mc3\",\"vout_v\",\"max\"]",
+      "limit:[3,\"tt/novdd/27C/mc3\",\"vout_v\",\"min\"]",
+      "limit:[30,\"tt/novdd/27C/mc30\",\"vout_v\",\"max\"]",
+      "limit:[30,\"tt/novdd/27C/mc30\",\"vout_v\",\"min\"]",
+      "limit:[31,\"tt/novdd/27C/mc31\",\"vout_v\",\"max\"]",
+      "limit:[31,\"tt/novdd/27C/mc31\",\"vout_v\",\"min\"]",
+      "limit:[32,\"tt/novdd/27C/mc32\",\"vout_v\",\"max\"]",
+      "limit:[32,\"tt/novdd/27C/mc32\",\"vout_v\",\"min\"]",
+      "limit:[33,\"tt/novdd/27C/mc33\",\"vout_v\",\"max\"]",
+      "limit:[33,\"tt/novdd/27C/mc33\",\"vout_v\",\"min\"]",
+      "limit:[34,\"tt/novdd/27C/mc34\",\"vout_v\",\"max\"]",
+      "limit:[34,\"tt/novdd/27C/mc34\",\"vout_v\",\"min\"]",
+      "limit:[35,\"tt/novdd/27C/mc35\",\"vout_v\",\"max\"]",
+      "limit:[35,\"tt/novdd/27C/mc35\",\"vout_v\",\"min\"]",
+      "limit:[36,\"tt/novdd/27C/mc36\",\"vout_v\",\"max\"]",
+      "limit:[36,\"tt/novdd/27C/mc36\",\"vout_v\",\"min\"]",
+      "limit:[37,\"tt/novdd/27C/mc37\",\"vout_v\",\"max\"]",
+      "limit:[37,\"tt/novdd/27C/mc37\",\"vout_v\",\"min\"]",
+      "limit:[38,\"tt/novdd/27C/mc38\",\"vout_v\",\"max\"]",
+      "limit:[38,\"tt/novdd/27C/mc38\",\"vout_v\",\"min\"]",
+      "limit:[39,\"tt/novdd/27C/mc39\",\"vout_v\",\"max\"]",
+      "limit:[39,\"tt/novdd/27C/mc39\",\"vout_v\",\"min\"]",
+      "limit:[4,\"tt/novdd/27C/mc4\",\"vout_v\",\"max\"]",
+      "limit:[4,\"tt/novdd/27C/mc4\",\"vout_v\",\"min\"]",
+      "limit:[40,\"tt/novdd/27C/mc40\",\"vout_v\",\"max\"]",
+      "limit:[40,\"tt/novdd/27C/mc40\",\"vout_v\",\"min\"]",
+      "limit:[41,\"tt/novdd/27C/mc41\",\"vout_v\",\"max\"]",
+      "limit:[41,\"tt/novdd/27C/mc41\",\"vout_v\",\"min\"]",
+      "limit:[42,\"tt/novdd/27C/mc42\",\"vout_v\",\"max\"]",
+      "limit:[42,\"tt/novdd/27C/mc42\",\"vout_v\",\"min\"]",
+      "limit:[43,\"tt/novdd/27C/mc43\",\"vout_v\",\"max\"]",
+      "limit:[43,\"tt/novdd/27C/mc43\",\"vout_v\",\"min\"]",
+      "limit:[44,\"tt/novdd/27C/mc44\",\"vout_v\",\"max\"]",
+      "limit:[44,\"tt/novdd/27C/mc44\",\"vout_v\",\"min\"]",
+      "limit:[45,\"tt/novdd/27C/mc45\",\"vout_v\",\"max\"]",
+      "limit:[45,\"tt/novdd/27C/mc45\",\"vout_v\",\"min\"]",
+      "limit:[46,\"tt/novdd/27C/mc46\",\"vout_v\",\"max\"]",
+      "limit:[46,\"tt/novdd/27C/mc46\",\"vout_v\",\"min\"]",
+      "limit:[47,\"tt/novdd/27C/mc47\",\"vout_v\",\"max\"]",
+      "limit:[47,\"tt/novdd/27C/mc47\",\"vout_v\",\"min\"]",
+      "limit:[48,\"tt/novdd/27C/mc48\",\"vout_v\",\"max\"]",
+      "limit:[48,\"tt/novdd/27C/mc48\",\"vout_v\",\"min\"]",
+      "limit:[49,\"tt/novdd/27C/mc49\",\"vout_v\",\"max\"]",
+      "limit:[49,\"tt/novdd/27C/mc49\",\"vout_v\",\"min\"]",
+      "limit:[5,\"tt/novdd/27C/mc5\",\"vout_v\",\"max\"]",
+      "limit:[5,\"tt/novdd/27C/mc5\",\"vout_v\",\"min\"]",
+      "limit:[6,\"tt/novdd/27C/mc6\",\"vout_v\",\"max\"]",
+      "limit:[6,\"tt/novdd/27C/mc6\",\"vout_v\",\"min\"]",
+      "limit:[7,\"tt/novdd/27C/mc7\",\"vout_v\",\"max\"]",
+      "limit:[7,\"tt/novdd/27C/mc7\",\"vout_v\",\"min\"]",
+      "limit:[8,\"tt/novdd/27C/mc8\",\"vout_v\",\"max\"]",
+      "limit:[8,\"tt/novdd/27C/mc8\",\"vout_v\",\"min\"]",
+      "limit:[9,\"tt/novdd/27C/mc9\",\"vout_v\",\"max\"]",
+      "limit:[9,\"tt/novdd/27C/mc9\",\"vout_v\",\"min\"]"
+    ],
+    "skipped": [],
+    "inapplicable": [],
+    "unknown": [],
+    "nothing_checked": false,
+    "nothing_checked_reasons": []
+  },
+  "provenance": {
+    "klt_version": "0.7.0+gff97d692a147",
+    "klayout_version": "0.30.12",
+    "pdk": null,
+    "deck": {
+      "name": "row2-corners.lib",
+      "content_hash": "sha256:a0b07d8e65c90cdb3e4659b0ae9d49fe3d41309cbe8426428ca90a1f35759383",
+      "released": false
+    },
+    "input": {
+      "content_hash": "sha256:6cc1467a7ba54bab357cd89dd4a47f239c429c516e17c4e379333767e6d26800",
+      "role": "netlist"
+    }
+  },
+  "measurements": [
+    {
+      "name": "vout_v",
+      "unit": "V",
+      "limits": {
+        "min": 1.764,
+        "max": 1.836
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C/mc47",
+        "value": 1.829202492,
+        "margin": 0.006797508000000008
+      },
+      "monte_carlo": {
+        "n": 50,
+        "errored": 0,
+        "inconclusive": 0,
+        "mean": 1.80084819122,
+        "stddev": 0.009955970373913435,
+        "min": 1.78064503,
+        "max": 1.829202492,
+        "quantiles": {
+          "p0.135": 1.7809506467043998,
+          "p2.275": 1.7854125973545,
+          "p50": 1.801200505,
+          "p97.725": 1.82458877610625,
+          "p99.865": 1.828944219909
+        },
+        "sigma_window": null,
+        "by_corner": [
+          {
+            "corner_id": "tt/novdd/27C",
+            "n": 50,
+            "errored": 0,
+            "inconclusive": 0,
+            "mean": 1.80084819122,
+            "stddev": 0.009955970373913435,
+            "min": 1.78064503,
+            "max": 1.829202492,
+            "quantiles": {
+              "p0.135": 1.7809506467043998,
+              "p2.275": 1.7854125973545,
+              "p50": 1.801200505,
+              "p97.725": 1.82458877610625,
+              "p99.865": 1.828944219909
+            },
+            "sigma_window": null
+          }
+        ]
+      }
+    }
+  ],
+  "corners": [
+    {
+      "corner_id": "tt/novdd/27C/mc0",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 66.703,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.795453724,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.031453723999999905
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc0/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc0/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 0,
+        "seed": 1439333159,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1776046802
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc1",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 3.522,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.804995039,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.031004961000000053
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc1/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc1/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 1,
+        "seed": 1710950070,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1924163524
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc2",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 3.419,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.802835163,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.03316483700000017
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc2/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc2/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 2,
+        "seed": 84400047,
+        "process_seed": 1342826448,
+        "mismatch_seed": 968623388
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc3",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 62.945,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.789804538,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.025804538000000043
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc3/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc3/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 3,
+        "seed": 499437139,
+        "process_seed": 1342826448,
+        "mismatch_seed": 503761890
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc4",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 45.781,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.794178594,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.030178593999999892
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc4/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc4/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 4,
+        "seed": 241148328,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1636861242
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc5",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 61.854,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.803322784,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.032677216000000175
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc5/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc5/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 5,
+        "seed": 1279463794,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1547038652
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc6",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 3.271,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.793406596,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.029406596000000063
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc6/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc6/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 6,
+        "seed": 1049118007,
+        "process_seed": 1342826448,
+        "mismatch_seed": 209670172
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc7",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 60.042,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.801196079,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.03480392100000018
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc7/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc7/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 7,
+        "seed": 394703960,
+        "process_seed": 1342826448,
+        "mismatch_seed": 880496632
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc8",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 64.845,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.79081219,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.026812190000000014
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc8/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc8/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 8,
+        "seed": 907914304,
+        "process_seed": 1342826448,
+        "mismatch_seed": 435870831
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc9",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 60.441,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.797676726,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.033676725999999935
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc9/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc9/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 9,
+        "seed": 714244731,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1701712048
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc10",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 66.606,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.792939579,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.028939578999999993
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc10/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc10/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 10,
+        "seed": 728675863,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1877863122
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc11",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 50.617,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.794729636,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.030729636000000005
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc11/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc11/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 11,
+        "seed": 1352674713,
+        "process_seed": 1342826448,
+        "mismatch_seed": 548641206
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc12",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 3.701,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.825298152,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.01070184800000007
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc12/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc12/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 12,
+        "seed": 1420236121,
+        "process_seed": 1342826448,
+        "mismatch_seed": 807464724
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc13",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 3.415,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.789424011,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.025424010999999913
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc13/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc13/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 13,
+        "seed": 392130445,
+        "process_seed": 1342826448,
+        "mismatch_seed": 35143153
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc14",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 61.999,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.807117078,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.028882921999999978
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node n.xtop.xamp.xrz.nr1#i1"
+        }
+      ],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc14/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc14/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 14,
+        "seed": 1531180519,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1431905910
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc15",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 66.115,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.785265086,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.021265085999999878
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc15/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc15/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 15,
+        "seed": 23626459,
+        "process_seed": 1342826448,
+        "mismatch_seed": 874474459
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc16",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 65.245,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.786550588,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.022550588000000094
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc16/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc16/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 16,
+        "seed": 1820553937,
+        "process_seed": 1342826448,
+        "mismatch_seed": 365261737
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc17",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 2.342,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.806545747,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.029454253000000152
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc17/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc17/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 17,
+        "seed": 960345977,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1138986436
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc18",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 52.021,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.803171224,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.032828776000000115
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc18/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc18/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 18,
+        "seed": 1626523040,
+        "process_seed": 1342826448,
+        "mismatch_seed": 397956078
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc19",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 2.44,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.801204931,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.03479506900000007
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc19/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc19/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 19,
+        "seed": 1984104411,
+        "process_seed": 1342826448,
+        "mismatch_seed": 2037222381
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc20",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 55.555,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.806128678,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.029871321999999978
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc20/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc20/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 20,
+        "seed": 1883181271,
+        "process_seed": 1342826448,
+        "mismatch_seed": 269661018
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc21",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 21.167,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.80291264,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.03308736000000012
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc21/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc21/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 21,
+        "seed": 1468569590,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1937463552
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc22",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 56.78,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.803304174,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.032695826000000094
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc22/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc22/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 22,
+        "seed": 1280612423,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1963304376
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc23",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 2.393,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.807539888,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.028460112000000093
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc23/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc23/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 23,
+        "seed": 1697085279,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1875068591
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc24",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 2.652,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.797048491,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.03304849099999996
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc24/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc24/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 24,
+        "seed": 678316527,
+        "process_seed": 1342826448,
+        "mismatch_seed": 181205576
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc25",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 59.718,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.810816969,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.025183031000000078
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc25/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc25/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 25,
+        "seed": 506413459,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1563528182
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc26",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 66.08,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.791536504,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.02753650399999996
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc26/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc26/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 26,
+        "seed": 42615558,
+        "process_seed": 1342826448,
+        "mismatch_seed": 246523635
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc27",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 65.036,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.789143718,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.025143718000000037
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc27/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc27/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 27,
+        "seed": 1350687124,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1959268523
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc28",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 62.722,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.80522432,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.030775680000000083
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc28/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc28/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 28,
+        "seed": 1362308933,
+        "process_seed": 1342826448,
+        "mismatch_seed": 319365421
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc29",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 64.136,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.81297327,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.023026729999999995
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc29/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc29/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 29,
+        "seed": 941036167,
+        "process_seed": 1342826448,
+        "mismatch_seed": 2016043113
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc30",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 21.275,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.791498043,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.027498043000000028
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc30/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc30/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 30,
+        "seed": 1014845138,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1736911320
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc31",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 60.863,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.78064503,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.01664503000000006
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc31/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc31/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 31,
+        "seed": 111634390,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1029858893
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc32",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 59.961,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.805488174,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.03051182600000013
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc32/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc32/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 32,
+        "seed": 1998013490,
+        "process_seed": 1342826448,
+        "mismatch_seed": 735664733
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc33",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 62.128,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.812305427,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.023694572999999997
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc33/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc33/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 33,
+        "seed": 1353342455,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1383671779
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc34",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 58.388,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.798130073,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.03413007300000004
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc34/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc34/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 34,
+        "seed": 136314953,
+        "process_seed": 1342826448,
+        "mismatch_seed": 2095618626
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc35",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 61.096,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.815608802,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.020391198
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc35/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc35/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 35,
+        "seed": 102332269,
+        "process_seed": 1342826448,
+        "mismatch_seed": 2084537849
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc36",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 56.018,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.796693989,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.03269398899999998
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node n.xtop.xamp.xrz.nr1#i1"
+        }
+      ],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc36/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc36/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 36,
+        "seed": 304073498,
+        "process_seed": 1342826448,
+        "mismatch_seed": 2134741312
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc37",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 58.162,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.790035245,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.026035245000000096
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node n.xtop.xamp.xrz.nr1#i1"
+        }
+      ],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc37/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc37/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 37,
+        "seed": 1987525925,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1070599116
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc38",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 2.548,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.819116227,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.01688377299999999
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc38/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc38/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 38,
+        "seed": 1500107473,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1643450709
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc39",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 53.398,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.795511018,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.031511018
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc39/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc39/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 39,
+        "seed": 641038984,
+        "process_seed": 1342826448,
+        "mismatch_seed": 337822473
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc40",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 51.981,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.802669306,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.033330693999999994
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node n.xtop.xamp.xrz.nr1#i1"
+        }
+      ],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc40/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc40/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 40,
+        "seed": 512529726,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1975384356
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc41",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 2.738,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.806449689,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.029550311000000162
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc41/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc41/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 41,
+        "seed": 827274304,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1470554374
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc42",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 2.604,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.804770939,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.031229061000000113
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc42/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc42/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 42,
+        "seed": 659642592,
+        "process_seed": 1342826448,
+        "mismatch_seed": 402946629
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc43",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 2.434,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.794394944,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.03039494399999998
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc43/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc43/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 43,
+        "seed": 897175544,
+        "process_seed": 1342826448,
+        "mismatch_seed": 308459396
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc44",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 46.621,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.800208217,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.03579178300000008
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node n.xtop.xamp.xrz.nr1#i1"
+        }
+      ],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc44/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc44/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 44,
+        "seed": 1031665255,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1891153428
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc45",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 42.997,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.806080619,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.029919381000000023
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc45/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc45/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 45,
+        "seed": 1047673233,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1628738571
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc46",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 2.646,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.795308263,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.03130826299999989
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc46/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc46/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 46,
+        "seed": 1652805086,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1450319749
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc47",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 29.98,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.829202492,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.006797508000000008
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc47/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc47/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 47,
+        "seed": 1361279329,
+        "process_seed": 1342826448,
+        "mismatch_seed": 1206278000
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc48",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 12.476,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.812768135,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.023231865000000074
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc48/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc48/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 48,
+        "seed": 405990587,
+        "process_seed": 1342826448,
+        "mismatch_seed": 48811731
+      }
+    },
+    {
+      "corner_id": "tt/novdd/27C/mc49",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 8.658,
+      "measurements": [
+        {
+          "name": "vout_v",
+          "value": 1.792968812,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.02896881200000001
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node n.xtop.xamp.xrz.nr1#i1"
+        }
+      ],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc49/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-155/sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/artifacts/repro/tt_novdd_27C_mc49/corner.cir"
+      },
+      "monte_carlo": {
+        "sample_index": 49,
+        "seed": 1263345084,
+        "process_seed": 1342826448,
+        "mismatch_seed": 513612652
+      }
+    }
+  ]
+}

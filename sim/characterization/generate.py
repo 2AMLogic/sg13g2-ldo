@@ -37,6 +37,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import gzip
 import hashlib
 import json
 import math
@@ -84,6 +85,12 @@ _METRIC_ORDER = {v: i for i, v in enumerate(
 CORNERS = ["tt", "ss", "ff", "sf", "fs"]
 TEMPS = [-40, 27, 125]
 RES = ["res_typ", "res_bcs", "res_wcs"]
+
+DC_COND_LINE = ("line regulation |dVOUT/dVin| over Vin 2.97-3.63 V at the labelled load; "
+                "ideal 0.90 V reference; 45-point corner grid")
+DC_COND_LOAD = ("load regulation (V(0 mA) - V(50 mA)) / V(0 mA) at the labelled fixed Vin; "
+                "ideal 0.90 V reference; 45-point corner grid")
+DC_COND_IQ = "50 mA load, Vin = 3.30 V, |i(Vin)| - Iload; ideal 0.90 V reference and 2 uA Ibias sink; 45-point corner grid"
 
 PVT_NUMERIC = [
     "iq_a", "vout_no_load_v", "line_reg_mv_per_v", "dropout_v_50ma",
@@ -346,9 +353,430 @@ def cc_window(rows: list[dict]) -> dict:
             "res_sections": sorted(by_res)}
 
 
+
+# --------------------------------------------------------------------------- #
+# informational DC evidence (rows 5 and 7)
+# --------------------------------------------------------------------------- #
+
+DC_LOADS = [("0mA", "0 mA"), ("12p5mA", "12.5 mA"), ("25mA", "25 mA"),
+            ("37p5mA", "37.5 mA"), ("50mA", "50 mA")]
+DC_VINS = [("2p97", "2.97 V"), ("3p30", "3.30 V"), ("3p63", "3.63 V")]
+
+
+def dc_expected_columns() -> list[str]:
+    cols = ["corner", "temp_c", "res_section", "grid_ok", "iq_noload_a",
+            "iq_fullload_excl_load_a", "iq_fullload_valid", "iq_fullload_noise_proxy_a"]
+    cols += [f"line_reg_mv_per_v_{k}" for k, _ in DC_LOADS]
+    cols += [f"line_reg_valid_{k}" for k, _ in DC_LOADS]
+    for k, _ in DC_VINS:
+        cols += [f"load_reg_pct_vin{k}", f"load_reg_valid_vin{k}", f"vout_50mA_vin{k}_v"]
+    cols += ["dropout_legacy_v", "dropout_status", "dropout_vin_minus_vout_candidate_v"]
+    return cols
+
+
+def _boolfield(row: dict, key: str, ctx: str) -> bool:
+    v = row.get(key)
+    if v not in ("True", "False"):
+        raise GenError(f"{ctx}: validity field '{key}' must be True/False, got {v!r}")
+    return v == "True"
+
+
+def load_dc_informational(root: Path, sel: dict, rec: dict, pvt_rows: list[dict],
+                          sources: list) -> dict:
+    """Validate and return the pinned informational DC summary for the selected
+    record. Every failure is a hard GenError (fail-closed): nothing is skipped
+    or repaired, and a point that is invalid stays in the data as invalid."""
+    dc = sel.get("dc_informational_evidence")
+    if not isinstance(dc, dict):
+        raise GenError("selection.json has no dc_informational_evidence block")
+    if dc.get("circuit_record_id") != rec["id"]:
+        raise GenError(
+            f"dc_informational_evidence is for record {dc.get('circuit_record_id')!r}, "
+            f"selected circuit record is {rec['id']!r}")
+    sum_path = pinned(root, dc["files"]["summary_csv"], "dc_informational_summary_csv", sources)
+    inv_path = pinned(root, dc["files"]["coverage_inventory_json"],
+                      "dc_coverage_inventory_json", sources)
+    for p in (dc["files"]["summary_csv"]["path"], dc["files"]["coverage_inventory_json"]["path"]):
+        if f"/{rec['id']}/" not in p:
+            raise GenError(f"DC evidence path {p} is not under the selected record id {rec['id']}")
+
+    # --- provenance inventory: must describe THIS record and design ---------
+    try:
+        inv = json.loads(inv_path.read_text(encoding="utf-8"))
+        ins = inv["inputs"]
+        gen = inv["generator"]
+        grid = inv["grid"]
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        raise GenError(f"DC coverage inventory unreadable or malformed: {exc!r}") from exc
+    for role in ("record_csv", "record_md"):
+        want = rec["files"]["pvt_csv" if role == "record_csv" else "record_md"]
+        got = ins.get(role) or {}
+        if got.get("path") != want["path"] or got.get("sha256") != want["sha256"]:
+            raise GenError(
+                f"DC inventory {role} does not match the selected record's pinned {role}: "
+                f"{got.get('path')!r} {got.get('sha256')!r}")
+    pins = {p["path"]: p["sha256"] for p in rec["design_freshness_pins"]}
+    if ins.get("design_netlists") != pins:
+        raise GenError("DC inventory design_netlists differ from the selection's design freshness pins")
+    if grid.get("points") != 45 or grid.get("reproduces_record_csv") is not True:
+        raise GenError("DC inventory does not state a 45-point grid that reproduces the record csv")
+    gen_p = root / gen["path"]
+    if not gen_p.is_file() or sha256_file(gen_p) != gen["sha256"]:
+        raise GenError(f"DC inventory generator {gen.get('path')} missing or differs from its recorded sha256")
+    raw = ins.get("raw_dc_grids")
+    if not isinstance(raw, dict) or len(raw) != 45:
+        raise GenError(f"DC inventory lists {len(raw) if isinstance(raw, dict) else 'no'} raw DC grids, expected 45")
+    for rel, h in sorted(raw.items()):
+        if f"/{rec['id']}/" not in rel:
+            raise GenError(f"raw DC grid {rel} is not under the selected record id")
+        rp = root / rel
+        if not rp.is_file():
+            raise GenError(f"raw DC grid missing: {rel}")
+        if sha256_file(rp) != h:
+            raise GenError(f"raw DC grid bytes differ from the inventory hash: {rel}")
+
+    # --- summary: complete grid, finite values, True/False validity ---------
+    srows = read_csv(sum_path)
+    try:
+        with sum_path.open(newline="", encoding="utf-8") as fh:
+            header = next(csv.reader(fh))
+    except (OSError, StopIteration) as exc:
+        raise GenError(f"cannot read DC summary header: {exc!r}") from exc
+    if header != dc_expected_columns():
+        raise GenError(f"DC summary columns differ from the expected schema/units: {header}")
+    keys = [(r["corner"], r["temp_c"], r["res_section"]) for r in srows]
+    if len(set(keys)) != len(keys):
+        dup = sorted(k for k in set(keys) if keys.count(k) > 1)
+        raise GenError(f"DC summary has duplicate corner rows: {dup[:3]}")
+    want = {(c, str(t), s) for c in CORNERS for t in TEMPS for s in RES}
+    if set(keys) != want or len(keys) != 45:
+        raise GenError(
+            f"DC summary corner set incomplete or malformed: {len(keys)} rows, "
+            f"missing {sorted(want - set(keys))[:3]}, unexpected {sorted(set(keys) - want)[:3]}")
+    by_key = {}
+    num_cols = [c for c in dc_expected_columns()
+                if c not in ("corner", "temp_c", "res_section", "grid_ok", "dropout_status")
+                and "_valid" not in c]
+    for i, r in enumerate(srows):
+        ctx = f"DC summary row {i + 2} ({r['corner']}/{r['temp_c']}/{r['res_section']})"
+        if not _boolfield(r, "grid_ok", ctx):
+            raise GenError(f"{ctx}: grid_ok is False; the raw grid was not complete")
+        vals = {c: num(r, c, ctx) for c in num_cols}
+        valid = {c: _boolfield(r, c, ctx) for c in dc_expected_columns() if "_valid" in c}
+        by_key[(r["corner"], r["temp_c"], r["res_section"])] = (vals, valid)
+
+    # --- agree with the pinned PVT csv where the two overlap ---------------
+    for i, pr in enumerate(pvt_rows):
+        k = (pr["corner"], pr["temp_c"], pr["res_section"])
+        vals, _ = by_key[k]
+        for pc, dc_col in (("iq_a", "iq_noload_a"), ("line_reg_mv_per_v", "line_reg_mv_per_v_0mA"),
+                           ("load_reg_pct", "load_reg_pct_vin3p63"),
+                           ("vout_at_vinmax_50ma_v", "vout_50mA_vin3p63_v")):
+            a, b = float(pr[pc]), vals[dc_col]
+            if abs(a - b) > 1e-6 * max(abs(a), 1e-12):
+                raise GenError(
+                    f"DC summary disagrees with the pinned PVT csv at {k}: "
+                    f"{dc_col}={b} vs {pc}={a}")
+    return {"by_key": by_key, "summary_path": dc["files"]["summary_csv"]["path"],
+            "inventory_path": dc["files"]["coverage_inventory_json"]["path"],
+            "n_raw_grids": len(raw)}
+
+
 # --------------------------------------------------------------------------- #
 # the report
 # --------------------------------------------------------------------------- #
+
+# --------------------------------------------------------------------------- #
+# startup campaign evidence (row 9)
+# --------------------------------------------------------------------------- #
+
+# Proposed-methodology thresholds (DR-0009; mirrored in selection.json
+# startup_evidence.proposed_methodology and startup_eval.py). Not ratified.
+STARTUP_BAND_HI_V = 1.836
+STARTUP_SETTLE_LIMIT_S = 3e-3
+STARTUP_MONOTONIC_TOL_V = 1e-3
+STARTUP_CSV_VERDICTS = ("pass", "fail", "insufficient")
+STARTUP_REQUIRED = [
+    "start_settle_time_s", "start_peak_vout_v", "start_max_down_excursion_v",
+    "reen_peak_vout_v", "reen_max_down_excursion_v", "start_observed_s",
+]
+STARTUP_EXTRA = [
+    "start_overshoot_v", "reen_overshoot_v", "reen_observed_s",
+    "start_rise_10_90_s", "off_vout_max_v", "off_supply_current_a",
+]
+
+
+def startup_row_verdict(n_fail: int, n_insufficient: int, n_missing: int,
+                        n_evaluated: int) -> str:
+    """Row-9 verdict from point counts. A measured failure always wins (it is
+    never masked by missing or insufficient points, nor by a numeric settling
+    success); without failures, anything short of a whole evaluated grid is
+    `not_measured`; only a whole, all-passing grid is a (partial-coverage)
+    pass, and even that is a proposed-methodology measurement, not a
+    ratification."""
+    if n_fail:
+        return "fail"
+    if n_insufficient or n_missing or n_evaluated == 0:
+        return "not_measured"
+    return "pass_partial_coverage"
+
+
+def _startup_key(mos, temp, res, vin, load, cout, esr, tmax):
+    return (str(mos), int(float(temp)), str(res), round(float(vin), 3),
+            float(load), float(cout), float(esr), float(tmax))
+
+
+def load_startup(root: Path, sel: dict, sources: list) -> dict:
+    """Validate and return the explicitly selected, pinned startup campaign.
+
+    Hard GenError: block missing, wrong id/stage, any selected file missing or
+    different from its pin, manifest/record disagreement, malformed or
+    non-finite fields, duplicate or unexpected campaign point, trace file
+    missing/tampered, a csv `pass` contradicted by a measured metric. Reported
+    (not raised): requested points with no result row (`missing`), points the
+    evaluator marked `insufficient`, and design staleness (core and error
+    amplifier independently)."""
+    st = sel.get("startup_evidence")
+    if not isinstance(st, dict):
+        raise GenError("selection.json has no startup_evidence block")
+    rid = st["id"]
+    for key in ("record_md", "grid_csv", "manifest_json"):
+        if rid not in st["files"][key]["path"]:
+            raise GenError(f"startup file {st['files'][key]['path']} is not under the selected startup id {rid}")
+    pinned(root, st["files"]["record_md"], "startup_record_md", sources)
+    csv_path = pinned(root, st["files"]["grid_csv"], "startup_grid_csv", sources)
+    man_path = pinned(root, st["files"]["manifest_json"], "startup_manifest_json", sources)
+    try:
+        man = json.loads(man_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        raise GenError(f"cannot load startup manifest {st['files']['manifest_json']['path']}: {exc}") from exc
+    if man.get("rid") != rid or man.get("stage") != st["stage"]:
+        raise GenError(f"startup manifest is for {man.get('rid')!r}/{man.get('stage')!r}, "
+                       f"selected {rid!r}/{st['stage']!r}")
+
+    # --- design freshness: core and error amplifier, independently ---------
+    fresh = {}
+    for comp, pin in st["design_freshness_pins"].items():
+        p = root / pin["path"]
+        if not p.is_file():
+            raise GenError(f"startup design freshness pin target missing: {pin['path']} ({comp})")
+        actual = sha256_file(p)
+        entry = {"path": pin["path"], "pinned_sha256": pin["sha256"], "actual_sha256": actual,
+                 "matches": actual == pin["sha256"], "recorded_in_manifest": bool(pin["recorded_in_manifest"])}
+        if pin["recorded_in_manifest"]:
+            mv = man.get("source_sha256", {}).get(pin["path"])
+            if mv != pin["sha256"]:
+                raise GenError(f"startup manifest source_sha256 for {pin['path']} is {mv!r}, "
+                               f"selection pin is {pin['sha256']!r} ({comp})")
+            entry["manifest_sha256"] = mv
+        fresh[comp] = entry
+        sources.append({"role": f"startup_design_{comp}_freshness", "path": pin["path"],
+                        "sha256": actual, "pinned": True})
+    stale_components = sorted(c for c, e in fresh.items() if not e["matches"])
+
+    # --- campaign points ---------------------------------------------------
+    g = st["requested_grid"]
+    expected = {_startup_key(m, t, r, v, l, c, e, x)
+                for m in g["process"] for t in g["temp_c"] for r in g["res"]
+                for v in g["vin_v"] for l in g["load_ma"] for c in g["cout_nf"]
+                for e in g["esr_mohm"] for x in g["tmax_ns"]}
+    if man.get("requested") != len(expected):
+        raise GenError(f"startup manifest requested {man.get('requested')} points, "
+                       f"selected grid has {len(expected)}")
+    rows = read_csv(csv_path)
+    traces_dir = root / st["traces_dir"]
+    seen: dict = {}
+    pts = []
+    for i, r in enumerate(rows):
+        ctx = f"startup row {i + 2}"
+        try:
+            key = _startup_key(r["mos"], r["temp"], r["res"], r["vin"], r["load_ma"],
+                               r["cout_nf"], r["esr_mohm"], r["tmax_ns"])
+        except (KeyError, ValueError) as exc:
+            raise GenError(f"{ctx}: malformed point coordinates: {exc!r}") from exc
+        if key in seen:
+            raise GenError(f"{ctx}: duplicate campaign point {r.get('point')} "
+                           f"(same coordinates as row {seen[key] + 2})")
+        seen[key] = i
+        if key not in expected:
+            raise GenError(f"{ctx}: point {r.get('point')} is outside the selected requested grid")
+        verdict = r.get("verdict")
+        if verdict not in STARTUP_CSV_VERDICTS:
+            raise GenError(f"{ctx}: verdict {verdict!r} not one of {STARTUP_CSV_VERDICTS}")
+        pt = {"point": r["point"], "corner": r["mos"], "temp_c": int(float(r["temp"])),
+              "res_section": "res_" + r["res"], "vin_v": round(float(r["vin"]), 3),
+              "load_ma": float(r["load_ma"]), "cout_nf": float(r["cout_nf"]),
+              "esr_mohm": float(r["esr_mohm"])}
+        rec = {"id": pt, "verdict": verdict, "reasons": r.get("reasons", ""),
+               "settled": r.get("start_settled") == "True"}
+        if verdict != "insufficient":
+            for k in STARTUP_REQUIRED:
+                rec[k] = num(r, k, ctx)
+            if r.get("start_settled") not in ("True", "False"):
+                raise GenError(f"{ctx}: start_settled not True/False")
+            for k in STARTUP_EXTRA:
+                if r.get(k, "") != "":
+                    rec[k] = num(r, k, ctx)
+            tf, ts = r.get("trace_file", ""), r.get("trace_sha256", "")
+            tp = traces_dir / Path(tf).name
+            if not tf or not tp.is_file():
+                raise GenError(f"{ctx}: trace file missing for evaluated point {r['point']}: {tf!r}")
+            if sha256_file(tp) != ts:
+                raise GenError(f"{ctx}: trace {tf} bytes differ from the recorded trace_sha256")
+            try:
+                with gzip.open(tp, "rt", encoding="utf-8") as fh:
+                    n_lines = sum(1 for _ in fh) - 1
+            except (OSError, EOFError) as exc:
+                raise GenError(f"{ctx}: trace {tf} unreadable: {exc}") from exc
+            if n_lines != int(num(r, "samples", ctx)) or n_lines < 2:
+                raise GenError(f"{ctx}: trace {tf} has {n_lines} samples, record says {r.get('samples')}")
+        pts.append(rec)
+    missing = sorted(expected - set(seen))
+    n_ins = sum(1 for p in pts if p["verdict"] == "insufficient")
+    n_fail = sum(1 for p in pts if p["verdict"] == "fail")
+    n_pass = sum(1 for p in pts if p["verdict"] == "pass")
+    for k, v in (("rows", len(pts)), ("insufficient", n_ins), ("fail", n_fail), ("pass", n_pass),
+                 ("evaluated", n_fail + n_pass)):
+        if man.get(k) != v and not missing:
+            raise GenError(f"startup manifest {k}={man.get(k)!r} disagrees with the pinned csv ({v})")
+    return {"cfg": st, "rid": rid, "manifest": man, "points": pts, "fresh": fresh,
+            "stale_components": stale_components, "n_requested": len(expected),
+            "missing": [{"corner": k[0], "temp_c": k[1], "res_section": "res_" + k[2],
+                         "vin_v": k[3], "load_ma": k[4], "cout_nf": k[5], "esr_mohm": k[6]}
+                        for k in missing],
+            "n_fail": n_fail, "n_pass": n_pass, "n_insufficient": n_ins,
+            "csv_rel": st["files"]["grid_csv"]["path"], "md_rel": st["files"]["record_md"]["path"]}
+
+
+# --------------------------------------------------------------------------- #
+# row 10: DR-0014 margin classification (proposed)
+# --------------------------------------------------------------------------- #
+
+ROW10_PM_BOUND = 45.0
+ROW10_GM_BOUND = 10.0
+ROW10_VERDICTS = ("pass", "fail", "ambiguous")
+ROW10_COLUMNS = [
+    "corner", "temp_c", "res_section", "record_n_0db_crossings", "record_phase_margin_deg",
+    "record_phase_margin_worst_deg", "record_gain_margin_db", "n_zero_db_crossings",
+    "zero_db_crossings_hz_dir_margin_deg", "pm_deg", "pm_verdict", "pm_reasons",
+    "n_critical_crossings", "critical_crossings_hz_gain_db", "gm_db",
+    "gm_above_ceiling_lower_bound_db", "gm_verdict", "gm_reasons", "low_end_gain_db",
+    "low_end_ok", "ceiling_gain_db", "ceiling_last_decade_change_db", "ceiling_bounded",
+    "nyquist_class", "trace", "trace_sha256",
+]
+
+
+def _optnum(row: dict, key: str, ctx: str):
+    return None if row.get(key, "") == "" else num(row, key, ctx)
+
+
+def _trace_ceiling_hz(path: Path, ctx: str) -> float:
+    """Frequency of the last row of a loop-gain wrdata trace (already sha256-verified)."""
+    try:
+        last = [ln for ln in path.read_text(encoding="utf-8").splitlines() if ln.strip()][-1]
+        hz = float(last.split()[0])
+    except (OSError, ValueError, IndexError) as exc:
+        raise GenError(f"{ctx}: cannot read the sweep ceiling from {path}: {exc!r}") from exc
+    if not math.isfinite(hz) or hz <= 0:
+        raise GenError(f"{ctx}: sweep ceiling {hz!r} is not a positive finite frequency")
+    return round(hz, 3)
+
+
+def _fmt_hz(hz: float) -> str:
+    for scale, unit in ((1e9, "GHz"), (1e6, "MHz"), (1e3, "kHz"), (1.0, "Hz")):
+        if hz >= scale * (1 - 1e-9):
+            return f"{hz / scale:.6g} {unit}"
+    return f"{hz:g} Hz"
+
+
+def load_row10(root: Path, sel: dict, rec: dict, pvt_rows: list[dict], sources: list) -> dict:
+    """Validate and return the pinned DR-0014 classification of the selected
+    record's loop-gain traces. Every failure is a hard GenError (fail-closed)."""
+    blk = sel.get("row10_margin_evidence")
+    if not isinstance(blk, dict):
+        raise GenError("selection.json has no row10_margin_evidence block")
+    if blk.get("circuit_record_id") != rec["id"]:
+        raise GenError(f"row10_margin_evidence is for record {blk.get('circuit_record_id')!r}, "
+                       f"selected circuit record is {rec['id']!r}")
+    csv_path = pinned(root, blk["files"]["classification_csv"], "row10_classification_csv", sources)
+    js_path = pinned(root, blk["files"]["classification_json"], "row10_classification_json", sources)
+    for p in (blk["files"]["classification_csv"]["path"], blk["files"]["classification_json"]["path"]):
+        if f"/{rec['id']}/" not in p:
+            raise GenError(f"row-10 classification {p} is not under the selected record id {rec['id']}")
+    try:
+        doc = json.loads(js_path.read_text(encoding="utf-8"))
+        drec, bounds, clf, dcsv = doc["record"], doc["bounds"], doc["classifier"], doc["csv"]
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        raise GenError(f"row-10 classification json unreadable or malformed: {exc!r}") from exc
+    want = rec["files"]["pvt_csv"]
+    if doc.get("dataset") != "legacy" or drec.get("csv") != want["path"] or drec.get("sha256") != want["sha256"]:
+        raise GenError("row-10 classification does not name the selected record's pinned PVT csv")
+    if (bounds.get("pm_deg"), bounds.get("gm_db")) != (ROW10_PM_BOUND, ROW10_GM_BOUND):
+        raise GenError(f"row-10 classification bounds {bounds} differ from the row-10 target "
+                       f"(PM >= {ROW10_PM_BOUND} deg, GM >= {ROW10_GM_BOUND} dB)")
+    if dcsv.get("path") != blk["files"]["classification_csv"]["path"] or \
+            dcsv.get("sha256") != blk["files"]["classification_csv"]["sha256"]:
+        raise GenError("row-10 classification json does not describe the pinned csv")
+    for rel, h in sorted(clf.items()):
+        p = root / rel
+        if not p.is_file() or sha256_file(p) != h:
+            raise GenError(f"row-10 classifier source {rel} missing or differs from the bytes the "
+                           "classification recorded: regenerate with row10_margins.py")
+        sources.append({"role": "row10_classifier_source", "path": rel, "sha256": h, "pinned": True})
+
+    try:
+        with csv_path.open(newline="", encoding="utf-8") as fh:
+            header = next(csv.reader(fh))
+    except (OSError, StopIteration) as exc:
+        raise GenError(f"cannot read row-10 classification header: {exc!r}") from exc
+    if header != ROW10_COLUMNS:
+        raise GenError(f"row-10 classification columns differ from the expected schema: {header}")
+    crow = read_csv(csv_path)
+    keys = [(r["corner"], r["temp_c"], r["res_section"]) for r in crow]
+    if len(set(keys)) != len(keys) or set(keys) != {(c, str(t), s) for c in CORNERS for t in TEMPS for s in RES}:
+        raise GenError(f"row-10 classification corner set incomplete, duplicated or malformed ({len(keys)} rows)")
+    by_key = {}
+    ceilings = set()
+    tdir = f"/corners/{rec['id']}/"
+    for i, r in enumerate(crow):
+        ctx = f"row-10 classification row {i + 2} ({r['corner']}/{r['temp_c']}/{r['res_section']})"
+        if tdir not in r["trace"]:
+            raise GenError(f"{ctx}: trace {r['trace']} is not under the selected record's corners dir")
+        tp = root / r["trace"]
+        if not tp.is_file() or sha256_file(tp) != r["trace_sha256"]:
+            raise GenError(f"{ctx}: trace {r['trace']} missing or differs from its recorded sha256")
+        ceilings.add(_trace_ceiling_hz(tp, ctx))
+        for k in ("pm_verdict", "gm_verdict"):
+            if r[k] not in ROW10_VERDICTS:
+                raise GenError(f"{ctx}: {k} {r[k]!r} not one of {ROW10_VERDICTS}")
+        pm, gm = _optnum(r, "pm_deg", ctx), _optnum(r, "gm_db", ctx)
+        gm_lb = _optnum(r, "gm_above_ceiling_lower_bound_db", ctx)
+        if r["pm_verdict"] == "pass" and not (pm is not None and pm >= ROW10_PM_BOUND):
+            raise GenError(f"{ctx}: PM verdict pass contradicts pm_deg {pm}")
+        if r["pm_verdict"] == "fail" and not (pm is not None and pm < ROW10_PM_BOUND):
+            raise GenError(f"{ctx}: PM verdict fail contradicts pm_deg {pm}")
+        gm_eff = gm if gm is not None else gm_lb
+        if r["gm_verdict"] == "pass" and not (gm_eff is not None and gm_eff >= ROW10_GM_BOUND
+                                              and (gm_lb is not None and gm_lb >= ROW10_GM_BOUND)):
+            raise GenError(f"{ctx}: GM verdict pass contradicts gm {gm} / ceiling lower bound {gm_lb}")
+        if r["gm_verdict"] == "fail" and not (gm is not None and gm < ROW10_GM_BOUND):
+            raise GenError(f"{ctx}: GM verdict fail contradicts gm_db {gm}")
+        by_key[keys[i]] = (r, pm, gm_eff)
+    for pr in pvt_rows:
+        k = (pr["corner"], pr["temp_c"], pr["res_section"])
+        r, _, _ = by_key[k]
+        for pc in ("n_0db_crossings", "phase_margin_deg", "phase_margin_worst_deg", "gain_margin_db"):
+            if r[f"record_{pc}"] != pr[pc]:
+                raise GenError(f"row-10 classification record_{pc} at {k} disagrees with the pinned PVT csv")
+        if float(pr["phase_margin_deg"]) < ROW10_PM_BOUND and r["pm_verdict"] != "fail":
+            raise GenError(f"row-10 classification upgrades a recorded PM miss at {k}")
+        if float(pr["gain_margin_db"]) < ROW10_GM_BOUND and r["gm_verdict"] != "fail":
+            raise GenError(f"row-10 classification upgrades a recorded GM miss at {k}")
+    if len(ceilings) != 1:
+        raise GenError(f"row-10 traces do not share one sweep ceiling: {sorted(ceilings)}")
+    return {"by_key": by_key, "doc": doc, "csv_rel": blk["files"]["classification_csv"]["path"],
+            "dr": blk["decision_record"], "ceiling_hz": next(iter(ceilings))}
+
 
 def build(root: Path) -> tuple[dict, dict, str]:
     """Return (report, envelope, markdown). Raises GenError on any hard error."""
@@ -410,18 +838,27 @@ def build(root: Path) -> tuple[dict, dict, str]:
             raise GenError(f"pvt row {i + 2}: line_reg_in_regulation not True/False")
     pvt_rel = rec["files"]["pvt_csv"]["path"]
     pid = [point_id(r) for r in prow]
+    dcev = load_dc_informational(root, sel, rec, prow, sources)
+    dc_rel = dcev["summary_path"]
+    su = load_startup(root, sel, sources)
+    r10 = load_row10(root, sel, rec, prow, sources)
+
+    def dc_col(name, scale=1.0, valid=None):
+        """(values, ambiguous-index-set) over the pvt row order. Invalid points
+        stay in the data and are returned as the ambiguous set."""
+        pts, bad = [], set()
+        for i, r in enumerate(prow):
+            vals, vflags = dcev["by_key"][(r["corner"], r["temp_c"], r["res_section"])]
+            pts.append((vals[name] * scale, pid[i]))
+            if valid is not None and not vflags[valid]:
+                bad.add(i)
+        return pts, bad
 
     def col(k):
         return [(num(r, k, "pvt"), pid[i]) for i, r in enumerate(prow)]
 
     bc = rec["bench_conditions"]
     ac_cond = bc["ac_loopgain_and_psrr"]
-
-    # --- AC ambiguity: more than one 0 dB crossing => the scalar PM is the
-    # first crossing only and a second crossing exists whose margin the
-    # record reports as phase_margin_worst_deg. Not collapsed to a pass.
-    amb = {i for i, r in enumerate(prow) if int(num(r, "n_0db_crossings", "pvt")) != 1}
-    amb_gm = {i for i, r in enumerate(prow) if int(num(r, "n_gain_margin_crossings", "pvt")) != 1}
 
     ccw = cc_window(read_csv(cc_path))
     cc_tol_rel = rec["files"]["cc_tolerance_csv"]["path"]
@@ -540,14 +977,32 @@ def build(root: Path) -> tuple[dict, dict, str]:
     lr = col("line_reg_mv_per_v")
     ld = col("load_reg_pct")
     not_in_reg = {i for i, r in enumerate(prow) if r["line_reg_in_regulation"] != "True"}
-    m5a = metric("line regulation", "mV/V", "lt", 5.0, "line_reg_mv_per_v", pvt_rel, lr,
-                 bc["line_regulation"], ambiguous=not_in_reg)
-    m5b = metric("load regulation", "%", "lt", 1.0, "load_reg_pct", pvt_rel, ld,
-                 bc["load_regulation"])
-    add(R[5], [m5a, m5b], "partial", [
-        "line regulation measured at no load only",
-        "load regulation measured at Vin = 3.63 V only; not at 3.30/2.97 V",
-        "'inside the accuracy window' (Vin window) not covered for either metric (#55)",
+    m5a = metric("line regulation, legacy record column (no load)", "mV/V", "lt", 5.0,
+                 "line_reg_mv_per_v", pvt_rel, lr, bc["line_regulation"], ambiguous=not_in_reg)
+    m5b = metric("load regulation, legacy record column (Vin = 3.63 V)", "%", "lt", 1.0,
+                 "load_reg_pct", pvt_rel, ld, bc["load_regulation"])
+    m5 = [m5a, m5b]
+    dc_note = ("Informational DC summary (derived offline from the committed raw DC grids, "
+               "no new simulation). A point is valid only if both end points are within 1 % of "
+               "1.8 V; invalid points are counted as ambiguous and never dropped. Discrete "
+               "sampled loads/supplies only: not a continuous-window claim.")
+    for key, label in DC_LOADS:
+        pts, bad = dc_col(f"line_reg_mv_per_v_{key}", valid=f"line_reg_valid_{key}")
+        m = metric(f"line regulation at {label} load (Vin 2.97-3.63 V)", "mV/V", "lt", 5.0,
+                   f"line_reg_mv_per_v_{key}", dc_rel, pts, DC_COND_LINE, ambiguous=bad, note=dc_note)
+        m["n_invalid"] = len(bad)
+        m5.append(m)
+    for key, label in DC_VINS:
+        pts, bad = dc_col(f"load_reg_pct_vin{key}", valid=f"load_reg_valid_vin{key}")
+        m = metric(f"load regulation 0-50 mA at Vin = {label}", "%", "lt", 1.0,
+                   f"load_reg_pct_vin{key}", dc_rel, pts, DC_COND_LOAD, ambiguous=bad, note=dc_note)
+        m["n_invalid"] = len(bad)
+        m5.append(m)
+    add(R[5], m5, "partial", [
+        "line regulation sampled at 5 discrete loads (0, 12.5, 25, 37.5, 50 mA) over Vin 2.97-3.63 V; "
+        "load regulation sampled at 3 discrete supplies (2.97, 3.30, 3.63 V) -- not continuous coverage of the window",
+        "'inside the accuracy window' (coupling with the statistical VOUT row, #56) not covered for either metric",
+        "ideal 0.90 V reference: reference error is excluded; corner grid only, no Monte Carlo",
     ], evidence_state)
 
     # 6 PSRR --------------------------------------------------------------
@@ -579,51 +1034,235 @@ def build(root: Path) -> tuple[dict, dict, str]:
         raise GenError(f"superseded evidence quote not found in {sup['statement_source']}")
     sources.append({"role": "superseded_evidence_statement", "path": sup["statement_source"],
                     "sha256": sha256_file(sup_text), "pinned": False})
-    mfl = unavailable("Iq at full load", "uA", "not_measured",
-                      "The selected record reports no full-load Iq. An older record's full-load "
-                      f"figure ({sup['quoted_substring']}) is on a superseded design and is NOT "
-                      "used as current evidence.",
-                      source={"superseded_statement": sup["statement_source"],
-                              "describes": sup["describes"]})
+    fl_pts, fl_bad = dc_col("iq_fullload_excl_load_a", 1e6, valid="iq_fullload_valid")
+    proxy = [v for v, _ in dc_col("iq_fullload_noise_proxy_a", 1e6)[0]]
+    mfl = metric("Iq at full load (50 mA), load current excluded", "uA", "lt", 30.0,
+                 "iq_fullload_excl_load_a", dc_rel, fl_pts, DC_COND_IQ, ambiguous=fl_bad,
+                 note="Derived offline as |i(Vin)| - Iload from the committed raw DC grid (column in A, "
+                      "converted to uA). Precision caveat: the grid is printed to 9 significant digits, "
+                      "so a ~22 uA difference of two ~50 mA currents is quantized at 1e-10 A (0.0001 uA); "
+                      "solver noise beyond that floor is not bounded by this data. Invalid points are "
+                      "counted as ambiguous, never dropped. An older record's full-load figure "
+                      f"({sup['quoted_substring']}) is on a superseded design and is NOT used.")
+    mfl["n_invalid"] = len(fl_bad)
+    mfl["precision_floor_uA"] = rnd(max(proxy))
+    mfl["superseded_statement"] = {"source": sup["statement_source"], "describes": sup["describes"]}
     add(R[7], [m7, mfl], "partial", [
-        "full-load half of the row has no current-design measurement",
-    ], "current_partial_superseded_other_half" if not stale else evidence_state,
-        stretch_note=f"stretch < 10 uA not met: max observed Iq {m7['worst_case']['value']:.4g} uA.")
-    rows[-1]["verdict"] = "fail" if m7["verdict"] == "fail" else "pass_partial_coverage"
+        "Iq at full load is measured at Vin = 3.30 V only (no other supplies)",
+        "full-load Iq is a difference of two ~50 mA currents; quantized at 1e-10 A, solver noise not bounded beyond that",
+        "ideal 0.90 V reference and ideal Ibias sink: reference/bias-generator current excluded; corner grid only",
+    ], evidence_state,
+        stretch_note=f"stretch < 10 uA not met: max observed no-load Iq {m7['worst_case']['value']:.4g} uA"
+                     + (f", max full-load Iq {mfl['worst_case']['value']:.4g} uA." if mfl["worst_case"] else "."))
+    rows[-1]["verdict"] = ("fail" if "fail" in (m7["verdict"], mfl["verdict"])
+                           else "ambiguous" if mfl["verdict"] == "ambiguous"
+                           else "pass_partial_coverage")
 
-    # 8, 9 not implemented -----------------------------------------------
+    # 8 not implemented -----------------------------------------------
     add(R[8], [unavailable("current limit window", "mA", "not_implemented",
                            "No current limiter in the design; record md lists current limit as 'not implemented'.",
                            source={"record": rec["files"]["record_md"]["path"]})],
         "none", ["no limiter exists; statistical row (DR-0007) cannot be graded until one does"],
         "none")
-    add(R[9], [unavailable("startup", "ms", "not_implemented",
-                           "No enable input and no transient testbench; record md lists startup as 'not implemented'.",
-                           source={"record": rec["files"]["record_md"]["path"]})],
-        "none", ["no enable input, no transient testbench"], "none")
+    # 9 Startup: measured campaign (proposed methodology; row stays Open) --
+    sp = su["points"]
+    ev = [p for p in sp if p["verdict"] != "insufficient"]
+    bad_idx = {i for i, p in enumerate(sp) if p["verdict"] == "insufficient"}
+    startup_cond = ("EN-bearing core (DR-0008), EN = VIN * CTL step at t = 1 ms, schematic level; "
+                    "grid process {tt,ss,ff,sf,fs} x temperature {-40,27,125} C x resistor corner "
+                    "{typ,bcs,wcs} x Vin {2.97,3.30,3.63} V; resistive load 1 mA (1.8 kohm), Cout 1 uF, "
+                    "ESR 0, Cc nominal; ideal 0.90 V reference; 135 requested points. Time zero is the "
+                    "EN = VIN/2 crossing; PROPOSED methodology (DR-0009), not ratified")
 
-    # 10 Stability --------------------------------------------------------
-    pm = col("phase_margin_deg")
-    gm = col("gain_margin_db")
-    m10a = metric("phase margin (first 0 dB crossing)", "deg", "ge", 45.0, "phase_margin_deg",
-                  pvt_rel, pm, ac_cond, ambiguous=amb,
-                  note="Points with more than one 0 dB crossing are not scored: the scalar PM is the "
-                       "first crossing only and the record's phase_margin_worst_deg is reported "
-                       "beside it unresolved. No scalar pass is manufactured for them.")
-    m10a["ambiguous_first_crossing_pm_range_deg"] = (
-        {"min": rnd(min(pm[i][0] for i in amb)), "max": rnd(max(pm[i][0] for i in amb))} if amb else None)
-    m10a["ambiguous_phase_margin_worst_deg_range"] = (
-        {"min": rnd(min(num(prow[i], "phase_margin_worst_deg", "pvt") for i in amb)),
-         "max": rnd(max(num(prow[i], "phase_margin_worst_deg", "pvt") for i in amb))} if amb else None)
-    m10b = metric("gain margin (first -180 deg crossing)", "dB", "ge", 10.0, "gain_margin_db",
-                  pvt_rel, gm, ac_cond, ambiguous=amb_gm)
+    def st_pts(col, *, settle=False):
+        out = []
+        for p in sp:
+            if p["verdict"] == "insufficient":
+                out.append((0.0, p["id"]))
+            elif settle and not p["settled"]:
+                # never settled in the window: the observation length is a lower bound
+                out.append((p["start_observed_s"], p["id"]))
+            else:
+                out.append((p[col], p["id"]))
+        return out
+
+    su_rel = su["csv_rel"]
+    contradictions: list = []
+
+    def st_metric(name, bound, col, *, settle=False, note=None):
+        series = st_pts(col, settle=settle)
+        for (v, pid_), p in zip(series, sp):
+            if p["verdict"] == "pass" and not v <= bound:
+                contradictions.append(f"{pid_['corner']}/{pid_['temp_c']}C/{pid_['res_section']}/"
+                                      f"{pid_['vin_v']}V: {name}")
+        return metric(name, "s" if settle else "V", "le", bound, col, su_rel, series,
+                      startup_cond, ambiguous=bad_idx, note=note)
+
+    st_metrics = [
+        st_metric("start: settle time into the +/-2 % band (3 ms limit)", STARTUP_SETTLE_LIMIT_S,
+                  "start_settle_time_s", settle=True,
+                  note="Numeric settling success does not override the monotonicity and overshoot "
+                       "metrics below; each is scored independently and any failure fails the row. A point "
+                       "that never settled is scored at its observation length (a lower bound)."),
+        st_metric("start: peak VOUT above the +2 % band edge (overshoot, proposed bound 1.836 V)",
+                  STARTUP_BAND_HI_V, "start_peak_vout_v"),
+        st_metric("start: max downward excursion before settling (monotonicity, proposed 1 mV tolerance)",
+                  STARTUP_MONOTONIC_TOL_V, "start_max_down_excursion_v"),
+        st_metric("re-enable: peak VOUT above the +2 % band edge (proposed bound 1.836 V)",
+                  STARTUP_BAND_HI_V, "reen_peak_vout_v"),
+        st_metric("re-enable: max downward excursion (proposed 1 mV tolerance)",
+                  STARTUP_MONOTONIC_TOL_V, "reen_max_down_excursion_v"),
+    ]
+    # A csv `pass` contradicted by a measured metric means the pinned record
+    # and its own metrics disagree: never repaired, never reported as a pass.
+    if contradictions:
+        raise GenError("startup csv verdict pass contradicts a measured metric at "
+                       + "; ".join(contradictions[:3]))
+    n_metric_fail = sum(m["n_fail"] for m in st_metrics)
+    st_verdict = startup_row_verdict(su["n_fail"] or n_metric_fail, su["n_insufficient"],
+                                     len(su["missing"]), len(ev))
+    reason_counts: dict = {}
+    for q in sp:
+        for part in [x.strip() for x in q["reasons"].split("|") if x.strip()]:
+            words = part.split()
+            key = words[0] + (" " + words[1] if len(words) > 1 and not words[1][0].isdigit() else "")
+            reason_counts[key] = reason_counts.get(key, 0) + 1
+    st_state = "stale_against_design" if su["stale_components"] else "current"
+    n_settled = sum(1 for p in ev if p["settled"] and p["start_settle_time_s"] <= STARTUP_SETTLE_LIMIT_S)
+    n_settled_and_failing = sum(1 for p in ev if p["settled"] and p["start_settle_time_s"] <= STARTUP_SETTLE_LIMIT_S
+                                and p["verdict"] == "fail")
+    startup_summary = {
+        "record_id": su["rid"], "stage": su["cfg"]["stage"],
+        "requested_points": su["n_requested"], "result_rows": len(sp),
+        "evaluated_points": len(ev), "missing_points": len(su["missing"]),
+        "insufficient_points": su["n_insufficient"],
+        "csv_verdicts": {"pass": su["n_pass"], "fail": su["n_fail"], "insufficient": su["n_insufficient"]},
+        "settled_within_3ms_points": n_settled,
+        "settled_within_3ms_but_failing_points": n_settled_and_failing,
+        "failure_reasons_point_counts": dict(sorted(reason_counts.items())),
+        "missing": su["missing"],
+        "design_freshness": {"state": st_state, "stale_components": su["stale_components"],
+                             "basis": su["cfg"]["design_freshness_basis"], "components": su["fresh"]},
+        "proposed_methodology": su["cfg"]["proposed_methodology"],
+        "ratification": "none inferred: row 9 stays Open (DR-0007); proposed methodology only",
+        "extrema": {},
+        "campaign_provenance": {k: su["manifest"].get(k) for k in
+                                ("engines", "runner_klt", "client_klt", "pdk_pinned_commit", "pdk_installed_commit")},
+        "source": {"record_md": su["md_rel"], "csv": su_rel},
+    }
+    for ccol, label in (("start_overshoot_v", "start overshoot above 1.8 V [V]"),
+                       ("start_peak_vout_v", "start peak VOUT [V]"),
+                       ("start_settle_time_s", "start settle time [s]"),
+                       ("start_max_down_excursion_v", "start max downward excursion [V]"),
+                       ("reen_overshoot_v", "re-enable overshoot [V]"),
+                       ("reen_max_down_excursion_v", "re-enable max downward excursion [V]")):
+        vals = [(q[ccol], q["id"]) for q in ev if ccol in q]
+        if vals:
+            startup_summary["extrema"][label] = {"min": _extreme(vals, "min"), "max": _extreme(vals, "max")}
+    add(R[9], st_metrics, "partial", [
+        "proposed methodology (DR-0009) only; the target's 'controlled ramp' has no numeric bound and is not graded",
+        "one load/Cout/ESR point only: 1 mA, 1 uF, 0 ohm ESR -- not 0-50 mA, 0.33-4.7 uF, 0-500 mohm",
+        "Vin grid is 2.97/3.30/3.63 V; Cc and the 0.90 V reference are not cornered; schematic level, no post-layout evidence",
+    ] + ([f"{len(su['missing'])} requested point(s) missing and {su['n_insufficient']} insufficient of "
+          f"{su['n_requested']}"] if su["missing"] or su["n_insufficient"] else []), st_state, row_verdict=st_verdict,
+        notes=[f"Measured: {len(ev)} of {su['n_requested']} requested points evaluated, "
+               f"{su['n_fail']} fail, {su['n_pass']} pass, {su['n_insufficient']} insufficient, "
+               f"{len(su['missing'])} missing ({su_rel}). {n_settled_and_failing} of {n_settled} points "
+               "that settle within 3 ms still fail the proposed overshoot / monotonicity checks.",
+               "Proposed methodology, not ratified: DR-0007 row 9 stays Open; no ratification and no whole-spec pass is inferred."])
+    rows[-1]["startup_campaign"] = startup_summary
+
+    # 10 Stability: DR-0014 (proposed) classification of the committed traces --
+    # Verdict-bearing PM/GM come from the pinned offline classification of THIS
+    # record's own loop-gain traces (load_row10). The pre-DR-0014 first-crossing
+    # reading is kept beside it as superseded context, never as a verdict.
+    multi = [i for i, r in enumerate(prow) if int(num(r, "n_0db_crossings", "pvt")) != 1]
+    pm_pts, gm_pts, pm_amb, gm_amb, rows10 = [], [], set(), set(), []
+    for i, r in enumerate(prow):
+        cr, pmv, gmv = r10["by_key"][(r["corner"], r["temp_c"], r["res_section"])]
+        rows10.append(cr)
+        pm_pts.append((pmv if pmv is not None else 0.0, pid[i]))
+        gm_pts.append((gmv if gmv is not None else 0.0, pid[i]))
+        if cr["pm_verdict"] == "ambiguous":
+            pm_amb.add(i)
+        if cr["gm_verdict"] == "ambiguous":
+            gm_amb.add(i)
+
+    def later_margins(cr):
+        return [float(x.split("@")[2]) for x in cr["zero_db_crossings_hz_dir_margin_deg"].split(";")[1:]]
+
+    def rng(vals):
+        return {"min": rnd(min(vals)), "max": rnd(max(vals))} if vals else None
+
+    def reasons(key):
+        out: dict = {}
+        for cr in rows10:
+            k = cr[key] or "(none)"
+            out[k] = out.get(k, 0) + 1
+        return dict(sorted(out.items()))
+
+    ceil_g = [num(cr, "ceiling_gain_db", "row10") for cr in rows10]
+    ceil_d = [num(cr, "ceiling_last_decade_change_db", "row10") for cr in rows10]
+    n_bounded = sum(1 for cr in rows10 if cr["ceiling_bounded"] == "True")
+    n_low_ok = sum(1 for cr in rows10 if cr["low_end_ok"] == "True")
+    r10_rel = r10["csv_rel"]
+    ceil_txt = _fmt_hz(r10["ceiling_hz"])
+    r10_cond = (ac_cond + f"; loop-gain trace 1 Hz-{ceil_txt}, 20 points/decade (the committed bench's sweep "
+                "floor and ceiling); PROPOSED classification (DR-0014), not ratified")
+    ceil_dir = ("rising" if min(ceil_d) > 0 else "falling" if max(ceil_d) < 0 else "mixed")
+    pm_first = [num(r, "phase_margin_deg", "pvt") for r in prow]
+    gm_first = [num(r, "gain_margin_db", "pvt") for r in prow]
+    m10a = metric("phase margin, DR-0014: minimum over every 0 dB crossing in the sweep", "deg", "ge", 45.0,
+                  "pm_deg", r10_rel, pm_pts, r10_cond, ambiguous=pm_amb,
+                  note="Per-crossing margin = angular distance of the crossing phase from the critical point "
+                       "(180 deg mod 360), signed negative after an in-band encirclement. A miss inside the "
+                       "sweep is a fail; a pass also needs a bounded sweep ceiling (loop gain <= -10 dB and "
+                       "non-increasing over the last decade) and a sample bracket clear of the bound. Anything "
+                       "else stays ambiguous with its reason.")
+    m10a["reasons"] = reasons("pm_reasons")
+    m10a["detail"] = [
+        f"sweep ceiling bounded at {n_bounded} of {len(prow)} points: loop gain at {ceil_txt} "
+        f"{min(ceil_g):.4g}..{max(ceil_g):.4g} dB, change over the last decade {min(ceil_d):+.4g}..{max(ceil_d):+.4g} dB "
+        f"({ceil_dir}); low-end premise holds at {n_low_ok} of {len(prow)}",
+        f"{len(multi)} points have two 0 dB crossings: first-crossing margin "
+        f"{min(pm_first[i] for i in multi):.4g}..{max(pm_first[i] for i in multi):.4g} deg, second (rising) crossing "
+        f"{min(m for i in multi for m in later_margins(rows10[i])):.4g}..{max(m for i in multi for m in later_margins(rows10[i])):.4g} deg "
+        f"from the critical point; the record's phase_margin_worst_deg "
+        f"({min(num(prow[i], 'phase_margin_worst_deg', 'pvt') for i in multi):.4g}..{max(num(prow[i], 'phase_margin_worst_deg', 'pvt') for i in multi):.4g}) "
+        "is 180 + unwrapped phase, not a margin" if multi else "no point has more than one 0 dB crossing",
+        f"superseded first-crossing reading (pre-DR-0014, not a verdict): {sum(1 for i, v in enumerate(pm_first) if i not in multi and v >= 45.0)} "
+        f"of {len(prow)} scored >= 45 deg, {len(multi)} unscored; range {min(pm_first):.4g}..{max(pm_first):.4g} deg",
+    ]
+    m10b = metric("gain margin, DR-0014: minimum over every -180 deg crossing in the sweep", "dB", "ge", 10.0,
+                  "gm_db", r10_rel, gm_pts, r10_cond, ambiguous=gm_amb,
+                  note="A trace with no -180 deg crossing is never scored as a miss or as infinite margin: it "
+                       "passes only with a bounded sweep ceiling, which bounds the margin above the ceiling "
+                       "below by -(loop gain at the ceiling) >= 10 dB.")
+    m10b["reasons"] = reasons("gm_reasons")
+    m10b["detail"] = [
+        f"superseded first -180 deg crossing reading (pre-DR-0014, not a verdict): {sum(1 for v in gm_first if v >= 10.0)} "
+        f"of {len(prow)} >= 10 dB, range {min(gm_first):.4g}..{max(gm_first):.4g} dB; no committed trace bounds the "
+        f"sweep ceiling ({ceil_txt}), so none of these is a pass under DR-0014",
+    ]
     add(R[10], [m10a, m10b], "partial", [
         "one (Cout, ESR, load) point only: 1 uF, 0 ohm, 1 mA -- not 0.33-4.7 uF, 0-500 mohm, 0-50 mA",
         "Cc is un-cornered; Cc tolerance checked at ss/125C only",
-        f"{len(amb)} of {len(pm)} points have more than one 0 dB crossing (ambiguous scalar PM)",
+        f"sweep ceiling {ceil_txt} bounded at {n_bounded} of {len(prow)} points (loop gain {min(ceil_g):.3g}..{max(ceil_g):.3g} dB "
+        f"and {ceil_dir} at the ceiling): no PM or GM pass can be scored under DR-0014 until a bench bounds the "
+        f"loop gain above {ceil_txt}",
+        f"{len(multi)} of {len(prow)} points have two 0 dB crossings",
     ], evidence_state,
         notes=[f"Cc value tolerance (ss/125C only, {cc_tol_rel}): PM, GM and PSRR all hold for Cc in "
-               f"x{ccw['low_x_nominal']}..x{ccw['high_x_nominal']} of nominal."])
+               f"x{ccw['low_x_nominal']}..x{ccw['high_x_nominal']} of nominal (first-crossing reading, pre-DR-0014).",
+               f"PM/GM verdicts follow the PROPOSED margin classification {r10['dr']} applied offline to the "
+               f"committed traces ({r10_rel}); row 10 stays Open (DR-0007) and nothing is ratified."])
+    rows[-1]["margin_classification"] = {
+        "decision_record": r10["dr"], "status": "proposed", "source": r10_rel,
+        "points": len(prow), "low_end_premise_holds": n_low_ok, "ceiling_bounded": n_bounded,
+        "ceiling_gain_db_range": rng(ceil_g), "ceiling_last_decade_change_db_range": rng(ceil_d),
+        "multi_crossing_points": len(multi),
+        "sweep_ceiling_hz": r10["ceiling_hz"],
+    }
 
     # --- completeness ----------------------------------------------------
     checks = []
@@ -639,11 +1278,22 @@ def build(root: Path) -> tuple[dict, dict, str]:
     chk("README target table: 10 rows, expected names and target text", True)
     chk("DR-0007 ratification table covers rows 1-10 exactly once and agrees with README", True)
     chk("PVT grid complete (5 process x 3 temperature x 3 resistor corner = 45 points, all numeric fields finite)", True)
+    chk("DC informational summary: pinned, same record, 45 corners once each, finite, validity fields True/False, "
+        "raw grids match inventory hashes", True)
     chk("every target row appears exactly once", sorted(r["id"] for r in rows) == list(range(1, 11)),
         f"rows: {[r['id'] for r in rows]}")
     chk("every row carries an allowed verdict", all(r["verdict"] in ROW_VERDICTS for r in rows))
     chk("every row cites a source or an explicit unavailability reason",
         all(all(("source" in m and m["source"]) or m.get("reason") for m in r["metrics"]) for r in rows))
+    chk("startup campaign: selected record, csv, manifest and every trace match their pins; no duplicate or "
+        "unexpected point; manifest agrees with the csv", True,
+        f"{su['n_requested']} requested points, {len(sp)} result rows")
+    chk("startup campaign has a result row for every requested point", not su["missing"],
+        f"{len(su['missing'])} of {su['n_requested']} requested points missing")
+    chk("startup evidence is current against the design (core and error amplifier checked independently)",
+        not su["stale_components"],
+        "core and error-amplifier netlist hashes match the startup freshness pins" if not su["stale_components"]
+        else "stale against the design: " + ", ".join(su["stale_components"]))
     chk("selected record is current against the design netlists", not stale,
         "design netlist hashes match the freshness pins" if not stale
         else "design netlist changed since the selected record: select a newer record")
@@ -665,6 +1315,8 @@ def build(root: Path) -> tuple[dict, dict, str]:
             "Open (unratified) targets are not passing requirements; a numeric 'pass' on an open row is a measurement against a draft target at the stated conditions.",
             "All closed-loop numbers are SG13CMOS5L-branch evidence (DR-0007 'What evidence exists'); no closed-loop evidence exists on the SG13G2 branch.",
             "No post-layout (extracted) performance evidence exists for any row; layout reports in layout/ are DRC/LVS/ERC and carry no performance metrics.",
+            "Row 9 (Startup) reports the explicitly selected committed startup campaign: measured failures are measured failures, missing or insufficient points are never passes, and the evaluation methodology is PROPOSED (DR-0009), not ratified. Row 9 stays Open.",
+            "Row 10 (Stability) PM/GM verdicts follow the PROPOSED margin classification DR-0014, applied offline to the selected record's committed loop-gain traces: a miss inside the sweep is a fail, a pass needs a bounded sweep ceiling, everything else stays ambiguous with its reason. Row 10 stays Open.",
             "Other T1 items are not declared satisfied by this artifact.",
         ],
         "selection": {
@@ -673,6 +1325,8 @@ def build(root: Path) -> tuple[dict, dict, str]:
             "circuit_record_id": rec["id"],
             "experiment": rec["experiment"],
             "device_context_record_id": dev["id"],
+            "startup_record_id": su["rid"],
+            "startup_stage": su["cfg"]["stage"],
             "policy": sel["policy"],
         },
         "sources": sorted(sources, key=lambda s: (s["role"], s["path"])),
@@ -680,6 +1334,11 @@ def build(root: Path) -> tuple[dict, dict, str]:
                              "pins": fresh_checks},
         "bench_conditions": bc,
         "cc_tolerance_window": ccw,
+        "dc_informational_evidence": {
+            "summary": dc_rel, "inventory": dcev["inventory_path"],
+            "raw_dc_grids_verified": dcev["n_raw_grids"], "points": 45,
+            "status": "informational only; rows 5 and 7 remain Open/unratified; not item-5 grading evidence",
+        },
         "rows": rows,
         "summary": {
             "rows_total": len(rows),
@@ -731,7 +1390,13 @@ def build(root: Path) -> tuple[dict, dict, str]:
 # --------------------------------------------------------------------------- #
 
 def _fmt_at(at):
-    return f"{at['corner']}/{at['temp_c']}C/{at['res_section']}" if at else "-"
+    if not at:
+        return "-"
+    base = f"{at['corner']}/{at['temp_c']}C/{at['res_section']}"
+    if "vin_v" in at:
+        base += (f"/Vin {at['vin_v']:g}V/{at['load_ma']:g}mA/{at['cout_nf']:g}nF/"
+                 f"ESR {at['esr_mohm']:g}mohm")
+    return base
 
 
 def render_md(rep: dict, env: dict) -> str:
@@ -753,6 +1418,7 @@ def render_md(rep: dict, env: dict) -> str:
     sel = rep["selection"]
     w(f"- Circuit record (explicitly selected, hash-pinned): `{sel['experiment']}` / `{sel['circuit_record_id']}`")
     w(f"- Bare-device context record: `{sel['device_context_record_id']}` (never used as a closed-loop measurement)")
+    w(f"- Startup campaign (explicitly selected, hash-pinned, proposed methodology): `{sel['startup_record_id']}` stage `{sel['startup_stage']}`")
     w(f"- Selection file: `{sel['file']}` sha256 `{sel['sha256']}`")
     w(f"- Design freshness: **{rep['design_freshness']['state']}**")
     w("")
@@ -790,6 +1456,30 @@ def render_md(rep: dict, env: dict) -> str:
             for g in r["coverage"]["gaps"]:
                 w(f"  - {g}")
         w("")
+        if r.get("startup_campaign"):
+            c = r["startup_campaign"]
+            w("- **Startup campaign (measured; PROPOSED methodology, row stays Open; no ratification inferred)**")
+            w(f"  - record `{c['record_id']}` stage `{c['stage']}` ({c['source']['record_md']}, {c['source']['csv']})")
+            w(f"  - requested {c['requested_points']}, result rows {c['result_rows']}, evaluated {c['evaluated_points']}, "
+              f"missing {c['missing_points']}, insufficient {c['insufficient_points']}; "
+              f"csv verdicts pass {c['csv_verdicts']['pass']} / fail {c['csv_verdicts']['fail']} / "
+              f"insufficient {c['csv_verdicts']['insufficient']}")
+            w(f"  - {c['settled_within_3ms_but_failing_points']} of {c['settled_within_3ms_points']} points settle within 3 ms "
+              "and still fail the proposed overshoot / monotonicity checks")
+            w("  - failure reasons (points): " + ", ".join(f"{k} {v}" for k, v in c["failure_reasons_point_counts"].items()))
+            for mp in c["missing"][:10]:
+                w(f"  - missing point: {_fmt_at(mp)}")
+            w(f"  - design freshness: **{c['design_freshness']['state']}**; "
+              + "; ".join(f"{k} {'matches' if e['matches'] else 'DIFFERS'} (`{e['path']}`)"
+                          for k, e in c["design_freshness"]["components"].items()))
+            for label, e in c["extrema"].items():
+                w(f"  - {label}: min {e['min']['value']:.6g} at {_fmt_at(e['min']['at'])}; "
+                  f"max {e['max']['value']:.6g} at {_fmt_at(e['max']['at'])}")
+            pm_ = c["proposed_methodology"]
+            w(f"  - proposed methodology: band {pm_['band_v'][0]}-{pm_['band_v'][1]} V, settle <= {pm_['settle_limit_s']} s, "
+              f"monotonic tolerance {pm_['monotonic_tolerance_v']} V ({pm_['reference']}); {pm_['note']}")
+            w(f"  - {c['ratification']}")
+            w("")
         for m in r["metrics"]:
             if "bound" not in m:
                 w(f"- **{m['name']}**: {m['verdict']} -- {m['reason']}")
@@ -815,11 +1505,15 @@ def render_md(rep: dict, env: dict) -> str:
                 w(f"  - observed range {m['observed_range']['min']}..{m['observed_range']['max']} {m['unit']}")
             if m.get("ambiguous_points"):
                 w("  - ambiguous points: " + ", ".join(_fmt_at(p) for p in m["ambiguous_points"]))
-                if m.get("ambiguous_first_crossing_pm_range_deg"):
-                    a = m["ambiguous_first_crossing_pm_range_deg"]
-                    z = m["ambiguous_phase_margin_worst_deg_range"]
-                    w(f"  - at those points: first-crossing PM {a['min']}..{a['max']} deg, "
-                      f"record phase_margin_worst_deg {z['min']}..{z['max']} deg (unresolved)")
+            if m.get("reasons"):
+                w("  - reasons (points): " + ", ".join(f"{k} {v}" for k, v in m["reasons"].items()))
+            for line in m.get("detail", []):
+                w(f"  - {line}")
+            if "n_invalid" in m:
+                w(f"  - validity: {m['n_points'] - m['n_invalid']} valid, {m['n_invalid']} invalid "
+                  "(invalid points are counted, not dropped)")
+            if m.get("precision_floor_uA") is not None:
+                w(f"  - precision floor: print quantum 1e-10 A; solver-noise proxy {m['precision_floor_uA']} uA")
             if m.get("note"):
                 w(f"  - note: {m['note']}")
     w("")

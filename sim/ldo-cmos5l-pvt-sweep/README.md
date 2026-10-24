@@ -124,6 +124,281 @@ point.
 and aborts loudly if a future schematic edit changes that connectivity, so
 this bench cannot silently go stale.
 
+## Loop-gain measurement method -- two-injection (Middlebrook) reconstruction
+
+The single-injection reading above is exact **only if `FBAMP` draws zero AC
+current**. That holds at DC and low frequency (a MOSFET gate). At higher
+frequency the input-pair gate capacitance, and any Cgd feed-through to the
+amplifier output, is no longer negligible. Issue #135 measures the same
+break a second way and lets the two answers agree or disagree as they will.
+
+**Method and references.** We use Middlebrook's **general (bilateral)**
+two-injection result: R. D. Middlebrook, "Measurement of loop gain in
+feedback systems", Int. J. Electronics 38(4):485-512 (1975). Tian,
+Visvanathan, Hantgan and Kundert, "Striving for small-signal stability",
+IEEE Circuits & Devices 17(1):31-41 (2001), reach the same `T` from a
+single test structure. We use the two-run form because the existing break
+geometry (`FB -> FBAMP`, a MOSFET gate) already hosts the voltage
+injection verbatim. We do not rely on either citation for correctness. The
+formula is derived below from the break's two-port, and
+`test_loopgain2.py` checks it against a small circuit solved directly by
+nodal analysis.
+
+**Two-port at the break.** Cut the `FB -> FBAMP` wire. Port A = `FB` (the
+divider node, the *return* side) and port B = `FBAMP` (the amplifier input,
+the *forward* side), both against ground. The rest of the circuit is a
+linear two-port, with currents flowing *into* it:
+
+```
+i_A = y11 v_A + y12 v_B,        i_B = y21 v_A + y22 v_B
+```
+
+No assumption is made about `y21` (reverse transmission, e.g. Cgd
+feed-through) or about `y22` (the gate loading).
+
+- **Voltage experiment** (`tb_loopgain2v_cmos5l.spice.tmpl`). This is the
+  `tb_loopgain_cmos5l` circuit, with `Vbreak FB FBAMP 0 ac 1`, so
+  `v_A - v_B = 1` and `i_A + i_B = 0`. It exports the raw complex `v(fb)`
+  and `v(fbamp)`. Middlebrook's `Tv = -v_y/v_x`:
+  `Tv = -v(fb)/v(fbamp) = (y12 + y22)/(y11 + y21)`. **`Tv` is exactly the
+  single-injection `L`.** The polarity of `Vbreak` cancels in the ratio.
+- **Current experiment** (`tb_loopgain2i_cmos5l.spice.tmpl`). The loop is
+  left **intact** behind a 0 V ammeter `Vmeas FB FBAMP 0 dc 0`, so the
+  operating point and the AC loading are those of the unbroken circuit. A
+  shunt source `Iinx 0 FBAMP dc 0 ac 1` pushes `ix = 1 A` (AC) into
+  `FBAMP`. The ammeter reads the **bridge** current `i_m = i(vmeas)`,
+  positive `FB -> FBAMP` (ngspice reports `n+ -> n-` through the source).
+  KCL gives the amplifier-side (forward) current `i_x = i_B = 1 + i_m` and
+  the forward-oriented return current `i_y = i_m` (`i_A = -i_m`).
+  Middlebrook's `Ti = -i_y/i_x`:
+  `Ti = -i_m/(1 + i_m) = (y11 + y12)/(y21 + y22)`. The exported vectors
+  keep their historical `il_*` names, but the value is `i_m`.
+- **Combination** (per frequency, complex):
+
+  ```
+  T = (Tv Ti - 1)/(Tv + Ti + 2) = (y12 - y21)/(y11 + y22 + 2 y21)
+  1 + T = (y11 + y12 + y21 + y22)/(y11 + y22 + 2 y21)
+  ```
+
+  The numerator of `1 + T` is the driving-point admittance of the rejoined
+  node, so **`1 + T` vanishes at the closed-loop natural frequencies**. `T`
+  counts only the **non-reciprocal** part `y12 - y21` of the transmission
+  across the cut. Reciprocal (passive) coupling, such as resistors or
+  capacitors bridging the cut, contributes nothing to `T`.
+- **Sign.** At DC, `Tv` is large and positive-real for this
+  negative-feedback loop, and `Ti` is larger still. `T` therefore needs no
+  flip: the repo's convention is `L = T`.
+- **Unilateral special case.** Take `y21 = 0`, model the divider side as a
+  Thevenin source `T' v_B` behind `Zt`, and the amplifier side as a load
+  `Zl`, with `u = Zt/Zl`. Then `T = -T'/(1 + u)`, the **loaded** return
+  ratio, and `Tv = u - T'`. The fixture checks that this `T` equals Bode's
+  return ratio of the amplifier's controlled source.
+- **Bilateral case.** At a bilateral break, `T` is *not* the return ratio of
+  any single transistor's gm. The loop gain at such a break is not unique,
+  and the fixture shows the difference. `T` is the break-point loop gain
+  whose `1 + T` zeros are the closed-loop poles. DR-0014's open-loop
+  stability premise applies to `T`'s poles (the zeros of
+  `y11 + y22 + 2 y21`). That premise is stated, not verified, as for the
+  single-injection traces.
+
+**What the first revision of this PR got wrong (withdrawn).** It published
+`L = -T' = -(1 + Hi/Hv)/(1 + Hi)` as "the true loop transfer". That is the
+**unloaded** open-circuit transfer: `1 - T'` does not vanish at the
+closed-loop poles (`1 - T' + u = 0` there). It also presented
+"`L_single - L_two = u`" and a loading-explain bound `|L2 - L1| <= 3|u|` as
+evidence. Both hold for any data, because `u` was computed from the same
+pair and `u + L_two = -1/Hv = L_single` identically, so they could not
+fail. Both are removed. In the fixture, the old formula misses Bode's
+return ratio by more than 10 % and fails the closed-loop-pole test
+(`test_loopgain2.py`).
+
+**Resolution (export rounding).** The fleet exports carry 9 significant
+digits (`%.8e`). Each exported complex value `z` in `{v(fb), v(fbamp),
+i(vmeas)}` is therefore exact to `|dz| <= 5e-9 |z|`. Write
+`T = (a m - b n)/(2bn - an - bm)`, with `a = v(fb)`, `b = v(fbamp)`,
+`m = i_m` and `n = 1 + m`. Per frequency, `loopgain2.py` computes the
+first-order bound `res = 5e-9 * sum |dT/dx| |x|`. A sample is **resolved**
+iff `|T| >= 10 res` (error <= 10 %, i.e. <= 0.83 dB and <= 5.8 deg). The
+fixture checks that the bound covers the actual `%.8e`-vs-`%.17g`
+difference.
+
+Above the loop's crossing, `T` is a near-exact cancellation: `Tv Ti -> 1`
+wherever the cut network is reciprocal. Rounding dominates there. The
+reconstructed trace that `loopgain2.py` writes for the classifier is
+therefore the **resolved prefix only**: 1 Hz up to, not including, the
+first unresolved sample. Nothing is clamped or invented.
+
+Above the cut, each point reports two numbers:
+
+- `n_resolved_above_cut`: any resolved sample there would be a real
+  feature that the cut hides.
+- `bound_db_above_cut = max 20 log10(|T| + res)`: an upper bound on `|T|`
+  under the rounding model, not a measured level.
+
+ngspice's own solve error is not exported and is assumed to be below the
+9-digit rounding.
+
+**Stated tolerances** (enforced per point by `loopgain2.py`, which raises
+instead of writing a trace it could not validate):
+
+| Check | Tolerance | What could make it fail |
+|---|---|---|
+| deck identity: `Tv` (2v deck) vs the control trace (separate deck) | 1e-6 relative, complex, below the control's first 0 dB crossing | a plumbing bug: the 2v circuit IS the control circuit |
+| low-frequency agreement: `T` vs the control | `<= res + 1e-2` relative, below f_ugf/10 | `T - Tv = -(1 + Tv)^2/(Tv + Ti + 2)`: it holds only if the independent 2i deck sees `|Ti| >> |Tv|` (a high-Z gate). A wiring/polarity fault or a leaky input gives an O(1) miss (fixture: a resistive input fails it). This tolerance was set in this revision, after the first fleet data had been seen; the observed value is reported |
+| orientation | `phase(T at 1 Hz)` within 45 deg of 0 | a reversed shunt source or ammeter lands near 180 deg (fixture) |
+| resolution | `abs(T) >= 10 res` per sample | not a pass/fail check: it decides which samples are written |
+
+**Independent fixture** (`test_loopgain2.py`, stdlib only). The circuit is
+a gm stage with input capacitance (finite loading), an optional Cgd-like
+feed-through capacitor (bilateral), an output pole, and a resistive divider
+back to the input. It is solved by modified nodal analysis at any complex
+`s`. Its exports are produced the way the fleet benches produce theirs, and
+written in the fleet's `%.8e` format. Its truths involve no injection: the
+cut network's y-parameters, the closed-loop poles (roots of the intact
+nodal determinant), and Bode's return ratio of the gm source. The tests
+assert:
+
+- in the loaded unilateral case, reconstructed `T` = return ratio within
+  `2 res` at every resolved sample, while `Tv` and the old `-T'` both miss
+  it by more than 10 %;
+- in the bilateral case, `T` = `(y12 - y21)/(y11 + y22 + 2 y21)`, and `T`
+  differs from the return ratio;
+- `1 + T` has a simple zero at each closed-loop pole (approached along a
+  ray, since `T` is 0/0 exactly at the pole);
+- with heavy loading, the fixture's own single injection shows a spurious
+  second 0 dB crossing, which the return ratio and the reconstruction do
+  not;
+- a reversed shunt source or ammeter fails the orientation check; a
+  reversed `Vbreak` is harmless; swapped voltage probes fail the deck
+  identity; a leaky input fails the low-frequency agreement.
+
+Replacing the formula with the previous revision's `-T'` fails the three
+truth tests.
+
+**Bench hygiene.** All three loop-gain templates (single-injection, 2v,
+2i) are covered by `run_sweep.sh`'s topology-sync guard. That guard
+includes negative controls specific to the two-injection benches:
+
+- ammeter removed;
+- ammeter given an AC injection;
+- shunt source moved to the divider side;
+- shunt polarity flipped;
+- ammeter nodes swapped;
+- a `Vbreak` smuggled into the intact-loop deck.
+
+`batch_backend.py` accepts only the exact `let` blocks and wrdata vector
+lists. It rebuilds the export columns from the rawfile's complex vectors,
+and fails closed on any other `.control` shape. The campaign driver is
+`run_loopgain2.sh`. It runs on the batch fleet only; `--validate` runs
+exactly three tt/27C decks locally as a pre-flight debug probe.
+
+### Result of the two-injection comparison (issue #135, record `20261011-165616-eabde108`)
+
+Diagnostic, schematic-level evidence. Row 10 stays Open and DR-0014 is
+unchanged.
+
+**Coverage and provenance.** This is the full 45-point grid (not a
+subset), with a 10 GHz ceiling: 135 klt corners in 3 batch requests.
+
+| request | job id |
+|---|---|
+| control | `klt-sim-22027d34f9eb` |
+| voltage injection | `klt-sim-9898ed9d25e0` |
+| current injection | `klt-sim-e332268bdc00` |
+
+The three jobs completed in an earlier invocation of the same campaign.
+Its post-processing stopped on a `run_loopgain2.sh` bench-name bug, and the
+byte-identical requests were re-imported via `--reuse-work`
+(`corners/20261011-165616-eabde108/_batch/reused-reports.tsv`). No corner
+was simulated locally.
+
+The like-for-like control on today's design bytes matches the historical
+single-injection traces of `20261011-070111-5391c68` to 0 dB at all 45
+points (`evidence/20261011-165616-eabde108/ctl-vs-baseline.json`).
+
+Artifacts:
+
+- comparison: `records/20261011-165616-eabde108.loopgain2.csv`
+- record: `records/20261011-165616-eabde108.loopgain2.md`
+- classification: `evidence/20261011-165616-eabde108/row10-margins.{csv,json,md}`
+
+**Supersession within this PR.** The raw fleet exports are unchanged. This
+record's *derived* artifacts were regenerated with the corrected method
+before merge: the reconstructed `corners/.../loopgain2_*_ac.csv` traces,
+the comparison CSV and JSON, the record md and the row-10 classification.
+The first revision's numbers came from the unloaded `-T'` with a -300 dB
+clamp. They are withdrawn: two-injection PM 53.91 to 77.03 deg, GM 20.56
+to 39.13 dB, and 31 pass / 14 ambiguous verdicts. The record never landed
+on `main`.
+
+The `netlist-snapshots/` decks the fleet ran were rendered before the
+template header comments were corrected. Their circuit and `.control` lines
+are byte-identical to today's templates.
+
+| quantity (45 points) | single injection (control, `Tv`) | Middlebrook `T` |
+|---|---|---|
+| PM, first crossing [deg] | 53.87 .. 76.93 (worst ss/125C/res_bcs) | 53.87 .. 76.78 (same worst point) |
+| GM [dB] | 13.84 .. 29.87 (worst ff/-40C/res_wcs) | 18.41 .. 38.26 (same worst point) |
+| 0 dB crossings | 2 at every point | 1 at every point (resolved band) |
+| second 0 dB crossing [Hz] | 5.94e7 .. 1.79e8 | none in the resolved band |
+| last resolved frequency of `T` [Hz] | -- | 6.31e7 .. 7.94e7 |
+| loop gain at that frequency [dB] | -2.26 .. +0.22 | -145.4 .. -140.8 |
+| loop gain at 1 GHz / 10 GHz [dB] | +0.90 .. +1.65 / +0.40 .. +1.17 | unresolved; `abs(T) <= -144.6` dB (bound) above the cut |
+| resolved samples above the cut | -- | 0 at every point |
+
+**Reading.** Each statement below names the evidence that could have
+contradicted it.
+
+- **In band, the methods agree.** Below f_ugf/10, `T` and the control
+  agree to 6.6e-5 .. 8.3e-4 relative (tolerance 1e-2). `Tv` matches the
+  control deck to 5.3e-8 .. 6.1e-8. PM differs by -0.34 .. -0.01 deg.
+- **GM is where the gate current matters.** Each method's GM is read at its
+  own first -180 deg crossing: 0.78 .. 0.97 MHz for the control, 1.15 ..
+  1.78 MHz for `T`. There, `T` is 4.6 .. 8.6 dB further below unity than
+  the single injection. The single-injection GM is the conservative
+  (smaller) one at every point. This is a measured difference (the 2i deck
+  supplies it), not an attribution.
+- **No plateau in `T` where it can be resolved.** Up to its cut (63 .. 79
+  MHz), `T` falls to -141 .. -145 dB with one 0 dB crossing and no second
+  crossing, while the control at the same frequency sits at -2.3 .. +0.2
+  dB, heading into its plateau. Above the cut no sample of `T` is resolved
+  at any point, and `abs(T) <= -144.6` dB there. A plateau near 0 dB in
+  `T` would sit about 145 dB above that bound and would have been resolved.
+  So the single-injection plateau and second crossing are absent from
+  Middlebrook's loop gain at this break.
+- **The fixture shows the same mechanism in a known circuit.** With heavy
+  input loading, the single injection reads a spurious second crossing that
+  the return ratio does not have.
+- **Not claimed:**
+  - which physical path makes the single injection read about +1 dB above
+    100 MHz. The gate-loading hypothesis is consistent with the data but
+    was not separately tested (e.g. against an op-point gate-capacitance
+    estimate);
+  - anything above 1 GHz (model range unvalidated);
+  - `T` above the cut, which is a rounding bound, not a level.
+
+**DR-0014 classification** (`row10_loopgain2.py`, rules unchanged). The
+classifier sees only the resolved prefix, so it would judge the ceiling
+premise at about 70 MHz rather than 10 GHz. The wrapper therefore reports
+every point whose reconstruction is truncated below the sweep ceiling as
+`ambiguous`, with reason `reconstruction_unresolved_above_cut`: a pass
+becomes ambiguous, and a fail would stay a fail. It also withdraws the GM
+above-ceiling bound and leaves the Nyquist bookkeeping `undetermined`.
+Result: PM `ambiguous` 45 / 45 and GM `ambiguous` 45 / 45. Still ambiguous
+is the honest outcome. No rule, threshold or floor was changed, and no
+point was re-judged. Row 10 stays Open, the characterization selection is
+untouched (this campaign is not a selection input), and exit 3 remains the
+honest non-T1 result.
+
+**Not a tool gap.** The klt client does not leave `report.json` missing: a
+missing file cannot come from klt. `batch_backend.py`'s `submit_once`
+creates `report.json` and `klt-sim.stderr` itself before klt starts. The
+related refusal-wait gap is already filed upstream as klayout-tools #2917.
+`cap_refused()` now treats a missing file as a refusal and re-submits to
+the fleet. If the first submission had in fact reached the fleet, this can
+double-submit. That cost is bounded by the retry budget, and nothing ever
+falls back to a local run.
+
 ## Why Vin=3.63V for load regulation
 
 The schematic's provisional `Mpass` sizing (`w=300u l=0.5u`,
@@ -139,8 +414,14 @@ deliberate, not an oversight.
 ## PDK pin, corner naming, and the resistor/cap corner axes
 
 Pinned SG13CMOS5L revision: [`sim/pdk-cmos5l.json`](../pdk-cmos5l.json)
-(commit `607e18d`, re-verified against the installed checkout, matching the
-commit issue #21's body cited). `cornerMOShv.lib` at this pin is **byte-for-
+(commit `f7bca326` of `IHP-GmbH/IHP-Open-PDK` `dev`, subtree
+`ihp-sg13cmos5l/`, since issue #155). **Everything below this line that cites
+commit `607e18d` is historical**: those records were generated against the
+archived `IHP-GmbH/ihp-sg13cmos5l` repository at `607e18d` (issue #21's pin,
+re-verified against that installed checkout at the time) and are listed with
+their new-pin disposition in
+[`../migration-inventory-155.md`](../migration-inventory-155.md). The
+statements that follow describe that historical pin. `cornerMOShv.lib` at this pin is **byte-for-
 byte identical** to `ihp-sg13g2`'s own copy (`diff` clean) -- confirming,
 directly against the installed model library rather than by assumption,
 that the five-corner naming scheme (`mos_tt`/`mos_ss`/`mos_ff`/`mos_sf`/
@@ -248,7 +529,192 @@ characterization -- but the qualitative verdict does not depend on that
 caveat, and now has a measured tolerance band attached to it rather than an
 assertion.
 
-## Results (issue #67, `EN` interface -- current)
+## Results (issue #128, loop-gain sweep to 10 GHz -- current)
+
+Question: DR-0014 could not score any row-10 point because no committed
+loop-gain trace bounded its 100 MHz sweep ceiling. Does a higher ceiling
+change that? Answer: no. The 10 GHz traces are not bounded either, so all 45
+points stay `ambiguous` (`ceiling_unbounded`). No rule, threshold or bound
+was changed.
+
+Command (batch only; the host runs no SPICE):
+
+    sim/ldo-cmos5l-pvt-sweep/run_sweep.sh --batch --loopgain-ac-max=10g
+
+`--loopgain-ac-max=<f>` (or `SWEEP_LOOPGAIN_AC_MAX`) is the one input. It
+defaults to `100meg`, which renders the historical `ac dec 20 1 100meg`
+unchanged. It must be an exact power of ten between 1 kHz and 1 THz above the
+fixed 1 Hz floor, with 20 points per decade (`ac_sweep.py`, tested by
+`test_ac_sweep.py`). It is rendered into `tb_loopgain_cmos5l.spice.tmpl` as
+`@@LG_AC_MAX@@`, and the loop-gain row count is derived from it (201 rows at
+10 GHz, 161 at 100 MHz). Every loop-gain trace is also checked for its first
+and last frequency, so a wrong-range sweep with the right row count fails
+screening. The psrr bench keeps `ac dec 20 1 100meg`. The record md states
+the ceiling and row count. `--doe-generate` refuses a non-default ceiling.
+
+Record: [`records/20261011-070111-5391c68.md`](records/20261011-070111-5391c68.md)
+and its siblings (same file set as the #89 record). It re-ran the full grid
+on the same design netlists (core `08a7b857...bae57`, erramp `75ee39ce...56fb4`)
+on the EDA batch fleet: 22 `klt sim` requests, all Spot, none reused, 214/214
+points passed, completeness OK. Job ids are in
+`corners/20261011-070111-5391c68/_batch/backend.json` (the 45-point main
+loop-gain request is `g01_loopgain_tt_-40c_rtyp`, job `klt-sim-a559517f5a05`).
+Only the loop-gain traces changed: every DC and PSRR column of the PVT csv is
+identical to `20261011-051956-eda9285`, and the item-5 DC summary is
+byte-identical. In the PVT csv only `n_0db_crossings` and
+`phase_margin_worst_deg` differ, because the extended traces have more
+crossings.
+
+Measured, 45 of 45 points (`evidence/20261011-070111-5391c68/row10-margins.*`,
+written by `row10_record.py`):
+
+| Quantity | Value |
+|---|---|
+| Loop gain at 1 GHz | +0.90 to +1.65 dB |
+| Loop gain at the 10 GHz ceiling | +0.40 to +1.17 dB |
+| Change over the last decade | -0.56 to -0.43 dB |
+| Phase at 10 GHz | -14.0 to -11.7 deg |
+| 0 dB crossings | 2 at every point (first falling, second rising at 59 to 179 MHz) |
+| In-band PM (first crossing) | 53.87 to 76.93 deg |
+| In-band GM (one -180 deg crossing) | 13.84 to 29.87 dB |
+| PM / GM verdicts | 45 ambiguous / 45 ambiguous, all `ceiling_unbounded` |
+| Pass / fail / ambiguous | 0 / 0 / 45 for PM and for GM |
+
+Reading. Above the in-band crossing the loop gain comes back up through 0 dB
+at 59 to 179 MHz and then flattens near +1 dB with its phase near 0 deg. It
+drifts down only about 0.5 dB per decade, so it would take on the order of 20
+more decades to reach -10 dB. The ceiling premise cannot be met by raising
+the ceiling further, and 10 GHz is already well beyond any frequency at which this repo
+has validated the PSP103, `rhigh` or `cap_cmomi` models, so no higher ceiling
+was attempted. The values above 1 GHz are numerically complete traces, not
+validated physics, and they are not used for any pass.
+
+What this does not show. The flat, phase-near-zero plateau is the signature
+DR-0014 and `tb_loopgain_cmos5l` already name for a single-injection break
+at a MOSFET gate, but it was not tested here and the cause is not
+established. Only a measured two-injection (Middlebrook/Tian) comparison can
+say whether it belongs to the circuit or to the measurement. That bench is
+filed as separate work; it was not built here.
+
+## Results (issue #89, G1 disable pull-down)
+
+Record cited: [`records/20261011-051956-eda9285.md`](records/20261011-051956-eda9285.md),
+with its [`.csv`](records/20261011-051956-eda9285.csv),
+[`.sensitivity.csv`](records/20261011-051956-eda9285.sensitivity.csv),
+[`.cc-tolerance.csv`](records/20261011-051956-eda9285.cc-tolerance.csv),
+[`.delta.csv`](records/20261011-051956-eda9285.delta.csv) and
+[`.divider-attribution.csv`](records/20261011-051956-eda9285.divider-attribution.csv).
+`214/214` points passed and the completeness matrix is OK, all on the EDA
+batch fleet. The design under test adds an `EN` pin to `ldo_erramp_cmos5l`
+and an inverter plus a 1 x 1 um NMOS pull-down on `G1`, so `Mn3` is off
+when disabled (DR-0008 addendum "G1 disable pull-down"). Core sha256
+`08a7b857...bae57`, erramp `75ee39ce...56fb4`; both are stated in the record
+md. `EN` is tied to `VIN`, so the pull-down is off in every bench.
+`BASELINE_CSV` moved to the #67 record `20261010-025634-60a3e81`, so the
+delta table isolates the three added devices.
+
+The added devices change the enabled state by small amounts, all in the
+expected direction. Phase margin, gain margin and PSRR @ 100 kHz fall at
+every point and no-load Iq rises or stays the same. The largest change per
+metric:
+
+| Metric | Largest change vs 60a3e81 | Point |
+|---|---|---|
+| Phase margin | -0.0021 deg | `sf`/-40C/`res_wcs` |
+| Gain margin | -0.0086 dB | `ss`/-40C/`res_wcs` |
+| Unity-gain frequency | +8.0 Hz | `ff`/-40C/`res_wcs` |
+| DC loop gain | -2.0e-5 dB | `ff`/125C/`res_wcs` |
+| PSRR @ 1kHz | -1.1e-5 dB | `fs`/-40C/`res_typ` |
+| PSRR @ 100kHz | -1.6e-4 dB | `sf`/125C/`res_wcs` |
+| Iq, no load | +0.043 nA | `ff`/125C/`res_wcs` |
+| VOUT, no load | -0.84 uV | `ff`/125C/`res_typ` |
+
+Dropout is identical at every point. Line and load regulation move by at
+most 1.5e-5 mV/V and 5.7e-7 %. All 45 points still meet every row in the
+record's own spec comparison table. That table uses the legacy first-crossing
+PM/GM scalars, and it is not the row-10 verdict. Under DR-0014 (proposed),
+row 10 PM and GM are each 45 `ambiguous`, 0 pass and 0 fail (reason
+`ceiling_unbounded`), the same as for `60a3e81`. The evidence is
+`evidence/20261011-051956-eda9285/row10-margins.*`, written by
+`row10_record.py`. Each row's worst case is at the same point as
+before, the same 15 points have more than one 0 dB crossing, and the `Cc`
+tolerance window is unchanged at `110e-6`-`259e-6`. The worst gain margin
+is now 13.84 dB (was 13.85) and the worst phase margin 53.87 deg.
+
+Four of the 22 fleet requests (`g00_dcsweep`, `g01_loopgain`,
+`g02_loopgain_ressens_bcs`, `g21_loopgain_divattr`) reuse completed reports
+from an interrupted first submission (`SWEEP_BATCH_REUSE_WORK`, listed in
+`corners/20261011-051956-eda9285/_batch/reused-reports.tsv`). The other 18
+were resubmitted.
+
+**Reuse is now bound to input bytes, but these four are not.** The request
+text names the design netlist, the model cards and the OSDI binaries by path,
+so a byte-identical request alone does not show those files are unchanged.
+`batch_backend.py` now writes `inputs.sha256.json` into every group dir when
+the group is written: the sha256 of the transitive `.include` / `.lib`
+closure of `tb.spice` and `corners.lib` (design netlist included) plus the
+OSDI binaries. `--reuse-work` reuses a report only when the earlier group's
+inventory equals the current one, and fails closed when the earlier work dir
+has none. `test_batch_backend.py` has the negative controls: an in-place edit
+of the design netlist, a nested include, a model card or an OSDI binary, with
+all four compared text files left identical, is not reused. The earlier work
+dir for this record predates the inventory, so the four reports above have no
+committed proof of the input bytes they ran against. Indirect evidence
+(PM, GM and Iq differ from `60a3e81` at the points of those groups) says they
+are post-edit, but it does not prove it.
+
+**Gap closed by appended evidence (issue #132).** Record
+`20261011-060305-bcc60e2` re-ran the whole #89 grid on the EDA batch fleet
+(`run_sweep.sh --batch`, `KLT_SIM_BACKEND=batch`, no `SWEEP_BATCH_REUSE_WORK`;
+`corners/20261011-060305-bcc60e2/_batch/backend.json` has
+`"reused_reports": {}`). It was imported unchanged, as new paths only
+(`corners/`, `netlist-snapshots/` and `records/` `20261011-060305-bcc60e2*`);
+`20261011-051956-eda9285` is untouched. The four groups are fresh jobs,
+not the reused ones:
+
+| Group | Reused job in `eda9285` | Fresh job in `bcc60e2` |
+| --- | --- | --- |
+| `g00_dcsweep` | `klt-sim-bed146f000fe` | `klt-sim-caf90ab0666c` |
+| `g01_loopgain` | `klt-sim-31caae6411af` | `klt-sim-9d6f8be563eb` |
+| `g02_loopgain_ressens_bcs` | `klt-sim-a6a272d2e5fb` | `klt-sim-8a3dc509fbf2` |
+| `g21_loopgain_divattr` | `klt-sim-dbefbd8c9ba9` | `klt-sim-ea2a27022477` |
+
+Comparison with `20261011-051956-eda9285` (done at import time): all 214
+per-point `*_dc.csv` / `*_ac.csv` files are byte-identical; the five record
+CSVs (`.csv`, `.sensitivity.csv`, `.cc-tolerance.csv`, `.delta.csv`,
+`.divider-attribution.csv`) are byte-identical; the record `.md` differs only
+in the record id, git sha and timestamp. The four groups' `request.json`
+and `corners.lib` match (apart from the scratch work-dir path), all four
+reports pass (45/45; g02 3/3), and `backend.json` records the same client
+klt, runner klt, engine and staged OSDI sha256 values. The only `tb.spice`
+difference is the `/tmp` scratch path of its `.include`. Each of the four
+`inputs.sha256.json` records the design core netlist
+`08a7b857...bae57`, which is the sha256 of
+`design/sg13cmos5l/netlist/ldo_core_cmos5l.spice` on main, plus the model
+cards and OSDI binaries the group ran against. So the four reused reports
+did measure the current design. The 10 GHz record
+`20261011-070111-5391c68` stays the selected characterization source; this
+evidence validates the historical 100 MHz record and is not selected.
+
+**Schema disclosure.** `bcc60e2` was produced by an earlier `batch_backend.py`
+implementation (commit `bcc60e2` of the #89 rerun branch), not the one on
+main. Its `inputs.sha256.json` is nested,
+`{"schema": 1, "verified_after_report": true, "files": {path: sha256}}`, and
+that implementation fails a group if an input changed while the job ran
+(inventory re-hashed after the report returned). Main's implementation writes
+a flat `{path: sha256}` dict. The imported bytes are kept as produced and are
+not rewritten to look like main's output; migrating the backend to one schema
+is out of scope here. Its inventory paths point at an `issue-89` worktree
+whose design netlist hashes identically to main's. The derived
+`evidence/20261011-060305-bcc60e2/` files from that branch were not imported,
+as they were generated against an older base.
+
+The disabled state is not part of this grid. It is in
+`sim/ldo-cmos5l-enable/` (DC smoke, tt/27C) and in the off-state samples of
+the startup record `20261011-031426-df3f802` (`startup_offstate.py`, all 135
+points); see the DR-0008 addendum.
+
+## Results (issue #67, `EN` interface -- superseded by #89 above)
 
 Record cited: [`records/20261010-025634-60a3e81.md`](records/20261010-025634-60a3e81.md),
 with its [`.csv`](records/20261010-025634-60a3e81.csv),
@@ -762,8 +1228,17 @@ record `20260917-023832-7061e8f`. That record's outputs under
 ```bash
 python3 sim/ldo-cmos5l-pvt-sweep/item5_evidence.py           # write
 python3 sim/ldo-cmos5l-pvt-sweep/item5_evidence.py --check   # byte-compare (CI)
+python3 sim/ldo-cmos5l-pvt-sweep/item5_grid.py --check       # same, shared grid contract (CI)
 python3 -m unittest discover -s sim/ldo-cmos5l-pvt-sweep -p 'test_*.py' -v
 ```
+
+Grid completeness (#120): the live sweep and this analysis apply one
+contract, `dc_grid.validate_file`. It checks for exactly five Iload blocks, each
+with the full 2.00..3.63 V / 10 mV Vin sequence, and requires every value to be
+finite. `item5_evidence.py` is pinned by sha256 in its own landed outputs, so
+it is not edited. Instead, `item5_grid.py` rebinds its `split_blocks` to the
+shared validator and runs it unchanged, which yields the same bytes. CI runs
+both checks.
 
 Outputs: `evidence/20261010-025634-60a3e81/{coverage-inventory.json,
 coverage-inventory.md,dc-informational-summary.csv}`; inputs and their sha256
@@ -806,14 +1281,15 @@ What this is **not**:
 
 **No CI job runs `run_sweep.sh --check-env` for this experiment yet**, unlike
 `sim/pass-device-screening-check` (SG13G2 branch). `.github/workflows/ci.yml`
-fetches `ihp-sg13g2` via `klayout-tools`' pinned `fetch-ihp-sg13g2.sh`; no
-equivalent pinned fetch exists for `ihp-sg13cmos5l` in CI, because (per
-`design/README.md` "Known gaps") it is a separate upstream repository
-(`IHP-GmbH/ihp-sg13cmos5l`), not a variant directory inside the
-IHP-Open-PDK tarball that script downloads -- already filed upstream as
-`2AMLogic/klayout-tools#1929`. Until that lands, `--check-env` for this
-experiment (like `--check` for the SG13CMOS5L schematic branch generally)
-is a local/manual step, verified by this PR's author before submission
+fetches `ihp-sg13g2` via `klayout-tools`' pinned `fetch-ihp-sg13g2.sh` and, for
+`netlist-check` only, `ihp-sg13cmos5l` via `fetch-ihp-sg13cmos5l.sh` (the
+`ihp-sg13cmos5l/` subtree of `IHP-GmbH/IHP-Open-PDK` `dev` @ `f7bca326`,
+checksum-verified, `.fetched-version` marker; the script is taken from an
+immutable klayout-tools commit, see `.github/workflows/ci.yml`
+`KLAYOUT_TOOLS_REF`). (Before issue #155 the script cloned the archived
+`IHP-GmbH/ihp-sg13cmos5l` repository, tracked upstream as
+`2AMLogic/klayout-tools#1929`/`#2720`.) No CI job installs the OSDI models or
+runs `--check-env` for this experiment, so that step stays a local/manual one
 (see "Reproducing" below).
 
 The separate, offline loop-gain topology guard **is** a CI gate (issue #94):
@@ -827,6 +1303,67 @@ negative control mutation is rejected, so both connectivity drift and a
 weakened guard fail CI. It writes no records, changes no signoff verdict, and
 makes no PVT or spec-passing claim. It does not replace the missing PDK-backed
 `--check-env` preflight described above, which remains local/manual.
+
+## Re-run on the re-stamped PDK (issue #155)
+
+The PDK moved to the `ihp-sg13cmos5l/` subtree of `IHP-Open-PDK` `dev` @
+`f7bca326` (`sim/pdk-cmos5l.json`). Every record cited above that names
+commit `607e18d` is a run on the **old** pin and stays labelled that way.
+The campaigns that support current claims were re-run on the new install, as
+new records: PVT `20261012-060932-c53f0177` (214/214; an earlier attempt
+`20261012-042925-c53f0177` is INCOMPLETE, 124/214, because the shared fleet
+refused two groups at its 8-instance cap), startup `20261012-063918-bb1d73c`,
+dropout `20261012-065435-b53a442f`, two-injection loop gain
+`20261012-071449-6a3c1475`, dynamic DoE `20261012-074813-c94873ba` plus
+refinement `20261012-080951-142dac4a`. The PVT, loop-gain and enable result
+files are identical to the old selected records; startup metrics agree to
+1e-6 relative with the same 135 failures; the dropout and DoE records were
+last run on the pre-#89 netlists, so their small differences mix the design
+change with the PDK. Full per-record accounting, tool vintages and what was
+not re-run: [`../migration-inventory-155.md`](../migration-inventory-155.md).
+`run_sweep.sh` now records the installed PDK revision it reads from the
+install's `.fetched-version` marker instead of a hard-coded commit string.
+
+Second increment (issue #155, all on the batch fleet):
+
+- **Startup `ext` and `halfstep`** were run on the new pin as stages of the
+  same run, `20261012-063918-bb1d73c` (current design). The grid of that run
+  selects **two** binding points (`ff` 125 C `res_wcs` 3.63 V and `ff` -40 C
+  `res_wcs` 3.63 V), not the three of the pre-#89 run below, so `ext` is 16
+  points and `halfstep` 2. `ext`: 2 pass, 14 fail (the passes are both at
+  `ff` -40 C, Cout 4.7 uF, ESR 0.5 ohm); `ff` 125 C `res_wcs` again fails at
+  every load/Cout/ESR combination. `halfstep`: verdict unchanged (fail) at
+  both points, but halving the step cap moves start overshoot by **-0.313 V**
+  at `ff` 125 C `res_wcs` (0.539 to 0.226 V) and -0.107 V at `ff` -40 C, larger
+  than the -0.108/+0.043/+0.025 V of the pre-#89 run: the overshoot magnitudes
+  are not step-converged (the verdict is, at these points). These are not
+  like-for-like with the `20261010-104827-91e92aa` stages (pre-#89 design,
+  different binding points).
+- **PDK-only controls (design held constant).** Dropout: the pre-#89
+  netlists (`7953b25b`/`7982d728`, from main commit `eab18e6f`) run on the
+  NEW pin, record `20261012-094155-934dbd7c` (submitted from a scratch clone
+  of `934dbd7c` with only those two netlists replaced; the record's
+  `input_sha256` names them). Its CSV and all 45 raw DC grids are
+  byte-identical to `20261010-111618-19e8e39` (same netlists, old pin).
+  Dynamic DoE: the current netlists run on the OLD install
+  (`~/share/pdk`, git checkout `607e18d`; the netlist snapshots and
+  `_batch/*/inputs.sha256.json` name that path), base
+  `20261012-100716-934dbd7c` and refinement `20261012-102846-934dbd7c`. Both
+  CSVs (up to record ids), the refinement request file and all 384 + 688 raw
+  AC traces are byte-identical to the new-pin `c94873ba` / `142dac4a`
+  records, although the staged `cap_cmomi`/`cap_cmomf` OSDI binaries differ
+  in sha256 between the two installs. So the PDK re-stamp moved nothing in
+  either campaign, and the dropout (worst point <= 0.15 uV) and DoE (PM <= 0.157 deg,
+  GM <= 0.101 dB) differences against the old records are the #89 design
+  change. The two DoE control records are **old-pin runs**, kept only as
+  controls; they are not evidence for the new pin.
+- **Offline re-reductions** of the new grids (no simulation):
+  `evidence/20261012-060932-c53f0177/row10-margins.*` (`row10_record.py`,
+  checked in CI) classifies the new PVT record exactly as
+  `20261011-070111-5391c68`'s; `sim/migration-155-rereduce.py --check` (CI)
+  re-runs the item-5 DC reduction and the DoE row-10 classification on the
+  new records in memory and byte-compares the controls above. Results:
+  [`../migration-155-rereduce.json`](../migration-155-rereduce.json).
 
 ## Reproducing
 
@@ -1152,14 +1689,33 @@ decisions are written up in
 | `testbench/tb_startup_cmos5l.spice.tmpl` | Startup bench (klt circuit body). |
 | `startup_eval.py` | Deterministic evaluator (stdlib). Fails closed. |
 | `test_startup_eval.py`, `test_startup_campaign.py` | Fixture tests (no simulator). |
-| `startup_campaign.py` | `plan` / `submit` / `collect` / `binding`. Every simulation is a `klt sim --backend batch` request; nothing runs locally and nothing falls back to local. |
+| `startup_campaign.py` | `plan` / `submit` / `collect` / `recollect` / `binding`. Every simulation is a `klt sim --backend batch` request; nothing runs locally and nothing falls back to local. |
 | `startup/<run>/<stage>/<request>/` | Request artifacts: `request.json`, `tb.spice`, `corners.lib`, klt `report.json` (per-corner artifacts, about 2 MB rawfiles each, are git-ignored; their sha256 is in the record CSV). |
 | `records/<run>-startup-<stage>.{md,csv,manifest.json}` and `.traces/` | Append-only records: coverage, per-point metrics, trace files with sha256, source/tool/PDK hashes. |
 
-Run `20261010-104827-91e92aa` is the record set. `startup/20261010-075612-91e92aa/`
+Run `20261011-031426-df3f802` (grid stage only, issue #89) is the record
+selected for the characterization report. It is the same campaign re-run on
+the G1 disable pull-down design (DR-0008 addendum): 135/135 evaluated, all
+fail on overshoot and monotonicity as before, every start settles in
+28-441 us. Its `off_supply_current_a` column is sampled inside the `EN`
+edge, so for this design it includes the amplifier inverter's crowbar
+current. The true off-state supply current (last `EN = 0` sample before the
+edge, 2.000-2.264 uA over the 135 points) is read from the committed traces
+by `startup_offstate.py <run id>`. The evaluator fix is #130 (below): the
+column of the re-collected record `20261011-070146-0c95530` carries that value. The numbers
+and binding points in the subsections below are those of the earlier run.
+
+Run `20261010-104827-91e92aa` is the record set the subsections below
+describe (the six-pin amplifier). `startup/20261010-075612-91e92aa/`
 and the `records/20261010-075612-91e92aa-startup-nominal.*` files are the
 earlier diagnostic run (first nominal, two lost grid attempts, probe requests);
 they are kept as evidence and are superseded by the later run.
+
+Run `20261012-063918-bb1d73c` is the current design on the re-stamped PDK
+(issue #155) with all four stages (`nominal`, `grid`, `ext`, `halfstep`);
+its `ext`/`halfstep` results are summarised under "Re-run on the re-stamped
+PDK (issue #155)" above. The subsections below still describe the pre-#89
+run.
 
 ### Contract (as implemented)
 
@@ -1292,6 +1848,38 @@ that these bound the design.
 - The runner's klt 0.5.0 ignores `options.osdi_preload` (known, #2901): the
   OSDI binaries are loaded by the preamble from the staged `inputs/`.
 
+### Cold-start disabled plateau and re-collection (issue #130)
+
+`startup_eval.py` used to take the off-state window and `off_supply_current_a`
+from the samples before the `EN = VIN/2` crossing. That crossing is half way up
+the 1 us `EN` edge, so the last such sample lay inside the edge (for the #89
+design: the crowbar current of the amplifier's `EN` inverter, 6.0-28.3 uA
+instead of 2.000-2.264 uA). Time zero of each enable case is unchanged (the
+interpolated `EN = VIN/2` crossing). The cold-start disabled window is now the
+contiguous run of samples from the start of the trace with `EN <=
+off_en_tol_v` (1 mV, a documented numerical tolerance; the bench holds `EN` at
+exactly 0 V), cut at the first sample above it (the start of the first rising
+ramp, read from the trace: no 1 ms assumption), keeping `t >=
+off_window_skip_s`. Off-state `VOUT` max/min/end and `-ivin` at the last
+sample use exactly that window. If `EN` does not start disabled or the window
+is empty after the skip, the verdict is `insufficient` and no edge sample is
+substituted. A missing `ivin` column is still supported (no current column).
+
+Record `20261011-070146-0c95530-startup-grid.*` is the re-collection of
+`20261011-031426-df3f802-startup-grid.*` with the new evaluator, made with
+`startup_campaign.py recollect --stage grid --rid 20261011-070146-0c95530 --source-rid
+20261011-031426-df3f802`: no simulation, the source traces are verified against
+their `trace_sha256` and referenced in place (not copied), the manifest carries
+the source job/engine/OSDI/PDK provenance and a `recollected_from` block with
+the source files' sha256 and both evaluator hashes. All earlier records are
+byte-identical. Result: 135 of 135 still `fail` with the same reasons;
+`off_supply_current_a` is 2.00000305-2.26401144 uA and equals, point by point,
+`-ivin` at the last `EN = 0` sample of each committed trace. The other
+metric columns differ from the source record only by the 9-significant-digit
+rounding of the reduced traces (relative <= 5e-5, mostly far smaller), not by the window. The off-state `VOUT` columns move because the
+window no longer includes ramp samples (up to 11 % of values that stay below
+0.48 mV; bound 50 mV; no verdict change).
+
 ### Reproducing
 
 ```bash
@@ -1345,3 +1933,129 @@ dropout artifacts in this directory that say `DR-0009` keep that legacy label:
 `dropout_metrics.py` and `dropout_campaign.py`. They are append-only evidence or
 hash-pinned. They belong to DR-0012, not to DR-0009 (the startup measurement
 methodology, see "Startup campaign" above).
+
+## Row-10 margins under DR-0014 (issue #126, PROPOSED)
+
+[`DR-0014`](../../spec/decision-records/DR-0014-row10-stability-margin-classification.md)
+(`proposed`, not ratified; the `PM >= 45 deg` / `GM >= 10 dB` targets are
+unchanged) defines how the phase and gain margins are read from a loop-gain
+trace when it has more than one 0 dB crossing or no -180 deg crossing. In
+short: every crossing in the sweep counts, and the scored margin is the
+minimum. A PM crossing's margin is its angular distance from the critical
+point, made negative after an in-band encirclement. A miss inside the sweep
+is a fail. A pass also needs the loop gain at the 100 MHz ceiling to be at
+least 10 dB below unity and non-increasing over the last decade. Everything
+else is `ambiguous`, with a reason.
+
+`ac_metrics.classify_margins` implements it. `loopgain_metrics`, which minted
+every record here, is unchanged. The recorded `phase_margin_worst_deg` is
+`180 + unwrapped phase`, not a margin; DR-0014 explains the difference.
+
+Offline reclassification of the committed traces (no simulator, no PDK, no
+new record):
+
+    python3 sim/ldo-cmos5l-pvt-sweep/row10_margins.py           # (re)write
+    python3 sim/ldo-cmos5l-pvt-sweep/row10_margins.py --check   # CI: byte-compare
+
+It writes `evidence/<record-id>/row10-margins.{csv,json,md}` for the
+45-point record `20261010-025634-60a3e81` and for the #64 combined record
+`20261010-101245-6df50fd` (536 rows). Before it writes anything, every trace
+must reproduce the record minted from it, and every recorded PM or GM miss
+must classify as `fail`. Result: no committed trace bounds the 100 MHz
+ceiling (the loop gain there is -1.17 to +0.53 dB and rising), so no PM or
+GM pass can be scored. The 15 legacy two-crossing points and the 46 `failed`
+#64 rows are `ambiguous` on GM. On PM, the 15 legacy points are `ambiguous`,
+39 of the 46 rows `fail` and 7 are `ambiguous`. The #64 PM and GM misses (210,
+90) are unchanged. Tests: `test_ac_metrics.py`, `test_row10_margins.py`.
+
+Later 45-point records (#89). `row10_margins.py` is pinned by sha256 inside
+its own landed outputs and names its two datasets in code, so it is not
+edited to add a record. `row10_record.py` (the same thin-wrapper pattern as
+`item5_grid.py`) runs its unchanged `legacy` logic, with the same trace
+layout, cross-checks, no-loosening guard and output format, on another
+45-point record. It also pins itself in the output's `classifier` block:
+
+    python3 sim/ldo-cmos5l-pvt-sweep/row10_record.py --record 20261011-051956-eda9285
+    python3 sim/ldo-cmos5l-pvt-sweep/row10_record.py --check   # CI: every output it wrote
+
+Issue #128 re-ran the same grid with the loop-gain sweep extended to 10 GHz
+(`run_sweep.sh --loopgain-ac-max=10g`, see "Results (issue #128 ...)" above)
+and selected `20261011-070111-5391c68`. The result is still 45 `ambiguous`.
+
+For record `20261011-051956-eda9285` (the G1 pull-down design) the result is
+the same as for `20261010-025634-60a3e81`. PM and GM are `ambiguous` at all
+45 points, all with reason `ceiling_unbounded`. 30 points have one 0 dB
+crossing and 15 have two, and those 15 are the same points as before. The
+in-band GM is 13.84 to 29.87 dB, and no committed trace bounds the 100 MHz
+ceiling (-1.164 to +0.528 dB there, and rising). Tests: `test_row10_record.py`.
+
+## E1 DC operating points (issue #158, DR-0015 experiment E1)
+
+[`DR-0015`](../../spec/decision-records/DR-0015-sg13cmos5l-dynamic-window-stability-diagnosis.md)
+(stays **Proposed**) explains the zero-load stability misses with an
+inferred pass-device output resistance and inferred amplifier pole
+locations; its follow-up brief prices experiment E1 as four DC
+operating-point extractions at P1/P2/P5/P6 to replace those assumptions
+with measurements. This campaign is exactly that, and nothing more: no
+spec row, threshold or verdict changes, and no compensation change is
+made or proposed.
+
+**Bench** (`testbench/tb_e1op_cmos5l.spice.tmpl`): the flattened
+loop-gain bench's circuit -- whose FB/FBAMP break draws zero current, so
+its DC operating point IS the closed loop's -- plus the non-invasive
+divider replica the dcsweep bench introduced, plus a `.save` card naming
+the exported device operating-point parameters (per-MOS `ids/gm/gds` for
+all fourteen MOS wrappers, pass-device `cgs/cgd/cdd/vth`, `XMn3`
+`cgs/cgd`). The analysis is a three-point DC sweep bracketing
+`Vin = 3.30 V`; the middle row of the export is the operating point.
+`run_sweep.sh --check-topology` extends to this template (the generated
+deck must mirror `ldo_core_cmos5l`), and `batch_backend.py` resolves the
+template's full wrdata token list (device-parameter and source-current
+tokens included) against the rawfile, failing closed on any token it
+cannot find.
+
+**Campaign** (`run_e1op.sh`): one batch-fleet request, the four corners
+
+    P1  ss/125C/res_bcs  0 mA  1.00 uF    P2  ff/-40C/res_wcs  0 mA  1.00 uF
+    P5  ss/125C/res_wcs  0 mA  3.45 uF    P6  ss/125C/res_bcs  1 mA  1.00 uF
+
+i.e. DR-0015's four selected points verbatim (its "six points" table).
+No local grid: `--validate` runs ONE tt/27C deck locally as a debug
+probe; `--plan-only` prints the request. Environment conventions are
+`run_loopgain2.sh`'s (`SWEEP_BATCH_PLAN_ONLY`, `SWEEP_BATCH_REUSE_WORK`).
+
+**Reduction** (`e1_oppoints.py`): offline, stdlib-only; per point it
+checks the export (all declared quantities present, finite,
+sign-consistent; break current ~ 0; KCL at VOUT; VOUT in regulation;
+fleet liveness agreement), then derives `r_o = 1/gds`, the VA
+equivalent, the divider standing current and per-leg resistance, and
+pole ESTIMATES (`1/(2*pi*R*C)` on measured terms, labelled estimates in
+every output -- never presented as measured poles). Negative controls
+in `test_e1_oppoints.py`: missing quantity, nonfinite value, sign and
+unit mistakes must all fail the checks.
+
+    python3 sim/ldo-cmos5l-pvt-sweep/e1_oppoints.py reduce  --record <id> ...
+    python3 sim/ldo-cmos5l-pvt-sweep/e1_oppoints.py record-md --record <id>
+    python3 sim/ldo-cmos5l-pvt-sweep/e1_oppoints.py check   --record <id>   # byte-compare
+
+**Result** (record `20261012-115531-cfa681f9`, PDK pin `f7bca326...`
+-- the #155 re-stamp, read from the install and fail-closed-checked by
+`run_e1op.sh`): every point converged with all
+declared quantities; all checks pass. Headline numbers (full table in
+the record): measured pass-device `r_o` is 3.215/4.461/5.324 MOhm at the
+three zero-load points versus 23.79 kOhm at the 1 mA reference P6 -- the
+~135-224x collapse DR-0015's class-1 analysis had inferred; the derived
+VOUT-node pole estimates move 0.475/0.210/0.083 Hz (zero load) vs
+7.11 Hz (1 mA). The measured P6 `r_o` is 2.4x the value DR-0015 assumed
+("VA ~ 10 V"), superseding that paragraph's arithmetic while keeping its
+directional claim. What is supported, contradicted and unresolved is
+stated in the DR-0015 addendum and the record; amplifier node impedances
+by small-signal probing remain an unresolved follow-up (out of E1's
+four-run scope).
+
+Vintage note: DR-0015's AC evidence predates #155/#89 (old PDK pin, pre-#89
+design); comparisons between this record and that diagnosis are
+cross-vintage and labelled as such in the addendum. The same-vintage AC
+reference is the #155 re-run `20261012-080951-142dac4a`. Tests:
+`test_e1_oppoints.py`; the record's `check` subcommand byte-compares the
+committed reduction and record markdown against the raw exports.
