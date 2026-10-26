@@ -2,6 +2,10 @@
 
 Chronological record of recently merged pull requests and closed issues, maintained by the Loom Guide role.
 
+### 2026-10-25
+
+- **Issue #52** (closed): README: embed the fleet burndown chart (one line)
+
 ### 2026-10-24
 
 - **PR #113**: docs: clarify row 4 branch status (#71)
