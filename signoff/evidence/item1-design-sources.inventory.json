@@ -10,7 +10,7 @@
     },
     {
       "path": "design/netlist.py",
-      "sha256": "sha256:756256ca11e0fa39b04ab8074b82142b265ababd1fa4d3f6a458ed5af287c8f4"
+      "sha256": "sha256:d20899e2bb3c8e68e25ba2225a903b8af51bee432ab40075932e965a6718a679"
     },
     {
       "path": "design/sg13cmos5l/ldo_core_cmos5l.sch",

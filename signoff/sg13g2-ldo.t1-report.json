@@ -33,7 +33,7 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:46754c577b084770e05f4c036de3849fe32c58f8d15300bf288b4a8dc6ed68b2",
+        "content_hash": "sha256:485e2783f46ba934244b3d9eb9d72239d428140162bd4c56c6a57a94f02c8836",
         "input_verified": true,
         "exit_status": 0,
         "artifact_binding": {
@@ -42,7 +42,7 @@
             "path": "signoff/evidence/item1-design-sources.inventory.json",
             "scope": "repo"
           },
-          "content_hash": "sha256:46754c577b084770e05f4c036de3849fe32c58f8d15300bf288b4a8dc6ed68b2",
+          "content_hash": "sha256:485e2783f46ba934244b3d9eb9d72239d428140162bd4c56c6a57a94f02c8836",
           "input_verified": true,
           "summary": "SG13CMOS5L schematics/symbols, their generator and the regenerated ngspice netlists are committed; every constituent hash matches the inventory. Freshness/identity only, not a design-correctness or performance claim.",
           "source": "signoff/evidence/item1-design-sources.inventory.json"

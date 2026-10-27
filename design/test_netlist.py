@@ -110,6 +110,24 @@ class InvariantTests(unittest.TestCase):
                                     self.netlists(top=top_netlist(instantiate=False)))
         self.assertEqual(fails, ["sub: not instantiated in top"])
 
+    def test_pending_integration_exempts_only_the_named_cell(self):
+        import dataclasses
+        d = dataclasses.replace(self.make(), pending_integration={"sub": "#190"})
+        self.assertEqual(nl.check_invariants(d, self.netlists(top=top_netlist(instantiate=False))), [])
+
+    def test_pending_integration_still_checks_pins(self):
+        import dataclasses
+        d = dataclasses.replace(self.make(sub_schs=["B", "A"]), pending_integration={"sub": "#190"})
+        fails = nl.check_invariants(d, self.netlists(top=top_netlist(instantiate=False)))
+        self.assertTrue(any("symbol pins and schematic ports disagree" in f for f in fails))
+
+    def test_pending_integration_stale_entry_fails(self):
+        import dataclasses
+        d = dataclasses.replace(self.make(), pending_integration={"sub": "#190"})
+        fails = nl.check_invariants(d, self.netlists())
+        self.assertEqual(len(fails), 1)
+        self.assertIn("remove the entry", fails[0])
+
     def test_instance_net_count_mismatch(self):
         for nets in ("VIN", "VIN VOUT VSS"):
             fails = nl.check_invariants(self.make(),
