@@ -26,7 +26,6 @@ _None._
 
 Human-approved issues ready for implementation (`loom:issue`).
 
-- **#56**: Monte Carlo: klt yield evidence for the statistical ratified spec rows (T1 item 6)
 - **#165**: SG13CMOS5L: implement ldo_ilimit_cmos5l per DR-0017 and instantiate in core
 
 ## In Progress
@@ -72,7 +71,7 @@ _None._
 | Operator merge-risk holds | 0 |
 | Very important | 0 |
 | Important | 2 |
-| Ready (`loom:issue`) | 2 |
+| Ready (`loom:issue`) | 1 |
 | In Progress (`loom:building`) | 1 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
