@@ -1,7 +1,10 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "engine": "klayout",
-  "layout": "npn13G2.extracted.spice",
+  "layout": {
+    "path": null,
+    "scope": "external"
+  },
   "reference": "npn13G2.cdl",
   "top": "NPN13G2",
   "reference_top": "NPN13G2",
@@ -9,12 +12,16 @@
   "options": {
     "combine_devices": false,
     "combine_devices_per_circuit": null,
+    "combine_devices_max_attempts": 5,
     "flatten_layout": false,
     "flatten_reference": false,
     "netgen_setup": null,
     "parameter_tolerance": null,
     "compare_parameters": null,
     "power_connectivity": null,
+    "anchor_top_level_pins": null,
+    "strict_top_level_pin_count": false,
+    "compare_mos_flavour": false,
     "supply_nets": [
       "GND",
       "VCC",
@@ -22,9 +29,11 @@
       "VGND",
       "VPWR",
       "VSS"
-    ]
+    ],
+    "finfet_bulk": null
   },
   "hints_applied": null,
+  "constant_nets_applied": null,
   "status": "mismatch",
   "power_connectivity": {
     "status": "unchecked",
@@ -45,6 +54,7 @@
     "findings": [],
     "finding_count": 0
   },
+  "device_parameter_coverage": [],
   "mismatch_count": 15,
   "error_count": 15,
   "category_counts": {
@@ -88,24 +98,25 @@
   "environment": {
     "engine": "klayout",
     "engine_version": "0.30.12",
+    "netgen_binary": null,
     "layout_sha256": "c737df17d796460e1ce8f66179474a122c39bb61a32e93a64555517d719153b4",
     "reference_sha256": "c0fe68ca5277621084e2051244e2b562188df7155257c75739c280ade77f9f90",
     "extracted_netlist": null
   },
   "provenance": {
-    "klt_version": "0.5.0+gb15edf5e3a2e",
+    "klt_version": "0.8.0",
     "klayout_version": "0.30.12",
     "pdk": null,
     "deck": {
       "name": "sg13g2",
-      "content_hash": "sha256:894326a4e37fb24fef2f7ffc6ae1da55a0e262b0f0bc1c09adc4862909278fda",
+      "content_hash": "sha256:1c95db40596afc5412e216009bcf0b775d1d74895b32738447eccbc76336dd15",
       "released": true
     },
     "input": {
       "content_hash": "sha256:c737df17d796460e1ce8f66179474a122c39bb61a32e93a64555517d719153b4",
       "role": "netlist"
     },
-    "klayout_version_mismatch": true
+    "klayout_version_mismatch": false
   },
   "mismatches": [
     {
@@ -338,10 +349,14 @@
     {
       "category": "topology",
       "severity": "error",
-      "description": "device class could not be mapped to a counterpart",
+      "description": "device class could not be mapped to a counterpart: 'NPN13G2'",
       "side": "reference",
       "net": null,
-      "device": null,
+      "device": {
+        "layout": null,
+        "reference": null,
+        "class": "NPN13G2"
+      },
       "property": null,
       "details": null,
       "circuit": null,

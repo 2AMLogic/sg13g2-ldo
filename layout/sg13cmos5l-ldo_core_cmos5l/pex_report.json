@@ -723,11 +723,12 @@
   "pin_count_mismatch": null,
   "backend_failure": null,
   "flat_dut_mismatch": null,
+  "pin_order_mismatch": null,
   "model_mismatch": null,
   "flatten_schematic": false,
   "schematic_flatten": null,
   "provenance": {
-    "klt_version": "0.7.1.dev1786+g97b6a54977d4",
+    "klt_version": "0.8.0",
     "klayout_version": "0.30.12",
     "pdk": {
       "name": "ihp-sg13cmos5l",
@@ -736,8 +737,8 @@
     },
     "deck": {
       "name": "sg13cmos5l",
-      "content_hash": "sha256:f31d94eb2324a5db7b20b286760312e0835eb1dbaae4a46fc05699c4a52619d3",
-      "released": false
+      "content_hash": "sha256:5a43b8eb0e1a4c228169cd33d820bf75ca5640812587f68c07f24f4aa2a1738f",
+      "released": true
     },
     "input": {
       "content_hash": "sha256:06d92e1aadb8b51614016f2f5d953c8bd0674380267f8ab90c2b0cca59576629",

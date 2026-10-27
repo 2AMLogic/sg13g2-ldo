@@ -109,12 +109,15 @@ def rhigh_reference_ohms(w_um: float, l_seg_um: float, bends: int) -> tuple[floa
 
     ``deck_ohms`` is what the curated deck's extractor computes for the
     geometry :func:`common_sg13cmos5l.draw_rhigh` actually draws:
-    ``R = L/W * sheet_rho`` with ``L`` taken from the body's own area at the
-    drawn width, i.e. ``(b+1)*l + b*ps`` of conductor at ``w``. KLayout's
-    resistor extractor derives ``L``/``W`` from the body region's area and
-    perimeter, which for this serpentine reproduces that figure exactly (it
-    was confirmed against a real ``klt extract`` run, not assumed -- the
-    committed ``*.extracted.spice`` carries the same numbers).
+    ``R = rzspec/W + L/(W - dW) * sheet_rho``, with ``L`` taken from the
+    body's own area at the drawn width, i.e. ``(b+1)*l + b*ps`` of conductor
+    at ``w``, and ``dW`` = 0.04 um, ``rzspec`` = 1.6e-4 ohm.m the PDK's own
+    line-width delta and contact term. klayout-tools 0.8.0 carries both
+    (0.7.x computed ``L/W * sheet_rho``). KLayout's resistor extractor
+    derives ``L``/``W`` from the body region's area and perimeter, which for
+    this serpentine reproduces that geometry exactly (confirmed against a
+    real ``klt extract`` run, not assumed -- the committed
+    ``*.extracted.spice`` carries the same numbers).
 
     ``pdk_model_ohms`` is what the *PDK's own* ngspice model computes for the
     same declared device: ``R = rzspec/w + rspec * leff/weff`` with
@@ -122,10 +125,10 @@ def rhigh_reference_ohms(w_um: float, l_seg_um: float, bends: int) -> tuple[floa
     (``libs.tech/ngspice/models/resistors_mod.lib``, and the identical
     expression in ``rhigh.sym``'s own ``value`` attribute).
 
-    **The two differ by about 7%**, and the difference is real physics the
-    curated deck's single-coefficient model does not carry: the line-width
-    delta (``weff``, +4.2%) and a measured corner-crowding term per bend
-    (+2.9%), both of which the PDK models and ``R = L/W * rho`` cannot. The
+    **The two still differ by about 3.6%**, the corner-crowding term per
+    bend (``leff`` carries ``(2/kappa*weff + ps)`` per bend where the drawn
+    conductor length carries only ``ps``), which the deck's extractor does
+    not model. The
     reference netlist states the *deck* figure, so the LVS compare is
     geometry-vs-geometry rather than one resistance model against a different
     one -- and prints the PDK figure next to it, so nothing about that choice
@@ -135,8 +138,8 @@ def rhigh_reference_ohms(w_um: float, l_seg_um: float, bends: int) -> tuple[floa
     """
     stripes = bends + 1
     drawn_len = stripes * l_seg_um + bends * c.RHIGH_PS_UM
-    deck_ohms = drawn_len / w_um * c.RHIGH_SHEET_RHO
     weff = w_um - 0.04
+    deck_ohms = 1.6e-4 / (w_um * 1e-6) + c.RHIGH_SHEET_RHO * drawn_len / weff
     leff = stripes * l_seg_um + (2.0 / 1.85 * weff + c.RHIGH_PS_UM) * bends
     pdk_ohms = 1.6e-4 / (w_um * 1e-6) + c.RHIGH_SHEET_RHO * leff / weff
     return deck_ohms, pdk_ohms
@@ -260,13 +263,17 @@ def render(netlist: pathlib.Path, top_cell: str, source_top: str) -> str:
                 f"({bends + 1} stripes) -- deck model {deck_ohms:.1f} ohm, "
                 f"PDK ngspice model {pdk_ohms:.1f} ohm"
             )
-            lines.append(f"R{inst} {a} {bnode} {bulk} {deck_ohms:.1f} rhigh")
+            drawn_len = (bends + 1) * l_seg + bends * c.RHIGH_PS_UM
+            lines.append(
+                f"R{inst} {a} {bnode} {bulk} {deck_ohms:.6f} rhigh "
+                f"L={drawn_len:g}U W={w:g}U"
+            )
         elif model == "cap_cmomi":
             a, bnode = nodes
             w = _um(params["w"])
             length = _um(params["l"])
             lines.append(
-                f"X{inst} {a} {bnode} cap_cmomi PARAMS: W={w:g} L={length:g}"
+                f"X{inst} {a} {bnode} cap_cmomi W={w:g}U L={length:g}U"
             )
         else:  # pragma: no cover -- KNOWN_MODELS guards this
             raise SystemExit(f"unhandled model {model}")
