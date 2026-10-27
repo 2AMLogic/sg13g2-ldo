@@ -2,6 +2,13 @@
 
 Chronological record of recently merged pull requests and closed issues, maintained by the Loom Guide role.
 
+### 2026-10-27
+
+- **PR #197**: build: bump klayout-tools pins to 0.8.0 and regenerate evidence
+- **PR #179**: feat(sg13cmos5l): add ldo_ilimit_cmos5l current limiter (candidate sizing) and nominal smoke record
+- **Issue #196** (closed): Bump klayout-tools pin 97b6a54977d4 → 0.8.0
+- **Issue #165** (closed): SG13CMOS5L: implement ldo_ilimit_cmos5l per DR-0017 and instantiate in core
+
 ### 2026-10-25
 
 - **Issue #52** (closed): README: embed the fleet burndown chart (one line)
