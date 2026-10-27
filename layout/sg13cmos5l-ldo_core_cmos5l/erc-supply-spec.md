@@ -142,7 +142,7 @@ What this spec asserts, and why each piece is shaped this way:
   `well_layer: null` + `well_boxes` (#2255) and `well_requires_boxes`
   (#2540) -- all in upstream main, ahead of the 0.5.0 release pip/uv installs.
   The committed report's `provenance.klt_version` records the exact source
-  build (0.7.0+gb82427b30c96, also the CI signoff pin). All layer numbers above are
+  build (0.8.0 since #196; it was 0.7.0+gb82427b30c96, the then signoff pin). All layer numbers above are
   independent of the klt version -- they come from the PDK and the
   curated deck, not from the tool.
 

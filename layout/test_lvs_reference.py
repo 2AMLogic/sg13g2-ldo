@@ -51,19 +51,20 @@ def write(text: str) -> pathlib.Path:
 
 class RhighTests(unittest.TestCase):
     def test_hand_computed_values(self):
-        # 8 stripes: 8*25.43 + 7*0.18 = 204.70 um; /1 um * 1360 ohm/sq
+        # 8 stripes: 8*25.43 + 7*0.18 = 204.70 um; /(1 - 0.04) um * 1360 ohm/sq
+        # plus the 160 ohm contact term (klayout-tools 0.8.0 deck model)
         deck, pdk = lr.rhigh_reference_ohms(1.0, 25.43, 7)
-        self.assertAlmostEqual(deck, 204.70 * 1360.0, places=3)
+        self.assertAlmostEqual(deck, 160.0 + 204.70 / 0.96 * 1360.0, places=3)
         # matches the committed reference comments (one decimal)
-        self.assertEqual(f"{deck:.1f}", "278392.0")
+        self.assertEqual(f"{deck:.1f}", "290151.7")
         self.assertEqual(f"{pdk:.1f}", "300443.6")
 
     def test_bend_count_matters(self):
         d0, p0 = lr.rhigh_reference_ohms(1.0, 25.43, 0)
         d7, p7 = lr.rhigh_reference_ohms(1.0, 25.43, 7)
-        self.assertAlmostEqual(d0, 25.43 * 1360.0, places=3)
-        self.assertGreater(d7, 8 * d0)  # bends add ps length
-        self.assertNotAlmostEqual(d7, 8 * 25.43 * 1360.0, places=1)
+        self.assertAlmostEqual(d0, 160.0 + 25.43 / 0.96 * 1360.0, places=3)
+        self.assertGreater(d7, 8 * d0 - 7 * 160.0)  # bends add ps length
+        self.assertNotAlmostEqual(d7, 8 * d0 - 7 * 160.0, places=1)
         self.assertGreater(p7, p0)
 
     def test_pdk_exceeds_deck(self):
@@ -147,8 +148,8 @@ class RenderTests(unittest.TestCase):
         # m folded into W: 3 x 5u = 15u; X prefix replaced by M
         self.assertIn("MM1 A B VSS VSS nfet L=1U W=15U", lines)
         self.assertIn("MM2 A B VSS VSS pfet L=0.5U W=2800U", lines)
-        self.assertIn("RR1 A B VSS 278392.0 rhigh", lines)
-        self.assertIn("XC1 B A cap_cmomi PARAMS: W=170 L=30", lines)
+        self.assertIn("RR1 A B VSS 290151.666667 rhigh L=204.7U W=1U", lines)
+        self.assertIn("XC1 B A cap_cmomi W=170U L=30U", lines)
         self.assertTrue(any("folded" in ln and "m=3" in ln for ln in lines))
 
     def test_negative_control_mutation_changes_output(self):

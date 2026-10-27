@@ -40,8 +40,8 @@ testcase, not a transistor sweep, and not a vendor-runset verification.
 
 The probe is pinned to the same build layout-check CI already installs:
 
-* **klt** `0.5.0+gb15edf5e3a2e` — commit `b15edf5e3a2e56467a3406c98a2555eb1a5ae45c`
-  (`KLAYOUT_TOOLS_LAYOUT_REF` in `.github/workflows/ci.yml`). The pin is
+* **klt** `0.8.0` — PyPI release, tag commit `c572046be644e0407f693f2410f3abb799d68a3a`
+  (`KLAYOUT_TOOLS_VERSION` in `.github/workflows/ci.yml`). The pin is
   enforced before every tool run; any other build is refused.
 * **KLayout** `0.30.12` — the resolved engine recorded in every raw report
   (`provenance.klayout_version`). This build warns on every run that it was
@@ -52,8 +52,8 @@ The probe is pinned to the same build layout-check CI already installs:
   `sha256:894326a4e37fb24fef2f7ffc6ae1da55a0e262b0f0bc1c09adc4862909278fda` —
   re-verified from every fresh report's `provenance.deck.content_hash`.
 
-The independent signoff grader pin (`KLAYOUT_TOOLS_SIGNOFF_REF`) is **not**
-touched by this probe.
+The signoff grader runs on the same release (`KLAYOUT_TOOLS_VERSION`), but is
+not touched by this probe.
 
 ## Modes
 
@@ -118,10 +118,8 @@ cell, and non-permitted exit codes (drc/extract must exit 0; lvs must exit 3
 Only after an upstream-verified, deliberate behavior change:
 
 ```bash
-git clone https://github.com/2AMLogic/klayout-tools.git /tmp/klayout-tools
-git -C /tmp/klayout-tools checkout b15edf5e3a2e56467a3406c98a2555eb1a5ae45c
 uv venv /tmp/hbt-probe-venv
-uv pip install --python /tmp/hbt-probe-venv/bin/python /tmp/klayout-tools "klayout==0.30.12"
+uv pip install --python /tmp/hbt-probe-venv/bin/python "klayout-tools==0.8.0" "klayout==0.30.12"
 PATH="/tmp/hbt-probe-venv/bin:$PATH" python3 layout/hbt-probe/hbt_probe.py --record
 python3 layout/hbt-probe/hbt_probe.py --check
 ```

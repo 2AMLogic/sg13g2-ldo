@@ -2,6 +2,18 @@
 
 Chronological record of recently merged pull requests and closed issues, maintained by the Loom Guide role.
 
+### 2026-10-25
+
+- **Issue #52** (closed): README: embed the fleet burndown chart (one line)
+
+### 2026-10-24
+
+- **PR #113**: docs: clarify row 4 branch status (#71)
+- **PR #187**: ci: pin characterization-report job to ubuntu-24.04
+- **Issue #71** (closed): Clarify row 4 branch status: ratified target, SG13CMOS5L pass, SG13G2 gap
+- **Issue #186** (closed): main CI: openvaf-r cannot load libxml2.so.2 in pass-device-screening --check-env
+- **Issue #185** (closed): main CI: loopgain2 generate.py --check differs from regeneration
+
 ### 2026-10-20
 
 - **PR #175**: feat(layout): add extraction-only pex stage and committed klt pex report

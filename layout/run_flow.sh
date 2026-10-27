@@ -69,12 +69,11 @@ passiv pad metalslits lbe pin offgrid forbidden forbidden_cmos5l"
 # in the deck's own precheck mode, which skips exactly those sub-blocks.
 TABLES_PRECHECK="gatpoly metal1 metaln"
 
-# The pex stage's klt build. `klt pex --extract-only` (klayout-tools#3739,
-# merged as #3758) is in no released klayout-tools yet (v0.7.0 predates it), so
-# this is the immutable merge commit, run through a throwaway uvx environment
-# -- never the host `klt`. Its stamp (`provenance.klt_version`) is recorded in
-# pex_report.json and quoted in layout/README.md.
-PEX_KLT_FROM="git+https://github.com/2AMLogic/klayout-tools@97b6a54977d4dfedd57747f67d5c38808e7eebf0"
+# The pex stage's klt build: the released klayout-tools 0.8.0 (which carries
+# `klt pex --extract-only`, klayout-tools#3739/#3758), run through a throwaway
+# uvx environment -- never the host `klt`. Its stamp (`provenance.klt_version`)
+# is recorded in pex_report.json and quoted in layout/README.md.
+PEX_KLT_FROM="klayout-tools==0.8.0"
 PEX_NETLIST="${DIR}/sg13cmos5l-${CELL}.pex.spice"
 PEX_REPORT="${DIR}/pex_report.json"
 
@@ -275,8 +274,12 @@ echo "  both decks flagged the planted defects: they are really checking this ge
 say "5. extract"
 # Same relative-path discipline as stage 2 -- the extract report names both
 # its input GDS and its output netlist, and both belong to this directory.
+# --defer-resistor-fixed-offset: the LVS request below sets layout.deck (needed
+# to read the drawn-resistor X cards) together with combine_devices, which
+# applies the deck's fixed resistor offset once after combining; extracting it
+# per primitive as well would count it twice (klt lvs docs, combine_devices).
 ( cd "${DIR}" && klt extract --deck sg13cmos5l --top "${TOP}" \
-    --pins VIN,VOUT,VSS,VREF,IBIAS,EN \
+    --pins VIN,VOUT,VSS,VREF,IBIAS,EN --defer-resistor-fixed-offset \
     -o "sg13cmos5l-${CELL}.extracted.spice" --format json \
     "sg13cmos5l-${CELL}.gds" > extract_report.json )
 python3 - "${DIR}/extract_report.json" <<'PY'
@@ -317,10 +320,12 @@ cat > "${DIR}/lvs_request.json" <<EOF
   "engine": "klayout",
   "layout": {
     "netlist": "sg13cmos5l-${CELL}.extracted.spice",
+    "deck": "sg13cmos5l",
     "top": "${TOP}"
   },
   "reference": {
     "netlist": "sg13cmos5l-${CELL}.lvs_reference.spice",
+    "deck": "sg13cmos5l",
     "top": "${TOP}"
   },
   "options": {
@@ -351,8 +356,8 @@ control() {  # <name> <sed-expression|@drop:REGEX> <what it breaks>
     echo "  ${name}: mutation did not change the netlist -- control is void" >&2; exit 1; }
   cat > "${WORK}/${name}.json" <<EOF
 {"schema":"klt.lvs.request/1","engine":"klayout",
- "layout":{"netlist":"${EXTRACTED}","top":"${TOP}"},
- "reference":{"netlist":"${WORK}/${name}.spice","top":"${TOP}"},
+ "layout":{"netlist":"${EXTRACTED}","deck":"sg13cmos5l","top":"${TOP}"},
+ "reference":{"netlist":"${WORK}/${name}.spice","deck":"sg13cmos5l","top":"${TOP}"},
  "options":{"combine_devices":true}}
 EOF
   klt lvs "${WORK}/${name}.json" --format json > "${WORK}/${name}.out.json" || true
@@ -361,7 +366,9 @@ import json, sys
 d = json.load(open(sys.argv[1]))
 cats = sorted({m['category'] for m in d.get('mismatches', []) if m['severity'] == 'error'})
 print(f"  {sys.argv[2]} ({sys.argv[3]}): status={d['status']}  {cats}")
-sys.exit(0 if d['status'] != 'match' else 1)
+# A control that mismatches only because the request itself is malformed
+# proves nothing: the mutation must be what breaks the compare.
+sys.exit(0 if d['status'] != 'match' and 'reference.unresolved_subckt_call' not in cats else 1)
 PY
 }
 # Topology mutation: move Mn3's gate off G1 onto N1. Nothing about the drawn
@@ -389,7 +396,7 @@ control parameter-control 's/^MMpass \(.*\) W=2800U/MMpass \1 W=2772U/' \
 control pulldown-presence-control '@drop:^MMpd ' "Mpd deleted from the reference"
 control cap-presence-control '@drop:^XCc ' "Cc deleted from the reference"
 control cap-topology-control 's/^XCc EAOUT MZ/XCc EAOUT G1/' "Cc MZ -> G1"
-control cap-parameter-control 's/^XCc \(.*\)W=170 L=30/XCc \1W=85 L=30/' \
+control cap-parameter-control 's/^XCc \(.*\)W=170U L=30U/XCc \1W=85U L=30U/' \
   "Cc W 170u -> 85u"
 
 say "8. ERC -- klt erc supply spec (T1 item 11)"
