@@ -6,11 +6,11 @@
   "files": [
     {
       "path": "design/README.md",
-      "sha256": "sha256:01daf1b2fb333cffbb71fbfc515d70781a61dbed97c0cdc979684a3e473c882f"
+      "sha256": "sha256:385b0e0c6c88adde490eda2376086d8f24158257831faeba512d1793039f8d26"
     },
     {
       "path": "design/netlist.py",
-      "sha256": "sha256:756256ca11e0fa39b04ab8074b82142b265ababd1fa4d3f6a458ed5af287c8f4"
+      "sha256": "sha256:d20899e2bb3c8e68e25ba2225a903b8af51bee432ab40075932e965a6718a679"
     },
     {
       "path": "design/sg13cmos5l/ldo_core_cmos5l.sch",
@@ -29,12 +29,24 @@
       "sha256": "sha256:2dfb232bc6b6374b87cd13e2ede4ddd8c28e570242a141d883871dfd20557076"
     },
     {
+      "path": "design/sg13cmos5l/ldo_ilimit_cmos5l.sch",
+      "sha256": "sha256:cee310b9d8c17b8f68d1239ac7bd0fa9dadea732403d27fb5891d8ba342b31dd"
+    },
+    {
+      "path": "design/sg13cmos5l/ldo_ilimit_cmos5l.sym",
+      "sha256": "sha256:9acadf68f9c3e4a44bcf7ad84414592c17292e4288fe79fea9e67de31ae5ca81"
+    },
+    {
       "path": "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice",
       "sha256": "sha256:08a7b857e1fad43dd7af1f575de97853a058e85541601ecc47567fbc28dbae57"
     },
     {
       "path": "design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice",
       "sha256": "sha256:75ee39ce0c48b54cab6c8a31acd1f199c37c1ccd1ac074a3515dee81cc656fb4"
+    },
+    {
+      "path": "design/sg13cmos5l/netlist/ldo_ilimit_cmos5l.spice",
+      "sha256": "sha256:e3d1ca4acba13e00ba705a4772081a915d0fad6e519aafdf36ec2a3c94fbc04e"
     },
     {
       "path": "design/xschemrc",

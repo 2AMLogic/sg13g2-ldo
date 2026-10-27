@@ -1,0 +1,152 @@
+{
+  "netlist": "tb_load_sweep.spice",
+  "backend": "local",
+  "models": {
+    "lib": "ilimit-corners.lib"
+  },
+  "analysis": {
+    "kind": "dc",
+    "args": "Vg 0 0.06 0.0001"
+  },
+  "measurements": [
+    {
+      "name": "vout_g1ma",
+      "spice": ".meas dc vout_g1ma FIND par('v(out)') AT=0.00055556",
+      "unit": "V"
+    },
+    {
+      "name": "iout_g1ma",
+      "spice": ".meas dc iout_g1ma FIND par('i(vmeas)') AT=0.00055556",
+      "unit": "A"
+    },
+    {
+      "name": "isns_minus_vout_g1ma",
+      "spice": ".meas dc isns_minus_vout_g1ma FIND par('v(xtop.xilim.isns)-v(out)') AT=0.00055556",
+      "unit": "V"
+    },
+    {
+      "name": "vth_minus_vout_g1ma",
+      "spice": ".meas dc vth_minus_vout_g1ma FIND par('v(xtop.xilim.vth)-v(out)') AT=0.00055556",
+      "unit": "V"
+    },
+    {
+      "name": "vin_minus_clg_g1ma",
+      "spice": ".meas dc vin_minus_clg_g1ma FIND par('v(vin)-v(xtop.xilim.clg)') AT=0.00055556",
+      "unit": "V"
+    },
+    {
+      "name": "isup_minus_iout_g1ma",
+      "spice": ".meas dc isup_minus_iout_g1ma FIND par('-i(vin)-i(vmeas)') AT=0.00055556",
+      "unit": "A"
+    },
+    {
+      "name": "vout_g50ma",
+      "spice": ".meas dc vout_g50ma FIND par('v(out)') AT=0.027778",
+      "unit": "V"
+    },
+    {
+      "name": "iout_g50ma",
+      "spice": ".meas dc iout_g50ma FIND par('i(vmeas)') AT=0.027778",
+      "unit": "A"
+    },
+    {
+      "name": "isns_minus_vout_g50ma",
+      "spice": ".meas dc isns_minus_vout_g50ma FIND par('v(xtop.xilim.isns)-v(out)') AT=0.027778",
+      "unit": "V"
+    },
+    {
+      "name": "vth_minus_vout_g50ma",
+      "spice": ".meas dc vth_minus_vout_g50ma FIND par('v(xtop.xilim.vth)-v(out)') AT=0.027778",
+      "unit": "V"
+    },
+    {
+      "name": "vin_minus_clg_g50ma",
+      "spice": ".meas dc vin_minus_clg_g50ma FIND par('v(vin)-v(xtop.xilim.clg)') AT=0.027778",
+      "unit": "V"
+    },
+    {
+      "name": "isup_minus_iout_g50ma",
+      "spice": ".meas dc isup_minus_iout_g50ma FIND par('-i(vin)-i(vmeas)') AT=0.027778",
+      "unit": "A"
+    },
+    {
+      "name": "vout_g72ma",
+      "spice": ".meas dc vout_g72ma FIND par('v(out)') AT=0.04",
+      "unit": "V"
+    },
+    {
+      "name": "iout_g72ma",
+      "spice": ".meas dc iout_g72ma FIND par('i(vmeas)') AT=0.04",
+      "unit": "A"
+    },
+    {
+      "name": "isns_minus_vout_g72ma",
+      "spice": ".meas dc isns_minus_vout_g72ma FIND par('v(xtop.xilim.isns)-v(out)') AT=0.04",
+      "unit": "V"
+    },
+    {
+      "name": "vth_minus_vout_g72ma",
+      "spice": ".meas dc vth_minus_vout_g72ma FIND par('v(xtop.xilim.vth)-v(out)') AT=0.04",
+      "unit": "V"
+    },
+    {
+      "name": "vin_minus_clg_g72ma",
+      "spice": ".meas dc vin_minus_clg_g72ma FIND par('v(vin)-v(xtop.xilim.clg)') AT=0.04",
+      "unit": "V"
+    },
+    {
+      "name": "isup_minus_iout_g72ma",
+      "spice": ".meas dc isup_minus_iout_g72ma FIND par('-i(vin)-i(vmeas)') AT=0.04",
+      "unit": "A"
+    },
+    {
+      "name": "vout_g80ma",
+      "spice": ".meas dc vout_g80ma FIND par('v(out)') AT=0.05",
+      "unit": "V"
+    },
+    {
+      "name": "iout_g80ma",
+      "spice": ".meas dc iout_g80ma FIND par('i(vmeas)') AT=0.05",
+      "unit": "A"
+    },
+    {
+      "name": "isns_minus_vout_g80ma",
+      "spice": ".meas dc isns_minus_vout_g80ma FIND par('v(xtop.xilim.isns)-v(out)') AT=0.05",
+      "unit": "V"
+    },
+    {
+      "name": "vth_minus_vout_g80ma",
+      "spice": ".meas dc vth_minus_vout_g80ma FIND par('v(xtop.xilim.vth)-v(out)') AT=0.05",
+      "unit": "V"
+    },
+    {
+      "name": "vin_minus_clg_g80ma",
+      "spice": ".meas dc vin_minus_clg_g80ma FIND par('v(vin)-v(xtop.xilim.clg)') AT=0.05",
+      "unit": "V"
+    },
+    {
+      "name": "isup_minus_iout_g80ma",
+      "spice": ".meas dc isup_minus_iout_g80ma FIND par('-i(vin)-i(vmeas)') AT=0.05",
+      "unit": "A"
+    }
+  ],
+  "corners": {
+    "process": [
+      "tt_nom"
+    ],
+    "temperature_c": [
+      27
+    ]
+  },
+  "options": {
+    "timeout_s": 300,
+    "keep_artifacts": true,
+    "stage_model_inputs": true,
+    "osdi_preload": [
+      "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/psp103.osdi",
+      "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/psp103_nqs.osdi",
+      "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/mosvar.osdi",
+      "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/r3_cmc.osdi"
+    ]
+  }
+}

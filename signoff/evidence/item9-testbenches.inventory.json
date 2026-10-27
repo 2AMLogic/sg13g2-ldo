@@ -141,6 +141,50 @@
       "sha256": "sha256:6a3ac3c82cd16b6143eb411e51774aebf9932d601402531eedd8141ea89db211"
     },
     {
+      "path": "sim/ldo-cmos5l-ilimit/README.md",
+      "sha256": "sha256:d220651bc787f5a42c1419d117de7260b2e97188c35440992e5f777cd4f300a6"
+    },
+    {
+      "path": "sim/ldo-cmos5l-ilimit/core_with_ilimit.spice",
+      "sha256": "sha256:bcc462c70c4096282181d94b0ba5e56bace015b8c56288b8531fc9b4160451f9"
+    },
+    {
+      "path": "sim/ldo-cmos5l-ilimit/gen_core_with_ilimit.sh",
+      "sha256": "sha256:090d7153189866a8d80e9039c7e0b084df031267a278326b334a192bc5305140"
+    },
+    {
+      "path": "sim/ldo-cmos5l-ilimit/ilimit-corners.lib",
+      "sha256": "sha256:c7a785c2c0f516454bcb867d06d49f103d5fcf57d7911d19bfaea868a06d4ae1"
+    },
+    {
+      "path": "sim/ldo-cmos5l-ilimit/request-disabled.json",
+      "sha256": "sha256:d27198810ab1783535cda2b32821e6ba9d97d229097692f27ff0aa7239115ca3"
+    },
+    {
+      "path": "sim/ldo-cmos5l-ilimit/request-forced-vout.json",
+      "sha256": "sha256:43ca3a657b1f00f10f968b1a5f16efbc24746646b7759d998f51188ad96007e7"
+    },
+    {
+      "path": "sim/ldo-cmos5l-ilimit/request-load-sweep.json",
+      "sha256": "sha256:fde449152500b4127bcc00c29555eb1217d9b0329d010cc8f7d16bb24985da4f"
+    },
+    {
+      "path": "sim/ldo-cmos5l-ilimit/run_smoke.sh",
+      "sha256": "sha256:b87ee2dd4da7e880027880a2da2bd9b3d3cf01037bedd6693c5f96e85d484115"
+    },
+    {
+      "path": "sim/ldo-cmos5l-ilimit/tb_disabled.spice",
+      "sha256": "sha256:462e8ed0a5c737df1795f9cf66d4a4f271a18149e98dcd9c7c18a4a1abc0e44c"
+    },
+    {
+      "path": "sim/ldo-cmos5l-ilimit/tb_forced_vout.spice",
+      "sha256": "sha256:596168b88dcbfb432bcaff7f36eb684889884a4b466156b115e74607e045458b"
+    },
+    {
+      "path": "sim/ldo-cmos5l-ilimit/tb_load_sweep.spice",
+      "sha256": "sha256:2ffed63883dba470254af959f9e32caf05084e527658842b260109fe69ab9687"
+    },
+    {
       "path": "sim/ldo-cmos5l-monte-carlo/README.md",
       "sha256": "sha256:b394be3e46d8e2ea5bd2087a27d16e87f8e2773a86cada4af57ced5ced41fb7a"
     },

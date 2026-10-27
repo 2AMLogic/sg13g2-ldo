@@ -1,0 +1,38 @@
+* klt sim -- generated corner deck, do not edit
+.lib /home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-165/sim/ldo-cmos5l-ilimit/ilimit-corners.lib tt_nom
+.include /home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-165/sim/ldo-cmos5l-ilimit/tb_load_sweep.spice
+.temp 27
+.meas dc vout_g1ma FIND par('v(out)') AT=0.00055556
+.meas dc iout_g1ma FIND par('i(vmeas)') AT=0.00055556
+.meas dc isns_minus_vout_g1ma FIND par('v(xtop.xilim.isns)-v(out)') AT=0.00055556
+.meas dc vth_minus_vout_g1ma FIND par('v(xtop.xilim.vth)-v(out)') AT=0.00055556
+.meas dc vin_minus_clg_g1ma FIND par('v(vin)-v(xtop.xilim.clg)') AT=0.00055556
+.meas dc isup_minus_iout_g1ma FIND par('-i(vin)-i(vmeas)') AT=0.00055556
+.meas dc vout_g50ma FIND par('v(out)') AT=0.027778
+.meas dc iout_g50ma FIND par('i(vmeas)') AT=0.027778
+.meas dc isns_minus_vout_g50ma FIND par('v(xtop.xilim.isns)-v(out)') AT=0.027778
+.meas dc vth_minus_vout_g50ma FIND par('v(xtop.xilim.vth)-v(out)') AT=0.027778
+.meas dc vin_minus_clg_g50ma FIND par('v(vin)-v(xtop.xilim.clg)') AT=0.027778
+.meas dc isup_minus_iout_g50ma FIND par('-i(vin)-i(vmeas)') AT=0.027778
+.meas dc vout_g72ma FIND par('v(out)') AT=0.04
+.meas dc iout_g72ma FIND par('i(vmeas)') AT=0.04
+.meas dc isns_minus_vout_g72ma FIND par('v(xtop.xilim.isns)-v(out)') AT=0.04
+.meas dc vth_minus_vout_g72ma FIND par('v(xtop.xilim.vth)-v(out)') AT=0.04
+.meas dc vin_minus_clg_g72ma FIND par('v(vin)-v(xtop.xilim.clg)') AT=0.04
+.meas dc isup_minus_iout_g72ma FIND par('-i(vin)-i(vmeas)') AT=0.04
+.meas dc vout_g80ma FIND par('v(out)') AT=0.05
+.meas dc iout_g80ma FIND par('i(vmeas)') AT=0.05
+.meas dc isns_minus_vout_g80ma FIND par('v(xtop.xilim.isns)-v(out)') AT=0.05
+.meas dc vth_minus_vout_g80ma FIND par('v(xtop.xilim.vth)-v(out)') AT=0.05
+.meas dc vin_minus_clg_g80ma FIND par('v(vin)-v(xtop.xilim.clg)') AT=0.05
+.meas dc isup_minus_iout_g80ma FIND par('-i(vin)-i(vmeas)') AT=0.05
+.control
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/psp103.osdi
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/psp103_nqs.osdi
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/mosvar.osdi
+pre_osdi /home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/r3_cmc.osdi
+save all
+dc Vg 0 0.06 0.0001
+quit
+.endc
+.end

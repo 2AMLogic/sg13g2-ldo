@@ -6,16 +6,26 @@
 > cites those numbers. No open pull request or remote branch carries a
 > DR-0017 (checked against `origin` at `ed55de7c` on 2026-10-15).
 
-- **Status**: **Proposed.** This is a design plan for review. Nothing in it
-  is ratified, implemented or measured. Row 8 (current limit, `65–80 mA
+- **Status**: **Accepted for bounded development only** (reconciled in the
+  #165 implementation PR; the plan itself was proposed in #163). The
+  acceptance act is the operator ruling on issue #165 of 2026-10-19
+  (<https://github.com/2AMLogic/sg13g2-ldo/issues/165#issuecomment-6283868941>),
+  which accepts this record as the development plan for #165 and nominal
+  smoke checks only. It is dated 2026-10-19 and is not a retroactive approval
+  of PR #163. It is not numerical ratification or validation of the limiter:
+  the sizes and the 72.32 mA value below are still candidates and
+  calculations, and nothing in this record is ratified or measured except the
+  [M]-tagged anchors. Row 8 (current limit, `65–80 mA
   brickwall over PVT; short-survivable`) stays **Open** in
   [`DR-0007`](DR-0007-target-spec-row-ratification.md) and in the root
   `README.md`. Row 1's carried `|Vsg|` gate stays open as well. The target is
   unchanged and no gate, threshold, record or verdict is loosened. The record
   changes no schematic, netlist, testbench, layout or measurement record.
-  Operator approval of the pull request that carries it is the acceptance
-  act for the *plan* (fleet policy `2AMLogic/2am#357`, as quoted in
-  `DR-0002`). The two review keys still release row 8 itself, later and on
+  This record originally named operator approval of the pull request that
+  carries it as the acceptance act for the *plan* (fleet policy
+  `2AMLogic/2am#357`, as quoted in `DR-0002`). #163 was merged by the fleet
+  bot without that approval, so the 2026-10-19 ruling above is the acceptance
+  act instead. The two review keys still release row 8 itself, later and on
   evidence.
 - **Date**: 2026-10-15
 - **Scope**: the SG13CMOS5L branch only (`design/sg13cmos5l/`). Issue #63.
@@ -206,6 +216,14 @@ A new internal cell **`ldo_ilimit_cmos5l`** (`design/sg13cmos5l/ldo_ilimit_cmos5
 ```
 Xilim VIN VOUT EAOUT IBIAS EN VSS ldo_ilimit_cmos5l
 ```
+
+> **Integration deferred (#165, operator ruling of 2026-10-24 on #165).**
+> The instance above is the planned integration, not what #165 delivers.
+> `ldo_ilimit_cmos5l` lands as a standalone cell and `ldo_core_cmos5l` is
+> unchanged; instantiating it in the core is deferred to #190, which carries
+> the refreshed PVT/startup/loop-gain evidence. The nominal tt/27 °C/3.30 V
+> smoke wraps the core plus `Xilim` in a testbench-local subckt. Nothing in
+> this note ratifies row 8 or relaxes any gate.
 
 ### 2. Threshold equation and candidate values
 
