@@ -1,11 +1,15 @@
 {
-  "schema_version": 3,
-  "file": "sg13cmos5l-ldo_core_cmos5l.gds",
+  "schema_version": 4,
+  "file": {
+    "path": "layout/sg13cmos5l-ldo_core_cmos5l/sg13cmos5l-ldo_core_cmos5l.gds",
+    "scope": "repo"
+  },
   "deck": "sg13cmos5l",
   "top": "sg13cmos5l_ldo_core_cmos5l",
   "dbu_um": 0.001,
   "netlist_path": "sg13cmos5l-ldo_core_cmos5l.extracted.spice",
-  "netlist_sha256": "5a9350b5a94e129ff4b69cf96a65475587f21d9ba270cba9d3c1a962fc1dece4",
+  "netlist_sha256": "5a3258118e17646cc5665b330ab40b50f353e2a1f7a49e37640e8c1fbd83ccf5",
+  "netlist_normalized_sha256": "739cfa9592a9d8cc51db1f84138351993c2b408d4d1ada9d50dd1b9a18baa4b8",
   "status": "extracted",
   "device_count": 137,
   "net_count": 13,
@@ -809,9 +813,12 @@
       },
       "params": {
         "w_um": 170.0,
-        "l_um": 30.0
+        "l_um": 30.0,
+        "mmin": 1,
+        "mmax": 1
       },
-      "instance_path": []
+      "instance_path": [],
+      "feed": "double"
     },
     {
       "name": "$135",
@@ -3188,20 +3195,37 @@
   "abstracted_cells": [],
   "unmodelled_poly": [],
   "merged_net_labels": [],
+  "split_net_labels": [],
   "voltage_domain_warnings": [],
+  "missing_flavour_markers": [],
+  "unsupported_devices": [],
   "unbiased_pmos_body_nets": [],
   "single_terminal_nets": [],
   "dead_metal": [],
   "matched_device_groups": [],
+  "def_pin_promotion": null,
+  "pin_renames": null,
+  "rename_declared_pins": false,
+  "declared_pins": [
+    "EN",
+    "IBIAS",
+    "VIN",
+    "VOUT",
+    "VREF",
+    "VSS"
+  ],
+  "def_pins": null,
+  "label_layers": null,
+  "probes": [],
   "pdk": null,
   "provenance": {
-    "klt_version": "0.5.0+gb15edf5e3a2e",
+    "klt_version": "0.8.0",
     "klayout_version": "0.30.12",
     "pdk": null,
     "deck": {
       "name": "sg13cmos5l",
-      "content_hash": "sha256:1912f17486e78de5259aab5d68533488ebbd239a05018f096217aa62ddee2909",
-      "released": false
+      "content_hash": "sha256:5a43b8eb0e1a4c228169cd33d820bf75ca5640812587f68c07f24f4aa2a1738f",
+      "released": true
     },
     "input": {
       "content_hash": "sha256:06d92e1aadb8b51614016f2f5d953c8bd0674380267f8ab90c2b0cca59576629",
@@ -3210,9 +3234,22 @@
   },
   "parasitics": null,
   "spef_path": null,
+  "subcircuit": null,
   "metrics": {
     "extract__device__count": 137,
     "extract__net__count": 13,
     "extract__pin__count": 6
+  },
+  "timing": {
+    "stages": {
+      "read_layout": 0.002,
+      "device_extraction": 0.097,
+      "diagnostics": 0.0,
+      "netlist_write": 0.002,
+      "netlist_hash": 0.0,
+      "netlist_normalized_hash": 0.002
+    },
+    "total_seconds": 0.194,
+    "unattributed_seconds": 0.091
   }
 }

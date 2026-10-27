@@ -3,10 +3,12 @@
   "engine": "klayout",
   "layout": {
     "netlist": "sg13cmos5l-ldo_core_cmos5l.extracted.spice",
+    "deck": "sg13cmos5l",
     "top": "sg13cmos5l_ldo_core_cmos5l"
   },
   "reference": {
     "netlist": "sg13cmos5l-ldo_core_cmos5l.lvs_reference.spice",
+    "deck": "sg13cmos5l",
     "top": "sg13cmos5l_ldo_core_cmos5l"
   },
   "options": {

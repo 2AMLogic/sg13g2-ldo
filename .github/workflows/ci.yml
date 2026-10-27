@@ -137,17 +137,12 @@ env:
   IHP_OPEN_PDK_VERSION: "0.3.0"
   # Pin the klayout-tools ref this workflow checks out its PDK-fetch scripts
   # from, so a future klayout-tools change can't silently alter this repo's
-  # CI. Bump deliberately, alongside IHP_OPEN_PDK_VERSION above if the two
-  # move together. This is an immutable commit (not a tag) because #155:
-  # klayout-tools#2720 migrated scripts/fetch-ihp-sg13cmos5l.sh from the
-  # archived IHP-GmbH/ihp-sg13cmos5l repository to the ihp-sg13cmos5l/
-  # subtree of IHP-GmbH/IHP-Open-PDK `dev`, and v0.7.0 predates that
-  # migration. 159527a551 is the latest commit touching that script when
-  # chosen; its fetch-ihp-sg13g2.sh is byte-identical to v0.7.0's (sha256
-  # bdb2c8debbe3...), so the SG13G2 fetch is unchanged. This ref is ONLY the
-  # fetch-script source: the layout/signoff tool builds below are separate
-  # pins and were deliberately NOT moved by this change.
-  KLAYOUT_TOOLS_REF: "159527a551596caa74f290dcab08bdb8cc78ce93"
+  # CI. This is the immutable commit of the v0.8.0 tag (c572046be644); the
+  # fetch scripts exist at that tag. Bump deliberately, alongside
+  # KLAYOUT_TOOLS_VERSION and IHP_OPEN_PDK_VERSION above if they move
+  # together. This ref is ONLY the fetch-script source; the klt that the jobs
+  # run is installed from PyPI at KLAYOUT_TOOLS_VERSION.
+  KLAYOUT_TOOLS_REF: "c572046be644e0407f693f2410f3abb799d68a3a"
   # IHP-Open-PDK `dev` commit (subtree ihp-sg13cmos5l/, tarball sha256
   # 5eb6f8a9b0b2ecc4fa08cc30627668406f85b1a97834f278036c43f0c0dbc70b) that
   # scripts/fetch-ihp-sg13cmos5l.sh at KLAYOUT_TOOLS_REF pins; only used in
@@ -156,36 +151,17 @@ env:
   # <PDK_ROOT>/ihp-sg13cmos5l/.fetched-version). Superseded pin:
   # 607e18d4bd9214a52575c194b4181ef449f9252f (archived ihp-sg13cmos5l repo).
   IHP_SG13CMOS5L_COMMIT: "f7bca32694fe3d58be0cc7d9df4b9f5db7161a14"
-  # Pin the klt build that grades signoff/sg13g2-ldo.json (#44). The
-  # item-11 (power delivery) grading rules, the "erc" evidence kind, and
-  # input-artifact verification (citation `input_verified`, which re-hashes
-  # the cited input instead of trusting the envelope's say-so) all shipped
-  # upstream after the v0.5.0 release, so the tier report is graded with
-  # this exact post-release commit -- the same build whose stamp layout/'s
-  # committed erc_supply_report.json records (provenance.klt_version
-  # "0.7.0+gb82427b30c96"). Bumped from b15edf5e3a2e for #59: the item-11
-  # tie declaration needs ties[].well_layer: null + well_boxes (#2255) and
-  # ties[].well_requires_boxes (#2540), neither of which b15edf5e parses.
-  # Not bumped for #60: this commit already descends from klayout-tools#2843
-  # (merge commit 3a75c3ae705b), which adds the artifact-anchored
-  # `kind: generic` evidence (t1_item + provenance.input.path/content_hash +
-  # artifact_binding) that items 1/2/9/10 cite.
-  # Bump deliberately, in the same PR as the
-  # regenerated signoff/sg13g2-ldo.t1-report.json (the signoff-t1-report job
-  # fails on any drift, including this pin moving).
-  KLAYOUT_TOOLS_SIGNOFF_REF: "b82427b30c9604b53b2dce64850409841cc38bde"
-  # Pin the klt build that layout-check verifies the committed layout
-  # reports with (#101). This is NOT the signoff pin above, on purpose:
-  # `klt drc --check` / `klt extract --check` re-hash the curated deck the
-  # committed report recorded against the deck of the klt running the check,
-  # and layout/'s drc/extract/lvs reports were produced on 0.5.0+gb15edf5e3a2e
-  # (layout/README.md, "#68 ... regenerated every artifact"; the erc report
-  # alone is on the signoff pin). The curated sg13cmos5l deck changed between
-  # the two builds, so checking under the signoff pin reports
-  # `[DRIFTED] provenance.deck.content_hash` on an untouched tree. Bump this
-  # only in the same PR that re-runs layout/run_flow.sh (full mode) on the
-  # new build and commits every refreshed report.
-  KLAYOUT_TOOLS_LAYOUT_REF: "b15edf5e3a2e56467a3406c98a2555eb1a5ae45c"
+  # The klt release every job that runs `klt` installs from PyPI
+  # (`pip install klayout-tools==${KLAYOUT_TOOLS_VERSION}`): the signoff
+  # grader (signoff-t1-report) and the layout check (layout-check) run on the
+  # same build, so committed evidence carries one version stamp. A release
+  # build stamps bare `klt 0.8.0`; a git build stamps a dev version and fails
+  # an `==` pin (klayout-tools#2823), so do not move back to a git install.
+  # Bump deliberately, in the same PR as the regenerated
+  # signoff/sg13g2-ldo.t1-report.json and every layout/ report (the
+  # signoff-t1-report and layout-check jobs fail on any drift, including this
+  # pin moving).
+  KLAYOUT_TOOLS_VERSION: "0.8.0"
   # The KLayout Python module generate.py draws with. klt only floors it
   # (klayout>=0.30), and the committed GDS / reports were produced with
   # 0.30.12 (their provenance.klayout_version), so pin it exactly: a
@@ -399,20 +375,10 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Clone klayout-tools at the pinned signoff ref
-        # Deliberately NOT `pip install git+https://...@<sha>`: pip's
-        # direct-URL export loses the clean working-tree state the build's
-        # version stamp is derived from, so the build block reports
-        # `dirty: true` and the regenerated report byte-differs from the
-        # committed one on every run. A plain clone + checkout + path
-        # install reproduces the exact `0.7.0+gb82427b30c96` stamp the
-        # committed evidence record carries (verified locally).
+      - name: Install klayout-tools at the pinned release
         run: |
-          git clone --quiet https://github.com/2AMLogic/klayout-tools.git \
-            "${RUNNER_TEMP}/klayout-tools"
-          git -C "${RUNNER_TEMP}/klayout-tools" checkout \
-            "${KLAYOUT_TOOLS_SIGNOFF_REF}"
-          pip install "${RUNNER_TEMP}/klayout-tools"
+          pip install "klayout-tools==${KLAYOUT_TOOLS_VERSION}"
+          klt --version
 
       - name: Verify the item 1/2/9/10 evidence inventories (PDK-free, stdlib only)
         # Items 1/2/9/10 are each backed by several files; the generic
@@ -726,16 +692,9 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Clone and install klayout-tools at the pinned layout ref
-        # Same clone + checkout + path install as signoff-t1-report (a
-        # direct-URL pip install loses the clean version stamp), at the
-        # build the committed layout reports were produced with.
+      - name: Install klayout-tools at the pinned release
         run: |
-          git clone --quiet https://github.com/2AMLogic/klayout-tools.git \
-            "${RUNNER_TEMP}/klayout-tools"
-          git -C "${RUNNER_TEMP}/klayout-tools" checkout \
-            "${KLAYOUT_TOOLS_LAYOUT_REF}"
-          pip install "${RUNNER_TEMP}/klayout-tools" "klayout==${KLAYOUT_PY_VERSION}"
+          pip install "klayout-tools==${KLAYOUT_TOOLS_VERSION}" "klayout==${KLAYOUT_PY_VERSION}"
           klt --version
           python3 -c "import klayout.db as k; print('klayout', k.__version__)"
 
