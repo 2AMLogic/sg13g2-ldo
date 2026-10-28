@@ -20,13 +20,12 @@ _None._
 `loom:important`; taken before unlabelled work.
 
 - **#55**: Corner verification: klt sim corner-matrix envelopes against the ratified spec (T1 item 5)
-- **#165**: SG13CMOS5L: implement ldo_ilimit_cmos5l per DR-0017 and instantiate in core
 
 ## Ready
 
 Human-approved issues ready for implementation (`loom:issue`).
 
-- **#165**: SG13CMOS5L: implement ldo_ilimit_cmos5l per DR-0017 and instantiate in core
+_None._
 
 ## In Progress
 
@@ -53,8 +52,8 @@ Issues carrying `loom:curated`.
 - **#55**: Corner verification: klt sim corner-matrix envelopes against the ratified spec (T1 item 5) *(curated)*
 - **#56**: Monte Carlo: klt yield evidence for the statistical ratified spec rows (T1 item 6) *(curated)*
 - **#64**: sim: parameterise loop-gain/PSRR benches over load, Cout and ESR for rows 3, 6, 10 dynamic coverage *(curated)*
-- **#165**: SG13CMOS5L: implement ldo_ilimit_cmos5l per DR-0017 and instantiate in core *(curated)*
 - **#183**: Adopt the common artifact store for sim evidence (manifests in git, bytes via klt artifact) *(curated)*
+- **#199**: T1 grading: attest items 1, 9, 10 with klt signoff --attest instead of hand-rolled inventory envelopes *(curated)*
 
 ## Proposed (Architect / Hermit)
 
@@ -70,8 +69,8 @@ _None._
 |------|-------|
 | Operator merge-risk holds | 0 |
 | Very important | 0 |
-| Important | 2 |
-| Ready (`loom:issue`) | 1 |
+| Important | 1 |
+| Ready (`loom:issue`) | 0 |
 | In Progress (`loom:building`) | 1 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
