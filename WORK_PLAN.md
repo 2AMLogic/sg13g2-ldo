@@ -25,13 +25,13 @@ _None._
 
 Human-approved issues ready for implementation (`loom:issue`).
 
-_None._
+- **#183**: Adopt the common artifact store for sim evidence (manifests in git, bytes via klt artifact)
 
 ## In Progress
 
 Issues currently being built (`loom:building`).
 
-- **#183**: Adopt the common artifact store for sim evidence (manifests in git, bytes via klt artifact)
+_None._
 
 ## PRs Awaiting Review
 
@@ -70,8 +70,8 @@ _None._
 | Operator merge-risk holds | 0 |
 | Very important | 0 |
 | Important | 1 |
-| Ready (`loom:issue`) | 0 |
-| In Progress (`loom:building`) | 1 |
+| Ready (`loom:issue`) | 1 |
+| In Progress (`loom:building`) | 0 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
 | Curated | 5 |
