@@ -237,7 +237,7 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:df2cdc635f397f9c1d4670ab91161baecda31258b6ef3ec44e5a5a6e2eee4b70",
+        "content_hash": "sha256:981e37e647630cdb544b6dcc4972c75f3574c9a57fd22e1de5695247ed60ac86",
         "input_verified": true,
         "exit_status": 0,
         "artifact_binding": {
@@ -246,7 +246,7 @@
             "path": "signoff/evidence/item9-testbenches.inventory.json",
             "scope": "repo"
           },
-          "content_hash": "sha256:df2cdc635f397f9c1d4670ab91161baecda31258b6ef3ec44e5a5a6e2eee4b70",
+          "content_hash": "sha256:981e37e647630cdb544b6dcc4972c75f3574c9a57fd22e1de5695247ed60ac86",
           "input_verified": true,
           "summary": "The shipped ngspice testbenches/templates, their cold-start entry points (run_*.sh) and experiment READMEs are committed; every constituent hash matches the inventory and each README names its entry point. Testbenches are NOT re-run by this attestation and no measurement result is claimed.",
           "source": "signoff/evidence/item9-testbenches.inventory.json"
@@ -268,7 +268,7 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:276b5d23d65989c94876564e84c2930c982c4752b5e94794c4a9230a4c2f6288",
+        "content_hash": "sha256:b35123bc490e7116224a5f4c3a2e52c045a8a3b5fee6fd7155d2a65a36331a90",
         "input_verified": true,
         "exit_status": 0,
         "artifact_binding": {
@@ -277,7 +277,7 @@
             "path": "signoff/evidence/item10-repo-hygiene.inventory.json",
             "scope": "repo"
           },
-          "content_hash": "sha256:276b5d23d65989c94876564e84c2930c982c4752b5e94794c4a9230a4c2f6288",
+          "content_hash": "sha256:b35123bc490e7116224a5f4c3a2e52c045a8a3b5fee6fd7155d2a65a36331a90",
           "input_verified": true,
           "summary": "README, LICENSE, spec index, agent instructions and the CI workflow are committed; every constituent hash matches the inventory and the CI workflow still defines the PDK-free signoff gates. Hygiene presence/freshness only.",
           "source": "signoff/evidence/item10-repo-hygiene.inventory.json"
