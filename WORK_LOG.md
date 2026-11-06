@@ -2,6 +2,11 @@
 
 Chronological record of recently merged pull requests and closed issues, maintained by the Loom Guide role.
 
+### 2026-11-06
+
+- **PR #205**: ci: re-run committed klt yield verdicts in monte-carlo-record
+- **Issue #204** (closed): CI: re-run committed klt yield verdicts now that klayout-tools[yield] installs from PyPI
+
 ### 2026-10-27
 
 - **PR #197**: build: bump klayout-tools pins to 0.8.0 and regenerate evidence
