@@ -24,11 +24,11 @@
     },
     "9": {
       "file": "signoff/evidence/item9-testbenches.envelope.json",
-      "content_hash": "sha256:df2cdc635f397f9c1d4670ab91161baecda31258b6ef3ec44e5a5a6e2eee4b70"
+      "content_hash": "sha256:981e37e647630cdb544b6dcc4972c75f3574c9a57fd22e1de5695247ed60ac86"
     },
     "10": {
       "file": "signoff/evidence/item10-repo-hygiene.envelope.json",
-      "content_hash": "sha256:276b5d23d65989c94876564e84c2930c982c4752b5e94794c4a9230a4c2f6288"
+      "content_hash": "sha256:b35123bc490e7116224a5f4c3a2e52c045a8a3b5fee6fd7155d2a65a36331a90"
     },
     "11": [
       {

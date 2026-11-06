@@ -207,8 +207,12 @@ and the record CSV from the committed raw reports. It is offline, with no PDK
 and no simulator. `run_campaign.sh check <record-dir>` is the stdlib-only
 subset CI runs (`monte-carlo-record` job). It re-derives the sample-set
 documents, `crosscheck.json` and the CSV, asserts the campaign invariants,
-and fails on any drift. It does not re-run `klt yield` (no native extension
-in CI, klayout-tools#2900).
+and fails on any drift. CI also installs
+`klayout-tools[yield]` (pinned), runs the klt-yield contract tests with no
+skips, and `check_yield_verdicts.py` re-runs `klt yield` on every committed
+`yield/*.samples.json` and fails on exit-code, status, yield-block or
+negative-control drift. `yield/attribution/` is not gated
+(`--include-attribution`): its zero-spread populations drift under klt 0.8.0.
 
 ## Toolchain (and its friction)
 
@@ -238,8 +242,8 @@ in CI, klayout-tools#2900).
   ihp-sg13g2 Verilog-A sources the SG13CMOS5L tree symlinks to.
   `cornerMOShv.lib`/`cornerRES.lib` are likewise byte-identical across the
   two PDK trees (`sim/pdk-cmos5l.json`).
-- **`klt yield`** needs the `klt_yield_native` extension, and
-  `klayout-tools[yield]` does not resolve from PyPI (klayout-tools#2900). The
+- **`klt yield`** needs the `klt_yield_native` extension, which
+  `klayout-tools[yield]` now installs from PyPI (klt-yield-native wheel). The
   committed yield reports were produced by klt `0.7.0+g4cbdfa769875` with the
   extension built from that same source tree into a scratch virtualenv
   (`maturin develop --release` in `native/yield/`). No host-wide tool was

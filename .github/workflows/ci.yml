@@ -614,15 +614,16 @@ jobs:
 
   monte-carlo-record:
     name: sim/ldo-cmos5l-monte-carlo record check (row-2 MC evidence, no PDK / no simulator)
-    # Offline and stdlib-only (#56): re-derives the per-population klt yield
-    # sample-set documents, crosscheck.json and the per-draw CSV from the
-    # COMMITTED raw klt sim reports and fails on any byte of drift, plus the
-    # campaign invariants (reproduction, distinct seeds, zero-spread sampler
-    # control, negative-control seed pairing, draw accounting). The klt
-    # yield reports themselves need the klt_yield_native extension, which
-    # klayout-tools[yield] cannot install from PyPI (klayout-tools#2900), so
-    # their verdicts are not re-run here; the unit tests' klt-yield contract
-    # cases skip with that reason. No simulation runs in CI.
+    # No PDK, no simulator (#56, #204): re-derives the per-population klt
+    # yield sample-set documents, crosscheck.json and the per-draw CSV from
+    # the COMMITTED raw klt sim reports and fails on any byte of drift, plus
+    # the campaign invariants (reproduction, distinct seeds, zero-spread
+    # sampler control, negative-control seed pairing, draw accounting).
+    # klayout-tools[yield] installs from PyPI (klt-yield-native wheel), so the
+    # klt-yield contract tests run (a skip fails the job) and check_yield_
+    # verdicts.py re-runs klt yield on every committed samples document and
+    # fails on verdict, yield-block, negative-control or exit-code drift.
+    # No simulation runs in CI.
     runs-on: ubuntu-latest
     steps:
       - name: Check out sg13g2-ldo
@@ -632,8 +633,21 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Install klayout-tools[yield] (klt yield + native extension)
+        run: pip install "klayout-tools[yield]==${KLAYOUT_TOOLS_VERSION}"
+
       - name: Unit tests (split, null/inconclusive accounting, cross-checks)
-        run: python3 -m unittest discover -s sim/ldo-cmos5l-monte-carlo -p 'test_*.py' -v
+        # -v output is checked below: the klt-yield contract tests must run.
+        run: |
+          python3 -m unittest discover -s sim/ldo-cmos5l-monte-carlo -p 'test_*.py' -v 2>&1 | tee /tmp/mc-unittest.log
+          test "${PIPESTATUS[0]}" -eq 0
+          if grep -Eq 'skipped|KltYieldContractTests.*(skip|SKIP)' /tmp/mc-unittest.log; then
+            echo "::error::monte-carlo unit tests skipped; klt yield native extension must import"
+            exit 1
+          fi
+
+      - name: Committed klt yield verdicts reproduce (re-run klt yield)
+        run: python3 sim/ldo-cmos5l-monte-carlo/check_yield_verdicts.py
 
       - name: Every committed record reproduces from its raw reports
         run: |
