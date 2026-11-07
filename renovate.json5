@@ -1,0 +1,93 @@
+// Renovate configuration for 2AMLogic/sg13g2-ldo
+// Docs: https://docs.renovatebot.com/configuration-options/
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+
+  // Extend recommended defaults, plus security-focused presets
+  "extends": [
+    "config:recommended",
+    "security:openssf-scorecard",
+    ":dependencyDashboard"
+  ],
+
+  // Override Mend-hosted "silent" default (applied when app is installed on
+  // "All repositories").  "full" lets Renovate create branches, PRs, and the
+  // Dependency Dashboard issue.
+  "mode": "full",
+
+  // --- Supply chain security ---
+
+  // 14-day quarantine: do not propose updates until 14 days after release.
+  // This lets registries catch and yank malicious packages before we see them.
+  // Ref: https://docs.renovatebot.com/key-concepts/minimum-release-age/
+  "minimumReleaseAge": "14 days",
+
+  // Flag known vulnerabilities from the OSV database
+  "osvVulnerabilityAlerts": true,
+
+  // --- Merge policy ---
+
+  // Never auto-merge. Agents review, humans merge.
+  "automerge": false,
+
+  // Create PRs as drafts — every update requires an explicit mark-ready
+  // review pass before it can merge
+  "draftPR": true,
+
+  // --- Schedule ---
+
+  // Weekly on Monday mornings (UTC). Security/vulnerability PRs bypass
+  // both this schedule and minimumReleaseAge (Renovate built-in behavior).
+  // Ref: https://docs.renovatebot.com/key-concepts/minimum-release-age/
+  // "Security updates bypass any minimumReleaseAge checks"
+  "schedule": ["before 10am on monday"],
+  "timezone": "UTC",
+
+  // --- PR behavior ---
+
+  // Limit concurrent PRs to keep review queue manageable
+  "prConcurrentLimit": 5,
+
+  // Add release notes and changelogs to PR body for agent review
+  // (renamed from fetchReleaseNotes; "pr" is the default, set explicitly)
+  "fetchChangeLogs": "pr",
+
+  // --- Package grouping ---
+
+  "packageRules": [
+    // Group all GitHub Actions updates (including digest pins) into one PR.
+    // This repo currently pins actions by tag (e.g. actions/checkout@v4);
+    // digest-pin proposals here are a deliberate supply-chain hardening
+    // step, not an existing repo convention — review them as policy change.
+    // Renovate preserves inline "# vX.Y.Z" version comments when updating.
+    {
+      "groupName": "github-actions",
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["minor", "patch", "digest"]
+    },
+
+    // GitHub Actions major updates get individual PRs
+    {
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["major"]
+    }
+
+    // Note: security/vulnerability PRs bypass both schedule and
+    // minimumReleaseAge by default (Renovate built-in behavior).
+    // Ref: https://docs.renovatebot.com/key-concepts/minimum-release-age/
+    // No packageRule needed — vulnerabilityAlerts config below handles it.
+  ],
+
+  // --- Ignored paths ---
+
+  // Don't touch local agent-orchestration config
+  "ignorePaths": [
+    ".claude/**"
+  ],
+
+  // --- Vulnerability alerts ---
+
+  "vulnerabilityAlerts": {
+    "enabled": true
+  }
+}
