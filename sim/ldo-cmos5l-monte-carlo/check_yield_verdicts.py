@@ -14,13 +14,19 @@ with the committed `<base>.yield.json`. Any difference, a missing
 `exit-codes.txt` entry or committed report, or an entry without a samples
 document is a failure. Nothing under `records/` is written.
 
-Usage: check_yield_verdicts.py [--klt PATH] [--include-attribution] [RECORD_DIR ...]
+Usage: check_yield_verdicts.py [--klt PATH] [RECORD_DIR ...]
 (default: every directory under records/ beside this script).
 
 `<record>/yield/attribution/` (zero-spread attribution populations) is checked
-only with --include-attribution: under the pinned klt 0.8.0 those reports drift
-from the 0.7.0-era committed ones (zero-spread `normal` yield block is now
-null), so CI does not gate on them. Records are never rewritten.
+like the rest. Two of those reports (`tt_nom_27C` in each of two records) were
+committed from klt 0.7.0 and no longer reproduce: since klt 0.8.0 a
+zero-spread population is classified `degenerate` and its `normal` yield block
+is null (klayout-tools#5058, documented in #5066). Records are append-only, so
+they are not edited; SUPERSEDED names each one and the re-derived report
+(klt 0.8.0, the CI pin; same samples document) under `rederived/`. A superseded report is
+not re-run; the gate instead requires that the re-derived location exists, that
+its samples document is byte-identical to the superseded one, and that the
+re-derived reports reproduce under the pinned klt.
 Stdlib only; needs a klt whose klt_yield_native extension imports.
 """
 import argparse
@@ -33,6 +39,14 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 EXIT_RE = re.compile(r"^(?P<base>.+): klt yield exit (?P<rc>\d+)\s*$")
 FIELDS = ("yield", "negative_control")
+
+# (record name, attribution base) -> (re-derived directory relative to HERE, reason).
+SUPERSEDED = {
+    ("20261009-003009-3ee8306", "tt_nom_27C"):
+        ("rederived/20261009-003009-3ee8306-klt0.8.0", "klt 0.7.0 zero-spread yield block predates `degenerate` (klt 0.8.0)"),
+    ("20261012-093854-934dbd7", "tt_nom_27C"):
+        ("rederived/20261012-093854-934dbd7-klt0.8.0", "klt 0.7.0 zero-spread yield block predates `degenerate` (klt 0.8.0)"),
+}
 
 
 def run_klt(klt, directory, samples):
@@ -67,8 +81,10 @@ def compare_reports(committed, fresh):
     return out
 
 
-def check_dir(directory, run=run_klt):
-    """Check one yield directory; return a list of failure strings."""
+def check_dir(directory, run=run_klt, skip=()):
+    """Check one yield directory; return a list of failure strings.
+
+    Bases in `skip` (superseded reports) are not re-run."""
     directory = Path(directory)
     samples = sorted(directory.glob("*.samples.json"))
     ec = directory / "exit-codes.txt"
@@ -80,6 +96,8 @@ def check_dir(directory, run=run_klt):
     for extra in sorted(set(codes) - set(bases)):
         fails.append(f"{directory}: exit-codes.txt entry {extra!r} has no samples document")
     for base in bases:
+        if base in skip:
+            continue
         tag = f"{directory}/{base}"
         if base not in codes:
             fails.append(f"{tag}: no exit-codes.txt entry")
@@ -101,18 +119,46 @@ def check_dir(directory, run=run_klt):
     return fails
 
 
-def yield_dirs(record, include_attribution=True):
+def yield_dirs(record):
     record = Path(record)
-    dirs = [record / "yield"]
-    if include_attribution:
-        dirs.append(record / "yield" / "attribution")
-    return dirs
+    return [record / "yield", record / "yield" / "attribution"]
+
+
+def check_record(record, run=run_klt, superseded=SUPERSEDED, root=HERE):
+    """Check one record (incl. attribution); return (failures, samples checked)."""
+    record, root = Path(record), Path(root)
+    fails, n = [], 0
+    dirs = [d for d in yield_dirs(record) if d.is_dir()]
+    if not dirs:
+        return [f"{record}: no yield/ directory"], 0
+    attribution = record / "yield" / "attribution"
+    skip = set()
+    for (rec_name, base), (rel, _reason) in sorted(superseded.items()):
+        if rec_name != record.name:
+            continue
+        old = attribution / f"{base}.samples.json"
+        new_dir = root / rel / "yield" / "attribution"
+        new = new_dir / f"{base}.samples.json"
+        tag = f"{attribution}/{base}"
+        if not old.is_file():
+            fails.append(f"{tag}: superseded entry has no samples document")
+        elif not new.is_file():
+            fails.append(f"{tag}: superseded but re-derived {new} is missing")
+        elif old.read_bytes() != new.read_bytes():
+            fails.append(f"{tag}: re-derived samples document differs from the superseded one")
+        else:
+            skip.add(base)
+            fails.extend(check_dir(new_dir, run))
+            n += 1
+    for d in dirs:
+        n += len(list(d.glob("*.samples.json"))) - (len(skip) if d == attribution else 0)
+        fails.extend(check_dir(d, run, skip if d == attribution else ()))
+    return fails, n
 
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--klt", default="klt")
-    ap.add_argument("--include-attribution", action="store_true")
     ap.add_argument("records", nargs="*", type=Path)
     a = ap.parse_args(argv)
     records = a.records or sorted(p for p in (HERE / "records").iterdir() if p.is_dir())
@@ -121,12 +167,9 @@ def main(argv=None):
         return 1
     fails, n = [], 0
     for rec in records:
-        dirs = [d for d in yield_dirs(rec, a.include_attribution) if d.is_dir()]
-        if not dirs:
-            fails.append(f"{rec}: no yield/ directory")
-        for d in dirs:
-            n += len(list(d.glob("*.samples.json")))
-            fails.extend(check_dir(d, lambda dd, s: run_klt(a.klt, dd, s)))
+        f, k = check_record(rec, lambda dd, smp: run_klt(a.klt, dd, smp))
+        fails.extend(f)
+        n += k
     if fails:
         print("\n".join(f"FAIL {f}" for f in fails), file=sys.stderr)
         return 1

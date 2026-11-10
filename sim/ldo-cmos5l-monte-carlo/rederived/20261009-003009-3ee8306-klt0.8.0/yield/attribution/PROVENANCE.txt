@@ -1,0 +1,5 @@
+klt 0.8.0 (the CI pin, KLAYOUT_TOOLS_VERSION)
+source record: records/20261009-003009-3ee8306
+samples: byte-identical copy of records/20261009-003009-3ee8306/yield/attribution/tt_nom_27C.samples.json
+supersedes: records/20261009-003009-3ee8306/yield/attribution/tt_nom_27C.{yield.json,yield.txt} (klt 0.7.0: zero-spread population, no degenerate classification)
+regenerate: klt yield tt_nom_27C.samples.json [--format json] from this directory

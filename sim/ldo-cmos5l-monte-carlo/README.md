@@ -211,8 +211,16 @@ and fails on any drift. CI also installs
 `klayout-tools[yield]` (pinned), runs the klt-yield contract tests with no
 skips, and `check_yield_verdicts.py` re-runs `klt yield` on every committed
 `yield/*.samples.json` and fails on exit-code, status, yield-block or
-negative-control drift. `yield/attribution/` is not gated
-(`--include-attribution`): its zero-spread populations drift under klt 0.8.0.
+negative-control drift, attribution populations included. Two committed
+`tt_nom_27C` attribution reports (one per record) came from klt 0.7.0, before
+klt 0.8.0 classified a zero-spread population as `degenerate` (`normal` yield
+block null; klayout-tools#5058, documented in #5066). Records are append-only,
+so they stay as committed and are *superseded by name*: `SUPERSEDED` in
+`check_yield_verdicts.py` points each at `rederived/<record>-klt0.8.0/`, which
+holds a byte-identical copy of the samples document, the report re-derived
+offline with the pinned klt, and a `PROVENANCE.txt`. The gate does not re-run
+a superseded report; it requires the re-derived location, byte-identical
+samples, and that the re-derived reports reproduce.
 
 ## Toolchain (and its friction)
 
