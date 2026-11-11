@@ -2,6 +2,11 @@
 
 Chronological record of recently merged pull requests and closed issues, maintained by the Loom Guide role.
 
+### 2026-11-10
+
+- **PR #211**: ci: gate attribution yield verdicts and supersede two stale klt 0.7.0 reports
+- **Issue #206** (closed): Gate yield/attribution verdicts in monte-carlo-record (decision on 0.8.0 drift)
+
 ### 2026-11-06
 
 - **PR #205**: ci: re-run committed klt yield verdicts in monte-carlo-record
