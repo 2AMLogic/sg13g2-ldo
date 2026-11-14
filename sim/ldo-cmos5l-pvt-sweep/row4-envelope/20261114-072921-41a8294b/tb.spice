@@ -1,0 +1,43 @@
+* sg13g2-ldo -- SG13CMOS5L ratified row-4 (dropout @ 50 mA) GRADED corner matrix.
+* Generated from sim/ldo-cmos5l-pvt-sweep/testbench/tb_row4_envelope_cmos5l.spice.tmpl
+* by sim/ldo-cmos5l-pvt-sweep/row4_envelope.py -- edit the template, never a
+* generated row4-envelope/<record-id>/tb.spice.
+*
+* Same circuit, rails, VREF, IBIAS, Cout, EN tie and Vin axis as
+* tb_dropout_cmos5l.spice.tmpl (DR-0012's 50 mA bench), with one difference:
+* this deck is a CIRCUIT BODY ONLY.  It carries no .lib cards, no .temp /
+* .options temp card, no analysis line, no .meas cards and no .control block.
+* `klt sim` composes all of those from row4-envelope/<record-id>/request.json:
+*
+*   .lib    <- models.lib (row4-envelope/<record-id>/corners.lib), one section
+*              per (MOS, RES, CAP) bundle, selected by the corners.process axis
+*   .temp   <- the corners.temperature_c axis
+*   dc      <- analysis.args, "Vin 1.70 3.63 0.005" (387 points, 5 mV)
+*   .meas   <- measurements[].spice, each with its own limits[] gate
+*   pre_osdi<- options.osdi_preload (staged with the job; the runner applies
+*              this option itself, so a deck-side .control pre_osdi block
+*              would load every binary a second time and fail -- see
+*              row4_envelope.py's "No .control block" note)
+*
+* That is the whole point of this bench: the per-corner pass/fail verdict is
+* computed by `klt sim` against limits declared in the request, not by this
+* repo's own post-processing, so the report it emits is a corner-matrix
+* evidence envelope `klt signoff` can grade for T1 item 5.
+*
+* Design netlist under test: ../../../../design/sg13cmos5l/netlist/ldo_core_cmos5l.spice
+* (a repo-relative .include, resolved by ngspice against this file's own
+* directory, so these bytes are host-independent and the envelope's
+* provenance.input.content_hash reproduces on any checkout.)
+
+.options tnom=27
+
+.include "../../../../design/sg13cmos5l/netlist/ldo_core_cmos5l.spice"
+
+Vin VIN 0 dc 3.30
+Vref VREF 0 dc 0.90
+Ibias IBIAS 0 dc 2u
+Iload VOUT 0 dc 0.05
+Cout VOUT 0 1u
+
+* EN tied to VIN (enabled; tracks the swept supply).
+Xtop VIN VOUT 0 VREF IBIAS VIN ldo_core_cmos5l

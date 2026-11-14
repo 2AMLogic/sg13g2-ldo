@@ -132,6 +132,10 @@ ITEMS = {
             f"{_SIM}/testbench/tb_dropout_cmos5l.spice.tmpl",
             f"{_SIM}/dropout_campaign.py",
             f"{_SIM}/dropout_metrics.py",
+            # issue #55: the GRADED row-4 corner-matrix bench (the one item 5
+            # cites) and its generator / offline checker
+            f"{_SIM}/testbench/tb_row4_envelope_cmos5l.spice.tmpl",
+            f"{_SIM}/row4_envelope.py",
             f"{_MC}/README.md",
             f"{_MC}/run_campaign.sh",
             f"{_MC}/runner-preamble.cir",

@@ -526,6 +526,19 @@ jobs:
           # #120) applied around the hash-pinned generator.
           python3 sim/ldo-cmos5l-pvt-sweep/item5_grid.py --check
 
+      - name: Row-4 graded klt sim envelope reproduces and self-verifies (#55)
+        # Offline, stdlib-only: no simulator and no PDK. Re-derives every
+        # committed row4-envelope/<record-id>/ request file from the template
+        # plus the record's own provenance, re-derives its summary files from
+        # the envelope, and checks the envelope's recorded input hash against
+        # the committed tb.spice, the recorded limits against the ratified
+        # row-4 gates and the spec_row tags the signoff grader derives row
+        # coverage from. For the record cited by signoff item 5 it also
+        # re-hashes the recorded design-netlist / template inputs, so a design
+        # edit makes the citation go stale here rather than silently.
+        run: |
+          python3 sim/ldo-cmos5l-pvt-sweep/row4_envelope.py check
+
       - name: E1 record byte-check (e1_oppoints.py check, issue #158)
         # Offline, stdlib-only: no simulator and no PDK. Regenerates the E1
         # reduction CSV/JSON and record md from the committed raw exports and
