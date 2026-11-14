@@ -3,11 +3,157 @@
   "kind": "generic",
   "status": "pass",
   "t1_item": 1,
-  "summary": "SG13CMOS5L schematics/symbols, their generator and the regenerated ngspice netlists are committed; every constituent hash matches the inventory. Freshness/identity only, not a design-correctness or performance claim.",
+  "summary": "T1 item 1 (Design sources): 15/15 attestation checks passed (klt signoff --attest)",
   "source": "signoff/evidence/item1-design-sources.inventory.json",
-  "verdict_semantics": "pass = every file in the bound inventory exists and hashes to the recorded sha256, the inventory covers its completeness globs, and the content checks in signoff/evidence_inventory.py hold. It is NOT a claim that the circuit meets its spec. klt does not read `source`; signoff/evidence_inventory.py check (CI) verifies the constituents.",
+  "attestation": {
+    "producer": "klt signoff --attest",
+    "inventory_schema_version": 1,
+    "hash_algorithm": "sha256-raw-bytes",
+    "check_count": 15,
+    "passed_count": 15,
+    "checks": [
+      {
+        "check": "present",
+        "role": "source",
+        "path": "design/README.md",
+        "passed": true,
+        "content_hash": "sha256:385b0e0c6c88adde490eda2376086d8f24158257831faeba512d1793039f8d26"
+      },
+      {
+        "check": "present",
+        "role": "source",
+        "path": "design/netlist.py",
+        "passed": true,
+        "content_hash": "sha256:d20899e2bb3c8e68e25ba2225a903b8af51bee432ab40075932e965a6718a679"
+      },
+      {
+        "check": "present",
+        "role": "source",
+        "path": "design/sg13cmos5l/ldo_core_cmos5l.sch",
+        "passed": true,
+        "content_hash": "sha256:e08b9b39bfbce0c0de34a8280f5dcc7c103a18800610fe6bff1ee1d6de35ce81"
+      },
+      {
+        "check": "present",
+        "role": "source",
+        "path": "design/sg13cmos5l/ldo_core_cmos5l.sym",
+        "passed": true,
+        "content_hash": "sha256:18e1af5b40ae113b7746042548519bcfaefc3da2676b487dd47e0cd9d26ede2f"
+      },
+      {
+        "check": "present",
+        "role": "source",
+        "path": "design/sg13cmos5l/ldo_erramp_cmos5l.sch",
+        "passed": true,
+        "content_hash": "sha256:3edb4c9f395cca18144bf1adc2ffad1ee2742e2c5f46754ced29a41c57f97f6b"
+      },
+      {
+        "check": "present",
+        "role": "source",
+        "path": "design/sg13cmos5l/ldo_erramp_cmos5l.sym",
+        "passed": true,
+        "content_hash": "sha256:2dfb232bc6b6374b87cd13e2ede4ddd8c28e570242a141d883871dfd20557076"
+      },
+      {
+        "check": "present",
+        "role": "source",
+        "path": "design/sg13cmos5l/ldo_ilimit_cmos5l.sch",
+        "passed": true,
+        "content_hash": "sha256:cee310b9d8c17b8f68d1239ac7bd0fa9dadea732403d27fb5891d8ba342b31dd"
+      },
+      {
+        "check": "present",
+        "role": "source",
+        "path": "design/sg13cmos5l/ldo_ilimit_cmos5l.sym",
+        "passed": true,
+        "content_hash": "sha256:9acadf68f9c3e4a44bcf7ad84414592c17292e4288fe79fea9e67de31ae5ca81"
+      },
+      {
+        "check": "present",
+        "role": "source",
+        "path": "design/xschemrc",
+        "passed": true,
+        "content_hash": "sha256:c8a9b5673ac045073a88fb97a405d9e5e3fe0edf729edadeb1b4eb856d6366f1"
+      },
+      {
+        "check": "present",
+        "role": "derived",
+        "path": "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice",
+        "passed": true,
+        "content_hash": "sha256:08a7b857e1fad43dd7af1f575de97853a058e85541601ecc47567fbc28dbae57"
+      },
+      {
+        "check": "present",
+        "role": "derived",
+        "path": "design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice",
+        "passed": true,
+        "content_hash": "sha256:75ee39ce0c48b54cab6c8a31acd1f199c37c1ccd1ac074a3515dee81cc656fb4"
+      },
+      {
+        "check": "present",
+        "role": "derived",
+        "path": "design/sg13cmos5l/netlist/ldo_ilimit_cmos5l.spice",
+        "passed": true,
+        "content_hash": "sha256:e3d1ca4acba13e00ba705a4772081a915d0fad6e519aafdf36ec2a3c94fbc04e"
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice",
+        "generator": "design/netlist.py (xschem netlist -erc, headless)",
+        "argv": [
+          "python3",
+          "design/netlist.py",
+          "--design",
+          "sg13cmos5l",
+          "--cell",
+          "ldo_core_cmos5l",
+          "--check"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice",
+        "generator": "design/netlist.py (xschem netlist -erc, headless)",
+        "argv": [
+          "python3",
+          "design/netlist.py",
+          "--design",
+          "sg13cmos5l",
+          "--cell",
+          "ldo_erramp_cmos5l",
+          "--check"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "design/sg13cmos5l/netlist/ldo_ilimit_cmos5l.spice",
+        "generator": "design/netlist.py (xschem netlist -erc, headless)",
+        "argv": [
+          "python3",
+          "design/netlist.py",
+          "--design",
+          "sg13cmos5l",
+          "--cell",
+          "ldo_ilimit_cmos5l",
+          "--check"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      }
+    ]
+  },
   "provenance": {
-    "klt_version": null,
+    "klt_version": "0.8.0",
     "klayout_version": null,
     "pdk": null,
     "deck": null,
@@ -16,12 +162,7 @@
         "path": "signoff/evidence/item1-design-sources.inventory.json",
         "scope": "repo"
       },
-      "content_hash": "sha256:485e2783f46ba934244b3d9eb9d72239d428140162bd4c56c6a57a94f02c8836",
-      "role": "inventory"
-    },
-    "generator": {
-      "path": "signoff/evidence_inventory.py",
-      "version": 1
+      "content_hash": "sha256:c6c269ebc15b76991ab98fa96e2d742a3b6f58c042232f04e4c7986b8f2682fa"
     }
   }
 }

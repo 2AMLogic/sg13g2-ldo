@@ -3,11 +3,99 @@
   "kind": "generic",
   "status": "pass",
   "t1_item": 10,
-  "summary": "README, LICENSE, spec index, agent instructions and the CI workflow are committed; every constituent hash matches the inventory and the CI workflow still defines the PDK-free signoff gates. Hygiene presence/freshness only.",
+  "summary": "T1 item 10 (Repo hygiene): 8/8 attestation checks passed (klt signoff --attest)",
   "source": "signoff/evidence/item10-repo-hygiene.inventory.json",
-  "verdict_semantics": "pass = every file in the bound inventory exists and hashes to the recorded sha256, the inventory covers its completeness globs, and the content checks in signoff/evidence_inventory.py hold. It is NOT a claim that the circuit meets its spec. klt does not read `source`; signoff/evidence_inventory.py check (CI) verifies the constituents.",
+  "attestation": {
+    "producer": "klt signoff --attest",
+    "inventory_schema_version": 1,
+    "hash_algorithm": "sha256-raw-bytes",
+    "check_count": 8,
+    "passed_count": 8,
+    "checks": [
+      {
+        "check": "present",
+        "role": "hygiene",
+        "path": ".github/workflows/ci.yml",
+        "passed": true,
+        "content_hash": "sha256:cc56b17c8e733b5a924aeb06e850f36332073a82aca12c8b7e8fbe8dd4eecc12"
+      },
+      {
+        "check": "present",
+        "role": "hygiene",
+        "path": "CLAUDE.md",
+        "passed": true,
+        "content_hash": "sha256:58779a8f707777c1fc8749fb1495599fcbef712aa81cf5dcb3bf4a6a72e37413"
+      },
+      {
+        "check": "present",
+        "role": "hygiene",
+        "path": "LICENSE",
+        "passed": true,
+        "content_hash": "sha256:cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+      },
+      {
+        "check": "present",
+        "role": "hygiene",
+        "path": "README.md",
+        "passed": true,
+        "content_hash": "sha256:dbb54dc9a1ff4ff8332680a80aa393528651c59fddd8821ded670e02e23adc29"
+      },
+      {
+        "check": "present",
+        "role": "hygiene",
+        "path": "spec/README.md",
+        "passed": true,
+        "content_hash": "sha256:0cc41bb488d4d86ce85f046b5e040135fb7eaf40d9773b66aae43d890ff9db3f"
+      },
+      {
+        "check": "command",
+        "role": "audit",
+        "name": "evidence-formats",
+        "argv": [
+          "python3",
+          "signoff/evidence_inventory.py",
+          "check"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "audit",
+        "name": "evidence-format-negative-controls",
+        "argv": [
+          "python3",
+          "-m",
+          "unittest",
+          "signoff.test_evidence_inventory"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "audit",
+        "name": "harness-preflight-tests",
+        "argv": [
+          "python3",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "sim/tools",
+          "-p",
+          "test_preflight.py"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      }
+    ]
+  },
   "provenance": {
-    "klt_version": null,
+    "klt_version": "0.8.0",
     "klayout_version": null,
     "pdk": null,
     "deck": null,
@@ -16,12 +104,7 @@
         "path": "signoff/evidence/item10-repo-hygiene.inventory.json",
         "scope": "repo"
       },
-      "content_hash": "sha256:b35123bc490e7116224a5f4c3a2e52c045a8a3b5fee6fd7155d2a65a36331a90",
-      "role": "inventory"
-    },
-    "generator": {
-      "path": "signoff/evidence_inventory.py",
-      "version": 1
+      "content_hash": "sha256:7a3226495e84b750b58636075cfde6e4857613497a541eb47ff3634435e03926"
     }
   }
 }

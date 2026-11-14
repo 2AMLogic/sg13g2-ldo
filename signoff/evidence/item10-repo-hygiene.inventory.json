@@ -1,28 +1,48 @@
 {
   "schema_version": 1,
+  "kind": "t1-attestation-inventory",
   "t1_item": 10,
-  "title": "Repo hygiene",
-  "scope": "SG13CMOS5L implementation (design/sg13cmos5l, layout/sg13cmos5l-ldo_core_cmos5l). Freshness and identity of the listed files only; NOT a performance, spec-compliance or whole-block T1 claim.",
-  "files": [
+  "description": "Repo-hygiene artifacts -- what the block is (README.md), its spec index (spec/README.md), its license, the agent instructions (CLAUDE.md) and the CI workflow -- plus the repo's own offline audit commands for the two things T1 item 10 asks CI to keep valid: the evidence formats and the simulation harness. Every declared check is stdlib-only, needs no PDK and no simulator, and is deterministic on any runner image, so none is marked `local_only` and CI re-runs all three. None of them invokes `klt signoff`, so this attestation never grades itself. `sim/characterization/generate.py --check` is deliberately NOT declared here: it reproduces a float-bearing artifact and is therefore pinned to a specific runner image in its own CI job (characterization-report), and declaring it would make item 10's attestation inherit that image sensitivity. Presence, freshness and audit-gate state only: NOT a performance or spec-compliance claim.",
+  "hygiene": [
+    ".github/workflows/ci.yml",
+    "CLAUDE.md",
+    "LICENSE",
+    "README.md",
+    "spec/README.md"
+  ],
+  "checks": [
     {
-      "path": ".github/workflows/ci.yml",
-      "sha256": "sha256:1c6610a6b18c7e876a64bc1f54a64d45cdce1213dcf62d02d07f815face8ff52"
+      "name": "evidence-formats",
+      "argv": [
+        "python3",
+        "signoff/evidence_inventory.py",
+        "check"
+      ],
+      "cwd": "."
     },
     {
-      "path": "CLAUDE.md",
-      "sha256": "sha256:58779a8f707777c1fc8749fb1495599fcbef712aa81cf5dcb3bf4a6a72e37413"
+      "name": "evidence-format-negative-controls",
+      "argv": [
+        "python3",
+        "-m",
+        "unittest",
+        "signoff.test_evidence_inventory"
+      ],
+      "cwd": "."
     },
     {
-      "path": "LICENSE",
-      "sha256": "sha256:cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
-    },
-    {
-      "path": "README.md",
-      "sha256": "sha256:dbb54dc9a1ff4ff8332680a80aa393528651c59fddd8821ded670e02e23adc29"
-    },
-    {
-      "path": "spec/README.md",
-      "sha256": "sha256:0cc41bb488d4d86ce85f046b5e040135fb7eaf40d9773b66aae43d890ff9db3f"
+      "name": "harness-preflight-tests",
+      "argv": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "sim/tools",
+        "-p",
+        "test_preflight.py"
+      ],
+      "cwd": "."
     }
   ]
 }

@@ -12,15 +12,28 @@ name: CI
 #                                 .sch sources, xschem's ERC is clean, and
 #                                 the pinout invariants hold. Needs xschem
 #                                 plus the ihp-sg13g2 AND ihp-sg13cmos5l PDKs.
+#                                 Also `klt signoff --attest 1 --check`
+#                                 (#199): T1 item 1's attestation re-runs a
+#                                 per-cell netlist freshness command, so it
+#                                 belongs on this toolchain, not a bare one.
 #   pass-device-screening-check   sim/pass-device-screening AND
 #                                 sim/pass-device-screening-hbt run_sweep.sh
 #                                 --check-env (ngspice + ihp-sg13g2 PDK; the
 #                                 HBT deck also needs klt for its klt-sim
 #                                 preflight and no OSDI build -- its bipolar
-#                                 models are native ngspice).
+#                                 models are native ngspice). Also `klt
+#                                 signoff --attest 9 --check` (#199), whose
+#                                 declared cold start is
+#                                 sim/ldo-cmos5l-pvt-sweep/run_sweep.sh
+#                                 --check-env -- hence this job additionally
+#                                 fetches ihp-sg13cmos5l and builds its OSDI
+#                                 models.
 #   signoff-t1-report             re-grades signoff/sg13g2-ldo.json with a
-#                                 pinned klt and fails on T1 report drift.
-#                                 No PDK, no simulator.
+#                                 pinned klt and fails on T1 report drift,
+#                                 after the item 2 inventory audit and `klt
+#                                 signoff --attest 10 --check` (#199, the
+#                                 one attestation whose declared commands are
+#                                 all PDK-free). No PDK, no simulator.
 #   characterization-report       sim/characterization generate.py --check
 #                                 plus the offline unit tests and topology
 #                                 guard. No PDK, no simulator.
@@ -233,8 +246,33 @@ jobs:
           PDK: ihp-sg13cmos5l
         run: python3 design/netlist.py --design sg13cmos5l --check -v
 
+      # T1 item 1's attestation (issue #199). `klt signoff --attest 1` runs
+      # the freshness command the inventory declares for EVERY derived
+      # netlist -- `design/netlist.py --design sg13cmos5l --cell <cell>
+      # --check`, i.e. a real per-cell xschem re-export and byte-compare --
+      # so it can only run on a runner with xschem 3.4.7 and both PDKs. That
+      # is this job, which is why those commands are NOT marked `local_only`:
+      # `local_only` would make --check skip them and carry the committed
+      # outcome through, and the point is for CI to fail on drift.
+      - name: Install klayout-tools at the pinned release (for the item 1 attest gate)
+        run: |
+          pip install "klayout-tools==${KLAYOUT_TOOLS_VERSION}"
+          klt --version
+
+      - name: klt signoff --attest 1 --check (design sources + per-cell netlist freshness)
+        env:
+          PDK_ROOT: ${{ github.workspace }}/klayout-tools/pdks/ihp-open-pdk
+          PDK: ihp-sg13cmos5l
+        # Exit 0 only if the committed envelope still reproduces AND still
+        # passes; 3 is drift or a now-failing check, 1 a malformed inventory.
+        # Nothing is rewritten -- regenerate with `--attest 1 -o <envelope>`.
+        run: |
+          klt signoff --attest 1 \
+            --inventory signoff/evidence/item1-design-sources.inventory.json \
+            --check signoff/evidence/item1-design-sources.envelope.json
+
   pass-device-screening-check:
-    name: sim/pass-device-screening{,-hbt} run_sweep.sh --check-env (ngspice + ihp-sg13g2 PDK + klt)
+    name: sim/pass-device-screening{,-hbt} run_sweep.sh --check-env + item 9 attest (ngspice + both PDKs + klt)
     # Pinned to 24.04 (noble): ubuntu-latest rolled to 26.04, which lacks the
     # libxml2.so.2 that the pinned openvaf-r links against (#186). The pins in
     # sim/tools/build-osdi.sh (openvaf-r, noble libllvm21) are noble-specific.
@@ -292,10 +330,23 @@ jobs:
         uses: actions/cache@v4
         with:
           path: klayout-tools/pdks/ihp-open-pdk
-          key: ihp-open-pdk-v${{ env.IHP_OPEN_PDK_VERSION }}
+          # Distinct from netlist-check's key for the same path on purpose:
+          # this job's cached tree additionally carries the OSDI build
+          # outputs (they land under <PDK_ROOT>/<PDK>/libs.tech/ngspice/osdi),
+          # for BOTH variants since issue #199. Sharing one key would make
+          # which tree gets saved a race between the two jobs.
+          key: ihp-open-pdk-v${{ env.IHP_OPEN_PDK_VERSION }}-cmos5l-${{ env.IHP_SG13CMOS5L_COMMIT }}-osdi
 
       - name: Fetch ihp-sg13g2 PDK (IHP-Open-PDK, pinned + checksum-verified)
         run: klayout-tools/scripts/fetch-ihp-sg13g2.sh
+
+      # Needed by the item 9 attest gate at the end of this job: its declared
+      # cold start is sim/ldo-cmos5l-pvt-sweep/run_sweep.sh --check-env, which
+      # FORCES PDK=ihp-sg13cmos5l (see that script's header). Fetched after
+      # the sibling above because the fetch script refuses to run without it
+      # (sim/pdk-cmos5l.json, "pdk_root_layout").
+      - name: Fetch ihp-sg13cmos5l PDK (pinned commit + checksum-verified; needs the ihp-sg13g2 sibling above)
+        run: klayout-tools/scripts/fetch-ihp-sg13cmos5l.sh
 
       # Cache the OSDI compiler download + build output separately from the
       # PDK fetch above -- see sim/tools/build-osdi.sh's own header for full
@@ -312,6 +363,16 @@ jobs:
         env:
           PDK_ROOT: ${{ github.workspace }}/klayout-tools/pdks/ihp-open-pdk
           PDK: ihp-sg13g2
+        run: sim/tools/build-osdi.sh
+
+      # build-osdi.sh is PDK-parameterized (sim/env.sh), and the SG13CMOS5L
+      # branch additionally needs the two MoM-cap models (cap_cmomi/cap_cmomf)
+      # the SG13G2 tree does not -- sim/pdk-cmos5l.json "osdi_toolchain".
+      # Required by the item 9 cold start below.
+      - name: Build OSDI device models (ihp-sg13cmos5l)
+        env:
+          PDK_ROOT: ${{ github.workspace }}/klayout-tools/pdks/ihp-open-pdk
+          PDK: ihp-sg13cmos5l
         run: sim/tools/build-osdi.sh
 
       - name: sim/pass-device-screening run_sweep.sh --check-env
@@ -339,6 +400,34 @@ jobs:
           PDK_ROOT: ${{ github.workspace }}/klayout-tools/pdks/ihp-open-pdk
           PDK: ihp-sg13g2
         run: sim/pass-device-screening-hbt/run_sweep.sh --check-env
+
+      # T1 item 9's attestation (issue #199). `klt signoff --attest 9` runs
+      # the inventory's declared cold start for real --
+      # sim/ldo-cmos5l-pvt-sweep/run_sweep.sh --check-env, which generates
+      # and syntax-checks one netlist per bench at mos_tt/27C -- so it needs
+      # ngspice 46, the cmos5l OSDI models and both PDKs: everything this job
+      # already builds. NOT marked `local_only` for exactly that reason (a
+      # local_only cold start is skipped by --check and its committed outcome
+      # carried through, which would mean CI never re-runs it).
+      #
+      # A throwaway venv rather than this job's `pip install ./klayout-tools`
+      # above: that install is the dev build at KLAYOUT_TOOLS_REF, needed by
+      # the HBT deck's `klt sim` preflight, whereas the committed attestation
+      # envelopes were produced by the pinned release KLAYOUT_TOOLS_VERSION.
+      - name: Install klayout-tools at the pinned release (throwaway venv, for the item 9 attest gate)
+        run: |
+          python3 -m venv /tmp/klt-attest
+          /tmp/klt-attest/bin/pip install --quiet "klayout-tools==${KLAYOUT_TOOLS_VERSION}"
+          /tmp/klt-attest/bin/klt --version
+
+      - name: klt signoff --attest 9 --check (testbenches shipped + real cold start)
+        env:
+          PDK_ROOT: ${{ github.workspace }}/klayout-tools/pdks/ihp-open-pdk
+          PDK: ihp-sg13cmos5l
+        run: |
+          /tmp/klt-attest/bin/klt signoff --attest 9 \
+            --inventory signoff/evidence/item9-testbenches.inventory.json \
+            --check signoff/evidence/item9-testbenches.envelope.json
 
   signoff-t1-report:
     name: signoff/ klt signoff --manifest (regenerate + gate the committed T1 report)
@@ -380,15 +469,31 @@ jobs:
           pip install "klayout-tools==${KLAYOUT_TOOLS_VERSION}"
           klt --version
 
-      - name: Verify the item 1/2/9/10 evidence inventories (PDK-free, stdlib only)
-        # Items 1/2/9/10 are each backed by several files; the generic
-        # envelopes bind to a committed inventory of their sha256s. Re-hash
-        # every constituent, require the completeness globs to be covered,
-        # and require envelope + manifest pins to match -- before grading,
-        # so a stale constituent fails here with a named file (#60).
+      - name: Verify the item 2 inventory and the item 1/9/10 attestation inventories (PDK-free, stdlib only)
+        # Items 1/2/9/10 are each backed by several files, so each generic
+        # envelope binds to a committed inventory rather than a single file.
+        # Item 2 is still hand-rolled (klt signoff --attest deliberately does
+        # not attest it): re-hash every constituent, require the completeness
+        # glob to be covered, and require envelope + manifest pins to match.
+        # For items 1/9/10 this script now audits only the two things
+        # `--attest` cannot see (#199): completeness (a testbench nobody
+        # inventoried would be silently unattested) and the content checks
+        # beyond existence. Runs before grading, so either fails here with a
+        # named file (#60).
         run: |
           python3 signoff/evidence_inventory.py check
           python3 -m unittest signoff.test_evidence_inventory -v
+
+      # T1 item 10's attestation (issue #199). Unlike items 1 and 9, every
+      # command item 10's inventory declares is PDK-free and simulator-free
+      # (the evidence-format audits in signoff/), so it attests on this job's
+      # plain runner and nothing is marked `local_only`. No declared check
+      # invokes `klt signoff`, so this gate never grades itself.
+      - name: klt signoff --attest 10 --check (repo hygiene + offline audit gates)
+        run: |
+          klt signoff --attest 10 \
+            --inventory signoff/evidence/item10-repo-hygiene.inventory.json \
+            --check signoff/evidence/item10-repo-hygiene.envelope.json
 
       - name: Regenerate the T1 report and assert no drift
         run: |

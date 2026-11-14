@@ -1,56 +1,67 @@
 {
   "schema_version": 1,
+  "kind": "t1-attestation-inventory",
   "t1_item": 1,
-  "title": "Design sources",
-  "scope": "SG13CMOS5L implementation (design/sg13cmos5l, layout/sg13cmos5l-ldo_core_cmos5l). Freshness and identity of the listed files only; NOT a performance, spec-compliance or whole-block T1 claim.",
-  "files": [
-    {
-      "path": "design/README.md",
-      "sha256": "sha256:385b0e0c6c88adde490eda2376086d8f24158257831faeba512d1793039f8d26"
-    },
-    {
-      "path": "design/netlist.py",
-      "sha256": "sha256:d20899e2bb3c8e68e25ba2225a903b8af51bee432ab40075932e965a6718a679"
-    },
-    {
-      "path": "design/sg13cmos5l/ldo_core_cmos5l.sch",
-      "sha256": "sha256:e08b9b39bfbce0c0de34a8280f5dcc7c103a18800610fe6bff1ee1d6de35ce81"
-    },
-    {
-      "path": "design/sg13cmos5l/ldo_core_cmos5l.sym",
-      "sha256": "sha256:18e1af5b40ae113b7746042548519bcfaefc3da2676b487dd47e0cd9d26ede2f"
-    },
-    {
-      "path": "design/sg13cmos5l/ldo_erramp_cmos5l.sch",
-      "sha256": "sha256:3edb4c9f395cca18144bf1adc2ffad1ee2742e2c5f46754ced29a41c57f97f6b"
-    },
-    {
-      "path": "design/sg13cmos5l/ldo_erramp_cmos5l.sym",
-      "sha256": "sha256:2dfb232bc6b6374b87cd13e2ede4ddd8c28e570242a141d883871dfd20557076"
-    },
-    {
-      "path": "design/sg13cmos5l/ldo_ilimit_cmos5l.sch",
-      "sha256": "sha256:cee310b9d8c17b8f68d1239ac7bd0fa9dadea732403d27fb5891d8ba342b31dd"
-    },
-    {
-      "path": "design/sg13cmos5l/ldo_ilimit_cmos5l.sym",
-      "sha256": "sha256:9acadf68f9c3e4a44bcf7ad84414592c17292e4288fe79fea9e67de31ae5ca81"
-    },
+  "description": "SG13CMOS5L design sources (design/sg13cmos5l/) and the three ngspice netlists design/netlist.py exports from them. Each derived netlist's freshness check is `design/netlist.py --design sg13cmos5l --cell <cell> --check`, which re-runs the xschem export against the PDK the environment resolves and byte-compares the result with the committed file -- so a present-but-stale netlist fails. The SG13G2-branch placeholder sources under design/ are NOT attested (signoff/README.md, 'Scope'). Freshness and identity only: NOT a performance, spec-compliance or whole-block T1 claim.",
+  "sources": [
+    "design/README.md",
+    "design/netlist.py",
+    "design/sg13cmos5l/ldo_core_cmos5l.sch",
+    "design/sg13cmos5l/ldo_core_cmos5l.sym",
+    "design/sg13cmos5l/ldo_erramp_cmos5l.sch",
+    "design/sg13cmos5l/ldo_erramp_cmos5l.sym",
+    "design/sg13cmos5l/ldo_ilimit_cmos5l.sch",
+    "design/sg13cmos5l/ldo_ilimit_cmos5l.sym",
+    "design/xschemrc"
+  ],
+  "derived": [
     {
       "path": "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice",
-      "sha256": "sha256:08a7b857e1fad43dd7af1f575de97853a058e85541601ecc47567fbc28dbae57"
+      "generator": "design/netlist.py (xschem netlist -erc, headless)",
+      "check": {
+        "argv": [
+          "python3",
+          "design/netlist.py",
+          "--design",
+          "sg13cmos5l",
+          "--cell",
+          "ldo_core_cmos5l",
+          "--check"
+        ],
+        "cwd": "."
+      }
     },
     {
       "path": "design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice",
-      "sha256": "sha256:75ee39ce0c48b54cab6c8a31acd1f199c37c1ccd1ac074a3515dee81cc656fb4"
+      "generator": "design/netlist.py (xschem netlist -erc, headless)",
+      "check": {
+        "argv": [
+          "python3",
+          "design/netlist.py",
+          "--design",
+          "sg13cmos5l",
+          "--cell",
+          "ldo_erramp_cmos5l",
+          "--check"
+        ],
+        "cwd": "."
+      }
     },
     {
       "path": "design/sg13cmos5l/netlist/ldo_ilimit_cmos5l.spice",
-      "sha256": "sha256:e3d1ca4acba13e00ba705a4772081a915d0fad6e519aafdf36ec2a3c94fbc04e"
-    },
-    {
-      "path": "design/xschemrc",
-      "sha256": "sha256:c8a9b5673ac045073a88fb97a405d9e5e3fe0edf729edadeb1b4eb856d6366f1"
+      "generator": "design/netlist.py (xschem netlist -erc, headless)",
+      "check": {
+        "argv": [
+          "python3",
+          "design/netlist.py",
+          "--design",
+          "sg13cmos5l",
+          "--cell",
+          "ldo_ilimit_cmos5l",
+          "--check"
+        ],
+        "cwd": "."
+      }
     }
   ]
 }
