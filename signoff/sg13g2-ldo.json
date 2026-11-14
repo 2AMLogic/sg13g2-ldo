@@ -1,6 +1,49 @@
 {
   "block": "sg13g2-ldo",
   "kind": "analog",
+  "spec_rows": {
+    "5": [
+      {
+        "id": "dr0007-row1-input",
+        "ratified": false
+      },
+      {
+        "id": "dr0007-row2-output",
+        "ratified": false
+      },
+      {
+        "id": "dr0007-row3-load",
+        "ratified": false
+      },
+      {
+        "id": "dr0007-row4-dropout"
+      },
+      {
+        "id": "dr0007-row5-line-load-regulation",
+        "ratified": false
+      },
+      {
+        "id": "dr0007-row6-psrr",
+        "ratified": false
+      },
+      {
+        "id": "dr0007-row7-iq",
+        "ratified": false
+      },
+      {
+        "id": "dr0007-row8-current-limit",
+        "ratified": false
+      },
+      {
+        "id": "dr0007-row9-startup",
+        "ratified": false
+      },
+      {
+        "id": "dr0007-row10-stability",
+        "ratified": false
+      }
+    ]
+  },
   "evidence": {
     "1": {
       "file": "signoff/evidence/item1-design-sources.envelope.json",
@@ -18,17 +61,26 @@
       "file": "layout/sg13cmos5l-ldo_core_cmos5l/lvs_report.json",
       "content_hash": "sha256:5a3258118e17646cc5665b330ab40b50f353e2a1f7a49e37640e8c1fbd83ccf5"
     },
+    "5": [
+      {
+        "file": "sim/ldo-cmos5l-pvt-sweep/row4-envelope/20261114-072921-41a8294b/report.json",
+        "content_hash": "sha256:0e3d95d123dd154f33250f168c478ef35972ce1a01525f2f269d2ddf54af207c",
+        "rows": [
+          "dr0007-row4-dropout"
+        ]
+      }
+    ],
     "8": {
       "file": "sim/characterization/characterization-envelope.json",
-      "content_hash": "sha256:30cfcf4cbbe178d98c3f5e17b98765544eecf8c689e1b123aa72fc8612a48755"
+      "content_hash": "sha256:b9938dc30227e3f193d10b5768f981b72538ae755c6289580e8bac128f5b694e"
     },
     "9": {
       "file": "signoff/evidence/item9-testbenches.envelope.json",
-      "content_hash": "sha256:f65452cb1ab45b52756cb1e4419c3f251d894311282fddd22a10c5250b3428f5"
+      "content_hash": "sha256:b4baf7dae35fcabdd4b24cbb6fca8ba5d889b82a21618f9f76a13287f4242317"
     },
     "10": {
       "file": "signoff/evidence/item10-repo-hygiene.envelope.json",
-      "content_hash": "sha256:b35123bc490e7116224a5f4c3a2e52c045a8a3b5fee6fd7155d2a65a36331a90"
+      "content_hash": "sha256:000ffef3ec1351b4607da60f98fc5eab10cd17cbf9589164594b9fa8c53971a7"
     },
     "11": [
       {

@@ -172,9 +172,48 @@
         "Both require the spec table itself to be ratified \u2014 verdicts against a draft spec are provisional by construction."
       ],
       "status": "unmet",
-      "reason": "no_evidence",
+      "reason": "partial_coverage",
       "graded_by_build": true,
-      "citation": null
+      "citation": null,
+      "citations_graded": [
+        {
+          "citation": "sim/ldo-cmos5l-pvt-sweep/row4-envelope/20261114-072921-41a8294b/report.json",
+          "rows": [
+            "dr0007-row4-dropout"
+          ],
+          "status": "met",
+          "reason": null
+        }
+      ],
+      "detail": {
+        "failed_rows": [],
+        "uncovered_rows": [
+          "dr0007-row1-input",
+          "dr0007-row2-output",
+          "dr0007-row3-load",
+          "dr0007-row5-line-load-regulation",
+          "dr0007-row6-psrr",
+          "dr0007-row7-iq",
+          "dr0007-row8-current-limit",
+          "dr0007-row9-startup",
+          "dr0007-row10-stability"
+        ],
+        "declared_gaps": [],
+        "unratified_rows": [
+          "dr0007-row1-input",
+          "dr0007-row2-output",
+          "dr0007-row3-load",
+          "dr0007-row5-line-load-regulation",
+          "dr0007-row6-psrr",
+          "dr0007-row7-iq",
+          "dr0007-row8-current-limit",
+          "dr0007-row9-startup",
+          "dr0007-row10-stability"
+        ],
+        "row_sources": {
+          "dr0007-row4-dropout": "derived"
+        }
+      }
     },
     {
       "tier": "T1",
@@ -217,7 +256,7 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:30cfcf4cbbe178d98c3f5e17b98765544eecf8c689e1b123aa72fc8612a48755",
+        "content_hash": "sha256:b9938dc30227e3f193d10b5768f981b72538ae755c6289580e8bac128f5b694e",
         "input_verified": null,
         "exit_status": 0
       }
@@ -237,7 +276,7 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:f65452cb1ab45b52756cb1e4419c3f251d894311282fddd22a10c5250b3428f5",
+        "content_hash": "sha256:b4baf7dae35fcabdd4b24cbb6fca8ba5d889b82a21618f9f76a13287f4242317",
         "input_verified": true,
         "exit_status": 0,
         "artifact_binding": {
@@ -246,7 +285,7 @@
             "path": "signoff/evidence/item9-testbenches.inventory.json",
             "scope": "repo"
           },
-          "content_hash": "sha256:f65452cb1ab45b52756cb1e4419c3f251d894311282fddd22a10c5250b3428f5",
+          "content_hash": "sha256:b4baf7dae35fcabdd4b24cbb6fca8ba5d889b82a21618f9f76a13287f4242317",
           "input_verified": true,
           "summary": "The shipped ngspice testbenches/templates, their cold-start entry points (run_*.sh) and experiment READMEs are committed; every constituent hash matches the inventory and each README names its entry point. Testbenches are NOT re-run by this attestation and no measurement result is claimed.",
           "source": "signoff/evidence/item9-testbenches.inventory.json"
@@ -268,7 +307,7 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:b35123bc490e7116224a5f4c3a2e52c045a8a3b5fee6fd7155d2a65a36331a90",
+        "content_hash": "sha256:000ffef3ec1351b4607da60f98fc5eab10cd17cbf9589164594b9fa8c53971a7",
         "input_verified": true,
         "exit_status": 0,
         "artifact_binding": {
@@ -277,7 +316,7 @@
             "path": "signoff/evidence/item10-repo-hygiene.inventory.json",
             "scope": "repo"
           },
-          "content_hash": "sha256:b35123bc490e7116224a5f4c3a2e52c045a8a3b5fee6fd7155d2a65a36331a90",
+          "content_hash": "sha256:000ffef3ec1351b4607da60f98fc5eab10cd17cbf9589164594b9fa8c53971a7",
           "input_verified": true,
           "summary": "README, LICENSE, spec index, agent instructions and the CI workflow are committed; every constituent hash matches the inventory and the CI workflow still defines the PDK-free signoff gates. Hygiene presence/freshness only.",
           "source": "signoff/evidence/item10-repo-hygiene.inventory.json"

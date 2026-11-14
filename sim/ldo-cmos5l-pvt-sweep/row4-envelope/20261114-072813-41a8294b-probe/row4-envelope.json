@@ -1,0 +1,71 @@
+{
+ "points": [
+  {
+   "corner_id": "mos_ss__res_typ__cap_typ/novdd/125C",
+   "corner_status": "pass",
+   "dropout_v": 0.23705999999999983,
+   "error_diagnostics": 0,
+   "mos": "ss",
+   "res_section": "res_typ",
+   "temp_c": 125,
+   "vin_1pct_loss_v": 2.03706,
+   "vin_1pct_loss_v_status": "pass",
+   "vout_at_dropout_limit_v": 1.79982,
+   "vout_at_dropout_limit_v_status": "pass",
+   "vout_nominal_v": 1.80017
+  },
+  {
+   "corner_id": "mos_tt__res_typ__cap_typ/novdd/27C",
+   "corner_status": "pass",
+   "dropout_v": 0.16847999999999996,
+   "error_diagnostics": 0,
+   "mos": "tt",
+   "res_section": "res_typ",
+   "temp_c": 27,
+   "vin_1pct_loss_v": 1.96848,
+   "vin_1pct_loss_v_status": "pass",
+   "vout_at_dropout_limit_v": 1.79989,
+   "vout_at_dropout_limit_v_status": "pass",
+   "vout_nominal_v": 1.80014
+  }
+ ],
+ "summary": {
+  "all_graded_measurements_pass": true,
+  "coordinates_exactly_once": true,
+  "corner_status_counts": {
+   "pass": 2
+  },
+  "definitive": false,
+  "envelope_status": "pass",
+  "error_diagnostics_total": 0,
+  "errored": 0,
+  "failed": 0,
+  "graded_measurements": [
+   "vout_at_dropout_limit_v",
+   "vin_1pct_loss_v"
+  ],
+  "grid_bracket_v": 0.005,
+  "inconclusive": 0,
+  "margin_to_target_v": 0.06294000000000016,
+  "measurements_with_limits": 2,
+  "n_corners_reported": 2,
+  "n_expected": 2,
+  "passed": 2,
+  "probe": true,
+  "record_id": "20261114-072813-41a8294b-probe",
+  "series_resistance_equivalent_ohm": 1.2588000000000032,
+  "target_dropout_v": 0.3,
+  "vout_target_v": 1.8,
+  "worst_corner": {
+   "corner_id": "mos_ss__res_typ__cap_typ/novdd/125C",
+   "dropout_v": 0.23705999999999983,
+   "mos": "ss",
+   "res_section": "res_typ",
+   "temp_c": 125,
+   "vin_1pct_loss_v": 2.03706,
+   "vout_at_dropout_limit_v": 1.79982
+  },
+  "worst_dropout_upper_bound_v": 0.24205999999999983,
+  "worst_dropout_v": 0.23705999999999983
+ }
+}
