@@ -1,436 +1,133 @@
 {
   "schema_version": 1,
+  "kind": "t1-attestation-inventory",
   "t1_item": 9,
-  "title": "Testbenches shipped",
-  "scope": "SG13CMOS5L implementation (design/sg13cmos5l, layout/sg13cmos5l-ldo_core_cmos5l). Freshness and identity of the listed files only; NOT a performance, spec-compliance or whole-block T1 claim.",
-  "files": [
-    {
-      "path": "sim/README.md",
-      "sha256": "sha256:4e70657ada45a1e279c30347b8fd8b01c43b6f7132a0ff233b74ca405a4c6fe5"
-    },
-    {
-      "path": "sim/env.sh",
-      "sha256": "sha256:e3a9e1dfb1ff781a4f6b6ed2871d478f338d4f16b967419501efc0a2c19f7c9c"
-    },
-    {
-      "path": "sim/ldo-cmos5l-enable/README.md",
-      "sha256": "sha256:71fc9a765ef225fbe865583846bc183cdb15cbd3f2c25b85339409b2968fc7f8"
-    },
-    {
-      "path": "sim/ldo-cmos5l-enable/baseline/ldo_core_cmos5l.pre-67.spice",
-      "sha256": "sha256:c6e630e92fe012d16adf71229c99b52d8eb6cc4b85fffbb891108930acf11041"
-    },
-    {
-      "path": "sim/ldo-cmos5l-enable/check.sh",
-      "sha256": "sha256:33b43542d980e5ea4d84ababccfd4c322c85e5f9f2316dade616cbcf32732531"
-    },
-    {
-      "path": "sim/ldo-cmos5l-enable/derive.py",
-      "sha256": "sha256:c3b8ddab690ade72e288015317a22203f00b9d154fe11e9a47f7163247821033"
-    },
-    {
-      "path": "sim/ldo-cmos5l-enable/enable-corners.lib",
-      "sha256": "sha256:b44965af00a30c57f35ec5ef3f7cab867381aa989ebe85a83d1aad9b6e05db00"
-    },
-    {
-      "path": "sim/ldo-cmos5l-enable/request-baseline-loopgain.json",
-      "sha256": "sha256:9f9fc5fa34ee3e92b5e6fed01de260344d621cd7a3657069dee61c8dbd8c209f"
-    },
-    {
-      "path": "sim/ldo-cmos5l-enable/request-baseline-psrr.json",
-      "sha256": "sha256:7b9ddfdd2bc5ed5ad9908eaa2c3050f6b4db1a193e8450949ec14b014bda1f36"
-    },
-    {
-      "path": "sim/ldo-cmos5l-enable/request-baseline-reg.json",
-      "sha256": "sha256:72e684a4817df0ddfeb100dd99939ce9ad390063661121933cce5e7c004acf23"
-    },
-    {
-      "path": "sim/ldo-cmos5l-enable/request-disabled-g1.json",
-      "sha256": "sha256:e951d07055c2c737fedcb93533b6a55ba958259023c98ef8c8eb9e4edf60817d"
-    },
-    {
-      "path": "sim/ldo-cmos5l-enable/request-disabled-reg.json",
-      "sha256": "sha256:c24b551eac629bda9dc77bcfd53329a1bf097e03fc947106029d62338b1b9fba"
-    },
-    {
-      "path": "sim/ldo-cmos5l-enable/request-disabled-rload.json",
-      "sha256": "sha256:136ecd68153a80f8cd1f3af11bd0296299432b19cf6b4fb4e4e638f22f962383"
-    },
-    {
-      "path": "sim/ldo-cmos5l-enable/request-enable-ensweep.json",
-      "sha256": "sha256:2e87c24007be13cced81054bdb92cd9d5a6fd0edadec7a9dbf77f08c0c48f35e"
-    },
-    {
-      "path": "sim/ldo-cmos5l-enable/request-enable-leak.json",
-      "sha256": "sha256:55441fd6f51511dca1d7c6ddbaf41a48ac1c066874cae7694e3f18c36c74dbee"
-    },
-    {
-      "path": "sim/ldo-cmos5l-enable/request-enable-loopgain.json",
-      "sha256": "sha256:e49dab8bfbc99a0757c1f0a737e8e7853c4d968e9fd771d248332315ead9b096"
-    },
-    {
-      "path": "sim/ldo-cmos5l-enable/request-enable-psrr.json",
-      "sha256": "sha256:2e2729d3bbf2f25f1c65453a298d570bae7114aa5042262fbb34c73fefcb3683"
-    },
-    {
-      "path": "sim/ldo-cmos5l-enable/request-enable-reg.json",
-      "sha256": "sha256:0fedbd2e4afc43be3619af93cfc936549575b76000af65a2988b576121107d54"
-    },
-    {
-      "path": "sim/ldo-cmos5l-enable/request-enable-rload.json",
-      "sha256": "sha256:a848aaec59aca7cf8f212bbb02bc68ee6b368a110e1025396a3d54f1fce15b5e"
-    },
-    {
-      "path": "sim/ldo-cmos5l-enable/run_smoke.sh",
-      "sha256": "sha256:3a1395b76ca3fb8dcb14110f6947ac986271c3c6d7cb1ec4b560fd592d460ecc"
-    },
-    {
-      "path": "sim/ldo-cmos5l-enable/runner-preamble.cir",
-      "sha256": "sha256:24a2581f33183c67a7cb530519c44b8637cd339e28ce753aff0e48303a53e4bf"
-    },
-    {
-      "path": "sim/ldo-cmos5l-enable/summarize.py",
-      "sha256": "sha256:0c98716c1978b3ec78e0dc63b464e411ee3922f92f7ef5687b4083946a44b1ce"
-    },
-    {
-      "path": "sim/ldo-cmos5l-enable/tb_baseline_reg.spice",
-      "sha256": "sha256:9145aed8d123877f3ebabee58b294b9f9fc8927b8441317ebc4030c9a829fc5b"
-    },
-    {
-      "path": "sim/ldo-cmos5l-enable/tb_disabled_leak.spice",
-      "sha256": "sha256:b369e275b31f1afe220f8da4aafe714d732f39dc49e8b0656c740be75710e90a"
-    },
-    {
-      "path": "sim/ldo-cmos5l-enable/tb_disabled_reg.spice",
-      "sha256": "sha256:d8f39930330e642b45c96f740505411a526d3819ac79a918bcf515f00dded4ef"
-    },
-    {
-      "path": "sim/ldo-cmos5l-enable/tb_disabled_rload.spice",
-      "sha256": "sha256:74c849f22087205b6de25690225c338a097b8ad7d46515f6d697864347cbb867"
-    },
-    {
-      "path": "sim/ldo-cmos5l-enable/tb_enable_ensweep.spice",
-      "sha256": "sha256:74c849f22087205b6de25690225c338a097b8ad7d46515f6d697864347cbb867"
-    },
-    {
-      "path": "sim/ldo-cmos5l-enable/tb_enable_reg.spice",
-      "sha256": "sha256:87008702fe516790fefb78b9ef3395e7e151c9d7259e25a67ca21e39c8eb411f"
-    },
-    {
-      "path": "sim/ldo-cmos5l-enable/tb_enable_rload.spice",
-      "sha256": "sha256:0261dd7fcf7975ce78561902846d78b3db5909fd9db75bb7486c14c38d37ae0e"
-    },
-    {
-      "path": "sim/ldo-cmos5l-enable/tb_loopgain_baseline.spice",
-      "sha256": "sha256:2ee7dacdcea08992e1d3b5c46088ec50e0a649e79b34e71875efbda8208915b8"
-    },
-    {
-      "path": "sim/ldo-cmos5l-enable/tb_loopgain_en.spice",
-      "sha256": "sha256:84a0bf9d23e9080094506a198b0e5e3ac37427efaa5e02db7e0ad9ba6e2e99dc"
-    },
-    {
-      "path": "sim/ldo-cmos5l-enable/tb_loopgain_en_g1pd.spice",
-      "sha256": "sha256:05cfa8d6716369e4a2150fc577bab007d41924f4c71358a1f5c31d1f443f9cef"
-    },
-    {
-      "path": "sim/ldo-cmos5l-enable/tb_psrr_baseline.spice",
-      "sha256": "sha256:3bd7fbc3dd1a97e7cb9a5fba89b33b5dae288cbc030c965edb499361d2138ae6"
-    },
-    {
-      "path": "sim/ldo-cmos5l-enable/tb_psrr_en.spice",
-      "sha256": "sha256:6a3ac3c82cd16b6143eb411e51774aebf9932d601402531eedd8141ea89db211"
-    },
-    {
-      "path": "sim/ldo-cmos5l-ilimit/README.md",
-      "sha256": "sha256:d220651bc787f5a42c1419d117de7260b2e97188c35440992e5f777cd4f300a6"
-    },
-    {
-      "path": "sim/ldo-cmos5l-ilimit/core_with_ilimit.spice",
-      "sha256": "sha256:bcc462c70c4096282181d94b0ba5e56bace015b8c56288b8531fc9b4160451f9"
-    },
-    {
-      "path": "sim/ldo-cmos5l-ilimit/gen_core_with_ilimit.sh",
-      "sha256": "sha256:090d7153189866a8d80e9039c7e0b084df031267a278326b334a192bc5305140"
-    },
-    {
-      "path": "sim/ldo-cmos5l-ilimit/ilimit-corners.lib",
-      "sha256": "sha256:c7a785c2c0f516454bcb867d06d49f103d5fcf57d7911d19bfaea868a06d4ae1"
-    },
-    {
-      "path": "sim/ldo-cmos5l-ilimit/request-disabled.json",
-      "sha256": "sha256:d27198810ab1783535cda2b32821e6ba9d97d229097692f27ff0aa7239115ca3"
-    },
-    {
-      "path": "sim/ldo-cmos5l-ilimit/request-forced-vout.json",
-      "sha256": "sha256:43ca3a657b1f00f10f968b1a5f16efbc24746646b7759d998f51188ad96007e7"
-    },
-    {
-      "path": "sim/ldo-cmos5l-ilimit/request-load-sweep.json",
-      "sha256": "sha256:fde449152500b4127bcc00c29555eb1217d9b0329d010cc8f7d16bb24985da4f"
-    },
-    {
-      "path": "sim/ldo-cmos5l-ilimit/run_smoke.sh",
-      "sha256": "sha256:b87ee2dd4da7e880027880a2da2bd9b3d3cf01037bedd6693c5f96e85d484115"
-    },
-    {
-      "path": "sim/ldo-cmos5l-ilimit/tb_disabled.spice",
-      "sha256": "sha256:462e8ed0a5c737df1795f9cf66d4a4f271a18149e98dcd9c7c18a4a1abc0e44c"
-    },
-    {
-      "path": "sim/ldo-cmos5l-ilimit/tb_forced_vout.spice",
-      "sha256": "sha256:596168b88dcbfb432bcaff7f36eb684889884a4b466156b115e74607e045458b"
-    },
-    {
-      "path": "sim/ldo-cmos5l-ilimit/tb_load_sweep.spice",
-      "sha256": "sha256:2ffed63883dba470254af959f9e32caf05084e527658842b260109fe69ab9687"
-    },
-    {
-      "path": "sim/ldo-cmos5l-monte-carlo/README.md",
-      "sha256": "sha256:b613f6fb514e5b666e8877ea78ab84c1cc107330631eead9c09afca5392d68e2"
-    },
-    {
-      "path": "sim/ldo-cmos5l-monte-carlo/request-row2-attribution.json",
-      "sha256": "sha256:d4b93cd41352dff00b45ef2afe82c3941a3117238bb0b26b5a9e7226246ed843"
-    },
-    {
-      "path": "sim/ldo-cmos5l-monte-carlo/request-row2-mc.json",
-      "sha256": "sha256:3314a27cd464b315d1b5d5c9c32b5b93018e37443119371b9c4627eca2058398"
-    },
-    {
-      "path": "sim/ldo-cmos5l-monte-carlo/request-row2-negctl.json",
-      "sha256": "sha256:84ab2a2ae2d3fc5f27f4b67139b91e77efb176f65821545f741148aa442fc218"
-    },
-    {
-      "path": "sim/ldo-cmos5l-monte-carlo/request-row2-probe.json",
-      "sha256": "sha256:6b45d05cba080844be4a1d6417d440bab9b60d285418aae80b2166524c19c28f"
-    },
-    {
-      "path": "sim/ldo-cmos5l-monte-carlo/request-row2-repro.json",
-      "sha256": "sha256:28a2cbec04b06735bd673cff0c44739202f5aef2e3620152b07a1ac79e416d35"
-    },
-    {
-      "path": "sim/ldo-cmos5l-monte-carlo/request-row2-smoke-en.json",
-      "sha256": "sha256:fdd4ca53834d73146e6185c07a0cb4e178f8b5db13c6751d258f53bc39e0693e"
-    },
-    {
-      "path": "sim/ldo-cmos5l-monte-carlo/row2-corners.lib",
-      "sha256": "sha256:a0b07d8e65c90cdb3e4659b0ae9d49fe3d41309cbe8426428ca90a1f35759383"
-    },
-    {
-      "path": "sim/ldo-cmos5l-monte-carlo/run_campaign.sh",
-      "sha256": "sha256:c6c089c73688ab259f8368cd4a3cef659489ae3d435ba21635a16388d720ffea"
-    },
-    {
-      "path": "sim/ldo-cmos5l-monte-carlo/runner-preamble.cir",
-      "sha256": "sha256:24a2581f33183c67a7cb530519c44b8637cd339e28ce753aff0e48303a53e4bf"
-    },
-    {
-      "path": "sim/ldo-cmos5l-monte-carlo/tb_row2_accuracy.spice",
-      "sha256": "sha256:b994dbb053ec99fe38ae4bca7fbe9099e9fcd9f77ea2c38ddc0f4f367dadbd45"
-    },
-    {
-      "path": "sim/ldo-cmos5l-monte-carlo/tb_row2_accuracy_en.spice",
-      "sha256": "sha256:6cc1467a7ba54bab357cd89dd4a47f239c429c516e17c4e379333767e6d26800"
-    },
-    {
-      "path": "sim/ldo-cmos5l-pvt-sweep/README.md",
-      "sha256": "sha256:b8122211cc9d679b80ee04533f3237c3cebb0f024e417e0f77abf8d5ee383d44"
-    },
-    {
-      "path": "sim/ldo-cmos5l-pvt-sweep/ac_sweep.py",
-      "sha256": "sha256:6f24f6372296653243196835e89f3a3c9957653a36fc0ed45eee5a18e4fa5002"
-    },
-    {
-      "path": "sim/ldo-cmos5l-pvt-sweep/batch_backend.py",
-      "sha256": "sha256:d5d82e1636d4814a78e36365c3c8e57bfa18679204f38fe7700634da71c63671"
-    },
-    {
-      "path": "sim/ldo-cmos5l-pvt-sweep/dropout_campaign.py",
-      "sha256": "sha256:0eaaf4b25b665283725ba5eea095926176e98ede2757d82de94b51963971661c"
-    },
-    {
-      "path": "sim/ldo-cmos5l-pvt-sweep/dropout_metrics.py",
-      "sha256": "sha256:85f0c21bd3c40015ee7b409d068590fe6badc88ab27b643aebf543c07457147c"
-    },
-    {
-      "path": "sim/ldo-cmos5l-pvt-sweep/e1_oppoints.py",
-      "sha256": "sha256:a3f5f104d4ee7a96c175d252dbe0669d9aea41106cff150ca6141142962925f2"
-    },
-    {
-      "path": "sim/ldo-cmos5l-pvt-sweep/loopgain2.py",
-      "sha256": "sha256:22e8900632c48b90bbca09373f6656f2a91f7304c9328cb81c097e71c05e68df"
-    },
-    {
-      "path": "sim/ldo-cmos5l-pvt-sweep/row10_loopgain2.py",
-      "sha256": "sha256:908582b07b669654b6c6ebc9500268597a92edf01d1dedbd0dc3b258994db8a3"
-    },
-    {
-      "path": "sim/ldo-cmos5l-pvt-sweep/run_e1op.sh",
-      "sha256": "sha256:f44d385b533cd25b1395114944c0c3069ed521e193f80b08947b0e95992619b7"
-    },
-    {
-      "path": "sim/ldo-cmos5l-pvt-sweep/run_loopgain2.sh",
-      "sha256": "sha256:8aa6990c0928688e953f691e2aa3b9722cf59cd1da787b814f9a379954c9dafa"
-    },
-    {
-      "path": "sim/ldo-cmos5l-pvt-sweep/run_sweep.sh",
-      "sha256": "sha256:cd3806471a40138adf4b22f4f434a13262cce653788e6a3a42b90a67ba9bb499"
-    },
-    {
-      "path": "sim/ldo-cmos5l-pvt-sweep/startup_campaign.py",
-      "sha256": "sha256:a445a7177f5c17451efe2cda003ff6b863ef45f371922b90dd74ed9dab843333"
-    },
-    {
-      "path": "sim/ldo-cmos5l-pvt-sweep/startup_eval.py",
-      "sha256": "sha256:da3543a6d412b561fdb6b3cff5a1832e9ff821e280bf09b19599a755b10549d6"
-    },
-    {
-      "path": "sim/ldo-cmos5l-pvt-sweep/startup_offstate.py",
-      "sha256": "sha256:686672f20e35164aeddba67f9a837014047a31e5f2e5c4c415b0ed47a788ec0e"
-    },
-    {
-      "path": "sim/ldo-cmos5l-pvt-sweep/test_e1_oppoints.py",
-      "sha256": "sha256:24908a04073bca67bca677f5c664ffb1763061e65af347eb5c4bdf6644e15564"
-    },
-    {
-      "path": "sim/ldo-cmos5l-pvt-sweep/testbench/tb_dcsweep_cmos5l.spice.tmpl",
-      "sha256": "sha256:a6aea39e08bcc42a10f9b6db53e844fdf26063e3370dc8c006f8ad35754aae7c"
-    },
-    {
-      "path": "sim/ldo-cmos5l-pvt-sweep/testbench/tb_dropout_cmos5l.spice.tmpl",
-      "sha256": "sha256:2751a0db725cdc17405a2003784e465785e3157525f3c4d1c8f90d64b71a0c5a"
-    },
-    {
-      "path": "sim/ldo-cmos5l-pvt-sweep/testbench/tb_e1op_cmos5l.spice.tmpl",
-      "sha256": "sha256:807d0c5729774ea2a4aa45e0c423fa1030924875c551bf7477be25bdea8b9f12"
-    },
-    {
-      "path": "sim/ldo-cmos5l-pvt-sweep/testbench/tb_loopgain2i_cmos5l.spice.tmpl",
-      "sha256": "sha256:deb8306c6bb1bebe6b8b791911af170e0f8069cf7a9307ebf2ed000c8e21d024"
-    },
-    {
-      "path": "sim/ldo-cmos5l-pvt-sweep/testbench/tb_loopgain2v_cmos5l.spice.tmpl",
-      "sha256": "sha256:d7be4a61a83a628b0fc79a17d58f2102b00dcb7020ffd8a8cbf83aa2ef676d59"
-    },
-    {
-      "path": "sim/ldo-cmos5l-pvt-sweep/testbench/tb_loopgain_cmos5l.spice.tmpl",
-      "sha256": "sha256:b6473595524140f34f2cc565c2037cf57629ba102fe7638b6d51181549016b66"
-    },
-    {
-      "path": "sim/ldo-cmos5l-pvt-sweep/testbench/tb_psrr_cmos5l.spice.tmpl",
-      "sha256": "sha256:fc3762d4b8feb011d78b62451e76ef7d5a074833a2e956e04741d2e0a79c177f"
-    },
-    {
-      "path": "sim/ldo-cmos5l-pvt-sweep/testbench/tb_startup_cmos5l.spice.tmpl",
-      "sha256": "sha256:ad9e077575a7b7db5ccc928a17f68d04b4372e1815cfc363c55a3ec062458cde"
-    },
-    {
-      "path": "sim/pass-device-screening-hbt/README.md",
-      "sha256": "sha256:de9098cb467dafe7822ca98ec2bc75a393725409936fe5cc358da225e37e76f0"
-    },
-    {
-      "path": "sim/pass-device-screening-hbt/decks/hbt-corners.lib",
-      "sha256": "sha256:fa66c1ef13d89f6dba5465c657df196d2c34d965d8fafc73f49a537f7fb67add"
-    },
-    {
-      "path": "sim/pass-device-screening-hbt/decks/request-npn13G2-servo.json",
-      "sha256": "sha256:cc0be4822b32aa215d3cb6c87b4f3f87192d2d074bc95a029e4d8ff3f73a1202"
-    },
-    {
-      "path": "sim/pass-device-screening-hbt/decks/request-npn13G2-vcesweep.json",
-      "sha256": "sha256:aa2fa9b4acbf028253b0ddb888814c95f93b75e626831ab3a7e040fc202c2d01"
-    },
-    {
-      "path": "sim/pass-device-screening-hbt/decks/request-npn13G2l-servo.json",
-      "sha256": "sha256:15226aa2ae24e7ce8a7122b9a222fd2bc433f3c52d5d15dd8b7bcc34af5340e3"
-    },
-    {
-      "path": "sim/pass-device-screening-hbt/decks/request-npn13G2l-vcesweep.json",
-      "sha256": "sha256:c1cdba4ff18086be9c5796ec9a21f235cd9643269cd3cda124d282d77cefa008"
-    },
-    {
-      "path": "sim/pass-device-screening-hbt/decks/request-npn13G2v-servo.json",
-      "sha256": "sha256:a1689c8192eb8dde60163d230f8890fcab2fa606bf4a876c7ae2739a94d09644"
-    },
-    {
-      "path": "sim/pass-device-screening-hbt/decks/request-npn13G2v-vcesweep.json",
-      "sha256": "sha256:61288e71d499f580a3044c851ac4f7ccdc6fac2e41671ac02821bef5a92f1b54"
-    },
-    {
-      "path": "sim/pass-device-screening-hbt/decks/request-pnpMPA-servo.json",
-      "sha256": "sha256:8cc9ff66baafd33fafc0cd51a24b314c56098515c427caf4de4b5fc171b28c9f"
-    },
-    {
-      "path": "sim/pass-device-screening-hbt/decks/request-pnpMPA-vcesweep.json",
-      "sha256": "sha256:dcff9112522aff758811d86c489ff072df8b0ad1ffd7115a524fcbaae09d1197"
-    },
-    {
-      "path": "sim/pass-device-screening-hbt/decks/runner-preamble.cir",
-      "sha256": "sha256:8bd6883d9e30cc1d8d8c903a5e531454aecb0cecf820be8f892bac9cdadd40d9"
-    },
-    {
-      "path": "sim/pass-device-screening-hbt/decks/tb_npn13G2_servo.spice",
-      "sha256": "sha256:9f0263107c5a9d3893af69cef7806757b46be115113d008785d4fc283bfbe372"
-    },
-    {
-      "path": "sim/pass-device-screening-hbt/decks/tb_npn13G2_vcesweep.spice",
-      "sha256": "sha256:b40bbc433dbd7839304f2ebcb16f205e09dbb3bc7404e28fba0e239b808c7bfe"
-    },
-    {
-      "path": "sim/pass-device-screening-hbt/decks/tb_npn13G2l_servo.spice",
-      "sha256": "sha256:99ca9c8a97712aa99f45c503426ee4a8eae43cb10202de4ea3e7f7df3cf11c90"
-    },
-    {
-      "path": "sim/pass-device-screening-hbt/decks/tb_npn13G2l_vcesweep.spice",
-      "sha256": "sha256:1ecd272a1a0a7c04fd45f17af9f2dcdd996d18b1c484bf5d9e41a28d4c749d2b"
-    },
-    {
-      "path": "sim/pass-device-screening-hbt/decks/tb_npn13G2v_servo.spice",
-      "sha256": "sha256:03100878331bcb096b5803f3d9ab842e0d160457797aa64f243436cd7c9b1410"
-    },
-    {
-      "path": "sim/pass-device-screening-hbt/decks/tb_npn13G2v_vcesweep.spice",
-      "sha256": "sha256:21fae5fc08267f08dc5f52ce1b402f9629feedfac748bddd1dfa0532e6dc1653"
-    },
-    {
-      "path": "sim/pass-device-screening-hbt/decks/tb_pnpMPA_servo.spice",
-      "sha256": "sha256:2040d4844949e2b7fcd9804cb057f678931e64fd04eaea38585d538726407cce"
-    },
-    {
-      "path": "sim/pass-device-screening-hbt/decks/tb_pnpMPA_vcesweep.spice",
-      "sha256": "sha256:6752cae26308fa40f2a8e40c66487d04cef952d04eab8c68f2f51f7e3122850c"
-    },
-    {
-      "path": "sim/pass-device-screening-hbt/gen_decks.py",
-      "sha256": "sha256:3924f5e9298662c48490b043422d85eb1240a483fbea0acbf007c290de8ec67b"
-    },
-    {
-      "path": "sim/pass-device-screening-hbt/record.py",
-      "sha256": "sha256:e4dc16ebbb9dfb0ca3a41775ed17983c0abab8aa034ef284b8e3a608b3d2cb15"
-    },
-    {
-      "path": "sim/pass-device-screening-hbt/run_sweep.sh",
-      "sha256": "sha256:e84e05ae91b298f494a7313ea7a2cebfb49047bd3ba84e1e8762f92cb988be0a"
-    },
-    {
-      "path": "sim/pass-device-screening-hbt/test_record.py",
-      "sha256": "sha256:b9f4cf9909cc4ad581396cbd70ba696b5f4e1826a3c0f83867ba5fe48908b9c1"
-    },
-    {
-      "path": "sim/pass-device-screening/README.md",
-      "sha256": "sha256:d11a5d9e894b90fe3616f4a65005a1d920c4322c18f8521088f1babf9efddab7"
-    },
-    {
-      "path": "sim/pass-device-screening/run_sweep.sh",
-      "sha256": "sha256:b9f1ec9bd73e4be50d613cd071e2341b922cd19075a8c3728474772050c4d03f"
-    },
-    {
-      "path": "sim/pass-device-screening/testbench/tb_dropout_pmos.spice.tmpl",
-      "sha256": "sha256:bde6571f3f8fa3873b677a8efa22bb097b4dbd566eee7627864826bce67907ce"
-    },
-    {
-      "path": "sim/pass-device-screening/testbench/tb_stress_pmos.spice.tmpl",
-      "sha256": "sha256:b3a061b4ca9bb5e79161271d296cdbdc6d3220213c5421097cfd7a8b76a15792"
+  "description": "Every ngspice testbench and testbench template shipped under sim/, together with the cold-start entry points (run_*.sh), corner libraries, runner preambles, `klt sim` request documents (including the row-2 negative control) and experiment READMEs a third party needs to run them -- the same file set the hand-rolled item-9 inventory carried before issue #199, so the conversion to `klt signoff --attest` loses no coverage. The declared cold start is the SG13CMOS5L PVT deck's own CI-weight preflight, which generates and syntax-checks one netlist per bench at mos_tt/27C without writing a records/ entry; it needs ngspice >= 46, the OSDI models sim/tools/build-osdi.sh builds, and both PDK variants under one PDK_ROOT. Shipped-and-runnable only: no measurement result is claimed here (items 5/6/8 own those).",
+  "testbenches": [
+    "sim/README.md",
+    "sim/env.sh",
+    "sim/ldo-cmos5l-enable/README.md",
+    "sim/ldo-cmos5l-enable/baseline/ldo_core_cmos5l.pre-67.spice",
+    "sim/ldo-cmos5l-enable/check.sh",
+    "sim/ldo-cmos5l-enable/derive.py",
+    "sim/ldo-cmos5l-enable/enable-corners.lib",
+    "sim/ldo-cmos5l-enable/request-baseline-loopgain.json",
+    "sim/ldo-cmos5l-enable/request-baseline-psrr.json",
+    "sim/ldo-cmos5l-enable/request-baseline-reg.json",
+    "sim/ldo-cmos5l-enable/request-disabled-g1.json",
+    "sim/ldo-cmos5l-enable/request-disabled-reg.json",
+    "sim/ldo-cmos5l-enable/request-disabled-rload.json",
+    "sim/ldo-cmos5l-enable/request-enable-ensweep.json",
+    "sim/ldo-cmos5l-enable/request-enable-leak.json",
+    "sim/ldo-cmos5l-enable/request-enable-loopgain.json",
+    "sim/ldo-cmos5l-enable/request-enable-psrr.json",
+    "sim/ldo-cmos5l-enable/request-enable-reg.json",
+    "sim/ldo-cmos5l-enable/request-enable-rload.json",
+    "sim/ldo-cmos5l-enable/run_smoke.sh",
+    "sim/ldo-cmos5l-enable/runner-preamble.cir",
+    "sim/ldo-cmos5l-enable/summarize.py",
+    "sim/ldo-cmos5l-enable/tb_baseline_reg.spice",
+    "sim/ldo-cmos5l-enable/tb_disabled_leak.spice",
+    "sim/ldo-cmos5l-enable/tb_disabled_reg.spice",
+    "sim/ldo-cmos5l-enable/tb_disabled_rload.spice",
+    "sim/ldo-cmos5l-enable/tb_enable_ensweep.spice",
+    "sim/ldo-cmos5l-enable/tb_enable_reg.spice",
+    "sim/ldo-cmos5l-enable/tb_enable_rload.spice",
+    "sim/ldo-cmos5l-enable/tb_loopgain_baseline.spice",
+    "sim/ldo-cmos5l-enable/tb_loopgain_en.spice",
+    "sim/ldo-cmos5l-enable/tb_loopgain_en_g1pd.spice",
+    "sim/ldo-cmos5l-enable/tb_psrr_baseline.spice",
+    "sim/ldo-cmos5l-enable/tb_psrr_en.spice",
+    "sim/ldo-cmos5l-ilimit/README.md",
+    "sim/ldo-cmos5l-ilimit/core_with_ilimit.spice",
+    "sim/ldo-cmos5l-ilimit/gen_core_with_ilimit.sh",
+    "sim/ldo-cmos5l-ilimit/ilimit-corners.lib",
+    "sim/ldo-cmos5l-ilimit/request-disabled.json",
+    "sim/ldo-cmos5l-ilimit/request-forced-vout.json",
+    "sim/ldo-cmos5l-ilimit/request-load-sweep.json",
+    "sim/ldo-cmos5l-ilimit/run_smoke.sh",
+    "sim/ldo-cmos5l-ilimit/tb_disabled.spice",
+    "sim/ldo-cmos5l-ilimit/tb_forced_vout.spice",
+    "sim/ldo-cmos5l-ilimit/tb_load_sweep.spice",
+    "sim/ldo-cmos5l-monte-carlo/README.md",
+    "sim/ldo-cmos5l-monte-carlo/request-row2-attribution.json",
+    "sim/ldo-cmos5l-monte-carlo/request-row2-mc.json",
+    "sim/ldo-cmos5l-monte-carlo/request-row2-negctl.json",
+    "sim/ldo-cmos5l-monte-carlo/request-row2-probe.json",
+    "sim/ldo-cmos5l-monte-carlo/request-row2-repro.json",
+    "sim/ldo-cmos5l-monte-carlo/request-row2-smoke-en.json",
+    "sim/ldo-cmos5l-monte-carlo/row2-corners.lib",
+    "sim/ldo-cmos5l-monte-carlo/run_campaign.sh",
+    "sim/ldo-cmos5l-monte-carlo/runner-preamble.cir",
+    "sim/ldo-cmos5l-monte-carlo/tb_row2_accuracy.spice",
+    "sim/ldo-cmos5l-monte-carlo/tb_row2_accuracy_en.spice",
+    "sim/ldo-cmos5l-pvt-sweep/README.md",
+    "sim/ldo-cmos5l-pvt-sweep/ac_sweep.py",
+    "sim/ldo-cmos5l-pvt-sweep/batch_backend.py",
+    "sim/ldo-cmos5l-pvt-sweep/dropout_campaign.py",
+    "sim/ldo-cmos5l-pvt-sweep/dropout_metrics.py",
+    "sim/ldo-cmos5l-pvt-sweep/e1_oppoints.py",
+    "sim/ldo-cmos5l-pvt-sweep/loopgain2.py",
+    "sim/ldo-cmos5l-pvt-sweep/row10_loopgain2.py",
+    "sim/ldo-cmos5l-pvt-sweep/run_e1op.sh",
+    "sim/ldo-cmos5l-pvt-sweep/run_loopgain2.sh",
+    "sim/ldo-cmos5l-pvt-sweep/run_sweep.sh",
+    "sim/ldo-cmos5l-pvt-sweep/startup_campaign.py",
+    "sim/ldo-cmos5l-pvt-sweep/startup_eval.py",
+    "sim/ldo-cmos5l-pvt-sweep/startup_offstate.py",
+    "sim/ldo-cmos5l-pvt-sweep/test_e1_oppoints.py",
+    "sim/ldo-cmos5l-pvt-sweep/testbench/tb_dcsweep_cmos5l.spice.tmpl",
+    "sim/ldo-cmos5l-pvt-sweep/testbench/tb_dropout_cmos5l.spice.tmpl",
+    "sim/ldo-cmos5l-pvt-sweep/testbench/tb_e1op_cmos5l.spice.tmpl",
+    "sim/ldo-cmos5l-pvt-sweep/testbench/tb_loopgain2i_cmos5l.spice.tmpl",
+    "sim/ldo-cmos5l-pvt-sweep/testbench/tb_loopgain2v_cmos5l.spice.tmpl",
+    "sim/ldo-cmos5l-pvt-sweep/testbench/tb_loopgain_cmos5l.spice.tmpl",
+    "sim/ldo-cmos5l-pvt-sweep/testbench/tb_psrr_cmos5l.spice.tmpl",
+    "sim/ldo-cmos5l-pvt-sweep/testbench/tb_startup_cmos5l.spice.tmpl",
+    "sim/pass-device-screening-hbt/README.md",
+    "sim/pass-device-screening-hbt/decks/hbt-corners.lib",
+    "sim/pass-device-screening-hbt/decks/request-npn13G2-servo.json",
+    "sim/pass-device-screening-hbt/decks/request-npn13G2-vcesweep.json",
+    "sim/pass-device-screening-hbt/decks/request-npn13G2l-servo.json",
+    "sim/pass-device-screening-hbt/decks/request-npn13G2l-vcesweep.json",
+    "sim/pass-device-screening-hbt/decks/request-npn13G2v-servo.json",
+    "sim/pass-device-screening-hbt/decks/request-npn13G2v-vcesweep.json",
+    "sim/pass-device-screening-hbt/decks/request-pnpMPA-servo.json",
+    "sim/pass-device-screening-hbt/decks/request-pnpMPA-vcesweep.json",
+    "sim/pass-device-screening-hbt/decks/runner-preamble.cir",
+    "sim/pass-device-screening-hbt/decks/tb_npn13G2_servo.spice",
+    "sim/pass-device-screening-hbt/decks/tb_npn13G2_vcesweep.spice",
+    "sim/pass-device-screening-hbt/decks/tb_npn13G2l_servo.spice",
+    "sim/pass-device-screening-hbt/decks/tb_npn13G2l_vcesweep.spice",
+    "sim/pass-device-screening-hbt/decks/tb_npn13G2v_servo.spice",
+    "sim/pass-device-screening-hbt/decks/tb_npn13G2v_vcesweep.spice",
+    "sim/pass-device-screening-hbt/decks/tb_pnpMPA_servo.spice",
+    "sim/pass-device-screening-hbt/decks/tb_pnpMPA_vcesweep.spice",
+    "sim/pass-device-screening-hbt/gen_decks.py",
+    "sim/pass-device-screening-hbt/record.py",
+    "sim/pass-device-screening-hbt/run_sweep.sh",
+    "sim/pass-device-screening-hbt/test_record.py",
+    "sim/pass-device-screening/README.md",
+    "sim/pass-device-screening/run_sweep.sh",
+    "sim/pass-device-screening/testbench/tb_dropout_pmos.spice.tmpl",
+    "sim/pass-device-screening/testbench/tb_stress_pmos.spice.tmpl"
+  ],
+  "cold_start": {
+    "argv": [
+      "sim/ldo-cmos5l-pvt-sweep/run_sweep.sh",
+      "--check-env"
+    ],
+    "cwd": "."
+  },
+  "pins": {
+    "pdk": {
+      "name": "ihp-sg13cmos5l",
+      "revision": "f7bca32694fe3d58be0cc7d9df4b9f5db7161a14"
+    },
+    "tools": {
+      "klt": "0.8.0",
+      "ngspice": ">=46 (OSDI ABI v0.4; records generated with ngspice-46)",
+      "openvaf-r": "v24.0.1mob"
     }
-  ]
+  }
 }
