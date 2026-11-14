@@ -90,16 +90,14 @@ if [[ ${CHECK_ENV} -eq 1 ]]; then
   for bench in dropout stress; do
     template="${SCRIPT_DIR}/testbench/tb_${bench}_pmos.spice.tmpl"
     netlist="${tmp}/${bench}_check.spice"
-    sed \
-      -e "s|@@PDK_ROOT@@|${PDK_ROOT}|g" \
-      -e "s|@@PDK@@|${PDK}|g" \
-      -e "s|@@OSDI_DIR@@|${OSDI_DIR}|g" \
-      -e "s|@@MOS_SECTION@@|mos_tt|g" \
-      -e "s|@@TEMP@@|27|g" \
-      -e "s|@@W@@|1u|g" \
-      -e "s|@@L@@|0.5u|g" \
-      -e "s|@@DC_CSV@@|${tmp}/${bench}_check_dc.csv|g" \
-      "${template}" > "${netlist}"
+    # One renderer for every deck (#236): the same sim/tools/render_deck.py
+    # the per-point renders below call, so the CI preflight exercises the
+    # production renderer (with its fail-loudly @@TOKEN@@ guard) rather
+    # than a second site-local sed chain.
+    python3 "${SIM_DIR}/tools/render_deck.py" "${template}" "${netlist}" \
+      "PDK_ROOT=${PDK_ROOT}" "PDK=${PDK}" "OSDI_DIR=${OSDI_DIR}" \
+      "MOS_SECTION=mos_tt" "TEMP=27" "W=1u" "L=0.5u" \
+      "DC_CSV=${tmp}/${bench}_check_dc.csv"
     log="${tmp}/${bench}_check.log"
     case "${bench}" in
       dropout) vargs=(--wrdata "${tmp}/${bench}_check_dc.csv:4:121" --marker DROPOUT_CGATE) ;;
@@ -162,16 +160,10 @@ run_point() {
 
   if [[ "${bench}" == "dropout" ]]; then
     local dc_csv="${CORNERS_OUT}/${point_id}_dc.csv"
-    sed \
-      -e "s|@@PDK_ROOT@@|${PDK_ROOT}|g" \
-      -e "s|@@PDK@@|${PDK}|g" \
-      -e "s|@@OSDI_DIR@@|${OSDI_DIR}|g" \
-      -e "s|@@MOS_SECTION@@|${mos_section}|g" \
-      -e "s|@@TEMP@@|${temp}|g" \
-      -e "s|@@W@@|${w}|g" \
-      -e "s|@@L@@|${l}|g" \
-      -e "s|@@DC_CSV@@|${dc_csv}|g" \
-      "${template}" > "${netlist}"
+    python3 "${SIM_DIR}/tools/render_deck.py" "${template}" "${netlist}" \
+      "PDK_ROOT=${PDK_ROOT}" "PDK=${PDK}" "OSDI_DIR=${OSDI_DIR}" \
+      "MOS_SECTION=${mos_section}" "TEMP=${temp}" "W=${w}" "L=${l}" \
+      "DC_CSV=${dc_csv}"
 
     local rc=0
     ngspice -b "${netlist}" > "${log}" 2>&1 || rc=$?
@@ -209,15 +201,9 @@ run_point() {
 
     passed=$((passed + 1))
   else
-    sed \
-      -e "s|@@PDK_ROOT@@|${PDK_ROOT}|g" \
-      -e "s|@@PDK@@|${PDK}|g" \
-      -e "s|@@OSDI_DIR@@|${OSDI_DIR}|g" \
-      -e "s|@@MOS_SECTION@@|${mos_section}|g" \
-      -e "s|@@TEMP@@|${temp}|g" \
-      -e "s|@@W@@|${w}|g" \
-      -e "s|@@L@@|${l}|g" \
-      "${template}" > "${netlist}"
+    python3 "${SIM_DIR}/tools/render_deck.py" "${template}" "${netlist}" \
+      "PDK_ROOT=${PDK_ROOT}" "PDK=${PDK}" "OSDI_DIR=${OSDI_DIR}" \
+      "MOS_SECTION=${mos_section}" "TEMP=${temp}" "W=${w}" "L=${l}"
 
     local rc=0
     ngspice -b "${netlist}" > "${log}" 2>&1 || rc=$?
