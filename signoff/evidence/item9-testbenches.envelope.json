@@ -3,14 +3,14 @@
   "kind": "generic",
   "status": "pass",
   "t1_item": 9,
-  "summary": "T1 item 9 (Testbenches shipped): 110/110 attestation checks passed (klt signoff --attest)",
+  "summary": "T1 item 9 (Testbenches shipped): 112/112 attestation checks passed (klt signoff --attest)",
   "source": "signoff/evidence/item9-testbenches.inventory.json",
   "attestation": {
     "producer": "klt signoff --attest",
     "inventory_schema_version": 1,
     "hash_algorithm": "sha256-raw-bytes",
-    "check_count": 110,
-    "passed_count": 110,
+    "check_count": 112,
+    "passed_count": 112,
     "checks": [
       {
         "check": "present",
@@ -416,7 +416,7 @@
         "role": "testbench",
         "path": "sim/ldo-cmos5l-pvt-sweep/README.md",
         "passed": true,
-        "content_hash": "sha256:b8122211cc9d679b80ee04533f3237c3cebb0f024e417e0f77abf8d5ee383d44"
+        "content_hash": "sha256:dbabcb14424a892449907b0046e32fb1331fbedcd9c59d444d2eb523ff0db07e"
       },
       {
         "check": "present",
@@ -466,6 +466,13 @@
         "path": "sim/ldo-cmos5l-pvt-sweep/row10_loopgain2.py",
         "passed": true,
         "content_hash": "sha256:908582b07b669654b6c6ebc9500268597a92edf01d1dedbd0dc3b258994db8a3"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/ldo-cmos5l-pvt-sweep/row4_envelope.py",
+        "passed": true,
+        "content_hash": "sha256:e3dbaacd160cfc462df4750f661fdf45270a0d204a4309fee575d17787840fb6"
       },
       {
         "check": "present",
@@ -564,6 +571,13 @@
         "path": "sim/ldo-cmos5l-pvt-sweep/testbench/tb_psrr_cmos5l.spice.tmpl",
         "passed": true,
         "content_hash": "sha256:fc3762d4b8feb011d78b62451e76ef7d5a074833a2e956e04741d2e0a79c177f"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/ldo-cmos5l-pvt-sweep/testbench/tb_row4_envelope_cmos5l.spice.tmpl",
+        "passed": true,
+        "content_hash": "sha256:e354514b13c448553d85f813637a5f27ca1136f5a5c27846723ab3dac0740cad"
       },
       {
         "check": "present",
@@ -803,7 +817,7 @@
         "path": "signoff/evidence/item9-testbenches.inventory.json",
         "scope": "repo"
       },
-      "content_hash": "sha256:75e09df84331213a4bc441c7fcef516ab5494bf1ccf5c1d697cff0a3deca2a4e"
+      "content_hash": "sha256:0e90d5006d93bbcd77734cbac929d0e509f3c2ec2551289846f21066c5cb27a2"
     }
   }
 }

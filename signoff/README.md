@@ -8,12 +8,18 @@ the way a hand-read checklist does.
 
 | File | What it is |
 | --- | --- |
-| `sg13g2-ldo.json` | The **block manifest** for `klt signoff --manifest`: `block: sg13g2-ldo`, `kind: analog`, and one pinned evidence citation per T1 item this repo can honestly cite. |
+| `sg13g2-ldo.json` | The **block manifest** for `klt signoff --manifest`: `block: sg13g2-ldo`, `kind: analog`, one pinned evidence citation per T1 item this repo can honestly cite, and (item 5) a `spec_rows` declaration of all ten DR-0007 target-spec rows with their ratification state, so the grader computes the coverage gap instead of being told there is none. |
 | `sg13g2-ldo.t1-report.json` | The **verdict of record**: the exact `klt signoff --manifest sg13g2-ldo.json --format json` output, committed. `t1_item_count: 11, t1_met_count: 8, tier: null` — this block is **not T1 yet**, and the report says so per item with a `reason`. |
 
 ## Reading the report
 
-Today's honest read is **8/11 met** (items 1, 2, 3, 4, 8, 9, 10, 11). Issue #67 appended an `EN` port and two devices to `design/sg13cmos5l/netlist/ldo_core_cmos5l.spice`. That left the selected PVT record stale against the design, and item 8 dropped to `unmet` (`check_failed`). PR #87 then re-ran the full 45-point grid on the EN design (`EN` tied to `VIN`) on the EDA batch fleet: record `sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81`, made with `run_sweep.sh --batch`. Selecting that record makes the characterization artifact current again, so item 8 is `met` once more, in the artifact-completeness sense described below. The enabled-state results differ from the pre-EN record by at most 0.015 deg of phase margin and 0.023 dB of gain margin (DR-0008 addendum). Issue #89 then added a `G1` disable pull-down inside the error amplifier (an `EN` pin on `ldo_erramp_cmos5l`, an inverter and a 1 x 1 um NMOS; DR-0008 addendum "G1 disable pull-down"). Both design netlists changed, so the grid (record `20261011-051956-eda9285`) and the startup campaign (record `20261011-031426-df3f802`) were re-run on the batch fleet and reselected, and the item-5 informational evidence was regenerated for the new record. The enabled state moves by at most -0.0021 deg of phase margin, -0.0086 dB of gain margin and +0.043 nA of Iq; every row verdict is unchanged. The disabled state is measured by the one-corner DC smoke check (`sim/ldo-cmos5l-enable/`, 2.0006 uA at 3.30 V, tt/27C) and by the startup bench's off-state samples (2.000-2.264 uA over 135 PVT points). These are measurements, not a target; no shutdown-current row exists. The layout was regenerated with the three devices, and the DRC/LVS/ERC reports and their item 2/3/4/11 pins were refreshed (`layout/README.md`).
+Today's honest read is **8/11 met** (items 1, 2, 3, 4, 8, 9, 10, 11). Issue
+#55 added the first graded `klt sim` corner-matrix envelope and cited it under
+item 5; the item deliberately still reads `unmet`, now with reason
+`partial_coverage` rather than `no_evidence`, because the envelope grades the
+one ratified spec row and the manifest declares all ten. `t1_met_count` is
+unchanged at 8. Citing real evidence that grades the item `unmet` is the point:
+the gap is now the grader's arithmetic, not this file's prose. Issue #67 appended an `EN` port and two devices to `design/sg13cmos5l/netlist/ldo_core_cmos5l.spice`. That left the selected PVT record stale against the design, and item 8 dropped to `unmet` (`check_failed`). PR #87 then re-ran the full 45-point grid on the EN design (`EN` tied to `VIN`) on the EDA batch fleet: record `sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81`, made with `run_sweep.sh --batch`. Selecting that record makes the characterization artifact current again, so item 8 is `met` once more, in the artifact-completeness sense described below. The enabled-state results differ from the pre-EN record by at most 0.015 deg of phase margin and 0.023 dB of gain margin (DR-0008 addendum). Issue #89 then added a `G1` disable pull-down inside the error amplifier (an `EN` pin on `ldo_erramp_cmos5l`, an inverter and a 1 x 1 um NMOS; DR-0008 addendum "G1 disable pull-down"). Both design netlists changed, so the grid (record `20261011-051956-eda9285`) and the startup campaign (record `20261011-031426-df3f802`) were re-run on the batch fleet and reselected, and the item-5 informational evidence was regenerated for the new record. The enabled state moves by at most -0.0021 deg of phase margin, -0.0086 dB of gain margin and +0.043 nA of Iq; every row verdict is unchanged. The disabled state is measured by the one-corner DC smoke check (`sim/ldo-cmos5l-enable/`, 2.0006 uA at 3.30 V, tt/27C) and by the startup bench's off-state samples (2.000-2.264 uA over 135 PVT points). These are measurements, not a target; no shutdown-current row exists. The layout was regenerated with the three devices, and the DRC/LVS/ERC reports and their item 2/3/4/11 pins were refreshed (`layout/README.md`).
 
 Issue #128 then re-ran the same 45-point grid on the batch fleet with the loop-gain sweep extended from 100 MHz to 10 GHz (record `20261011-070111-5391c68`, same design netlists) and reselected it. Every DC and PSRR column is identical to the previous record. Under the unchanged DR-0014 rules row 10 PM and GM are still 45 `ambiguous` and 0 pass / 0 fail (`ceiling_unbounded`): the loop gain flattens near +1 dB above the second 0 dB crossing instead of falling away. Statuses are unchanged (exit 3, 8/11 met). The item-5 evidence below now lives under that record's `evidence/` directory.
 
@@ -30,7 +36,7 @@ Per item:
   **Items 1, 9 and 10 are produced by `klt signoff --attest N --inventory … -o …` at the pinned klt (0.8.0), not by this repo** (#199). Their envelopes carry `attestation.producer: "klt signoff --attest"`, and their `status` is **derived**, not asserted: `pass` only when every check the tool ran passed, with `attestation.checks[]` naming each one and `attestation.passed_count`/`check_count` in the summary. Their inventories are the `klt` `t1-attestation-inventory` schema (`schema_version: 1`), which carries **no hashes**: the per-file sha256 is recorded by the producer in the envelope's `present` checks, so an inventoried file's content edit changes the *envelope*, never the inventory the manifest pins. `--attest N --inventory … --check <envelope>` re-attests and exits 0 only if the committed envelope still reproduces **and** still passes; it never rewrites it. Per item:
   - **1 design sources** — `sources`: the SG13CMOS5L `.sch`/`.sym`, `design/netlist.py`, `design/xschemrc`, `design/README.md`. `derived`: the three `design/sg13cmos5l/netlist/*.spice`, each with the freshness check `python3 design/netlist.py --design sg13cmos5l --cell <cell> --check`. That command — not `klt netlist … --check` — is the one that **reproduces the committed bytes**: the committed netlists are post-processed by `design/netlist.py` (repo-relative `sch_path` line, generated-by header), so a bare `klt netlist --check` reports `drifted` on all three. A present-but-stale netlist therefore fails. `ldo_ilimit_cmos5l` is declared `pending_integration` (`design/netlist.py`, #190) — that only suppresses the *cross-cell* instantiation invariant, which a `--cell` run does not evaluate anyway; its own export reproduces byte-for-byte and is attested fresh on the same footing as the other two, not waived. The SG13G2-branch placeholder sources are not attested. The whole-design `design/netlist.py --design sg13cmos5l --check` (which does evaluate the cross-cell invariants) stays a separate CI step.
   - **2 layout** — the committed GDS, its generator and the shared generator module. **Still hand-rolled**: `klt signoff --attest` deliberately does not attest item 2 (its binding is the committed stream itself, klayout-tools#2718), so `signoff/evidence_inventory.py` remains its producer and its inventory keeps the sorted-paths-plus-sha256 shape.
-  - **9 testbenches shipped** — `testbenches`: every `tb_*.spice[.tmpl]` and `run_*.sh` under `sim/`, the `klt sim` request documents including the row-2 negative control, the corner libraries, runner preambles and experiment READMEs. That is the same 107-file set the pre-#199 inventory carried, kept deliberately: a shipped bench is not a standalone file (it needs its driver, its corner library and its preamble to cold-start), so trimming to the `.spice` files alone would attest a bench set a third party could not run. `cold_start`: `sim/ldo-cmos5l-pvt-sweep/run_sweep.sh --check-env`, run for real — it generates and syntax-checks one netlist per bench at mos_tt/27C and writes no `records/` entry. `pins`: the PDK name/revision (`ihp-sg13cmos5l` at `f7bca326…`, matching `IHP_SG13CMOS5L_COMMIT` and `sim/pdk-cmos5l.json`) plus the klt, ngspice and openvaf-r versions. The cold start resolves `PDK_ROOT` from the environment; `pins` is what declares the revision the committed evidence was produced against. The benches' *results* are still not re-run here — items 5/6/8 own those.
+  - **9 testbenches shipped** — `testbenches`: every `tb_*.spice[.tmpl]` and `run_*.sh` under `sim/`, the `klt sim` request documents including the row-2 negative control, the corner libraries, runner preambles and experiment READMEs. That is the pre-#199 107-file set plus the two row-4 files #55 added (the graded bench's generator and its template), kept deliberately: a shipped bench is not a standalone file (it needs its driver, its corner library and its preamble to cold-start), so trimming to the `.spice` files alone would attest a bench set a third party could not run. `cold_start`: `sim/ldo-cmos5l-pvt-sweep/run_sweep.sh --check-env`, run for real — it generates and syntax-checks one netlist per bench at mos_tt/27C and writes no `records/` entry. `pins`: the PDK name/revision (`ihp-sg13cmos5l` at `f7bca326…`, matching `IHP_SG13CMOS5L_COMMIT` and `sim/pdk-cmos5l.json`) plus the klt, ngspice and openvaf-r versions. The cold start resolves `PDK_ROOT` from the environment; `pins` is what declares the revision the committed evidence was produced against. The benches' *results* are still not re-run here — items 5/6/8 own those.
   - **10 repo hygiene** — `hygiene`: `README.md`, `LICENSE`, `CLAUDE.md`, `spec/README.md` and the CI workflow. `checks`: the repo's own offline audit commands for the two things T1 item 10 asks CI to keep valid — `python3 signoff/evidence_inventory.py check` and `python3 -m unittest signoff.test_evidence_inventory` (evidence formats) and `python3 -m unittest discover -s sim/tools -p test_preflight.py` (the simulation harness). None invokes `klt signoff`, so the gate never grades itself. `python3 sim/characterization/generate.py --check` is deliberately **not** declared: it reproduces a float-bearing artifact and is pinned to a specific runner image in its own CI job, and declaring it would make item 10 inherit that sensitivity.
 
   **Where each attestation is re-checked, and why nothing is `local_only`.** A `local_only: true` command is run by `--attest` but *skipped* by `--attest --check`, which carries the committed outcome through as a visible `skipped_checks` entry. That would mean CI never re-runs the freshness commands or the cold start — the opposite of what this evidence is for — so every declared command is re-run by CI, on a job that has its toolchain:
@@ -43,7 +49,128 @@ Per item:
 
   **What `met` means, and what it does not.** The grader proves that the envelope is declared for this item, names exact bytes, that those bytes re-hash to the pinned value, and that nothing was edited since. For items 1, 9 and 10 the envelope's `status` is additionally **derived from checks the tool ran** — a stale netlist, a cold start that no longer starts, or a failing audit command yields `status: fail`, exit 3 and *no envelope written*, so a failing check cannot be committed as a pass. Three things the attestation still does not do, which `signoff/evidence_inventory.py check` therefore still gates in CI ahead of grading (stdlib only, no PDK, with `signoff/test_evidence_inventory.py` negative controls): (a) **completeness** — `--attest` attests exactly the paths its inventory lists, so a new testbench under `sim/`, or a new file under `design/sg13cmos5l/`, that nobody inventoried would be silently unattested; the completeness globs are re-checked against each committed inventory's own path lists; (b) **content checks beyond existence** — each experiment README naming its cold-start entry point, a negative-control request being inventoried, the Apache-2.0 LICENSE text, the root README's title, and CI still carrying every signoff gate (the grader, this audit and all three `--attest … --check` steps, each matched by its own inventory filename so a dropped step cannot hide behind another's); (c) **item 2 in full** — inventory, envelope and manifest pin, plus the GDSII HEADER-record check. Limits unchanged: no attestation here regenerates or inspects the GDS beyond its first record (DRC/LVS/ERC are items 3/4/11), measures anything, or judges design quality. No spec performance or whole-block T1 claim is made. The grader alone does **not** see an inventoried file's content edit — only the attest `--check` does, which is why it gates CI ahead of grading. Editing an inventoried file means re-running the item's `--attest` (items 1/9/10) or `python3 signoff/evidence_inventory.py write` (item 2).
 
-- **unmet — item 5 (`no_evidence`; deliberately uncited, #55)**: no `klt sim` envelope graded against the ratified deterministic row (DR-0007 row 4, dropout) exists, so none is cited. The raw grid now does come from `klt sim` batch requests (`run_sweep.sh --batch`, PR #87). Those requests declare no limits, though, and the metrics are reduced outside klt, so they are measurement runs, not a corner-matrix envelope for the row. `klt sim`'s batch backend still refuses `models.pdk: ihp-sg13cmos5l` (upstream gap [klayout-tools#2727](https://github.com/2AMLogic/klayout-tools/issues/2727)), so those runs depend on staged model inputs. Hand-wrapping the committed CSVs into a sim-shaped envelope would be a synthesized success and is refused. What exists instead is **qualified, non-gating evidence** under [`sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/`](../sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/): a ten-row coverage inventory (`coverage-inventory.{json,md}`) and informational DC summaries (`dc-informational-summary.csv`), regenerated and byte-checked by `python3 sim/ldo-cmos5l-pvt-sweep/item5_evidence.py --check` (CI). **If a sim envelope is cited here later, read the grade carefully:** `klt signoff` accepts any `status: pass` sim envelope for item 5 and does not know which spec rows are ratified or Open, nor the SG13G2/SG13CMOS5L branch split. A green item 5 would mean "one cited corner run passed", not that the shared spec is verified: nine of ten rows are Open (DR-0007), the dropout definition is unresolved (#70), and the SG13G2 branch has no closed-loop evidence (#71). The inventory, not the grade, is the coverage statement.
+- **unmet — item 5 (`partial_coverage`; cited, 1 of 10 spec rows covered, #55)**:
+  `sim/ldo-cmos5l-pvt-sweep/row4-envelope/20261114-072921-41a8294b/report.json`,
+  a **graded `klt sim` corner-matrix envelope** for the one ratified spec row
+  (DR-0007 row 4, dropout @ 50 mA < 300 mV worst corner), pinned by
+  `content_hash` to the sha256 of the `tb.spice` the run declares as its input.
+  The manifest declares all ten DR-0007 rows under `spec_rows["5"]` and the
+  citation claims exactly one of them, so **the grader itself reports the
+  coverage gap**: the citation grades `met`, and the item grades `unmet` /
+  `partial_coverage` with the other nine rows listed under
+  `detail.uncovered_rows` *and* `detail.unratified_rows`. `t1_met_count` does
+  not move. This is the whole point of citing it: the honest state is
+  "one ratified row verified by the tool, nine rows Open", and that is now a
+  machine-checked statement in the report instead of prose in this file.
+  - **What makes it an envelope rather than a measurement run.** The request
+    declares the ratified requirement as `limits`, so the per-corner `status`
+    and the matrix `status: pass` are `klt sim`'s own verdict, computed on the
+    fleet worker. `coverage.measurements_with_limits` is 2 of 3 declared
+    measurements. Everything else under `sim/ldo-cmos5l-pvt-sweep/` declares no
+    limits and reduces its metrics outside klt — real `klt sim` runs, but
+    measurement runs, which `klt signoff` cannot grade. Hand-wrapping a reduced
+    CSV into a sim-shaped envelope would be a synthesized success and stays
+    refused.
+  - **Row coverage is derived, not asserted** (klayout-tools#3778). Both graded
+    measurements carry `spec_row: "dr0007-row4-dropout"`, so the grader credits
+    the row from the envelope's own tags and reports
+    `detail.row_sources: {"dr0007-row4-dropout": "derived"}`. A manifest that
+    claimed a row the envelope does not grade would not be believed.
+  - **The result.** 45/45 coordinates
+    (`{tt,ff,ss,sf,fs}` × `{-40,27,125}` °C × `{res_typ,res_bcs,res_wcs}`,
+    each exactly once) pass, 0 failed, 0 errored, 0 inconclusive, no
+    error-severity diagnostics. Worst corner `ss` / 125 °C / `res_bcs`:
+    dropout **237.06 mV**, margin **62.94 mV** to the 300 mV target =
+    **1.259 Ω** of series resistance, before any parasitic extraction. The Vin
+    axis is 5 mV, so the grid upper bound on that worst value is 242.06 mV —
+    still inside the target. The binding corner is the slow/hot one DR-0007
+    anticipated, and the value agrees with that record's legacy reading
+    (0.20–0.24 V, binding `ss` at 125 °C).
+  - **It also removes the floor limitation DR-0007 ratified the row under.**
+    That record's row-4 reading came from a Vin axis starting at 2.00 V, so
+    36 of 45 points sat at the 0.20 V sweep floor and were *upper bounds*
+    ("enough for a `<` row", DR-0007). This envelope sweeps Vin from 1.70 V at
+    5 mV, below any possible crossing by construction, and resolves all 45:
+    123.96–237.06 mV, no floor flag anywhere, 0 of 45 above the 300 mV target.
+    The row's disposition does not change — but the worst-corner number is now
+    measured rather than bounded. The stretch target (< 200 mV) stays **not
+    ratified** and this envelope does not propose it: exactly 9 of 45
+    coordinates exceed 200 mV, the same nine hot-corner points DR-0007
+    recorded as exceeding it.
+  - **Which dropout definition.** The **legacy** one DR-0007 ratified the row
+    with (`dc_metrics.dropout_v_50ma`: lowest Vin whose VOUT is still within
+    1 % of the fixed 1.800 V target, minus that target), encoded twice —
+    `.meas dc FIND v(vout) AT=2.100` with `limits.min` 1.782 (the requirement
+    read literally) and `.meas dc WHEN v(vout)=1.782 RISE=1` with `limits.max`
+    2.100 (the measured edge). `vout_nominal_v` (VOUT at Vin = 3.30 V) is
+    reported **ungraded and untagged**, because row 2 is Open.
+    [`DR-0012`](../spec/decision-records/DR-0012-row4-dropout-measurement.md)'s
+    dropout — the same 1 % loss referenced to *the corner's own* regulated
+    output instead of to 1.800 V — is **not** what is graded here, for two
+    independent reasons: DR-0012 is **PROPOSED**, released by neither
+    ratification key, and it is **not expressible as a `klt sim` request**.
+  - **Tool gap (why the DR-0012 form cannot be graded).** A `.meas WHEN`
+    threshold must be a literal number and cannot reference another
+    measurement; `measurements[].expr` cannot read `.meas` results or
+    interpolate an abscissa; the declarative crossing forms that *can* take a
+    measured level (`crossings.level`'s `sample_at` / `frac_of`) require
+    `analysis.kind: "tran"` and grade the crossing **count**, not the swept
+    abscissa; `analysis_steps[]` can combine two steps' scalars but cannot feed
+    one back in as another step's threshold; `measurements[].search`'s predicate
+    level is literal too. So a "crossing at N % of this corner's own operating
+    value" figure on a DC sweep can only be reduced off-tool, which costs it
+    its `limits` gate. Filed generically as
+    [klayout-tools#5703](https://github.com/2AMLogic/klayout-tools/issues/5703).
+    Until that lands, the ratified legacy quantity is the one with a gate, and
+    DR-0012's remains the campaign record under
+    `sim/ldo-cmos5l-pvt-sweep/records/*.dropout.*`.
+  - **What the citation does NOT establish.** Nine of ten rows are Open
+    (DR-0007) and uncovered. The SG13G2 branch has no closed-loop evidence and
+    is predicted to miss this very row with its committed provisional sizing
+    (DR-0018); this envelope is SG13CMOS5L, schematic-level, pre-extraction
+    (item 7 is still unmet). A passing corner matrix is not a post-layout
+    result and not a statistical one (item 6).
+  - **Anti-rot.** `python3 sim/ldo-cmos5l-pvt-sweep/row4_envelope.py check`
+    (CI, offline, stdlib-only, no PDK and no simulator) re-derives every
+    committed record's request files from the template plus the record's own
+    provenance, re-derives its summary files from the envelope, and re-checks
+    the envelope's recorded input hash against the committed `tb.spice`, its
+    `models_lib_sha256` against the committed `corners.lib`, the recorded
+    `limits` against the ratified gates, the `spec_row` tags, and — for the
+    **cited** record only — the sha256 of every recorded design-netlist /
+    template input, so a design edit makes the citation stale here rather than
+    silently. It also refuses a manifest that marks any row but row 4 ratified,
+    or that cites the `--probe` record. `test_row4_envelope.py` carries the
+    negative controls (dropped corner, duplicated coordinate, a corner that
+    reported values but errored, an unreached `.meas`, an ungraded matrix, a
+    relaxed limit, a tampered netlist).
+  - **The pin is live even though the item is `unmet`.** Because the item does
+    not grade `met`, the report carries no top-level `citation` block for it
+    and therefore no `input_verified` field — only
+    `citations_graded[0].status: "met"`. The pin is still checked: mutating the
+    item-5 `content_hash` in a copy of the manifest and regrading turns that
+    member into `status: unmet`, `reason: stale_evidence`, which is the drift
+    the `signoff-t1-report` CI gate fails on. That control was run against
+    this build when the citation was added.
+  - **The qualified non-gating evidence stays.** The ten-row coverage inventory
+    and informational DC summaries under
+    [`sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/`](../sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/)
+    (`coverage-inventory.{json,md}`, `dc-informational-summary.csv`,
+    regenerated and byte-checked by `item5_evidence.py --check` in CI) remain
+    the *domain* coverage statement. The grader now expresses row coverage as
+    well, but only as covered/uncovered/unratified per row id; the inventory
+    still carries the measurement definitions, units, tested axes, floor flags
+    and branch scope that the grade cannot.
+  - **Correction to a claim this file used to make.** The item-6 statement
+    below says a manifest entry "carries only `file`/`command`/`cwd`/
+    `content_hash`" and that "there is no way to tell the grader that the block
+    has two statistical rows, that the citation covers only one, or that its
+    target is unratified". That was true of the build it was written against;
+    it is **not** true of the pinned `0.8.0` build, which accepts
+    `spec_rows` with per-row `ratified` and per-citation `rows`
+    (klayout-tools#2959/#2908) — exactly what item 5 now uses. Whether to cite
+    item 6 under that mechanism is #56's decision, not this one's, so item 6 is
+    left uncited and its statement is left as written apart from this pointer.
 - **unmet — item 6 (`no_evidence`), with real but deliberately uncited evidence.** See "Item 6 coverage statement" below.
 - **unmet — item 7 (`no_evidence`)**: item 7 needs `klt pex` (post-layout re-simulation, #57). That envelope will be cited when it is produced — never fabricated to turn a row green.
 
@@ -81,6 +208,15 @@ directory's verdict-of-record statement.
   - `deck_scope` (which DRM chapters the deck transcribes at all, 8):
     `5.16 Metal1, 5.17 Metaln, 5.19 Via1, 5.20 Vian, 5.21 TopVia1,
     5.22 TopMetal1, 5.5 Activ, 5.8 GatPoly`
+- **Item 5's row coverage is now the grader's own statement, not a disclosure
+  here** (#55). The manifest declares all ten DR-0007 rows with their
+  ratification state and the citation claims one, so `uncovered_rows`,
+  `unratified_rows` and `row_sources` are computed. What still cannot be
+  expressed in the grade, and therefore belongs with the item-5 bullet above
+  and in the coverage inventory, is *what each row is measured as*: the
+  measurement definition, units, tested axes, resolution, floor flags and the
+  SG13CMOS5L/SG13G2 branch split. A covered row means "some tagged, limited,
+  passing measurement graded it", not "the row is verified as specified".
 - **Item 7 has no citation today, so no `body_bias` statement is attached** —
   exactly as the contract requires: an absent `body_bias` would mean "this
   artifact made no body-bias statement", and with no pex evidence there is
@@ -154,6 +290,20 @@ DR-0007 changes — see [`sim/characterization/README.md`](../sim/characterizati
 python3 sim/characterization/generate.py          # then update the item-8 content_hash in sg13g2-ldo.json
 python3 sim/characterization/generate.py --check  # what CI runs
 ```
+
+Item 5's own evidence is **not** regenerated here: its record is an
+append-only `klt sim` run on the EDA batch fleet
+(`python3 sim/ldo-cmos5l-pvt-sweep/row4_envelope.py submit`, see that
+directory's README). What CI re-checks offline, and what you should run after
+touching the design netlists, the row-4 template or the manifest's
+`spec_rows` / item-5 citation, is:
+
+```bash
+python3 sim/ldo-cmos5l-pvt-sweep/row4_envelope.py check
+```
+
+It fails if the cited record's recorded inputs no longer match the tree — the
+signal to mint a new record and re-pin item 5, never to edit the old one.
 
 Then the tier report:
 
