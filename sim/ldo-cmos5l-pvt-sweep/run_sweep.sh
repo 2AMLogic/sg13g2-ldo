@@ -947,10 +947,23 @@ fi
 # --- Post-process everything into the record CSVs + the before/after/delta
 # markdown fragment that gets inlined into the record below ---
 CMP_MD_FRAGMENT="${CORNERS_OUT}/_before_after_delta.md"
-SWEEP_SCRIPT_DIR="${SCRIPT_DIR}" python3 "${SCRIPT_DIR}/sweep_report.py" \
-         "${CORNERS_OUT}" "${CSV_OUT}" "${SENS_CSV_OUT}" "${CORNERS[*]}" "${TEMPS[*]}" \
-         "${RES_LABELS[*]}" "${BASELINE_CSV}" "${DELTA_CSV_OUT}" "${CMP_MD_FRAGMENT}" \
-         "${CC_TOL_WIDTHS[*]}" "${CC_NOMINAL_W}"
+# Axes go over as repeatable flags (issue #223): one flag per corner /
+# temperature / resistor section / Cc width, so a reordered or dropped axis
+# value is a parse error rather than a silently mis-attributed column.
+REPORT_AXES=()
+for corner in "${CORNERS[@]}"; do REPORT_AXES+=(--corner "${corner}"); done
+for temp in "${TEMPS[@]}"; do REPORT_AXES+=(--temp "${temp}"); done
+for rlabel in "${RES_LABELS[@]}"; do REPORT_AXES+=(--res-label "${rlabel}"); done
+for w in "${CC_TOL_WIDTHS[@]}"; do REPORT_AXES+=(--cc-tol-width "${w}"); done
+python3 "${SCRIPT_DIR}/sweep_report.py" \
+         --corners-dir "${CORNERS_OUT}" \
+         --csv-out "${CSV_OUT}" \
+         --sens-csv-out "${SENS_CSV_OUT}" \
+         --baseline-csv "${BASELINE_CSV}" \
+         --delta-csv-out "${DELTA_CSV_OUT}" \
+         --cmp-md-out "${CMP_MD_FRAGMENT}" \
+         --cc-nominal-w "${CC_NOMINAL_W}" \
+         "${REPORT_AXES[@]}"
 
 # Fold invalid-DC-grid points (#120) into the failed-point accounting.
 DC_GRID_ERRORS_TSV="${CORNERS_OUT}/_dc_grid_errors.tsv"

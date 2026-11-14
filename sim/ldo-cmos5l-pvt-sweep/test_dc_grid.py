@@ -183,7 +183,8 @@ class LiveSummaryPath(unittest.TestCase):
 
     Since issue #223 that post-processing is the importable sibling
     `sweep_report.py` rather than a heredoc inside `run_sweep.sh`, so this
-    runs the module `run_sweep.sh` itself invokes -- no text extraction.
+    runs the module `run_sweep.sh` itself invokes -- no text extraction, and
+    no SWEEP_SCRIPT_DIR: the module resolves its sibling imports itself.
     """
 
     def setUp(self):
@@ -200,9 +201,13 @@ class LiveSummaryPath(unittest.TestCase):
         write(os.path.join(self.cdir, "dcsweep_tt_27c_rtyp_dc.csv"), lines)
         t = self.tmp
         return subprocess.run(
-            [sys.executable, POST_SCRIPT, self.cdir, f"{t}/o.csv", f"{t}/s.csv",
-             "tt", "27", "typ", f"{t}/base.csv", f"{t}/d.csv", f"{t}/m.md", "", "1"],
-            env=dict(os.environ, SWEEP_SCRIPT_DIR=HERE), capture_output=True, text=True)
+            [sys.executable, POST_SCRIPT,
+             "--corners-dir", self.cdir, "--csv-out", f"{t}/o.csv",
+             "--sens-csv-out", f"{t}/s.csv", "--baseline-csv", f"{t}/base.csv",
+             "--delta-csv-out", f"{t}/d.csv", "--cmp-md-out", f"{t}/m.md",
+             "--corner", "tt", "--temp", "27", "--res-label", "typ",
+             "--cc-nominal-w", "1"],
+            capture_output=True, text=True)
 
     def rows(self):
         with open(os.path.join(self.tmp, "o.csv")) as f:
