@@ -97,6 +97,49 @@ class InventoryCheck(unittest.TestCase):
                        env=env, check=True, capture_output=True)
         self.assertFails("LICENSE")
 
+    def _rewrite_pdk_cache_key(self, replacement: str) -> None:
+        """Swap the OSDI-bearing PDK cache key line, then refresh every hash.
+
+        Running `write` first means the follow-up `check` cannot fail merely
+        because ci.yml's sha256 moved -- only the item-10 content check on the
+        key itself can still object.
+        """
+        rel = ".github/workflows/ci.yml"
+        text = open(self.p(rel), encoding="utf-8").read()
+        lines = text.splitlines(keepends=True)
+        hits = [
+            i for i, ln in enumerate(lines)
+            if ln.strip().startswith("key: ihp-open-pdk-") and "-osdi-" in ln
+        ]
+        self.assertEqual(len(hits), 1, "expected exactly one OSDI-bearing PDK cache key")
+        indent = lines[hits[0]][: len(lines[hits[0]]) - len(lines[hits[0]].lstrip())]
+        lines[hits[0]] = f"{indent}{replacement}\n"
+        open(self.p(rel), "w", encoding="utf-8").write("".join(lines))
+        env = dict(os.environ, EVIDENCE_ROOT=self.tmp)
+        subprocess.run([sys.executable, "-I", os.path.join(HERE, "evidence_inventory.py"), "write"],
+                       env=env, check=True, capture_output=True)
+
+    def test_osdi_pdk_cache_key_tail_cannot_be_dropped(self):
+        # The #222 rebase hazard: a wholesale rewrite of the key line that
+        # restores the pre-fix form must fail the item-10 check, not pass
+        # quietly. (`build-osdi.sh` installs into this cached tree, so losing
+        # the script hash means a toolchain bump reuses stale .osdi models.)
+        self._rewrite_pdk_cache_key("key: ihp-open-pdk-v${{ env.IHP_OPEN_PDK_VERSION }}")
+        self.assertFails("OSDI-bearing ihp-open-pdk cache key(s), expected 1")
+
+    def test_sibling_compiler_cache_key_does_not_satisfy_osdi_check(self):
+        # The trap: hashFiles('sim/tools/build-osdi.sh') ALSO appears in the
+        # ~/.cache/sg13g2-ldo compiler-download key, which is left intact
+        # here. A substring test would pass; the check must bind the PDK key
+        # line itself and fail.
+        self._rewrite_pdk_cache_key(
+            "key: ihp-open-pdk-v${{ env.IHP_OPEN_PDK_VERSION }}-osdi-static"
+        )
+        ci = open(self.p(".github/workflows/ci.yml"), encoding="utf-8").read()
+        self.assertIn("hashFiles('sim/tools/build-osdi.sh')", ci,
+                      "compiler-download cache key should still carry the hash")
+        self.assertFails("does not hash sim/tools/build-osdi.sh")
+
 
 if __name__ == "__main__":
     unittest.main()

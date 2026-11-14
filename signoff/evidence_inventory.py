@@ -366,6 +366,30 @@ def _content(item: int) -> list[str]:
         for needle in ("signoff-t1-report:", "evidence_inventory.py check"):
             if needle not in ci:
                 errs.append(f"ci.yml lacks {needle!r}")
+        # sim/tools/build-osdi.sh installs its .osdi outputs INSIDE the cached
+        # PDK tree and no-ops when they are present, so the cache key that
+        # holds them must cover that script's hash or a toolchain bump
+        # silently restores models the current script would not produce
+        # (#222). Bind the key LINE, not a bare substring: the sibling
+        # compiler-download cache key carries the same hashFiles() call and
+        # would satisfy a substring test on its own, and a wholesale rewrite
+        # of this line (e.g. appending a new PDK-variant segment) would drop
+        # the tail with nothing to catch it.
+        osdi_keys = [
+            ln.strip()
+            for ln in ci.splitlines()
+            if ln.strip().startswith("key: ihp-open-pdk-") and "-osdi-" in ln
+        ]
+        if len(osdi_keys) != 1:
+            errs.append(
+                f"ci.yml has {len(osdi_keys)} OSDI-bearing ihp-open-pdk cache key(s), expected 1"
+            )
+        elif "hashFiles('sim/tools/build-osdi.sh')" not in osdi_keys[0]:
+            errs.append(
+                "ci.yml's OSDI-bearing ihp-open-pdk cache key does not hash "
+                "sim/tools/build-osdi.sh, so a build-osdi.sh change cannot "
+                "invalidate the cached models it installs into that tree"
+            )
     return errs
 
 
