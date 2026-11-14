@@ -1,0 +1,74 @@
+{
+ "netlist": "tb.spice",
+ "backend": "batch",
+ "batch": {
+  "runner_version_check": "warn",
+  "capacity_wait_s": 600
+ },
+ "models": {
+  "lib": "corners.lib"
+ },
+ "analysis": {
+  "kind": "dc",
+  "args": "Vin 1.70 3.63 0.005"
+ },
+ "measurements": [
+  {
+   "name": "vout_at_dropout_limit_v",
+   "spice": ".meas dc vout_at_dropout_limit_v FIND v(vout) AT=2.100",
+   "unit": "V",
+   "limits": {
+    "min": 1.782
+   },
+   "spec_row": "dr0007-row4-dropout"
+  },
+  {
+   "name": "vin_1pct_loss_v",
+   "spice": ".meas dc vin_1pct_loss_v WHEN v(vout)=1.782 RISE=1",
+   "unit": "V",
+   "limits": {
+    "max": 2.1
+   },
+   "spec_row": "dr0007-row4-dropout"
+  },
+  {
+   "name": "vout_nominal_v",
+   "spice": ".meas dc vout_nominal_v FIND v(vout) AT=3.300",
+   "unit": "V"
+  }
+ ],
+ "corners": {
+  "process": [
+   "mos_ss__res_typ__cap_typ",
+   "mos_tt__res_typ__cap_typ"
+  ],
+  "temperature_c": [
+   27,
+   125
+  ]
+ },
+ "options": {
+  "timeout_s": 1800,
+  "keep_artifacts": true,
+  "waveforms": false,
+  "stage_model_inputs": true,
+  "osdi_preload": [
+   "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/psp103.osdi",
+   "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/psp103_nqs.osdi",
+   "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/mosvar.osdi",
+   "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/r3_cmc.osdi",
+   "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/cap_cmomi.osdi",
+   "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/cap_cmomf.osdi"
+  ]
+ },
+ "exclude": [
+  {
+   "process": "mos_ss__res_typ__cap_typ",
+   "temperature_c": 27
+  },
+  {
+   "process": "mos_tt__res_typ__cap_typ",
+   "temperature_c": 125
+  }
+ ]
+}
