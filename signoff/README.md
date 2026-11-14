@@ -8,7 +8,7 @@ the way a hand-read checklist does.
 
 | File | What it is |
 | --- | --- |
-| `sg13g2-ldo.json` | The **block manifest** for `klt signoff --manifest`: `block: sg13g2-ldo`, `kind: analog`, one pinned evidence citation per T1 item this repo can honestly cite, and (item 5) a `spec_rows` declaration of all ten DR-0007 target-spec rows with their ratification state, so the grader computes the coverage gap instead of being told there is none. |
+| `sg13g2-ldo.json` | The **block manifest** for `klt signoff --manifest`: `block: sg13g2-ldo`, `kind: analog`, one pinned evidence citation per T1 item this repo can honestly cite, (item 5) a `spec_rows` declaration of all ten DR-0007 target-spec rows with their ratification state, and (item 6) a declaration of DR-0007's two statistical rows — row 2 cited against its Open target, row 8 declared a `gap` — so the grader computes the coverage gap instead of being told there is none. |
 | `sg13g2-ldo.t1-report.json` | The **verdict of record**: the exact `klt signoff --manifest sg13g2-ldo.json --format json` output, committed. `t1_item_count: 11, t1_met_count: 8, tier: null` — this block is **not T1 yet**, and the report says so per item with a `reason`. |
 
 ## Reading the report
@@ -17,9 +17,14 @@ Today's honest read is **8/11 met** (items 1, 2, 3, 4, 8, 9, 10, 11). Issue
 #55 added the first graded `klt sim` corner-matrix envelope and cited it under
 item 5; the item deliberately still reads `unmet`, now with reason
 `partial_coverage` rather than `no_evidence`, because the envelope grades the
-one ratified spec row and the manifest declares all ten. `t1_met_count` is
-unchanged at 8. Citing real evidence that grades the item `unmet` is the point:
-the gap is now the grader's arithmetic, not this file's prose. Issue #67 appended an `EN` port and two devices to `design/sg13cmos5l/netlist/ldo_core_cmos5l.spice`. That left the selected PVT record stale against the design, and item 8 dropped to `unmet` (`check_failed`). PR #87 then re-ran the full 45-point grid on the EN design (`EN` tied to `VIN`) on the EDA batch fleet: record `sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81`, made with `run_sweep.sh --batch`. Selecting that record makes the characterization artifact current again, so item 8 is `met` once more, in the artifact-completeness sense described below. The enabled-state results differ from the pre-EN record by at most 0.015 deg of phase margin and 0.023 dB of gain margin (DR-0008 addendum). Issue #89 then added a `G1` disable pull-down inside the error amplifier (an `EN` pin on `ldo_erramp_cmos5l`, an inverter and a 1 x 1 um NMOS; DR-0008 addendum "G1 disable pull-down"). Both design netlists changed, so the grid (record `20261011-051956-eda9285`) and the startup campaign (record `20261011-031426-df3f802`) were re-run on the batch fleet and reselected, and the item-5 informational evidence was regenerated for the new record. The enabled state moves by at most -0.0021 deg of phase margin, -0.0086 dB of gain margin and +0.043 nA of Iq; every row verdict is unchanged. The disabled state is measured by the one-corner DC smoke check (`sim/ldo-cmos5l-enable/`, 2.0006 uA at 3.30 V, tt/27C) and by the startup bench's off-state samples (2.000-2.264 uA over 135 PVT points). These are measurements, not a target; no shutdown-current row exists. The layout was regenerated with the three devices, and the DRC/LVS/ERC reports and their item 2/3/4/11 pins were refreshed (`layout/README.md`).
+one ratified spec row and the manifest declares all ten. Issue #225 did the
+same for item 6: the row-2 Monte Carlo campaign is now cited (five
+per-corner `klt yield` reports) under a declaration of both statistical rows,
+and the item reads `unmet` / `partial_coverage` — row 2 covered against its
+still-Open target, row 8 declared a `gap` — instead of `no_evidence`.
+`t1_met_count` is unchanged at 8. Citing real evidence that grades the item
+`unmet` is the point: the gap is now the grader's arithmetic, not this file's
+prose. Issue #67 appended an `EN` port and two devices to `design/sg13cmos5l/netlist/ldo_core_cmos5l.spice`. That left the selected PVT record stale against the design, and item 8 dropped to `unmet` (`check_failed`). PR #87 then re-ran the full 45-point grid on the EN design (`EN` tied to `VIN`) on the EDA batch fleet: record `sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81`, made with `run_sweep.sh --batch`. Selecting that record makes the characterization artifact current again, so item 8 is `met` once more, in the artifact-completeness sense described below. The enabled-state results differ from the pre-EN record by at most 0.015 deg of phase margin and 0.023 dB of gain margin (DR-0008 addendum). Issue #89 then added a `G1` disable pull-down inside the error amplifier (an `EN` pin on `ldo_erramp_cmos5l`, an inverter and a 1 x 1 um NMOS; DR-0008 addendum "G1 disable pull-down"). Both design netlists changed, so the grid (record `20261011-051956-eda9285`) and the startup campaign (record `20261011-031426-df3f802`) were re-run on the batch fleet and reselected, and the item-5 informational evidence was regenerated for the new record. The enabled state moves by at most -0.0021 deg of phase margin, -0.0086 dB of gain margin and +0.043 nA of Iq; every row verdict is unchanged. The disabled state is measured by the one-corner DC smoke check (`sim/ldo-cmos5l-enable/`, 2.0006 uA at 3.30 V, tt/27C) and by the startup bench's off-state samples (2.000-2.264 uA over 135 PVT points). These are measurements, not a target; no shutdown-current row exists. The layout was regenerated with the three devices, and the DRC/LVS/ERC reports and their item 2/3/4/11 pins were refreshed (`layout/README.md`).
 
 Issue #128 then re-ran the same 45-point grid on the batch fleet with the loop-gain sweep extended from 100 MHz to 10 GHz (record `20261011-070111-5391c68`, same design netlists) and reselected it. Every DC and PSRR column is identical to the previous record. Under the unchanged DR-0014 rules row 10 PM and GM are still 45 `ambiguous` and 0 pass / 0 fail (`ceiling_unbounded`): the loop gain flattens near +1 dB above the second 0 dB crossing instead of falling away. Statuses are unchanged (exit 3, 8/11 met). The item-5 evidence below now lives under that record's `evidence/` directory.
 
@@ -151,17 +156,18 @@ Per item:
     still carries the measurement definitions, units, tested axes, floor flags
     and branch scope that the grade cannot.
   - **Correction to a claim this file used to make.** The item-6 statement
-    below says a manifest entry "carries only `file`/`command`/`cwd`/
+    below used to say a manifest entry "carries only `file`/`command`/`cwd`/
     `content_hash`" and that "there is no way to tell the grader that the block
     has two statistical rows, that the citation covers only one, or that its
     target is unratified". That was true of the build it was written against;
     it is **not** true of the pinned `0.8.0` build, which accepts
     `spec_rows` with per-row `ratified` and per-citation `rows`
-    (klayout-tools#2959/#2908) — exactly what item 5 now uses. Whether to cite
-    item 6 under that mechanism is #56's decision, not this one's, so item 6 is
-    left uncited and its statement is left as written apart from this pointer.
+    (klayout-tools#2959/#2908) — exactly what item 5 now uses. Issue #225
+    measured the pinned build on a scratch manifest (verdict and negative
+    controls recorded in the item-6 statement below) and cited the campaign;
+    the statement is rewritten accordingly.
 
-- **unmet — item 6 (`no_evidence`), with real but deliberately uncited evidence.** See "Item 6 coverage statement" below.
+- **unmet — item 6 (`partial_coverage`; cited, 1 of 2 statistical rows covered, #225)**: see "Item 6 coverage statement" below.
 - **unmet — item 7 (`no_evidence`)**: item 7 needs `klt pex` (post-layout re-simulation, #57). That envelope will be cited when it is produced — never fabricated to turn a row green.
 
 ## Item 6 coverage statement
@@ -170,12 +176,57 @@ T1 item 6 covers **every** statistical row of the target spec. DR-0007 classifie
 
 | Row | Ratification | Monte Carlo evidence | Status for item 6 |
 |---|---|---|---|
-| 2 — Output 1.8 V ±2 % | **Open** (unratified) | `sim/ldo-cmos5l-monte-carlo/` (issue #56): SG13CMOS5L, regulator-only accuracy (ideal 0.90 V reference, reference error excluded), Vin 3.30 V, no load. PDK MOS + `rhigh` mismatch at five process/temperature corners, N = 400 each, fixed seeds, deterministic negative control, per-population `klt yield` reports. Results are in that experiment's record. | Evidence against a **proposed** window, not a ratified one |
-| 8 — Current limit 65–80 mA | **Open** | none: no limiter exists (#63) | **Deferred**, not "no statistical row" |
+| 2 — Output 1.8 V ±2 % | **Open** (unratified) | `sim/ldo-cmos5l-monte-carlo/` (issue #56): SG13CMOS5L, regulator-only accuracy (ideal 0.90 V reference, reference error excluded), Vin 3.30 V, no load. PDK MOS + `rhigh` mismatch at five process/temperature corners, N = 400 each, fixed seeds, deterministic negative control, per-population `klt yield` reports. Results are in that experiment's record. | **Cited** (#225) — evidence against a **proposed** window, not a ratified one; the grader lists the row under `unratified_rows` covered or not |
+| 8 — Current limit 65–80 mA | **Open** | none: no limiter is integrated in the core yet (#164 implements DR-0017, #190 integrates it) | **Declared a `gap`**, not "no statistical row" |
 
-**Why item 6 stays uncited.** The pinned grading build marks item 6 `met` as soon as one cited `klt yield` envelope has `status` `pass` or `reported` (`signoff.py` at `b15edf5e`: `passed = envelope.get("status") in ("pass", "reported")`). A manifest entry carries only `file`/`command`/`cwd`/`content_hash`. There is no way to tell the grader that the block has two statistical rows, that the citation covers only one, or that its target is unratified. Citing a row-2 yield report would therefore publish item 6 as satisfied while row 8 has no evidence and row 2's target is Open. That presents partial coverage as full, which #56's acceptance criteria rule out. Uncited, the item reads `no_evidence`. That is also inaccurate (the row-2 evidence exists), and this statement exists to correct it. The tool gap is filed as klayout-tools#2908.
+**What is cited (issue #225).** The manifest declares `spec_rows["6"]` — the
+two DR-0007 statistical rows, row 2 with `ratified: false`, row 8 as a `gap`
+— and cites the campaign record `20261012-093854-934dbd7` under
+`evidence["6"]` as a list of five per-population `klt yield` reports (tt 27
+°C, ff 125 °C, fs −40 °C, sf 125 °C, ss −40 °C; N = 400 each), each claiming
+exactly `dr0007-row2-output`. A yield citation's `content_hash` pin is the
+sha256 of the **sample-set document** the report names (the grader's
+`_yield_samples_content_hash`), not of the report file — the samples are the
+input the staleness gate re-hashes.
 
-The campaign is ready to cite once item 6 can be graded honestly, i.e. once row 2 is ratified, row 8 has its own campaign, and the grader can express row coverage. Its per-population `klt yield` reports sit beside their sample-set documents, so each report's `samples` field resolves relative to the report itself. That is the input the grader re-hashes for a yield citation's `content_hash`. The experiment's record shows what a citation would grade to today, plus a tamper check on a copy.
+**The measured verdict (live run, pinned build, 2026-11-14).** Grading this
+manifest with the pinned `klayout-tools==0.8.0` gives item 6 `unmet` /
+`partial_coverage`: all five corner citations grade `met` individually, and
+the item's `detail` reports `declared_gaps:
+[dr0007-row8-current-limit]`, `unratified_rows: [dr0007-row2-output]`,
+`uncovered_rows: []` and `row_sources: {"dr0007-row2-output": "asserted"}`.
+The row coverage is asserted by the manifest, not derived from the reports —
+`klt yield` reports carry no `spec_row` tags (unlike the item-5 `klt sim`
+envelope's derived coverage). The grade cannot flip to `met` by citing more:
+a row declared `ratified: false` stays in `unratified_rows` covered or not.
+Two negative controls, run on scratch manifests against the same pinned
+build, confirm the grade is not permissive: a citation whose `rows` names the
+declared-gap row 8 grades `invalid_evidence`, and a `not_applicable` entry
+alongside a declared row set grades `invalid_evidence`. The capability is
+klayout-tools#2908 (closed completed 2026-10-16) as implemented by #2959; it
+ships in the pinned build, and the earlier "there is no way to tell the
+grader" paragraph above this section's history was wrong for it — it is
+superseded by this section, not by silence.
+
+**What `partial_coverage` means, and what it does not.** It means the
+grader's own arithmetic now states the gap: one of two statistical rows is
+covered by machine-graded evidence, the other cannot have any yet. Row 2's
+citations carry the campaign's full discipline (fixed seeds, N = 400 per
+corner, deterministic negative control graded `detected`, per-population
+`sample_size.verdict: sufficient`). It does **not** mean the row is met or
+the block meets its accuracy spec: row 2's evidence is against the **Open**
+±2 % window — provisional by construction, and ratifying it is `spec/` +
+`ratification/` work (#56), never a `signoff/` edit — and row 8 has no
+evidence at all until a limiter exists and its campaign runs. Item 6 stays
+`unmet` while any declared row is a gap or unratified; `t1_met_count` is
+unchanged at 8.
+
+The grader can now express row coverage, so what separates today's citation
+from a future `met` is only evidence: row 2's ratification (two-key review,
+#56) and a row-8 campaign (#164, #190). The per-population `klt yield`
+reports sit beside their sample-set documents, so each report's `samples`
+field resolves relative to the report itself; the experiment's record shows
+what a citation grades to, plus a tamper check on a copy.
 
 ## Claim disclosures the grader cannot make for us
 
