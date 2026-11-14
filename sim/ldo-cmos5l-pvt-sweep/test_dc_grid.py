@@ -175,14 +175,16 @@ class PinnedGeneratorUntouched(unittest.TestCase):
             self.assertIn("python3 sim/ldo-cmos5l-pvt-sweep/item5_grid.py --check", f.read())
 
 
-def _post_script():
-    s = open(os.path.join(HERE, "run_sweep.sh")).read()
-    a = s.index("<<'PYEOF'\n") + len("<<'PYEOF'\n")
-    return s[a:s.index("\nPYEOF\n", a)] + "\n"
+POST_SCRIPT = os.path.join(HERE, "sweep_report.py")
 
 
 class LiveSummaryPath(unittest.TestCase):
-    """Runs run_sweep.sh's real post-processing on a one-point grid."""
+    """Runs run_sweep.sh's real post-processing on a one-point grid.
+
+    Since issue #223 that post-processing is the importable sibling
+    `sweep_report.py` rather than a heredoc inside `run_sweep.sh`, so this
+    runs the module `run_sweep.sh` itself invokes -- no text extraction.
+    """
 
     def setUp(self):
         self.tmp = tempfile.mkdtemp()
@@ -190,8 +192,6 @@ class LiveSummaryPath(unittest.TestCase):
         os.mkdir(self.cdir)
         with open(os.path.join(self.tmp, "base.csv"), "w") as f:
             f.write("corner,temp_c,res_section\n")
-        with open(os.path.join(self.tmp, "post.py"), "w") as f:
-            f.write(_post_script())
 
     def tearDown(self):
         shutil.rmtree(self.tmp)
@@ -200,7 +200,7 @@ class LiveSummaryPath(unittest.TestCase):
         write(os.path.join(self.cdir, "dcsweep_tt_27c_rtyp_dc.csv"), lines)
         t = self.tmp
         return subprocess.run(
-            [sys.executable, os.path.join(t, "post.py"), self.cdir, f"{t}/o.csv", f"{t}/s.csv",
+            [sys.executable, POST_SCRIPT, self.cdir, f"{t}/o.csv", f"{t}/s.csv",
              "tt", "27", "typ", f"{t}/base.csv", f"{t}/d.csv", f"{t}/m.md", "", "1"],
             env=dict(os.environ, SWEEP_SCRIPT_DIR=HERE), capture_output=True, text=True)
 
@@ -233,7 +233,10 @@ class LiveSummaryPath(unittest.TestCase):
 
     def test_shell_folds_errors_into_failed_points_and_exit_status(self):
         s = open(os.path.join(HERE, "run_sweep.sh")).read()
-        self.assertIn("dc_metrics = _dcg.validated_dc_metrics", s)
+        # The validator binding lives in the extracted module (issue #223);
+        # the shell-side folding of its sidecar stays in run_sweep.sh.
+        self.assertIn("dc_metrics = _dcg.validated_dc_metrics",
+                      open(POST_SCRIPT).read())
         self.assertIn('failed_points+=("${_pid}")', s)
         self.assertLess(s.index("_dc_grid_errors.tsv\"\nDC_GRID_ERROR_LINES"),
                         s.index("Completeness matrix: every"))
