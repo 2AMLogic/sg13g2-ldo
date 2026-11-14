@@ -8,7 +8,7 @@
   "top": "sg13cmos5l_ldo_core_cmos5l",
   "dbu_um": 0.001,
   "netlist_path": "sg13cmos5l-ldo_core_cmos5l.extracted.spice",
-  "netlist_sha256": "5a3258118e17646cc5665b330ab40b50f353e2a1f7a49e37640e8c1fbd83ccf5",
+  "netlist_sha256": "03e88f9d7801813527c7b4494f8406b2ef8e808a5b1bfbbffbe8405884593937",
   "netlist_normalized_sha256": "739cfa9592a9d8cc51db1f84138351993c2b408d4d1ada9d50dd1b9a18baa4b8",
   "status": "extracted",
   "device_count": 137,
@@ -3216,15 +3216,18 @@
   ],
   "def_pins": null,
   "label_layers": null,
+  "device_models": null,
   "probes": [],
   "pdk": null,
   "provenance": {
-    "klt_version": "0.8.0",
+    "klt_version": "0.9.2",
+    "klt_git_commit": "046ba74652fc096bd97071fc3237f7159dd40183",
+    "klt_reinstall_spec": "klayout-tools==0.9.2",
     "klayout_version": "0.30.12",
     "pdk": null,
     "deck": {
       "name": "sg13cmos5l",
-      "content_hash": "sha256:5a43b8eb0e1a4c228169cd33d820bf75ca5640812587f68c07f24f4aa2a1738f",
+      "content_hash": "sha256:8b005441745c8f9500d04e0fece081fe5162bb1d562cc8d6e09b60f1f24d1446",
       "released": true
     },
     "input": {
@@ -3242,14 +3245,14 @@
   },
   "timing": {
     "stages": {
-      "read_layout": 0.002,
-      "device_extraction": 0.097,
+      "read_layout": 0.003,
+      "device_extraction": 0.118,
       "diagnostics": 0.0,
       "netlist_write": 0.002,
       "netlist_hash": 0.0,
       "netlist_normalized_hash": 0.002
     },
-    "total_seconds": 0.194,
-    "unattributed_seconds": 0.091
+    "total_seconds": 0.152,
+    "unattributed_seconds": 0.027
   }
 }

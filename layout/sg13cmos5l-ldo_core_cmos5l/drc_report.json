@@ -221,12 +221,14 @@
     "nothing_checked_reasons": []
   },
   "provenance": {
-    "klt_version": "0.8.0",
+    "klt_version": "0.9.2",
+    "klt_git_commit": "046ba74652fc096bd97071fc3237f7159dd40183",
+    "klt_reinstall_spec": "klayout-tools==0.9.2",
     "klayout_version": "0.30.12",
     "pdk": null,
     "deck": {
       "name": "sg13cmos5l",
-      "content_hash": "sha256:5a43b8eb0e1a4c228169cd33d820bf75ca5640812587f68c07f24f4aa2a1738f",
+      "content_hash": "sha256:8b005441745c8f9500d04e0fece081fe5162bb1d562cc8d6e09b60f1f24d1446",
       "released": true
     },
     "input": {
