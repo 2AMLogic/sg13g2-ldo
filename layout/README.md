@@ -408,9 +408,11 @@ Read the three verdicts precisely in that report:
   roles; stage 8 of `run_flow.sh` does). Under that run the report records
   `erc.supply_short` *and* its `erc.supply_short.substrate` half in
   `erc_coverage.checked`, plus `provenance.substrate_bodies` (the `vsubs`
-  body the substrate ties share, plus the two wells) — the check tied the
-  declared supplies' substrate bodies through real tie geometry and found
-  them distinct, not merely disclosed. Without the deck the tool cannot
+  body the substrate ties share, plus the four wells — the three
+  `nwell_tie_VIN` islands and the diff-pair tail well, whose tie rests on
+  `checked_by_well_assertion`) — the check tied the declared supplies'
+  substrate bodies through real tie geometry and found them distinct, not
+  merely disclosed. Without the deck the tool cannot
   measure isolation and lists `erc.supply_short` as `inapplicable`
   (`substrate_isolation_undecidable`), which trips stage 8's assertion that
   `inapplicable` is empty — deliberately: a deckless run attests less than
