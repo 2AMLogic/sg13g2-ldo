@@ -211,9 +211,14 @@ superseded by this section, not by silence.
 **What `partial_coverage` means, and what it does not.** It means the
 grader's own arithmetic now states the gap: one of two statistical rows is
 covered by machine-graded evidence, the other cannot have any yet. Row 2's
-citations carry the campaign's full discipline (fixed seeds, N = 400 per
-corner, deterministic negative control graded `detected`, per-population
-`sample_size.verdict: sufficient`). It does **not** mean the row is met or
+citations carry the campaign's discipline: N = 400 per corner, per-population
+`sample_size.verdict: sufficient`, fixed seeds recorded in the campaign's
+request documents, and — on the `tt` population, where the campaign attaches
+it — a deterministic negative control graded `detected`. The other four cited
+corner reports declare no negative control, which `klt yield` treats as a
+warning (`not_declared`), not a failure; the multi-citation grade does not
+restate either field per citation, which is why they are disclosed here. It
+does **not** mean the row is met or
 the block meets its accuracy spec: row 2's evidence is against the **Open**
 ±2 % window — provisional by construction, and ratifying it is `spec/` +
 `ratification/` work (#56), never a `signoff/` edit — and row 8 has no
