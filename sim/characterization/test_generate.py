@@ -9,12 +9,14 @@ inputs (never the working tree), so the committed records are untouched.
 from __future__ import annotations
 
 import contextlib
+import copy
 import io
 import json
 import shutil
 import sys
 import tempfile
 import unittest
+from dataclasses import replace
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -283,6 +285,53 @@ class GeneratedReportTests(unittest.TestCase):
         files = G.render_bytes(self.report, self.env, self.md)
         for name, data in files.items():
             self.assertEqual((REPO / "sim/characterization" / name).read_bytes(), data, name)
+
+
+class PerRowGraderTests(unittest.TestCase):
+    """Direct per-row unit tests (#224): rows 9 and 10 are gradable without
+    the full aggregate build, against a context built from the committed
+    inputs. The committed report is the oracle; the tampered-context tests
+    exercise each row's own guards, previously reachable only through build().
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        cls.ctx = G._row_context(REPO)
+        committed = json.loads((REPO / "sim/characterization" / G.REPORT_JSON).read_text())
+        cls.committed = {r["id"]: r for r in committed["rows"]}
+
+    def test_row_9_equals_the_committed_report_row(self):
+        self.assertEqual(G.row_9_startup(self.ctx), self.committed[9])
+
+    def test_row_10_equals_the_committed_report_row(self):
+        self.assertEqual(G.row_10_stability(self.ctx), self.committed[10])
+
+    def test_row_9_contradiction_guard_fails_the_row_directly(self):
+        # A csv `pass` contradicted by its measured metric is refused by the
+        # row grader itself; no full build is needed to hit the guard.
+        su = copy.deepcopy(self.ctx.su)
+        p = next((p for p in su["points"]
+                  if p["verdict"] == "fail" and p["start_peak_vout_v"] > G.STARTUP_BAND_HI_V), None)
+        self.assertIsNotNone(p, "committed campaign has no overshoot-failing point to flip")
+        p["verdict"] = "pass"
+        with self.assertRaises(G.GenError) as cm:
+            G.row_9_startup(replace(self.ctx, su=su))
+        self.assertIn("contradicts a measured metric", str(cm.exception))
+
+    def test_row_10_scores_a_classified_pm_miss_as_fail(self):
+        # One DR-0014-classified PM miss (verdict fail, value under the 45 deg
+        # bound) must fail the row: a measured miss is never downgraded by the
+        # ambiguous points around it.
+        r10 = copy.deepcopy(self.ctx.r10)
+        k = next(iter(r10["by_key"]))
+        cr, _pmv, gmv = r10["by_key"][k]
+        r10["by_key"][k] = (dict(cr, pm_verdict="fail"), 40.0, gmv)
+        row = G.row_10_stability(replace(self.ctx, r10=r10))
+        self.assertEqual(row["verdict"], "fail")
+        self.assertEqual(row["metrics"][0]["verdict"], "fail")
+        self.assertEqual(row["metrics"][0]["n_fail"], 1)
+        self.assertEqual(row["metrics"][1]["verdict"], "ambiguous")
+        self.assertIn("margin_classification", row)
 
 
 class NegativeControls(unittest.TestCase):

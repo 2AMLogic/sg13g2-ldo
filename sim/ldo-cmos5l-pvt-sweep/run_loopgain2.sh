@@ -77,11 +77,11 @@ LG_AC_MAX="$(python3 "${SCRIPT_DIR}/ac_sweep.py" ceiling "${LOOPGAIN_AC_MAX}")" 
 }
 EXPECT_ROWS_LG="$(python3 "${SCRIPT_DIR}/ac_sweep.py" rows "${LG_AC_MAX}")"
 LG_AC_LINE="$(python3 "${SCRIPT_DIR}/ac_sweep.py" line "${LG_AC_MAX}")"
+# The ceiling contract (issue #128) is asserted by ac_sweep.py itself, once,
+# for every caller (#236 de-duplicated the second grep copy that used to
+# live here -- same delegation pattern as the --check-topology call below).
 for tmpl in loopgain loopgain2v loopgain2i; do
-  if ! grep -qxF "ac dec 20 1 @@LG_AC_MAX@@" "${SCRIPT_DIR}/testbench/tb_${tmpl}_cmos5l.spice.tmpl"; then
-    echo "run_loopgain2.sh: tb_${tmpl}_cmos5l.spice.tmpl no longer has 'ac dec 20 1 @@LG_AC_MAX@@'." >&2
-    exit 3
-  fi
+  python3 "${SCRIPT_DIR}/ac_sweep.py" check-template "${SCRIPT_DIR}/testbench/tb_${tmpl}_cmos5l.spice.tmpl" || exit 3
 done
 
 # The three templates must still mirror ldo_core_cmos5l (positive assertion,
@@ -107,32 +107,24 @@ if [[ ! -f "${DESIGN_NETLIST}" || ! -f "${ERRAMP_NETLIST}" ]]; then
   exit 3
 fi
 
-# Rendering: the same substitution set run_sweep.sh's gen_netlist applies,
-# at the legacy operating point (1 mA / 1 uF / 0 ohm; ESR=0 comment).
-# The control bench reuses the single-injection template verbatim; only its
-# point-id prefix (loopgain_ctl_) differs, so the three benches' exports
-# never collide in one corners dir.
+# Rendering (#236): the SAME renderer run_sweep.sh's gen_netlist and
+# --check-env use -- sim/tools/render_deck.py, with the substitution set
+# gen_netlist applies, at the legacy operating point (1 mA / 1 uF /
+# 0 ohm; ESR=0 comment). The control bench reuses the single-injection
+# template verbatim; only its point-id prefix (loopgain_ctl_) differs, so
+# the three benches' exports never collide in one corners dir.
 render_deck() {  # <bench> <mos_section> <res_section> <temp> <out> <csv>
   local bench="$1" mos="$2" res="$3" temp="$4" out="$5" csv="$6"
   local tmpl="tb_${bench}_cmos5l.spice.tmpl"
   [[ "${bench}" == "loopgain_ctl" ]] && tmpl="tb_loopgain_cmos5l.spice.tmpl"
-  sed \
-    -e "s|@@PDK_ROOT@@|${PDK_ROOT}|g" \
-    -e "s|@@PDK@@|${PDK}|g" \
-    -e "s|@@OSDI_DIR@@|${OSDI_DIR}|g" \
-    -e "s|@@MOS_SECTION@@|${mos}|g" \
-    -e "s|@@RES_SECTION@@|${res}|g" \
-    -e "s|@@CAP_SECTION@@|cap_typ|g" \
-    -e "s|@@TEMP@@|${temp}|g" \
-    -e "s|@@LG_AC_MAX@@|${LG_AC_MAX}|g" \
-    -e "s|@@CC_W@@|170u (nominal)|g" \
-    -e "s|@@DESIGN_NETLIST@@|${DESIGN_NETLIST}|g" \
-    -e "s|@@LOAD_A@@|0.001|g" \
-    -e "s|@@COUT_F@@|1u|g" \
-    -e "s|@@COUT_BOTTOM@@|0|g" \
-    -e "s|@@ESR_LINE@@|* ESR=0: Cout wired directly to ground (campaign default)|g" \
-    -e "s|@@AC_CSV@@|${csv}|g" \
-    "${SCRIPT_DIR}/testbench/${tmpl}" > "${out}"
+  python3 "${SIM_DIR}/tools/render_deck.py" "${SCRIPT_DIR}/testbench/${tmpl}" "${out}" \
+    "PDK_ROOT=${PDK_ROOT}" "PDK=${PDK}" "OSDI_DIR=${OSDI_DIR}" \
+    "MOS_SECTION=${mos}" "RES_SECTION=${res}" "CAP_SECTION=cap_typ" \
+    "TEMP=${temp}" "LG_AC_MAX=${LG_AC_MAX}" "CC_W=170u (nominal)" \
+    "DESIGN_NETLIST=${DESIGN_NETLIST}" "LOAD_A=0.001" "COUT_F=1u" \
+    "COUT_BOTTOM=0" \
+    "ESR_LINE=* ESR=0: Cout wired directly to ground (campaign default)" \
+    "AC_CSV=${csv}"
 }
 
 CORNERS=(tt ss ff sf fs)
