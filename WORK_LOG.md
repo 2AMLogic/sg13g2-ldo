@@ -8,6 +8,13 @@ Chronological record of recently merged pull requests and closed issues, maintai
 
 ### 2026-11-15
 
+- **PR #253**: test(sim): add guard-last checker for tracked test files
+- **PR #241**: build: bump klayout-tools pins to the 0.9.2 release and regenerate evidence
+- **PR #227**: refactor(sim): extract run_sweep.sh's post-process heredoc into a tested sweep_report module
+- **Issue #256** (closed): signoff/README.md's item-6 measured-verdict paragraph says "the pinned build" but names klayout-tools 0.8.0
+- **Issue #247** (closed): No check prevents reintroducing a mid-file `if __name__` guard in a test file
+- **Issue #223** (closed): Extract run_sweep.sh's 411-line embedded Python heredoc into a tested sibling module
+- **Issue #210** (closed): Bump klayout-tools pin 0.8.0 -> 0.9.2 (substrate-continuity ERC now evaluated; stage 8 needs --deck sg13cmos5l)
 - **PR #249**: docs: record DR-0019 — startup record rows carry no log anchor
 - **PR #244**: fix: move unittest.main() guard to end of test_row4_envelope.py
 - **PR #243**: refactor(sim): collapse eight template renderers into sim/tools/render_deck.py
