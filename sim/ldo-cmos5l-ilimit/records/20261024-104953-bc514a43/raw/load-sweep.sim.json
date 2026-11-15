@@ -1,0 +1,714 @@
+{
+  "schema_version": 3,
+  "netlist": {
+    "path": "sim/ldo-cmos5l-ilimit/tb_load_sweep.spice",
+    "scope": "repo"
+  },
+  "status": "pass",
+  "corner_count": 1,
+  "passed": 1,
+  "failed": 0,
+  "errored": 0,
+  "inconclusive": 0,
+  "diagnostic_counts": {
+    "by_code": {
+      "singular_matrix": 1
+    },
+    "by_severity": {
+      "warning": 1
+    },
+    "corners_with_diagnostics": 1
+  },
+  "metrics": {
+    "sim__corner__count": 1,
+    "sim__corner__passed_count": 1,
+    "sim__corner__failed_count": 0,
+    "sim__corner__errored_count": 0,
+    "sim__corner__inconclusive_count": 0
+  },
+  "environment": {
+    "engine": "ngspice",
+    "engine_version": "46",
+    "ngspice_binary": "/tmp/tmp.BRgCyoszeO/ngspice",
+    "engine_build": {
+      "version_banner": "******\n** ngspice-46 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2025, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Sat Oct 24 10:46:36 UTC 2026\n******",
+      "binary_sha256": "311856b6749ec9fe7a23ae0559b315f37bbaf6e96b82189c0238d7ee9eadbc00",
+      "probe": "ok",
+      "reason": null
+    },
+    "models_lib": {
+      "path": "sim/ldo-cmos5l-ilimit/ilimit-corners.lib",
+      "scope": "repo"
+    },
+    "models_lib_sha256": "c7a785c2c0f516454bcb867d06d49f103d5fcf57d7911d19bfaea868a06d4ae1",
+    "models_lib_sha256_scope": "local",
+    "netlist_sha256": "2ffed63883dba470254af959f9e32caf05084e527658842b260109fe69ab9687",
+    "netlist_closure": [
+      {
+        "path": "sim/ldo-cmos5l-ilimit/tb_load_sweep.spice",
+        "scope": "repo",
+        "sha256": "2ffed63883dba470254af959f9e32caf05084e527658842b260109fe69ab9687"
+      },
+      {
+        "path": "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice",
+        "scope": "repo",
+        "sha256": "08a7b857e1fad43dd7af1f575de97853a058e85541601ecc47567fbc28dbae57"
+      },
+      {
+        "path": "design/sg13cmos5l/netlist/ldo_ilimit_cmos5l.spice",
+        "scope": "repo",
+        "sha256": "e3d1ca4acba13e00ba705a4772081a915d0fad6e519aafdf36ec2a3c94fbc04e"
+      },
+      {
+        "path": "sim/ldo-cmos5l-ilimit/core_with_ilimit.spice",
+        "scope": "repo",
+        "sha256": "bcc462c70c4096282181d94b0ba5e56bace015b8c56288b8531fc9b4160451f9"
+      }
+    ],
+    "netlist_identity": "sha256:040d99396349f6f6143ff175dc4773e224589aa7b1008308cdd139d2d29a5cd5",
+    "osdi_preload": [
+      {
+        "name": "psp103.osdi",
+        "path": null,
+        "scope": "external",
+        "sha256": "dba873bcef3f1978b30d66a4dcb661f79c6f6386c29da8841712d84399e13f1a"
+      },
+      {
+        "name": "psp103_nqs.osdi",
+        "path": null,
+        "scope": "external",
+        "sha256": "ad99ea641e0b88b29125a786e77f3dcb3b206b5e116e23c2a265783658e69754"
+      },
+      {
+        "name": "mosvar.osdi",
+        "path": null,
+        "scope": "external",
+        "sha256": "cded61b14fbe50f74453e995a00f4876664328fd477badf672e5b2405cae5973"
+      },
+      {
+        "name": "r3_cmc.osdi",
+        "path": null,
+        "scope": "external",
+        "sha256": "746f86fd1b89c309cbec7b23e661a66ee80b2d897ea229bc8e3fcc3757a673c3"
+      }
+    ],
+    "engine_host": "local",
+    "backend": {
+      "resolved": "local",
+      "source": "flag",
+      "requested": "local"
+    }
+  },
+  "coverage": {
+    "corners_simulated": 1,
+    "measurements_declared": 24,
+    "measurements_with_limits": 0,
+    "unrecognized_limit_keys": [],
+    "schema_version": 1,
+    "known": true,
+    "checked": [
+      "measurement:[0,\"tt_nom/novdd/27C\",\"iout_g1ma\"]/observation",
+      "measurement:[0,\"tt_nom/novdd/27C\",\"iout_g50ma\"]/observation",
+      "measurement:[0,\"tt_nom/novdd/27C\",\"iout_g72ma\"]/observation",
+      "measurement:[0,\"tt_nom/novdd/27C\",\"iout_g80ma\"]/observation",
+      "measurement:[0,\"tt_nom/novdd/27C\",\"isns_minus_vout_g1ma\"]/observation",
+      "measurement:[0,\"tt_nom/novdd/27C\",\"isns_minus_vout_g50ma\"]/observation",
+      "measurement:[0,\"tt_nom/novdd/27C\",\"isns_minus_vout_g72ma\"]/observation",
+      "measurement:[0,\"tt_nom/novdd/27C\",\"isns_minus_vout_g80ma\"]/observation",
+      "measurement:[0,\"tt_nom/novdd/27C\",\"isup_minus_iout_g1ma\"]/observation",
+      "measurement:[0,\"tt_nom/novdd/27C\",\"isup_minus_iout_g50ma\"]/observation",
+      "measurement:[0,\"tt_nom/novdd/27C\",\"isup_minus_iout_g72ma\"]/observation",
+      "measurement:[0,\"tt_nom/novdd/27C\",\"isup_minus_iout_g80ma\"]/observation",
+      "measurement:[0,\"tt_nom/novdd/27C\",\"vin_minus_clg_g1ma\"]/observation",
+      "measurement:[0,\"tt_nom/novdd/27C\",\"vin_minus_clg_g50ma\"]/observation",
+      "measurement:[0,\"tt_nom/novdd/27C\",\"vin_minus_clg_g72ma\"]/observation",
+      "measurement:[0,\"tt_nom/novdd/27C\",\"vin_minus_clg_g80ma\"]/observation",
+      "measurement:[0,\"tt_nom/novdd/27C\",\"vout_g1ma\"]/observation",
+      "measurement:[0,\"tt_nom/novdd/27C\",\"vout_g50ma\"]/observation",
+      "measurement:[0,\"tt_nom/novdd/27C\",\"vout_g72ma\"]/observation",
+      "measurement:[0,\"tt_nom/novdd/27C\",\"vout_g80ma\"]/observation",
+      "measurement:[0,\"tt_nom/novdd/27C\",\"vth_minus_vout_g1ma\"]/observation",
+      "measurement:[0,\"tt_nom/novdd/27C\",\"vth_minus_vout_g50ma\"]/observation",
+      "measurement:[0,\"tt_nom/novdd/27C\",\"vth_minus_vout_g72ma\"]/observation",
+      "measurement:[0,\"tt_nom/novdd/27C\",\"vth_minus_vout_g80ma\"]/observation"
+    ],
+    "skipped": [],
+    "inapplicable": [
+      {
+        "id": "measurement:[0,\"tt_nom/novdd/27C\",\"iout_g1ma\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt_nom/novdd/27C\",\"iout_g50ma\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt_nom/novdd/27C\",\"iout_g72ma\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt_nom/novdd/27C\",\"iout_g80ma\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt_nom/novdd/27C\",\"isns_minus_vout_g1ma\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt_nom/novdd/27C\",\"isns_minus_vout_g50ma\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt_nom/novdd/27C\",\"isns_minus_vout_g72ma\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt_nom/novdd/27C\",\"isns_minus_vout_g80ma\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt_nom/novdd/27C\",\"isup_minus_iout_g1ma\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt_nom/novdd/27C\",\"isup_minus_iout_g50ma\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt_nom/novdd/27C\",\"isup_minus_iout_g72ma\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt_nom/novdd/27C\",\"isup_minus_iout_g80ma\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt_nom/novdd/27C\",\"vin_minus_clg_g1ma\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt_nom/novdd/27C\",\"vin_minus_clg_g50ma\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt_nom/novdd/27C\",\"vin_minus_clg_g72ma\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt_nom/novdd/27C\",\"vin_minus_clg_g80ma\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt_nom/novdd/27C\",\"vout_g1ma\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt_nom/novdd/27C\",\"vout_g50ma\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt_nom/novdd/27C\",\"vout_g72ma\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt_nom/novdd/27C\",\"vout_g80ma\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt_nom/novdd/27C\",\"vth_minus_vout_g1ma\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt_nom/novdd/27C\",\"vth_minus_vout_g50ma\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt_nom/novdd/27C\",\"vth_minus_vout_g72ma\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt_nom/novdd/27C\",\"vth_minus_vout_g80ma\"]/limits",
+        "reason": "characterization_without_limits"
+      }
+    ],
+    "unknown": [],
+    "nothing_checked": false,
+    "nothing_checked_reasons": []
+  },
+  "provenance": {
+    "klt_version": "0.7.1.dev2602+g37ae0072f93b",
+    "klayout_version": "0.30.12",
+    "pdk": null,
+    "deck": {
+      "name": "ilimit-corners.lib",
+      "content_hash": "sha256:c7a785c2c0f516454bcb867d06d49f103d5fcf57d7911d19bfaea868a06d4ae1",
+      "released": false
+    },
+    "input": {
+      "content_hash": "sha256:2ffed63883dba470254af959f9e32caf05084e527658842b260109fe69ab9687",
+      "role": "netlist"
+    }
+  },
+  "measurements": [
+    {
+      "name": "vout_g1ma",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_nom/novdd/27C",
+        "value": 1.80026,
+        "margin": null
+      }
+    },
+    {
+      "name": "iout_g1ma",
+      "unit": "A",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_nom/novdd/27C",
+        "value": 0.00100015,
+        "margin": null
+      }
+    },
+    {
+      "name": "isns_minus_vout_g1ma",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_nom/novdd/27C",
+        "value": 0.00222486,
+        "margin": null
+      }
+    },
+    {
+      "name": "vth_minus_vout_g1ma",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_nom/novdd/27C",
+        "value": 0.160983,
+        "margin": null
+      }
+    },
+    {
+      "name": "vin_minus_clg_g1ma",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_nom/novdd/27C",
+        "value": 1.46707e-07,
+        "margin": null
+      }
+    },
+    {
+      "name": "isup_minus_iout_g1ma",
+      "unit": "A",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_nom/novdd/27C",
+        "value": 2.4012e-05,
+        "margin": null
+      }
+    },
+    {
+      "name": "vout_g50ma",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_nom/novdd/27C",
+        "value": 1.80015,
+        "margin": null
+      }
+    },
+    {
+      "name": "iout_g50ma",
+      "unit": "A",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_nom/novdd/27C",
+        "value": 0.0500044,
+        "margin": null
+      }
+    },
+    {
+      "name": "isns_minus_vout_g50ma",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_nom/novdd/27C",
+        "value": 0.111205,
+        "margin": null
+      }
+    },
+    {
+      "name": "vth_minus_vout_g50ma",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_nom/novdd/27C",
+        "value": 0.160984,
+        "margin": null
+      }
+    },
+    {
+      "name": "vin_minus_clg_g50ma",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_nom/novdd/27C",
+        "value": 1.4916e-07,
+        "margin": null
+      }
+    },
+    {
+      "name": "isup_minus_iout_g50ma",
+      "unit": "A",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_nom/novdd/27C",
+        "value": 2.39492e-05,
+        "margin": null
+      }
+    },
+    {
+      "name": "vout_g72ma",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_nom/novdd/27C",
+        "value": 1.80012,
+        "margin": null
+      }
+    },
+    {
+      "name": "iout_g72ma",
+      "unit": "A",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_nom/novdd/27C",
+        "value": 0.0720048,
+        "margin": null
+      }
+    },
+    {
+      "name": "isns_minus_vout_g72ma",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_nom/novdd/27C",
+        "value": 0.159666,
+        "margin": null
+      }
+    },
+    {
+      "name": "vth_minus_vout_g72ma",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_nom/novdd/27C",
+        "value": 0.160984,
+        "margin": null
+      }
+    },
+    {
+      "name": "vin_minus_clg_g72ma",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_nom/novdd/27C",
+        "value": 2.9062e-07,
+        "margin": null
+      }
+    },
+    {
+      "name": "isup_minus_iout_g72ma",
+      "unit": "A",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_nom/novdd/27C",
+        "value": 2.39225e-05,
+        "margin": null
+      }
+    },
+    {
+      "name": "vout_g80ma",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_nom/novdd/27C",
+        "value": 1.44948,
+        "margin": null
+      }
+    },
+    {
+      "name": "iout_g80ma",
+      "unit": "A",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_nom/novdd/27C",
+        "value": 0.0724744,
+        "margin": null
+      }
+    },
+    {
+      "name": "isns_minus_vout_g80ma",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_nom/novdd/27C",
+        "value": 0.161085,
+        "margin": null
+      }
+    },
+    {
+      "name": "vth_minus_vout_g80ma",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_nom/novdd/27C",
+        "value": 0.161109,
+        "margin": null
+      }
+    },
+    {
+      "name": "vin_minus_clg_g80ma",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_nom/novdd/27C",
+        "value": 1.52692,
+        "margin": null
+      }
+    },
+    {
+      "name": "isup_minus_iout_g80ma",
+      "unit": "A",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_nom/novdd/27C",
+        "value": 0.001049,
+        "margin": null
+      }
+    }
+  ],
+  "corners": [
+    {
+      "corner_id": "tt_nom/novdd/27C",
+      "process": "tt_nom",
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 0.819,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "vout_g1ma",
+          "value": 1.80026,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "iout_g1ma",
+          "value": 0.00100015,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isns_minus_vout_g1ma",
+          "value": 0.00222486,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vth_minus_vout_g1ma",
+          "value": 0.160983,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_clg_g1ma",
+          "value": 1.46707e-07,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_minus_iout_g1ma",
+          "value": 2.4012e-05,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_g50ma",
+          "value": 1.80015,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "iout_g50ma",
+          "value": 0.0500044,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isns_minus_vout_g50ma",
+          "value": 0.111205,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vth_minus_vout_g50ma",
+          "value": 0.160984,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_clg_g50ma",
+          "value": 1.4916e-07,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_minus_iout_g50ma",
+          "value": 2.39492e-05,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_g72ma",
+          "value": 1.80012,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "iout_g72ma",
+          "value": 0.0720048,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isns_minus_vout_g72ma",
+          "value": 0.159666,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vth_minus_vout_g72ma",
+          "value": 0.160984,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_clg_g72ma",
+          "value": 2.9062e-07,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_minus_iout_g72ma",
+          "value": 2.39225e-05,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_g80ma",
+          "value": 1.44948,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "iout_g80ma",
+          "value": 0.0724744,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isns_minus_vout_g80ma",
+          "value": 0.161085,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vth_minus_vout_g80ma",
+          "value": 0.161109,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_clg_g80ma",
+          "value": 1.52692,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_minus_iout_g80ma",
+          "value": 0.001049,
+          "unit": "A",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node n.xtop.xilim.xrref25.nr1#i2"
+        }
+      ],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-165/sim/ldo-cmos5l-ilimit/records/20261024-104953-bc514a43/artifacts/load-sweep/tt_nom_novdd_27C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-165/sim/ldo-cmos5l-ilimit/records/20261024-104953-bc514a43/artifacts/load-sweep/tt_nom_novdd_27C/corner.cir"
+      },
+      "monte_carlo": null
+    }
+  ]
+}

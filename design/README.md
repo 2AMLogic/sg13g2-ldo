@@ -252,7 +252,8 @@ Phase 5A).
 
 ```
 ldo_core_cmos5l                   top level — issue #20
-└── ldo_erramp_cmos5l             two-stage Miller-compensated OTA — issue #20
+├── ldo_erramp_cmos5l             two-stage Miller-compensated OTA — issue #20
+└── ldo_ilimit_cmos5l             current limiter (candidate sizing) — issue #165
 ```
 
 Cell names are suffixed `_cmos5l` rather than reusing `ldo_core` /
@@ -357,8 +358,8 @@ unchanged and still not arbitrary: the process spec rates HV
 [`spec/decision-records/DR-0003-sg13cmos5l-mpass-resize-and-compensation.md`](../spec/decision-records/DR-0003-sg13cmos5l-mpass-resize-and-compensation.md).
 
 `DR-0001`'s carried-forward `|Vsg| ≤ 3.3 V` constraint is inherited by this
-branch and binds whatever current-limit loop it eventually grows — there is
-no current limit in this increment.
+branch and binds the current-limit loop ([`ldo_ilimit_cmos5l`](#current-limiter-ldo_ilimit_cmos5l),
+issue #165), which this constraint is the main open question for.
 
 ### Error amplifier
 
@@ -554,6 +555,61 @@ it is what pushed phase margin below the ratified `≥ 45°` at
 which #35's wider `Cc` is what closes
 ([`DR-0005`](../spec/decision-records/DR-0005-sg13cmos5l-cc-recompensation.md)).
 
+### Current limiter (`ldo_ilimit_cmos5l`)
+
+Issue #165, child of #164. Plan:
+[`DR-0017`](../spec/decision-records/DR-0017-sg13cmos5l-current-limiter-plan.md)
+§1–§3, §5–§6. Pins `VIN VOUT EAOUT IBIAS EN VSS`. The cell is a **standalone
+cell**: `ldo_core_cmos5l` does **not** instantiate it, and the core schematic
+and netlist are unchanged from `main`. Integration (`Xilim VIN VOUT EAOUT IBIAS
+EN VSS ldo_ilimit_cmos5l` in the core) is deferred to #190, because it makes the
+selected PVT/startup/loop-gain records stale and needs the refreshed-evidence
+campaign. The nominal smoke decks instead wrap the core plus the limiter in a
+testbench-local subckt (`sim/ldo-cmos5l-ilimit/gen_core_with_ilimit.sh`).
+
+**Status.** Row 8 (65–80 mA brickwall over PVT, short-survivable) is still
+**Open** and nothing here ratifies it. Every size is a DR-0017 §3 *candidate*;
+the 72.32 mA figure is the plan's calculation (113 × 1.000 µA × 640), not a
+measurement. DR-0017 is accepted for **bounded development** only, by the
+operator ruling on issue #165 of 2026-10-19; the 135-point grid, transients,
+statistics (#56), terminal stress and thermal survival are all still to do.
+
+How it works, in one paragraph. `Msense` is one more 25 µm finger of the
+`Mpass` array (N = 112) and returns its current to `VOUT` through `Rsns`
+(20 identical `rhigh` units in parallel). `Mref1/2`, a gate-shared
+series-stacked pair of the amplifier's bias-diode geometry, mirror
+`IBIAS/2` into `Rref` (32 of the same `rhigh` units in series) to build a
+threshold `V(VTH) = VOUT + Iref·Rref`. Because `Rref/Rsns = 32·20` is an
+integer at every global resistor corner and temperature, the trip current is
+`(N+1)·(IBIAS/2)·640` and the one absolute quantity left is the external
+`IBIAS` (excluded at block level, like `VREF` for row 2). A PMOS comparator
+with a resistor tail drives a gain stage and `Mclamp`, which pulls `EAOUT`
+toward `VIN` until the output current is the limit. With `IBIAS` absent the
+threshold is zero and the clamp holds `Mpass` off (the fail-safe direction).
+`EN` low parks the limiter (`Men_t`, `Men_co`, `Mcoff`); `Iref` and the
+`CLG` load switch off through the core's existing `Mbdis`.
+
+**What was run** (nominal tt / 27 °C / 3.30 V only, local single units;
+[`sim/ldo-cmos5l-ilimit/`](../sim/ldo-cmos5l-ilimit/README.md)): a forced-`VOUT`
+DC sweep, a closed-loop resistive load sweep and an `EN`-low point. The record
+and its caveats, including a failure to converge to the regulating solution
+with an ideal current-sink load, are in that README. No corner, Monte Carlo,
+transient or stability result exists for the limiter.
+
+**Unresolved by this cell** (DR-0017 §4–§5): sense `Vds` offset and `Iref`
+stack ratio, plateau tilt, limiter-loop stability and clamp delay, amplifier
+sink contention at `EAOUT`, `|Vsg|` and `|Vds|` stress during a short,
+and the `Rsns`/`Rref` thermal-gradient layout requirement (common-centroid,
+interdigitated). The unit resistor `l = 7.09 µm` was chosen so the *simulated*
+value is 5.0 kΩ at `res_typ`/27 °C (DR-0006: the symbol expression
+double-counts the width offset), not DR-0017's `≈ 7.4 µm`. `Ccl` is a
+`cap_cmomi` at 22 µm × 22 µm (≈ 0.5 pF at the PDK's nominal, unvalidated
+model) and the DC smoke decks replace it with an open circuit.
+
+**Netlisting.** `python3 design/netlist.py --design sg13cmos5l` (needs
+xschem ≥ 3.4.7 and the PDK the committed netlists were made with; see
+"Exporting and checking this branch").
+
 ### PDK caveats honoured (evidence rules carried in)
 
 | Caveat | How this branch honours it |
@@ -623,8 +679,10 @@ which #35's wider `Cc` is what closes
   `layout/sg13cmos5l-ldo_core_cmos5l/generate.py`, and the schematic
   continues to state only the electrical total. DR-0003 records the original
   deferral.
-- **No current limit, soft start, output capacitor, load, or
-  start-up circuit.** `EN` has existed since issue #67 (DR-0008), and a
+- **No soft start, output capacitor, load, or start-up circuit.** (The
+  current limiter exists since issue #165 -- see
+  [Current limiter](#current-limiter-ldo_ilimit_cmos5l) -- but is a
+  candidate, not a ratified row 8.) `EN` has existed since issue #67 (DR-0008), and a
   committed startup campaign (issue #69; record `20261011-031426-df3f802`,
   re-run for #89's G1 disable pull-down) measures it; its proposed-methodology failures are reported in row 9 of
   [`sim/characterization/characterization-report.md`](../sim/characterization/characterization-report.md).

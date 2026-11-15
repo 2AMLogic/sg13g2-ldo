@@ -1,0 +1,9 @@
+* sg13g2-ldo -- single-corner model bundle for the current-limiter smoke
+* decks (issue #165). tt MOS / typical resistor / 27 C only (a smoke check,
+* NOT a PVT sweep). Same construction as sim/ldo-cmos5l-enable/enable-corners.lib.
+* Same construction as sim/ldo-cmos5l-monte-carlo/row2-corners.lib's
+* tt_nom section. $PDK_ROOT is expanded on the submitting host.
+.lib tt_nom
+.lib "$PDK_ROOT/ihp-sg13cmos5l/libs.tech/ngspice/models/cornerMOShv.lib" mos_tt
+.lib "$PDK_ROOT/ihp-sg13cmos5l/libs.tech/ngspice/models/cornerRES.lib" res_typ
+.endl tt_nom

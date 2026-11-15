@@ -3,18 +3,18 @@
   "comment": [
     "Pinned contract for the layout/hbt-probe vendor-fixture witness (issue #150).",
     "pins.* is the tool/deck provenance the probe requires; a drift is a hard failure.",
-    "The pinned klt build (commit b15edf5e3a2e) was TESTED against klayout 0.30.10 and",
+    "The pinned klt build (v0.8.0, commit c572046be644) was TESTED against klayout 0.30.10 and",
     "warns on every run that the resolved engine (0.30.12, the version pinned here and",
     "used by layout CI) differs. That disclosure is preserved deliberately: the probe",
     "pins the engine actually used and records it in every raw report and summary."
   ],
   "pins": {
-    "klt_commit": "b15edf5e3a2e56467a3406c98a2555eb1a5ae45c",
-    "klt_version": "0.5.0+gb15edf5e3a2e",
+    "klt_commit": "c572046be644e0407f693f2410f3abb799d68a3a",
+    "klt_version": "0.8.0",
     "klayout_version": "0.30.12",
     "klayout_tested_version": "0.30.10",
     "deck": "sg13g2",
-    "deck_content_hash": "sha256:894326a4e37fb24fef2f7ffc6ae1da55a0e262b0f0bc1c09adc4862909278fda",
+    "deck_content_hash": "sha256:1c95db40596afc5412e216009bcf0b775d1d74895b32738447eccbc76336dd15",
     "ihp_source_commit": "5e6d592e4002946a4616f798c357f0f3c06cf3b6",
     "ihp_source_layout_path": "ihp-sg13g2/libs.tech/klayout/tech/lvs/testing/testcases/unit/bjt_devices/layout/npn13G2.gds",
     "ihp_source_netlist_path": "ihp-sg13g2/libs.tech/klayout/tech/lvs/testing/testcases/unit/bjt_devices/netlist/npn13G2.cdl"

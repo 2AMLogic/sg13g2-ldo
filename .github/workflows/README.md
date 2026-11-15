@@ -69,8 +69,8 @@ it's a reproducibility + ERC check against the actual PDK. The workflow:
    `IHP-GmbH/IHP-Open-PDK` `dev` @ `f7bca32694fe3d58be0cc7d9df4b9f5db7161a14`,
    tarball sha256 `5eb6f8a9...0dc70b` verified by the fetch script, which
    stamps `.fetched-version`; the fetch script is checked out from the
-   immutable klayout-tools commit `159527a5...` in `KLAYOUT_TOOLS_REF`, since
-   v0.7.0 still pointed at the archived `IHP-GmbH/ihp-sg13cmos5l` repo, and
+   immutable klayout-tools commit `c572046b...` (the v0.8.0 tag) in
+   `KLAYOUT_TOOLS_REF`, and
    `IHP_SG13CMOS5L_COMMIT` in the cache key moves with it; installed as a sibling of `ihp-sg13g2` because its symbols are relative
    symlinks into it), then runs `python3 design/netlist.py --check -v` and
    `python3 design/netlist.py --design sg13cmos5l --check -v` with

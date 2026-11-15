@@ -1,11 +1,15 @@
 {
-  "schema_version": 3,
-  "file": "npn13G2.gds",
+  "schema_version": 4,
+  "file": {
+    "path": null,
+    "scope": "external"
+  },
   "deck": "sg13g2",
   "top": "npn13G2",
   "dbu_um": 0.001,
   "netlist_path": "npn13G2.extracted.spice",
   "netlist_sha256": "c737df17d796460e1ce8f66179474a122c39bb61a32e93a64555517d719153b4",
+  "netlist_normalized_sha256": "3b3a6ee652de21220db5d9dcbf2df6b9d81da522b91bd54f2df2f3e29a907f11",
   "status": "extracted",
   "device_count": 0,
   "net_count": 1,
@@ -79,6 +83,7 @@
     }
   ],
   "warnings": [
+    "7 candidate 'dantenna' regions match every other drawn-layer predicate of that device class but are missing its device-recognition marker Recog.diode (99/31) -- so this geometry extracted as no device at all rather than as a diode, and the zero device count for this class is not evidence that the layout contains none. Draw the missing layer(s), or run `klt deck devices --deck sg13g2 --class dantenna` for the class's complete marker/requires/excludes set. See docs/cli/extract.md's 'Marker-gated and predicate-gated device classes' section. Note: this geometry also matches SiGe HBT (npn13G2/npn13G2l/npn13G2v), a device family this deck does not model, so it is probably not a diode at all -- see the sg13g2.py docstring section 'SiGe HBTs -- investigated, declined (issue #1232)'.",
     "found 0 pin-name label(s) on any of this deck's label layers (5/1, 8/25, 10/25, 30/25, 50/25, 67/25, 126/25, 134/25) anywhere in 'npn13G2' -- no net can be named, so 0 top-level pins will be promoted below and `klt lvs` will have no net/device anchor to seed a match against a reference netlist. Compare the layers `klt layers` reports for this GDS against the list above; for a `klt place-and-route` layout in particular, check that request.io.layer_h/layer_v chose a layer this --deck actually scans for pin labels (issue #1385)",
     "72 routing-stack clusters (96 shapes on 10/0, 19/0, 8/0) join no extracted net -- no via lands on this geometry and no same-layer wiring touches it, so it is invisible to the extracted netlist and to every downstream `klt lvs`/`klt sim` view; deliberate dead metal (artwork, fill) is expected here, unexplained dead metal usually means the connection you intended is missing -- see dead_metal[] for the per-cluster layer/bbox/shape count.",
     "5 layers (1/20, 26/0, 33/0, 51/0, 63/0) carrying 99 shapes are outside 'sg13g2' deck's connectivity graph -- this geometry is invisible to extraction, so a net routed only through it extracts as multiple disconnected nets instead of one, which will silently mismatch a downstream `klt lvs` reference netlist -- see ignored_layers[] for the full per-layer shape counts. See docs/cli/extract.md's 'ignored_layers' field documentation."
@@ -87,7 +92,10 @@
   "abstracted_cells": [],
   "unmodelled_poly": [],
   "merged_net_labels": [],
+  "split_net_labels": [],
   "voltage_domain_warnings": [],
+  "missing_flavour_markers": [],
+  "unsupported_devices": [],
   "unbiased_pmos_body_nets": [],
   "single_terminal_nets": [],
   "dead_metal": [
@@ -1029,14 +1037,21 @@
     }
   ],
   "matched_device_groups": [],
+  "def_pin_promotion": null,
+  "pin_renames": null,
+  "rename_declared_pins": false,
+  "declared_pins": null,
+  "def_pins": null,
+  "label_layers": null,
+  "probes": [],
   "pdk": null,
   "provenance": {
-    "klt_version": "0.5.0+gb15edf5e3a2e",
+    "klt_version": "0.8.0",
     "klayout_version": "0.30.12",
     "pdk": null,
     "deck": {
       "name": "sg13g2",
-      "content_hash": "sha256:894326a4e37fb24fef2f7ffc6ae1da55a0e262b0f0bc1c09adc4862909278fda",
+      "content_hash": "sha256:1c95db40596afc5412e216009bcf0b775d1d74895b32738447eccbc76336dd15",
       "released": true
     },
     "input": {
@@ -1046,9 +1061,22 @@
   },
   "parasitics": null,
   "spef_path": null,
+  "subcircuit": null,
   "metrics": {
     "extract__device__count": 0,
     "extract__net__count": 1,
     "extract__pin__count": 1
+  },
+  "timing": {
+    "stages": {
+      "read_layout": 0.0,
+      "device_extraction": 0.009,
+      "diagnostics": 0.0,
+      "netlist_write": 0.0,
+      "netlist_hash": 0.0,
+      "netlist_normalized_hash": 0.0
+    },
+    "total_seconds": 0.087,
+    "unattributed_seconds": 0.078
   }
 }

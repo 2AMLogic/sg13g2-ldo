@@ -1,7 +1,10 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "engine": "klayout",
-  "layout": "sg13cmos5l-ldo_core_cmos5l.extracted.spice",
+  "layout": {
+    "path": "layout/sg13cmos5l-ldo_core_cmos5l/sg13cmos5l-ldo_core_cmos5l.extracted.spice",
+    "scope": "repo"
+  },
   "reference": "sg13cmos5l-ldo_core_cmos5l.lvs_reference.spice",
   "top": "SG13CMOS5L_LDO_CORE_CMOS5L",
   "reference_top": "SG13CMOS5L_LDO_CORE_CMOS5L",
@@ -9,12 +12,16 @@
   "options": {
     "combine_devices": true,
     "combine_devices_per_circuit": null,
+    "combine_devices_max_attempts": 5,
     "flatten_layout": false,
     "flatten_reference": false,
     "netgen_setup": null,
     "parameter_tolerance": null,
     "compare_parameters": null,
     "power_connectivity": null,
+    "anchor_top_level_pins": null,
+    "strict_top_level_pin_count": false,
+    "compare_mos_flavour": false,
     "supply_nets": [
       "GND",
       "VCC",
@@ -22,9 +29,11 @@
       "VGND",
       "VPWR",
       "VSS"
-    ]
+    ],
+    "finfet_bulk": null
   },
   "hints_applied": null,
+  "constant_nets_applied": null,
   "status": "match",
   "power_connectivity": {
     "status": "unchecked",
@@ -38,65 +47,128 @@
     "finding_count": 0
   },
   "body_verification": {
-    "status": "unchecked",
-    "reason": "no request.layout.deck was given (the pre-extracted request.layout.netlist form), so nothing establishes this layout's substrate/well-tap convention and no synthesized body net can be told apart from a real one -- this run verified nothing about the device bodies either way",
+    "status": "verified",
+    "reason": null,
     "device_classes": [],
     "device_count": 0,
     "findings": [],
     "finding_count": 0
   },
-  "mismatch_count": 0,
+  "device_parameter_coverage": [
+    {
+      "class": "rhigh",
+      "device_kind": "resistor",
+      "layout_devices": 3,
+      "reference_devices": 3,
+      "compared": [
+        "R"
+      ],
+      "not_compared": [
+        {
+          "parameter": "L",
+          "reason": "secondary"
+        },
+        {
+          "parameter": "W",
+          "reason": "secondary"
+        },
+        {
+          "parameter": "A",
+          "reason": "secondary"
+        },
+        {
+          "parameter": "P",
+          "reason": "secondary"
+        }
+      ]
+    }
+  ],
+  "mismatch_count": 1,
   "error_count": 0,
-  "category_counts": {},
+  "category_counts": {
+    "device.geometry_not_compared": 1
+  },
   "category_error_counts": {},
   "counts": {
     "nets": {
       "layout": 13,
       "reference": 13,
-      "matched": 15
+      "matched": 13
     },
     "devices": {
-      "layout": 17,
-      "reference": 17,
-      "matched": 17
+      "layout": 18,
+      "reference": 18,
+      "matched": 18
     },
     "pins": {
       "layout": 6,
       "reference": 6,
-      "matched": 8
+      "matched": 6
     }
   },
-  "device_classes": null,
+  "device_classes": [
+    "nfet",
+    "pfet",
+    "cap_cmomi",
+    "cap_cmomf",
+    "resistor"
+  ],
   "environment": {
     "engine": "klayout",
     "engine_version": "0.30.12",
-    "layout_sha256": "5a9350b5a94e129ff4b69cf96a65475587f21d9ba270cba9d3c1a962fc1dece4",
-    "reference_sha256": "0c342ba3938551888597de106c806a733f56790afe05b225ff6d4f5aaedd0fcb",
+    "netgen_binary": null,
+    "layout_sha256": "5a3258118e17646cc5665b330ab40b50f353e2a1f7a49e37640e8c1fbd83ccf5",
+    "reference_sha256": "8364aac0d0e9106004531dbbcb633f8c158eb610f9e11bcb509b872f2642dfea",
     "extracted_netlist": null
   },
   "provenance": {
-    "klt_version": "0.5.0+gb15edf5e3a2e",
+    "klt_version": "0.8.0",
     "klayout_version": "0.30.12",
     "pdk": null,
-    "deck": null,
+    "deck": {
+      "name": "sg13cmos5l",
+      "content_hash": "sha256:5a43b8eb0e1a4c228169cd33d820bf75ca5640812587f68c07f24f4aa2a1738f",
+      "released": true
+    },
     "input": {
-      "content_hash": "sha256:5a9350b5a94e129ff4b69cf96a65475587f21d9ba270cba9d3c1a962fc1dece4",
+      "content_hash": "sha256:5a3258118e17646cc5665b330ab40b50f353e2a1f7a49e37640e8c1fbd83ccf5",
       "role": "netlist"
     },
-    "klayout_version_mismatch": true
+    "klayout_version_mismatch": false
   },
-  "mismatches": [],
+  "mismatches": [
+    {
+      "category": "device.geometry_not_compared",
+      "severity": "warning",
+      "description": "device class 'rhigh' is a resistor class, whose ['A', 'L', 'P', 'W'] parameter(s) KLayout declares *secondary*: kdb.NetlistComparer compares primary parameters only, so none of them took part in this compare and each is NOT verified -- this resistor's geometry could differ between the two sides by any amount and this run would still report 'match'. The compared parameter(s) were ['R']. Name them in options.compare_parameters to compare them (see docs/cli/lvs.md, 'device.geometry_not_compared')",
+      "side": "both",
+      "net": null,
+      "device": {
+        "layout": null,
+        "reference": null,
+        "class": "rhigh"
+      },
+      "property": null,
+      "details": {
+        "device_kind": "resistor",
+        "compared_parameters": [
+          "R"
+        ],
+        "not_compared_parameters": [
+          "A",
+          "L",
+          "P",
+          "W"
+        ],
+        "layout_devices": 3,
+        "reference_devices": 3
+      },
+      "circuit": null,
+      "instance": null,
+      "subcircuit": null
+    }
+  ],
   "net_correspondence": [
-    {
-      "layout": "1",
-      "reference": "1",
-      "pin": true
-    },
-    {
-      "layout": "2",
-      "reference": "2",
-      "pin": true
-    },
     {
       "layout": "EAOUT",
       "reference": "EAOUT",

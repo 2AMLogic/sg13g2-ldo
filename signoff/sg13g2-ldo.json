@@ -1,14 +1,57 @@
 {
   "block": "sg13g2-ldo",
   "kind": "analog",
+  "spec_rows": {
+    "5": [
+      {
+        "id": "dr0007-row1-input",
+        "ratified": false
+      },
+      {
+        "id": "dr0007-row2-output",
+        "ratified": false
+      },
+      {
+        "id": "dr0007-row3-load",
+        "ratified": false
+      },
+      {
+        "id": "dr0007-row4-dropout"
+      },
+      {
+        "id": "dr0007-row5-line-load-regulation",
+        "ratified": false
+      },
+      {
+        "id": "dr0007-row6-psrr",
+        "ratified": false
+      },
+      {
+        "id": "dr0007-row7-iq",
+        "ratified": false
+      },
+      {
+        "id": "dr0007-row8-current-limit",
+        "ratified": false
+      },
+      {
+        "id": "dr0007-row9-startup",
+        "ratified": false
+      },
+      {
+        "id": "dr0007-row10-stability",
+        "ratified": false
+      }
+    ]
+  },
   "evidence": {
     "1": {
       "file": "signoff/evidence/item1-design-sources.envelope.json",
-      "content_hash": "sha256:89763f2d2267eaee1d053e0718892b064fa82db00961714d6feb789d50875bf6"
+      "content_hash": "sha256:485e2783f46ba934244b3d9eb9d72239d428140162bd4c56c6a57a94f02c8836"
     },
     "2": {
       "file": "signoff/evidence/item2-layout.envelope.json",
-      "content_hash": "sha256:dc6419501fe888f5d99308bca72602d6960e681cf309277269238fdcf43967c7"
+      "content_hash": "sha256:548c792b08c891e9401c10feee5a414c2359521497e7ccf4ec67f2be2d138c9e"
     },
     "3": {
       "file": "layout/sg13cmos5l-ldo_core_cmos5l/drc_report.json",
@@ -16,19 +59,28 @@
     },
     "4": {
       "file": "layout/sg13cmos5l-ldo_core_cmos5l/lvs_report.json",
-      "content_hash": "sha256:5a9350b5a94e129ff4b69cf96a65475587f21d9ba270cba9d3c1a962fc1dece4"
+      "content_hash": "sha256:5a3258118e17646cc5665b330ab40b50f353e2a1f7a49e37640e8c1fbd83ccf5"
     },
+    "5": [
+      {
+        "file": "sim/ldo-cmos5l-pvt-sweep/row4-envelope/20261114-072921-41a8294b/report.json",
+        "content_hash": "sha256:0e3d95d123dd154f33250f168c478ef35972ce1a01525f2f269d2ddf54af207c",
+        "rows": [
+          "dr0007-row4-dropout"
+        ]
+      }
+    ],
     "8": {
       "file": "sim/characterization/characterization-envelope.json",
-      "content_hash": "sha256:17730cbca56b0dfd4b18bc1a9ed2ba8b3c794004ceb49017c3c2dacc2e3eecc0"
+      "content_hash": "sha256:b9938dc30227e3f193d10b5768f981b72538ae755c6289580e8bac128f5b694e"
     },
     "9": {
       "file": "signoff/evidence/item9-testbenches.envelope.json",
-      "content_hash": "sha256:ebf53555473f617c991dcc4b75be3f02375514a2be74f3ffa58db197c05ce912"
+      "content_hash": "sha256:f5bc3e51f25cdca3172ed1e5967af5793079a9869a681b21b10b2dab1b4c251c"
     },
     "10": {
       "file": "signoff/evidence/item10-repo-hygiene.envelope.json",
-      "content_hash": "sha256:8d671477916b4ae9e9d10351648babcd24f4e12bfca85c2a4c97cce2673101dd"
+      "content_hash": "sha256:229c5d94079b5d261012375afa2fbe08635f91d97acdcbe3b461df8b6987a1e2"
     },
     "11": [
       {
@@ -37,7 +89,7 @@
       },
       {
         "file": "layout/sg13cmos5l-ldo_core_cmos5l/lvs_report.json",
-        "content_hash": "sha256:5a9350b5a94e129ff4b69cf96a65475587f21d9ba270cba9d3c1a962fc1dece4"
+        "content_hash": "sha256:5a3258118e17646cc5665b330ab40b50f353e2a1f7a49e37640e8c1fbd83ccf5"
       }
     ]
   }

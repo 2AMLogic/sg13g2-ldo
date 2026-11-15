@@ -2,6 +2,35 @@
 
 Chronological record of recently merged pull requests and closed issues, maintained by the Loom Guide role.
 
+### 2026-11-10
+
+- **PR #211**: ci: gate attribution yield verdicts and supersede two stale klt 0.7.0 reports
+- **Issue #206** (closed): Gate yield/attribution verdicts in monte-carlo-record (decision on 0.8.0 drift)
+
+### 2026-11-06
+
+- **PR #205**: ci: re-run committed klt yield verdicts in monte-carlo-record
+- **Issue #204** (closed): CI: re-run committed klt yield verdicts now that klayout-tools[yield] installs from PyPI
+
+### 2026-10-27
+
+- **PR #197**: build: bump klayout-tools pins to 0.8.0 and regenerate evidence
+- **PR #179**: feat(sg13cmos5l): add ldo_ilimit_cmos5l current limiter (candidate sizing) and nominal smoke record
+- **Issue #196** (closed): Bump klayout-tools pin 97b6a54977d4 → 0.8.0
+- **Issue #165** (closed): SG13CMOS5L: implement ldo_ilimit_cmos5l per DR-0017 and instantiate in core
+
+### 2026-10-25
+
+- **Issue #52** (closed): README: embed the fleet burndown chart (one line)
+
+### 2026-10-24
+
+- **PR #113**: docs: clarify row 4 branch status (#71)
+- **PR #187**: ci: pin characterization-report job to ubuntu-24.04
+- **Issue #71** (closed): Clarify row 4 branch status: ratified target, SG13CMOS5L pass, SG13G2 gap
+- **Issue #186** (closed): main CI: openvaf-r cannot load libxml2.so.2 in pass-device-screening --check-env
+- **Issue #185** (closed): main CI: loopgain2 generate.py --check differs from regeneration
+
 ### 2026-10-20
 
 - **PR #175**: feat(layout): add extraction-only pex stage and committed klt pex report

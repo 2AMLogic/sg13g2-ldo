@@ -1,0 +1,26 @@
+* sg13g2-ldo -- SG13CMOS5L current-limiter smoke deck: forced-VOUT DC sweep
+* (issue #165, DR-0017 "DC bench" item 1). A klt-sim CIRCUIT BODY (klt sim
+* adds the corner .lib, .temp and the analysis).
+* NOMINAL ONLY: tt / 27 C / VIN = 3.30 V, ideal VREF = 0.90 V and ideal 2 uA
+* IBIAS sink. Not a PVT sweep; no window, brickwall or row-8 claim is made.
+
+.include "../../design/sg13cmos5l/netlist/ldo_core_cmos5l.spice"
+.include "../../design/sg13cmos5l/netlist/ldo_ilimit_cmos5l.spice"
+.include "core_with_ilimit.spice"
+
+* DC-only stand-in for cap_cmomi (open circuit in DC; Ccl is the limiter-loop
+* dominant pole and plays no part in a DC operating point). Interface mirrors
+* cap_cmomi.lib. No transient or AC result may be read from this deck.
+.param none=0 same=1 double=2
+.subckt cap_cmomi PLUS MINUS w=5e-6 l=5e-6 mmin=1 mmax=4 feed=double subblock=0 mm_ok=1
+Cdc PLUS MINUS 1p
+.ends cap_cmomi
+
+Vin VIN 0 dc 3.30
+Vref VREF 0 dc 0.90
+Ibias IBIAS 0 dc 2u
+Een EN 0 VIN 0 1
+* 0 V ammeter: i(Vmeas) > 0 when the core sources into OUT.
+Vmeas VOUTPIN OUT dc 0
+Vforce OUT 0 dc 1.8
+Xtop VIN VOUTPIN 0 VREF IBIAS EN ldo_core_ilim_tb

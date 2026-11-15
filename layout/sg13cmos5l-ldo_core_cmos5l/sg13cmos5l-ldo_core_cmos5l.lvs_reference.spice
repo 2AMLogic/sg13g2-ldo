@@ -8,10 +8,10 @@
 * docstring for all four transformations applied here.
 .SUBCKT sg13cmos5l_ldo_core_cmos5l VIN VOUT VSS VREF IBIAS EN
 MMpass VOUT EAOUT VIN VIN pfet L=0.5U W=2800U
-* Rtop: rhigh w=1u l=25.43u b=7 (8 stripes) -- deck model 278392.0 ohm, PDK ngspice model 300443.6 ohm
-RRtop VOUT FB VSS 278392.0 rhigh
-* Rbot: rhigh w=1u l=25.43u b=7 (8 stripes) -- deck model 278392.0 ohm, PDK ngspice model 300443.6 ohm
-RRbot FB VSS VSS 278392.0 rhigh
+* Rtop: rhigh w=1u l=25.43u b=7 (8 stripes) -- deck model 290151.7 ohm, PDK ngspice model 300443.6 ohm
+RRtop VOUT FB VSS 290151.666667 rhigh L=204.7U W=1U
+* Rbot: rhigh w=1u l=25.43u b=7 (8 stripes) -- deck model 290151.7 ohm, PDK ngspice model 300443.6 ohm
+RRbot FB VSS VSS 290151.666667 rhigh L=204.7U W=1U
 MMb0 IBIAS IBIAS VIN VIN pfet L=2U W=5U
 * Mtail: schematic m=3 x w=5u folded into one W=15u device (the layout draws 3 fingers; `klt lvs` combine_devices folds them)
 MMtail TAIL IBIAS VIN VIN pfet L=2U W=15U
@@ -22,9 +22,9 @@ MMinn N1 VREF TAIL TAIL pfet L=1U W=20U
 MMn2 G1 N1 VSS VSS nfet L=1U W=5U
 MMn1 N1 N1 VSS VSS nfet L=1U W=5U
 MMn3 EAOUT G1 VSS VSS nfet L=1U W=20U
-XCc EAOUT MZ cap_cmomi PARAMS: W=170 L=30
-* Rz: rhigh w=1u l=28.81u b=39 (40 stripes) -- deck model 1576811.2 ohm, PDK ngspice model 1700012.2 ohm
-RRz MZ G1 VSS 1576811.2 rhigh
+XCc EAOUT MZ cap_cmomi W=170U L=30U
+* Rz: rhigh w=1u l=28.81u b=39 (40 stripes) -- deck model 1642671.7 ohm, PDK ngspice model 1700012.2 ohm
+RRz MZ G1 VSS 1642671.666667 rhigh L=1159.42U W=1U
 MMinvp ENB EN VIN VIN pfet L=1U W=1U
 MMinvn ENB EN VSS VSS nfet L=1U W=1U
 MMpd G1 ENB VSS VSS nfet L=1U W=1U

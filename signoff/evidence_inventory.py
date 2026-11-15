@@ -67,8 +67,11 @@ ITEMS = {
             "design/sg13cmos5l/ldo_core_cmos5l.sym",
             "design/sg13cmos5l/ldo_erramp_cmos5l.sch",
             "design/sg13cmos5l/ldo_erramp_cmos5l.sym",
+            "design/sg13cmos5l/ldo_ilimit_cmos5l.sch",
+            "design/sg13cmos5l/ldo_ilimit_cmos5l.sym",
             "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice",
             "design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice",
+            "design/sg13cmos5l/netlist/ldo_ilimit_cmos5l.spice",
         ],
         "complete": ["design/sg13cmos5l/**/*"],
     },
@@ -129,6 +132,10 @@ ITEMS = {
             f"{_SIM}/testbench/tb_dropout_cmos5l.spice.tmpl",
             f"{_SIM}/dropout_campaign.py",
             f"{_SIM}/dropout_metrics.py",
+            # issue #55: the GRADED row-4 corner-matrix bench (the one item 5
+            # cites) and its generator / offline checker
+            f"{_SIM}/testbench/tb_row4_envelope_cmos5l.spice.tmpl",
+            f"{_SIM}/row4_envelope.py",
             f"{_MC}/README.md",
             f"{_MC}/run_campaign.sh",
             f"{_MC}/runner-preamble.cir",
@@ -205,6 +212,18 @@ ITEMS = {
             "sim/ldo-cmos5l-enable/request-enable-psrr.json",
             "sim/ldo-cmos5l-enable/request-enable-reg.json",
             "sim/ldo-cmos5l-enable/request-enable-rload.json",
+            # issue #165: current-limiter nominal smoke decks (sim/ldo-cmos5l-ilimit/)
+            "sim/ldo-cmos5l-ilimit/README.md",
+            "sim/ldo-cmos5l-ilimit/run_smoke.sh",
+            "sim/ldo-cmos5l-ilimit/gen_core_with_ilimit.sh",
+            "sim/ldo-cmos5l-ilimit/core_with_ilimit.spice",
+            "sim/ldo-cmos5l-ilimit/ilimit-corners.lib",
+            "sim/ldo-cmos5l-ilimit/tb_disabled.spice",
+            "sim/ldo-cmos5l-ilimit/tb_forced_vout.spice",
+            "sim/ldo-cmos5l-ilimit/tb_load_sweep.spice",
+            "sim/ldo-cmos5l-ilimit/request-disabled.json",
+            "sim/ldo-cmos5l-ilimit/request-forced-vout.json",
+            "sim/ldo-cmos5l-ilimit/request-load-sweep.json",
         ],
         # Every testbench / entry point under sim/ must be inventoried.
         "complete": [
@@ -241,6 +260,7 @@ ENTRY_POINTS = {
     _PD: "run_sweep.sh",
     _HBT: "run_sweep.sh",
     "sim/ldo-cmos5l-enable": "run_smoke.sh",
+    "sim/ldo-cmos5l-ilimit": "run_smoke.sh",
 }
 
 
@@ -320,7 +340,7 @@ def _content(item: int) -> list[str]:
     """Checks that go beyond 'the file exists and hashes right'."""
     errs: list[str] = []
     if item == 1:
-        for cell in ("ldo_core_cmos5l", "ldo_erramp_cmos5l"):
+        for cell in ("ldo_core_cmos5l", "ldo_erramp_cmos5l", "ldo_ilimit_cmos5l"):
             sch = _read(f"design/sg13cmos5l/{cell}.sch")
             net = _read(f"design/sg13cmos5l/netlist/{cell}.spice")
             if not sch.startswith("v {xschem"):

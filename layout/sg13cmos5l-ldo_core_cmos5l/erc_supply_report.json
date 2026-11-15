@@ -1,11 +1,15 @@
 {
-  "schema_version": 1,
-  "file": "layout/sg13cmos5l-ldo_core_cmos5l/sg13cmos5l-ldo_core_cmos5l.gds",
+  "schema_version": 2,
+  "file": {
+    "path": "layout/sg13cmos5l-ldo_core_cmos5l/sg13cmos5l-ldo_core_cmos5l.gds",
+    "scope": "repo"
+  },
   "spec": "layout/sg13cmos5l-ldo_core_cmos5l/erc-supply-spec.json",
   "pdk": null,
   "findings_only": false,
   "gate_role": "GatPoly",
   "gate_count": 8,
+  "antenna_tables_omitted": false,
   "gates": [
     {
       "gate_id": "gate0",
@@ -628,7 +632,7 @@
   },
   "ties_disclosure": null,
   "provenance": {
-    "klt_version": "0.7.0+gb82427b30c96",
+    "klt_version": "0.8.0",
     "klayout_version": "0.30.12",
     "pdk": null,
     "deck": null,

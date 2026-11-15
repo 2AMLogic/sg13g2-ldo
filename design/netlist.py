@@ -68,7 +68,7 @@ import re
 import subprocess
 import sys
 import tempfile
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 DESIGN_DIR = Path(__file__).resolve().parent
@@ -153,6 +153,11 @@ class Design:
     top_cell: str
     expected_top_ports: list[str]
     variant: str
+    # Cells deliberately NOT instantiated in ``top_cell`` yet, mapped to the
+    # issue that integrates them. Not a skip: such a cell still gets every
+    # symbol/schematic/port-order check, and the entry itself fails once the
+    # cell IS instantiated, so it must be deleted when the integration lands.
+    pending_integration: dict[str, str] = field(default_factory=dict)
 
     @property
     def netlist_dir(self) -> Path:
@@ -190,6 +195,10 @@ DESIGNS: dict[str, Design] = {
         top_cell="ldo_core_cmos5l",
         expected_top_ports=["VIN", "VOUT", "VSS", "VREF", "IBIAS", "EN"],
         variant="ihp-sg13cmos5l",
+        # #165 operator ruling of 2026-10-24 (DR-0017, option a): the limiter
+        # lands standalone; instantiating it in the core is #190. Delete this
+        # entry in the PR that integrates it.
+        pending_integration={"ldo_ilimit_cmos5l": "#190"},
     ),
 }
 
@@ -407,6 +416,14 @@ def check_invariants(design: Design, netlists: dict[str, str]) -> list[str]:
         if cell == top_cell:
             continue
         instances = instance_lines(top, cell)
+        pending = design.pending_integration.get(cell)
+        if pending:
+            if instances:
+                failures.append(
+                    f"{cell}: now instantiated in {top_cell}, but still listed in "
+                    f"pending_integration ({pending}); remove the entry"
+                )
+            continue
         if not instances:
             failures.append(f"{cell}: not instantiated in {top_cell}")
             continue
