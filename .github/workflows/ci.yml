@@ -45,7 +45,12 @@ name: CI
 #                                 reproduce byte-for-byte from generate.py /
 #                                 common_sg13cmos5l.py, and the committed
 #                                 drc/extract/lvs reports still hash-match
-#                                 them (#101). Also layout/hbt-probe (issue
+#                                 them (#101). scripts/check_pin_sync.py
+#                                 asserts ci.yml's KLAYOUT_TOOLS_VERSION /
+#                                 KLAYOUT_PY_VERSION / IHP_SG13CMOS5L_COMMIT
+#                                 against their hardcoded copies in
+#                                 layout/run_flow.sh and sim/pdk-cmos5l.json
+#                                 (#250). Also layout/hbt-probe (issue
 #                                 #150): the offline --check of the vendored
 #                                 IHP HBT fixture's stored evidence plus a
 #                                 fresh --run that witnesses the upstream
@@ -798,6 +803,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
+      - name: Pin-sync gate unit tests (fail-closed, tampered temp copies)
+        run: python3 -m unittest discover -s scripts/tests -p 'test_check_pin_sync.py' -v
+
+      - name: ci.yml pins match layout/run_flow.sh and sim/pdk-cmos5l.json
+        run: python3 scripts/check_pin_sync.py check
 
       - name: Install klayout-tools at the pinned release
         run: |
