@@ -57,7 +57,7 @@
   "evidence": {
     "1": {
       "file": "signoff/evidence/item1-design-sources.envelope.json",
-      "content_hash": "sha256:485e2783f46ba934244b3d9eb9d72239d428140162bd4c56c6a57a94f02c8836"
+      "content_hash": "sha256:3dd788327acf44e47d91e71ba47b01e0c96a9e95fdfcf2edb8a28ce9ded76127"
     },
     "2": {
       "file": "signoff/evidence/item2-layout.envelope.json",
@@ -127,7 +127,7 @@
     },
     "10": {
       "file": "signoff/evidence/item10-repo-hygiene.envelope.json",
-      "content_hash": "sha256:c0c9a8945ef1383fba0bf47bc0141f10b313f510b957fe34e5e48862744e3aed"
+      "content_hash": "sha256:a69c797a2cb3d719da8dfc9bb72bb2e0ee02264848a23de05135fc429b22a24f"
     },
     "11": [
       {
