@@ -141,10 +141,6 @@ def render_cout_esr(op):
             f"Resr COUT_ESR 0 {v['esr_ohm']}"]
 
 
-def corner_key(c):
-    return (c[0], c[1], c[2])
-
-
 # ---- matrix ------------------------------------------------------------
 def base_ops():
     return [{"load_ua": l, "cout_nf": c, "esr_mohm": e}
