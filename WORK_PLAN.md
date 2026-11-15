@@ -13,26 +13,26 @@ _None._
 
 `loom:very-important` (one counts per workspace); every stage takes these first.
 
-_None._
+- **#55**: Corner verification: klt sim corner-matrix envelopes against the ratified spec (T1 item 5)
 
 ## Important
 
 `loom:important`; taken before unlabelled work.
 
-- **#55**: Corner verification: klt sim corner-matrix envelopes against the ratified spec (T1 item 5)
 - **#190**: SG13CMOS5L: integrate ldo_ilimit_cmos5l into the core with refreshed PVT/startup/loop-gain and layout/LVS evidence
 
 ## Ready
 
 Human-approved issues ready for implementation (`loom:issue`).
 
+- **#176**: Simplify design/netlist.py: delegate xschem export to klt netlist
 - **#183**: Adopt the common artifact store for sim evidence (manifests in git, bytes via klt artifact)
 
 ## In Progress
 
 Issues currently being built (`loom:building`).
 
-_None._
+- **#199**: T1 grading: attest items 1, 9, 10 with klt signoff --attest instead of hand-rolled inventory envelopes
 
 ## PRs Awaiting Review
 
@@ -71,10 +71,10 @@ _None._
 | Bucket | Count |
 |------|-------|
 | Operator merge-risk holds | 0 |
-| Very important | 0 |
-| Important | 2 |
-| Ready (`loom:issue`) | 1 |
-| In Progress (`loom:building`) | 0 |
+| Very important | 1 |
+| Important | 1 |
+| Ready (`loom:issue`) | 2 |
+| In Progress (`loom:building`) | 1 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
 | Curated | 7 |

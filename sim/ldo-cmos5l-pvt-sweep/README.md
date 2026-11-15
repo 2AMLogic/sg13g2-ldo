@@ -1247,14 +1247,14 @@ are listed in the JSON. `dc_metrics.py` is the DC parser extracted from
 
 What this is **not**:
 
-- It is not a `klt sim` envelope and item 5 in `signoff/` stays uncited.
-  The raw grid now comes from `klt sim` batch requests (`run_sweep.sh
-  --batch`), but those requests declare no limits, and the metrics are
-  reduced outside klt, so they are measurement runs, not a corner-matrix
-  envelope graded against the ratified spec. `klt sim`'s batch backend still
-  refuses `models.pdk: ihp-sg13cmos5l`
-  ([klayout-tools#2727](https://github.com/2AMLogic/klayout-tools/issues/2727)),
-  so the runs rely on staged model inputs instead.
+- It is not a `klt sim` envelope. The raw grid comes from `klt sim` batch
+  requests (`run_sweep.sh --batch`), but those requests declare no limits, and
+  the metrics are reduced outside klt, so they are measurement runs, not a
+  corner-matrix envelope graded against the ratified spec. **The graded
+  envelope item 5 cites now lives beside this analysis, in
+  `row4-envelope/` — see "Row-4 graded `klt sim` corner-matrix envelope"
+  below.** This inventory stays the coverage statement; the envelope grades
+  one row.
 - It does not ratify any Open row. Only row 4 (dropout) is ratified, and its
   dropout is the **legacy** metric (lowest in-regulation grid Vin minus the
   fixed 1.8 V target); 36 of 45 points sit at the 0.20 V sweep floor and are
@@ -1276,6 +1276,105 @@ What this is **not**:
   DR-0007 status (only dropout is a gate; the rest are informational); this
   affects future records only, existing records are unchanged.
 
+
+## Row-4 graded `klt sim` corner-matrix envelope (`row4_envelope.py`, issue #55)
+
+Everything else under this directory computes its verdict **outside** `klt`:
+the requests `run_sweep.sh --batch` and `dropout_campaign.py` submit are real
+`klt sim` corner matrices, but they declare no `limits`, so the pass/fail is
+this repo's own Python afterwards. `klt signoff` cannot grade that, and
+wrapping a reduced CSV in a sim-shaped envelope would be a synthesized
+success. `row4_envelope.py` closes that gap the only honest way: it declares
+the ratified row-4 requirement as `limits` **inside the request**, so the
+per-corner and whole-matrix verdict in the report is `klt sim`'s own.
+
+```bash
+python3 sim/ldo-cmos5l-pvt-sweep/row4_envelope.py submit --probe   # 2-corner probe
+python3 sim/ldo-cmos5l-pvt-sweep/row4_envelope.py submit           # the 45-point matrix
+python3 sim/ldo-cmos5l-pvt-sweep/row4_envelope.py check            # offline (CI)
+```
+
+`submit` mints a new append-only record under
+`row4-envelope/<record-id>/` holding the request it built (`tb.spice`,
+`corners.lib`, `request.json`), the graded envelope (`report.json`), the
+client's stderr, `provenance.json`, and the two derived summaries
+(`row4-envelope.{json,md}`). It never runs SPICE locally: this is a 45-point
+grid, which dispatch hosts submit to the EDA batch fleet
+(`--backend batch`, `--wait-for-capacity 600`). Run the `--probe` first — it
+is the same request over two coordinates, it is recorded as `probe: true`,
+and `check` refuses to let it be cited.
+
+**What is graded.** DR-0007 row 4, *Dropout @ 50 mA < 300 mV worst corner*,
+measured with the **legacy** definition that row was ratified with
+(`dc_metrics.dropout_v_50ma`: the lowest Vin whose VOUT is still within 1 % of
+the fixed 1.800 V target, minus that target). Two measurements encode the
+same requirement from the two axes, so a `.meas` quirk in one cannot pass
+unnoticed in both, and both are tagged `spec_row` (klayout-tools#3778) so the
+signoff grader *derives* the row coverage instead of trusting the manifest:
+
+| measurement | card | gate | meaning |
+|---|---|---|---|
+| `vout_at_dropout_limit_v` | `.meas dc FIND v(vout) AT=2.100` | `min` 1.782 | the requirement read literally: at VIN = 1.800 + 0.300 V the output is still in regulation |
+| `vin_1pct_loss_v` | `.meas dc WHEN v(vout)=1.782 RISE=1` | `max` 2.100 | the measured dropout edge; dropout = value − 1.800 V |
+| `vout_nominal_v` | `.meas dc FIND v(vout) AT=3.300` | **none** | liveness and the regulated output; deliberately ungraded and untagged, because row 2 (output accuracy) is Open and must not acquire a gate here |
+
+**What it is not.**
+
+- Not DR-0012's dropout. DR-0012 references the 1 % loss to *the corner's own*
+  regulated output (0.99 × VOUT at Vin = 3.30 V) rather than to the fixed
+  1.800 V target, and it is **PROPOSED** — not released by either ratification
+  key. It is also not expressible as a `klt sim` request: a `.meas WHEN`
+  threshold must be a literal number and cannot name another measurement, and
+  the declarative crossing forms that *can* take a measured level
+  (`crossings.level`'s `sample_at`/`frac_of`) require `analysis.kind: "tran"`
+  and grade the crossing count, not the swept abscissa. Filed upstream as
+  [klayout-tools#5703](https://github.com/2AMLogic/klayout-tools/issues/5703).
+  The two definitions agree on the physics: the DR-0012 campaign's worst
+  coordinate is the same one this envelope finds, and the two numbers differ
+  by exactly the reference (`1.800 V` versus `1.782 V`).
+- Not coverage of the other nine rows. They are Open under DR-0007, declared
+  in the manifest's `spec_rows` as `ratified: false`, and covered by nothing —
+  which is why item 5 grades `unmet / partial_coverage` even though this
+  envelope passes. See `signoff/README.md`.
+- Not SG13G2 evidence, and not a post-layout result (DR-0018, #57).
+- Not a 5 mV-resolution-free number: the Vin axis is 5 mV, so the worst
+  dropout's grid upper bound is the reported value + 5 mV. Both are stated in
+  `row4-envelope.md`; the verdict holds on either.
+
+It does, however, remove the **floor limitation** DR-0007 ratified row 4
+under. That record read the row off a Vin axis starting at 2.00 V, so 36 of 45
+points sat at the 0.20 V sweep floor and were upper bounds. This bench sweeps
+Vin from 1.700 V (below any possible crossing by construction: at a crossing
+VOUT >= 1.782 V and VOUT <= VIN) and resolves all 45 coordinates:
+123.96-237.06 mV, none floor-limited, none above the 300 mV target. Exactly 9
+of 45 exceed 200 mV -- the same nine hot-corner points DR-0007 recorded -- so
+the stretch target stays not ratified and is not proposed here.
+
+**No `.control` block.** The fleet runner applies `options.osdi_preload`
+itself, so the deck-side `.control pre_osdi` preamble the other benches here
+carry (`batch_backend.py`'s `osdi-preamble.cir`) loads every binary a **second**
+time and every corner comes back `osdi_load_failed` with plausible-looking
+measurement values beside it. That exact failure was observed on this host
+(job `klt-sim-b7598358f812`) and is a negative control in
+`test_row4_envelope.py`: a corner that reported values but errored is never
+`definitive`. `batch_backend.py`'s preamble is left alone — it belongs to the
+other benches' requests, which this one does not share.
+
+**Runtime and the job-bound warning.** The 45-corner job ran in 8 s of worker
+time on one `m7i.4xlarge` spot instance (8 physical cores; runner `klt` 0.9.0,
+ngspice-47 — all recorded in the report's `environment.remote`). `klt sim`
+still warns at submit that `options.timeout_s` (1800 s, kept for parity with
+`dropout_campaign.py`) times 45 units exceeds the fleet's 3600 s whole-job
+ceiling. That bound is a fully-serial worst case, not an estimate; the runner
+runs the corners in parallel, and the warning is informational.
+
+**Reproducibility.** `tb.spice` carries only a repo-relative `.include` of the
+design netlist, so its bytes — and therefore the envelope's
+`provenance.input.content_hash`, which is the manifest's item-5 pin — are
+host-independent and reproduce on any checkout. `corners.lib` and
+`request.json` do name this host's PDK install; `check` re-derives them from
+the template plus the record's own recorded substitutions, so they reproduce
+byte-for-byte too, and the record states the paths it used.
 
 ## CI
 
