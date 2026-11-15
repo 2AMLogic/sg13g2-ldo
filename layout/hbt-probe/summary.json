@@ -22,7 +22,7 @@
   },
   "inputs": {
     "LICENSE-IHP.txt": "sha256:c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
-    "expectations.json": "sha256:2194c1e7b1eb8f84f916cda71a46f99beb0fb87e5ecc1b5ce50e0ce8d6eff942",
+    "expectations.json": "sha256:fdb23b7cb06819b5a31448c6b299680f5681dcaf21212236bbea90b52cea95e8",
     "hbt_probe.py": "sha256:27376eeeec64a81e5765312a4deea6941af458de09e6c8b415f3e9ea02763eee",
     "lvs_request.json": "sha256:d31035e7c35e64129ba0fbff13aab0f5f359744ce848aa9d6f63b64163c01e5e",
     "npn13G2.cdl": "sha256:c0fe68ca5277621084e2051244e2b562188df7155257c75739c280ade77f9f90",
@@ -51,23 +51,21 @@
         "V2",
         "V3",
         "V4",
-        "pSD"
+        "pSD",
+        "x"
       ],
       "layers_in_stream_without_rules": [
-        "7/21",
         "8/2",
         "10/2",
         "26/0",
         "33/0",
-        "51/0",
-        "63/0"
+        "51/0"
       ],
       "rules_checked": [
         "activ.enclosing.cont.1",
         "activ.space.1",
         "activ.width.1",
-        "cont.space.1",
-        "cont.width.1",
+        "cont.ongrid.1",
         "metal1.enclosing.via1.1",
         "metal1.space.1",
         "metal1.width.1",
@@ -80,6 +78,8 @@
         "via1.width.1"
       ],
       "rules_skipped": [
+        "cont.space.1",
+        "cont.width.1",
         "gatpoly.enclosing.cont.1",
         "gatpoly.separation.activ.1",
         "gatpoly.space.1",
@@ -175,28 +175,28 @@
   "path_normalization": "All klt stages run with cwd set to a fresh temporary workdir holding the vendored fixture and lvs_request.json, and are invoked with workdir-relative paths, so the committed raw reports and the argv below carry no absolute or host-specific paths. No other normalization is applied.",
   "pins": {
     "deck": "sg13g2",
-    "deck_content_hash": "sha256:1c95db40596afc5412e216009bcf0b775d1d74895b32738447eccbc76336dd15",
+    "deck_content_hash": "sha256:cf6dfeadf75bd95bf89beb0a64e06ed43b65f6ff782df10ae200ea200a73d8e9",
     "ihp_source_commit": "5e6d592e4002946a4616f798c357f0f3c06cf3b6",
     "ihp_source_layout_path": "ihp-sg13g2/libs.tech/klayout/tech/lvs/testing/testcases/unit/bjt_devices/layout/npn13G2.gds",
     "ihp_source_netlist_path": "ihp-sg13g2/libs.tech/klayout/tech/lvs/testing/testcases/unit/bjt_devices/netlist/npn13G2.cdl",
-    "klayout_tested_version": "0.30.10",
+    "klayout_tested_version": "0.30.12",
     "klayout_version": "0.30.12",
-    "klt_commit": "c572046be644e0407f693f2410f3abb799d68a3a",
-    "klt_version": "0.8.0"
+    "klt_commit": "046ba74652fc096bd97071fc3237f7159dd40183",
+    "klt_version": "0.9.2"
   },
   "probe": "layout/hbt-probe",
   "raw_reports": {
     "drc": {
       "path": "raw/drc_report.json",
-      "sha256": "sha256:e6d674f95dfe48bc0b67319b28ebcd40e99231478fa9ff63a4fd96c3c74816f6"
+      "sha256": "sha256:bb1f6ff4a28837ea71505d583099dd84eeece745891fc307140c24e01cb5f2f8"
     },
     "extract": {
       "path": "raw/extract_report.json",
-      "sha256": "sha256:393288366e77bd8932d97e8dcb2d9f86b3513d7b089a34f5e32e9715977115ab"
+      "sha256": "sha256:b9d2e62ca6e1f6db04e7c2d5661ca308c3b3c1a807b4acde80b1138d7a6d3d02"
     },
     "lvs": {
       "path": "raw/lvs_report.json",
-      "sha256": "sha256:a3e25c499b6fe25b931420c7fa015534be43d185c663e5d291bcca0476659991"
+      "sha256": "sha256:6dc81aeed54ba2ba4efa8fcd91f953d8ec8e02007e4f0aec6ca67155ed354204"
     }
   },
   "recorded_with": {
@@ -237,7 +237,7 @@
       "extract": 0,
       "lvs": 3
     },
-    "klt_preflight": "klt 0.8.0"
+    "klt_preflight": "klt 0.9.2"
   },
   "schema": "sg13g2-ldo.hbt-probe.summary/1",
   "upstream": {

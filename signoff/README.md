@@ -160,7 +160,7 @@ Per item:
     `content_hash`" and that "there is no way to tell the grader that the block
     has two statistical rows, that the citation covers only one, or that its
     target is unratified". That was true of the build it was written against;
-    it is **not** true of the pinned `0.8.0` build, which accepts
+    it is **not** true of the pinned `0.9.2` build, which accepts
     `spec_rows` with per-row `ratified` and per-citation `rows`
     (klayout-tools#2959/#2908) — exactly what item 5 now uses. Issue #225
     measured the pinned build on a scratch manifest (verdict and negative
@@ -348,20 +348,22 @@ envelope-grading rules this report depends on — the `erc` evidence kind,
 compound item 11 grading, and input-artifact verification (`input_verified`,
 which re-hashes the cited input rather than trusting the envelope's say-so)
 — shipped upstream **after** the v0.5.0 release, so the manifest is graded
-with the released klayout-tools 0.8.0 (#196; it was a post-release git
-commit, `b82427b30c96`, before), the build whose version stamp the ERC
-envelope records:
+with the released klayout-tools 0.9.2 (#210; it was the released 0.8.0,
+#196, before — and a post-release git commit, `b82427b30c96`, before that),
+the build whose version stamp the ERC envelope records:
 
 ```bash
 uv venv /tmp/klt-signoff-venv
-uv pip install --python /tmp/klt-signoff-venv/bin/python "klayout-tools==0.8.0"
+uv pip install --python /tmp/klt-signoff-venv/bin/python "klayout-tools==0.9.2"
 ```
 
-This is the same PyPI install as CI (`KLAYOUT_TOOLS_VERSION` in `.github/workflows/ci.yml`; a release build stamps a bare `klt 0.8.0`, whereas a `pip install git+...@sha` build stamps a dev version and fails an `==0.8.0` pin, klayout-tools#2823).
+This is the same PyPI install as CI (`KLAYOUT_TOOLS_VERSION` in `.github/workflows/ci.yml`; a release build stamps a bare `klt 0.9.2`, whereas a `pip install git+...@sha` build stamps a dev version and fails an `==0.9.2` pin, klayout-tools#2823).
 
 **No pin bump for #60.** Items 1/2/9/10 cite artifact-anchored generic evidence, which klayout-tools#2843 (merge commit `3a75c3ae705b`) added. The existing pin `b82427b30c96` (`0.7.0+gb82427b30c96`) already descends from that merge, so the tool was not changed. Regrading under the same build changed exactly items 1, 2, 9 and 10 (`unmet` to `met`); items 3, 4, 8 and 11 stayed `met`, and the build block did not move. The root `README.md` status line (4 to 8 of 11) is a pinned item-8 source, so `generate.py` was re-run and the item-8 pin moved to `sha256:53b0a278…`. The item 3/4/11 envelopes were not regenerated.
 
 **Pin bump (#196).** The grading build moved from the post-release commit `b82427b30c96` to the released `klayout-tools==0.8.0`, installed from PyPI in CI and in the throwaway-environment recipe above; the report's `build` block now carries the bare `0.8.0` stamp. The layout reports the citations point at were regenerated on the same build in the same PR (`layout/README.md`, #196), so the whole evidence set carries one stamp.
+
+**Pin bump (#210).** The grading build moved to the released `klayout-tools==0.9.2` — the first release whose `klt erc` evaluates `erc.supply_short` through the substrate (klayout-tools#5334), discharging the 2026-11-11 operator ruling that had held the bump until the check ran instead of being disclosed `inapplicable`. The ERC report was regenerated with `--deck sg13cmos5l` (see `layout/README.md`, item 11) and every layout report the citations point at was regenerated on the same build in the same PR, so the evidence set again carries one stamp.
 
 Bump the pin deliberately — in the same PR as the regenerated report —
 when a `klt` release ships the item-11 grading rules; CI (the

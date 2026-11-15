@@ -7,7 +7,7 @@
 * pin VOUT
 * pin VREF
 * pin VSS
-.SUBCKT sg13cmos5l_ldo_core_cmos5l EN IBIAS VIN VOUT VREF VSS
+.SUBCKT sg13cmos5l_ldo_core_cmos5l VIN VOUT VSS VREF IBIAS EN
 * device instance $1 r0 *1 200.5,0.5 nfet
 M$1 ENB EN VSS VSS nfet L=1U W=1U AS=0.5P AD=0.5P PS=3U PD=3U
 * device instance $2 r0 *1 205.5,0.5 nfet
