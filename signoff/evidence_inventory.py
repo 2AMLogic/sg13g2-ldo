@@ -105,6 +105,13 @@ ITEMS = {
             "sim/env.sh",
             f"{_SIM}/README.md",
             f"{_SIM}/run_sweep.sh",
+            # issue #223: run_sweep.sh's post-processing -- the code that
+            # computes every number in a PVT record. It was a heredoc inside
+            # run_sweep.sh (and so already inventoried through it) until it
+            # became an importable, tested sibling; both move here so the
+            # extraction does not shrink what this item attests.
+            f"{_SIM}/sweep_report.py",
+            f"{_SIM}/test_sweep_report.py",
             f"{_SIM}/batch_backend.py",
             # issue #128: loop-gain AC ceiling contract used by run_sweep.sh
             f"{_SIM}/ac_sweep.py",
