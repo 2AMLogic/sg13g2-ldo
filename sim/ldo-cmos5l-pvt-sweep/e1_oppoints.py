@@ -244,7 +244,6 @@ def reduce_point(pt, csv_path, liveness_vout, cc_f):
     # --- circuit-level consistency checks --------------------------------- #
     vout = op["v(vout)"]
     idiv = op["i(vdivsense)"]
-    ivin = op["i(vin)"]
     ivbreak = op["i(vbreak)"]
     ids_pass = op["@n.xmpass.nsg13_hv_pmos[ids]"]
 
