@@ -287,12 +287,31 @@ jobs:
             exit 1
           }
 
+      # Keyed on sim/tools/build-osdi.sh as well as the PDK version, because
+      # that script installs its .osdi outputs INSIDE this cached tree
+      # (build-osdi.sh:119 -- ${PDK_ROOT}/${PDK}/libs.tech/ngspice/osdi) and
+      # exits 0 as a no-op when they are already present. Without the script
+      # hash, bumping the OpenVAF-Reloaded pin, the libLLVM pin or the model
+      # list in that script restores a tree whose models were built by the OLD
+      # toolchain, build-osdi.sh reports "models already built and loadable",
+      # and this job grades green against models the current script would not
+      # produce -- a check that did not really run (#222,
+      # .loom/docs/ci-principles.md). The outputs and the tree share one cache
+      # entry, so they share one key: a build-osdi.sh edit now also forces a
+      # full PDK re-fetch here. That cost is the point, not a regression.
+      #
+      # The -osdi- segment also keeps this entry distinct from netlist-check's
+      # key for the same path (that job never builds models). Neither block has
+      # restore-keys:, so actions/cache does exact-key restore only and the two
+      # cannot collide. signoff/evidence_inventory.py's item-10 check binds this
+      # key line's script-hash tail, so a later wholesale rewrite of the line
+      # cannot silently drop it again.
       - name: Cache IHP-Open-PDK fetch
         id: pdk-cache
         uses: actions/cache@v4
         with:
           path: klayout-tools/pdks/ihp-open-pdk
-          key: ihp-open-pdk-v${{ env.IHP_OPEN_PDK_VERSION }}
+          key: ihp-open-pdk-v${{ env.IHP_OPEN_PDK_VERSION }}-osdi-${{ hashFiles('sim/tools/build-osdi.sh') }}
 
       - name: Fetch ihp-sg13g2 PDK (IHP-Open-PDK, pinned + checksum-verified)
         run: klayout-tools/scripts/fetch-ihp-sg13g2.sh
