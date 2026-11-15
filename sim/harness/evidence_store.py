@@ -59,6 +59,15 @@ PROBE_TIMEOUT_S = 30
 PUT_TIMEOUT_S = 900
 
 _SHA_RE = re.compile(r"^[0-9a-f]{64}$")
+#: Entry schema the writer accepts in a ``klt`` manifest: exactly the fields
+#: the CI checker (``REQUIRED``/``OPTIONAL``/``PRODUCER_FIELDS`` in
+#: ``scripts/check_artifact_manifests.py``) accepts, pinned to it by
+#: ``SchemaAgreement`` in ``sim/harness/tests/test_evidence_store.py`` so a
+#: future klt field fails here, at write time, instead of in CI after the
+#: puts are spent. A real ``klt artifact put`` writes exactly these fields.
+ENTRY_REQUIRED_FIELDS = ("sha256", "size", "kind", "producer", "uri")
+ENTRY_OPTIONAL_FIELDS = ("name", "media_type")
+ENTRY_PRODUCER_FIELDS = ("tool", "version", "loom.repo", "commit")
 #: Same grammar as ``klayout_tools.artifact_store``: ``artifact:<key>``, no
 #: other scheme.
 _URI_RE = re.compile(r"^artifact:([^/\s]\S*)$")
@@ -85,12 +94,17 @@ def manifest_path(repo_root: Path, bench: str, rid: str) -> Path:
 
 
 def sha256_file(path: Path) -> tuple[str, int]:
+    """Hex sha256 and byte count of ``path``. Fail closed: any read failure
+    is :class:`StoreError`, never an escaping ``OSError`` (issue #251)."""
     h = hashlib.sha256()
     n = 0
-    with open(path, "rb") as fh:
-        while chunk := fh.read(1 << 20):
-            h.update(chunk)
-            n += len(chunk)
+    try:
+        with open(path, "rb") as fh:
+            while chunk := fh.read(1 << 20):
+                h.update(chunk)
+                n += len(chunk)
+    except OSError as exc:
+        raise StoreError(f"cannot read {path.name} to hash it: {exc}") from exc
     return h.hexdigest(), n
 
 
@@ -239,8 +253,16 @@ def _klt_error(stderr: str) -> str:
 
 
 def _entry_problem(entry) -> str | None:
+    """The writer's entry check, as strict as the CI checker's schema
+    (:data:`ENTRY_REQUIRED_FIELDS`/``OPTIONAL``/``PRODUCER_FIELDS``)."""
     if not isinstance(entry, dict):
         return "entry is not an object"
+    missing = [f for f in ENTRY_REQUIRED_FIELDS if f not in entry]
+    if missing:
+        return f"missing field(s) {', '.join(missing)}"
+    extra = sorted(set(entry) - set(ENTRY_REQUIRED_FIELDS) - set(ENTRY_OPTIONAL_FIELDS))
+    if extra:
+        return f"unknown field(s) {', '.join(extra)}"
     if not (isinstance(entry.get("sha256"), str) and _SHA_RE.match(entry["sha256"])):
         return "bad sha256"
     if entry.get("kind") != "evidence":
@@ -251,8 +273,11 @@ def _entry_problem(entry) -> str | None:
         return "uri is not artifact:<key> (klt older than klayout-tools 7e3561f?)"
     if m.group(1).rsplit("/", 1)[-1] != entry["sha256"]:
         return "uri key does not name the sha256"
-    if not isinstance(entry.get("producer"), dict):
+    producer = entry.get("producer")
+    if not isinstance(producer, dict):
         return "no producer"
+    if set(producer) != set(ENTRY_PRODUCER_FIELDS):
+        return f"producer must carry exactly {', '.join(ENTRY_PRODUCER_FIELDS)}"
     return None
 
 
@@ -317,28 +342,58 @@ def put_files(files: list[tuple[Path, str]], repo_root: Path, *,
 
 
 def install_manifest(manifest: dict, path: Path) -> None:
-    """Create ``path`` exclusively: an existing manifest is never replaced."""
-    path.parent.mkdir(parents=True, exist_ok=True)
+    """Create ``path`` exclusively: an existing manifest is never replaced.
+
+    Fail closed (issue #251): every ``OSError`` but ``FileExistsError`` (the
+    existing-manifest refusal) is :class:`StoreError`, and a manifest that
+    could not be written completely does not survive half-written — mode
+    ``"x"`` proves this call created it, so removing it can never delete a
+    pre-existing one.
+    """
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:
+        raise StoreError(f"cannot create manifest directory {path.parent}: {exc}") from exc
     try:
         with open(path, "x", encoding="utf-8") as fh:
             json.dump(manifest, fh, indent=2)
             fh.write("\n")
     except FileExistsError as exc:
         raise StoreError(f"{path.name} already exists; refusing to overwrite") from exc
+    except OSError as exc:
+        stray = ""
+        try:
+            path.unlink()
+        except FileNotFoundError:
+            pass
+        except OSError as uexc:
+            stray = f"; {path.name} is half-written and must be deleted ({uexc})"
+        raise StoreError(f"cannot install manifest {path.name}: {exc}{stray}") from exc
 
 
 def stage_files(stage_dir: Path, name_prefix: str, *, exclude=()) -> list[tuple[Path, str]]:
     """Every regular file under ``stage_dir`` as ``(path, name_prefix/rel)``,
-    sorted; symlinks are refused (their bytes are not what is stored)."""
+    sorted; symlinks are refused (their bytes are not what is stored).
+
+    Issue #251, settled by measurement: the walk **can** raise ``OSError`` on
+    Python 3.12 — ``rglob`` propagates ``scandir``'s ``PermissionError`` when
+    it recurses into a readable but non-traversable directory, and
+    ``is_symlink``/``is_file`` (``lstat``/``stat``) raise the same way on a
+    parent without ``+x`` — so any scan failure is converted to
+    :class:`StoreError` here.
+    """
     out = []
     excluded = {Path(p).resolve() for p in exclude}
-    for path in sorted(stage_dir.rglob("*")):
-        if path.is_symlink():
-            raise StoreError(f"staged evidence contains a symlink: {path.name}")
-        if not path.is_file() or path.resolve() in excluded:
-            continue
-        rel = path.relative_to(stage_dir).as_posix()
-        out.append((path, f"{name_prefix}/{rel}"))
+    try:
+        for path in sorted(stage_dir.rglob("*")):
+            if path.is_symlink():
+                raise StoreError(f"staged evidence contains a symlink: {path.name}")
+            if not path.is_file() or path.resolve() in excluded:
+                continue
+            rel = path.relative_to(stage_dir).as_posix()
+            out.append((path, f"{name_prefix}/{rel}"))
+    except OSError as exc:
+        raise StoreError(f"cannot scan staged evidence under {stage_dir}: {exc}") from exc
     return out
 
 
@@ -377,7 +432,9 @@ def store_files(files: list[tuple[Path, str]], *, repo_root: Path, bench: str,
     Order matters for fail-closed: (1) refuse if the manifest or summary
     already exists; (2) put every file; (3) install the manifest exclusively;
     (4) write the summary exclusively, with a "Stored evidence" section that
-    lists every object. A failure in (1)-(2) leaves nothing in the repo.
+    lists every object. A failure in (1)-(2) leaves nothing in the repo; a
+    failure in (3)-(4) also removes the manifest this call just installed
+    (issue #251), so a failure anywhere leaves nothing.
     Returns the manifest path.
     """
     mpath = manifest_path(repo_root, bench, rid)
@@ -390,10 +447,34 @@ def store_files(files: list[tuple[Path, str]], *, repo_root: Path, bench: str,
     manifest, empty = (put or put_files)(files, repo_root)
     mrel = mpath.relative_to(repo_root).as_posix()
     install_manifest(manifest, mpath)
-    summary_path.parent.mkdir(parents=True, exist_ok=True)
+
+    def rollback(problem: str, exc: Exception) -> StoreError:
+        # The docstring promises nothing is installed on failure: a summary
+        # write that fails undoes the manifest this call just installed.
+        # Safe without a temp-file dance — the lexists refusal above plus
+        # install_manifest's mode "x" prove the manifest is newly created
+        # here, so the rollback can never remove a pre-existing one.
+        try:
+            mpath.unlink()
+        except FileNotFoundError:
+            pass
+        except OSError as uexc:
+            problem += (f"; manifest rollback failed: {mpath.name} is stray "
+                        f"and must be deleted ({uexc})")
+        err = StoreError(problem)
+        err.__cause__ = exc  # what `raise ... from exc` sets
+        return err
+
+    try:
+        summary_path.parent.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:
+        raise rollback(f"cannot create summary directory {summary_path.parent}: {exc}",
+                       exc)
     try:
         with open(summary_path, "x", encoding="utf-8") as fh:
             fh.write(summary_text.rstrip("\n") + "\n" + summary_section(mrel, manifest, empty))
     except FileExistsError as exc:
-        raise StoreError(f"{summary_path.name} appeared concurrently") from exc
+        raise rollback(f"{summary_path.name} appeared concurrently", exc)
+    except OSError as exc:
+        raise rollback(f"cannot write summary {summary_path.name}: {exc}", exc)
     return mpath

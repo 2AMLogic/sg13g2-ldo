@@ -810,7 +810,7 @@ class RowContext:
     evidence_state: str
     stale: bool
     fresh_checks: list
-    sources: list          # shared mutable: row 7 appends a provenance entry
+    sources: list          # appended by _row_context; graders never mutate it
     dcev: dict
     su: dict
     r10: dict
@@ -909,6 +909,14 @@ def _row_context(root: Path) -> RowContext:
     cc_tol_rel = rec["files"]["cc_tolerance_csv"]["path"]
 
     R = {r["id"]: r for r in readme_rows}
+
+    # Row 7 quotes a superseded full-load Iq figure. Validating and anchoring
+    # that statement is context work, not grading: doing it here keeps every
+    # row grader a pure function of its context (#240).
+    sup = sel["superseded_evidence"][0]
+    sup_text = unpinned(root, sup["statement_source"], "superseded_evidence_statement", sources)
+    if sup["quoted_substring"] not in sup_text.read_text(encoding="utf-8"):
+        raise GenError(f"superseded evidence quote not found in {sup['statement_source']}")
 
     return RowContext(root=root, sel=sel, rec=rec, dev=dev, prow=prow, pid=pid,
                       bc=bc, ac_cond=ac_cond, R=R, dr_rel=dr_rel, pvt_rel=pvt_rel,
@@ -1101,13 +1109,6 @@ def row_7_iq(ctx: RowContext) -> dict:
     m7 = metric("Iq, no load", "uA", "lt", 30.0, "iq_a", ctx.pvt_rel, iq_uA, ctx.bc["dc_iq_and_vout"],
                 note="column iq_a is in A; converted to uA (x1e6) for the row's unit")
     sup = ctx.sel["superseded_evidence"][0]
-    sup_text = (ctx.root / sup["statement_source"])
-    if not sup_text.is_file():
-        raise GenError(f"superseded evidence source missing: {sup['statement_source']}")
-    if sup["quoted_substring"] not in sup_text.read_text(encoding="utf-8"):
-        raise GenError(f"superseded evidence quote not found in {sup['statement_source']}")
-    ctx.sources.append({"role": "superseded_evidence_statement", "path": sup["statement_source"],
-                        "sha256": sha256_file(sup_text), "pinned": False})
     fl_pts, fl_bad = ctx.dc_col("iq_fullload_excl_load_a", 1e6, valid="iq_fullload_valid")
     proxy = [v for v, _ in ctx.dc_col("iq_fullload_noise_proxy_a", 1e6)[0]]
     mfl = metric("Iq at full load (50 mA), load current excluded", "uA", "lt", 30.0,
