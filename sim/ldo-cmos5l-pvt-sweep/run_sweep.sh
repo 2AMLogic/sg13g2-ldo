@@ -428,10 +428,10 @@ EXPECT_ROWS_AC=161      # psrr bench (ac dec 20 1 100meg)
 # a count that drift apart fail loudly here instead of at every point.
 EXPECT_ROWS_LG="$(python3 "${SCRIPT_DIR}/ac_sweep.py" rows "${LG_AC_MAX}")"
 LG_AC_LINE="$(python3 "${SCRIPT_DIR}/ac_sweep.py" line "${LG_AC_MAX}")"
-if ! grep -qxF "ac dec 20 1 @@LG_AC_MAX@@" "${SCRIPT_DIR}/testbench/tb_loopgain_cmos5l.spice.tmpl"; then
-  echo "run_sweep.sh: tb_loopgain_cmos5l.spice.tmpl no longer has 'ac dec 20 1 @@LG_AC_MAX@@'; update ac_sweep.py/EXPECT_ROWS_LG with it." >&2
-  exit 3
-fi
+# The template-line half of the ceiling contract (issue #128) is asserted
+# in ac_sweep.py -- one helper for every caller (#236; run_loopgain2.sh
+# delegates its three-template check to the same subcommand below).
+python3 "${SCRIPT_DIR}/ac_sweep.py" check-template "${SCRIPT_DIR}/testbench/tb_loopgain_cmos5l.spice.tmpl" || exit 3
 if [[ ${LG_AC_MAX} == 100meg && ${EXPECT_ROWS_LG} -ne ${EXPECT_ROWS_AC} ]]; then
   echo "run_sweep.sh: default loop-gain row count ${EXPECT_ROWS_LG} != ${EXPECT_ROWS_AC}." >&2
   exit 3
@@ -445,24 +445,18 @@ if [[ ${CHECK_ENV} -eq 1 ]]; then
   for bench in dcsweep loopgain psrr; do
     template="${SCRIPT_DIR}/testbench/tb_${bench}_cmos5l.spice.tmpl"
     netlist="${tmp}/${bench}_check.spice"
-    sed \
-      -e "s|@@PDK_ROOT@@|${PDK_ROOT}|g" \
-      -e "s|@@PDK@@|${PDK}|g" \
-      -e "s|@@OSDI_DIR@@|${OSDI_DIR}|g" \
-      -e "s|@@MOS_SECTION@@|mos_tt|g" \
-      -e "s|@@RES_SECTION@@|res_typ|g" \
-      -e "s|@@CAP_SECTION@@|cap_typ|g" \
-      -e "s|@@TEMP@@|27|g" \
-      -e "s|@@LG_AC_MAX@@|${LG_AC_MAX}|g" \
-      -e "s|@@CC_W@@|nominal (--check-env)|g" \
-      -e "s|@@LOAD_A@@|0.001|g" \
-      -e "s|@@COUT_F@@|1u|g" \
-      -e "s|@@COUT_BOTTOM@@|0|g" \
-      -e "s|@@ESR_LINE@@|* ESR=0 (--check-env)|g" \
-      -e "s|@@DESIGN_NETLIST@@|${DESIGN_NETLIST}|g" \
-      -e "s|@@DC_CSV@@|${tmp}/${bench}_check_dc.csv|g" \
-      -e "s|@@AC_CSV@@|${tmp}/${bench}_check_ac.csv|g" \
-      "${template}" > "${netlist}"
+    # One renderer for every deck (#236): the SAME sim/tools/render_deck.py
+    # the corner grid's gen_netlist calls renders the CI preflight's decks,
+    # with the same fail-loudly check on any unsubstituted @@TOKEN@@ (the
+    # old site-local sed chain here could ship a literal placeholder
+    # silently). Unused tokens are no-ops, as they were for the sed chain.
+    python3 "${SIM_DIR}/tools/render_deck.py" "${template}" "${netlist}" \
+      "PDK_ROOT=${PDK_ROOT}" "PDK=${PDK}" "OSDI_DIR=${OSDI_DIR}" \
+      "MOS_SECTION=mos_tt" "RES_SECTION=res_typ" "CAP_SECTION=cap_typ" \
+      "TEMP=27" "LG_AC_MAX=${LG_AC_MAX}" "CC_W=nominal (--check-env)" \
+      "LOAD_A=0.001" "COUT_F=1u" "COUT_BOTTOM=0" \
+      "ESR_LINE=* ESR=0 (--check-env)" "DESIGN_NETLIST=${DESIGN_NETLIST}" \
+      "DC_CSV=${tmp}/${bench}_check_dc.csv" "AC_CSV=${tmp}/${bench}_check_ac.csv"
     log="${tmp}/${bench}_check.log"
     case "${bench}" in
       dcsweep)  vargs=(--wrdata "${tmp}/${bench}_check_dc.csv:8:${EXPECT_ROWS_DC}") ;;
@@ -561,28 +555,22 @@ gen_netlist() {
   read -r cout_bottom esr_line < <(esr_netlist_parts "${esr_ohm}")
   local template="${EXPERIMENT_DIR}/testbench/tb_${bench}_cmos5l.spice.tmpl"
   local netlist="${SNAPSHOTS_OUT}/${point_id}.spice"
-  local extra_sed=()
+  # One renderer for every deck (#236): sim/tools/render_deck.py, the same
+  # module --check-env and the other campaign drivers call. It fails loudly
+  # on any unsubstituted @@TOKEN@@, where the old sed chain here could emit
+  # a literal placeholder.
+  local -a tokens=(
+    "PDK_ROOT=${PDK_ROOT}" "PDK=${PDK}" "OSDI_DIR=${OSDI_DIR}"
+    "MOS_SECTION=${mos_section}" "RES_SECTION=${res_section}" "CAP_SECTION=${cap_section}"
+    "TEMP=${temp}" "LG_AC_MAX=${LG_AC_MAX}" "CC_W=${cc_w_desc}"
+    "DESIGN_NETLIST=${design_netlist}" "LOAD_A=${load_a}" "COUT_F=${cout_f}"
+    "COUT_BOTTOM=${cout_bottom}" "ESR_LINE=${esr_line}"
+  )
   case "${bench}" in
-    dcsweep) extra_sed=(-e "s|@@DC_CSV@@|${CORNERS_OUT}/${point_id}_dc.csv|g") ;;
-    loopgain|psrr) extra_sed=(-e "s|@@AC_CSV@@|${CORNERS_OUT}/${point_id}_ac.csv|g") ;;
+    dcsweep)       tokens+=("DC_CSV=${CORNERS_OUT}/${point_id}_dc.csv") ;;
+    loopgain|psrr) tokens+=("AC_CSV=${CORNERS_OUT}/${point_id}_ac.csv") ;;
   esac
-  sed \
-    -e "s|@@PDK_ROOT@@|${PDK_ROOT}|g" \
-    -e "s|@@PDK@@|${PDK}|g" \
-    -e "s|@@OSDI_DIR@@|${OSDI_DIR}|g" \
-    -e "s|@@MOS_SECTION@@|${mos_section}|g" \
-    -e "s|@@RES_SECTION@@|${res_section}|g" \
-    -e "s|@@CAP_SECTION@@|${cap_section}|g" \
-    -e "s|@@TEMP@@|${temp}|g" \
-    -e "s|@@LG_AC_MAX@@|${LG_AC_MAX}|g" \
-    -e "s|@@CC_W@@|${cc_w_desc}|g" \
-    -e "s|@@DESIGN_NETLIST@@|${design_netlist}|g" \
-    -e "s|@@LOAD_A@@|${load_a}|g" \
-    -e "s|@@COUT_F@@|${cout_f}|g" \
-    -e "s|@@COUT_BOTTOM@@|${cout_bottom}|g" \
-    -e "s|@@ESR_LINE@@|${esr_line}|g" \
-    "${extra_sed[@]}" \
-    "${template}" > "${netlist}"
+  python3 "${SIM_DIR}/tools/render_deck.py" "${template}" "${netlist}" "${tokens[@]}"
   echo "${netlist}"
 }
 
