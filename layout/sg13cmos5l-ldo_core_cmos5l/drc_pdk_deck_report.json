@@ -1,7 +1,7 @@
 {
   "schema": "sg13g2-ldo.drc.pdk-deck/1",
   "deck": "ihp-sg13cmos5l/libs.tech/klayout/tech/drc/ihp-sg13cmos5l.drc",
-  "engine": "standalone KLayout 0.28.16",
+  "engine": "standalone KLayout 0.30.12",
   "invocations": [
     {
       "name": "full-strength tables",

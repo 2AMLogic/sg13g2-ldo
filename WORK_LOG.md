@@ -2,6 +2,34 @@
 
 Chronological record of recently merged pull requests and closed issues, maintained by the Loom Guide role.
 
+## Archives
+
+- [2026-09](work_log/WORK_LOG_2026-09.md)
+
+### 2026-11-15
+
+- **PR #249**: docs: record DR-0019 — startup record rows carry no log anchor
+- **PR #244**: fix: move unittest.main() guard to end of test_row4_envelope.py
+- **PR #243**: refactor(sim): collapse eight template renderers into sim/tools/render_deck.py
+- **PR #239**: signoff: cite row-2 Monte Carlo campaign under T1 item 6 with declared partial coverage
+- **PR #237**: refactor(characterization): split generate.py build() into per-row grading functions
+- **PR #234**: ci: hash build-osdi.sh into the pass-device-screening PDK cache key
+- **PR #217**: docs: roadmap as of 2026-11-13
+- **PR #184**: feat(sim): store new evidence in the artifact store, commit manifests only
+- **Issue #238** (closed): Should a startup record row anchor the klt log next to raw_sha256? (the dropped log path at startup_campaign.py:464)
+- **Issue #236** (closed): Eight copies of the testbench @@TOKEN@@ renderer: CI's --check-env preflight does not exercise the renderer the corner grid uses
+- **Issue #235** (closed): test_row4_envelope.py: `unittest.main()` guard sits mid-file, so a direct run silently skips the 6 ManifestCoupling controls
+- **Issue #225** (closed): signoff: re-test item 6 partial-row-coverage citation — klayout-tools#2908 is CLOSED and the pinned 0.8.0 ruleset documents spec_rows/rows
+- **Issue #224** (closed): Split the 605-line build() in sim/characterization/generate.py into per-row functions
+- **Issue #222** (closed): CI: the PDK cache now carries built OSDI models but its key ignores sim/tools/build-osdi.sh, so a toolchain pin bump can silently reuse stale models
+- **Issue #183** (closed): Adopt the common artifact store for sim evidence (manifests in git, bytes via klt artifact)
+
+### 2026-11-14
+
+- **PR #231**: feat(sim): grade row 4 with a klt sim limits-bearing corner matrix and cite it under T1 item 5
+- **Issue #55** (closed): Corner verification: klt sim corner-matrix envelopes against the ratified spec (T1 item 5)
+- **Issue #230** (closed): sim/ldo-cmos5l-pvt-sweep: five copies of sha256-a-file in one directory, under three names and two path conventions
+
 ### 2026-11-10
 
 - **PR #211**: ci: gate attribution yield verdicts and supersede two stale klt 0.7.0 reports
@@ -195,14 +223,3 @@ Chronological record of recently merged pull requests and closed issues, maintai
 - **Issue #20** (closed): 5A phase 2/4: sg13g2-ldo schematic capture for SG13CMOS5L (1.2V/3.3V rails)
 - **Issue #19** (closed): 5A phase 1/4: SG13CMOS5L device-topology decision (sg13g2-ldo pass device + error amplifier)
 
-### 2026-09-10
-
-- **PR #18**: docs: resync ci.yml README with the pass-device-screening-check job
-- **PR #16**: spec: ratify DR-0001 (sg13_hv_pmos pass-device flavor)
-- **Issue #17** (closed): Docs: .github/workflows/README.md is stale — omits the pass-device-screening-check CI job
-- **Issue #14** (closed): spec: ratify DR-0001 (pass-device flavor) from the sim/pass-device-screening evidence
-
-### 2026-09-09
-
-- **PR #15**: sim: sg13_hv_pmos pass-device screening deck (issue #13)
-- **Issue #13** (closed): sim: `sg13_hv_pmos` pass-device screening deck (Vth, Ron·W at the 2.10 V dropout point, Cgate, continuous-short stress) across the HV corner grid — the input to porting-plan §4 item 1

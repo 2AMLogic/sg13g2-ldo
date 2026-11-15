@@ -8,7 +8,7 @@ This file is the reasoned plan. [`WORK_PLAN.md`](../WORK_PLAN.md) is the generat
 
 ## Where it stands
 
-**T1 evidence: 8 of 11 items met, no tier awarded** ([`signoff/sg13g2-ldo.t1-report.json`](../signoff/sg13g2-ldo.t1-report.json), graded with klayout-tools 0.8.0 and re-graded in CI). All of it is the SG13CMOS5L implementation.
+**T1 evidence: 8 of 11 items met, no tier awarded** ([`signoff/sg13g2-ldo.t1-report.json`](../signoff/sg13g2-ldo.t1-report.json), graded with klayout-tools 0.9.2 and re-graded in CI). All of it is the SG13CMOS5L implementation.
 
 | Item | State | Evidence or gap |
 |---|---|---|
