@@ -69,11 +69,16 @@ passiv pad metalslits lbe pin offgrid forbidden forbidden_cmos5l"
 # in the deck's own precheck mode, which skips exactly those sub-blocks.
 TABLES_PRECHECK="gatpoly metal1 metaln"
 
-# The pex stage's klt build: the released klayout-tools 0.8.0 (which carries
+# The pex stage's klt build: the released klayout-tools 0.9.2 (which carries
 # `klt pex --extract-only`, klayout-tools#3739/#3758), run through a throwaway
 # uvx environment -- never the host `klt`. Its stamp (`provenance.klt_version`)
-# is recorded in pex_report.json and quoted in layout/README.md.
-PEX_KLT_FROM="klayout-tools==0.8.0"
+# is recorded in pex_report.json and quoted in layout/README.md. The uvx
+# environment also pins the KLayout engine (klayout-tools only floors it at
+# klayout>=0.30, and unpinned it resolves whatever PyPI serves that day --
+# 0.30.13 while every committed report stamps 0.30.12), mirroring ci.yml's
+# KLAYOUT_PY_VERSION so the whole evidence set carries one engine stamp.
+PEX_KLT_FROM="klayout-tools==0.9.2"
+KLAYOUT_PY_VERSION="${KLAYOUT_PY_VERSION:-0.30.12}"
 PEX_NETLIST="${DIR}/sg13cmos5l-${CELL}.pex.spice"
 PEX_REPORT="${DIR}/pex_report.json"
 
@@ -113,7 +118,8 @@ pex_stage() {
   # `not_checked` status: extraction-only has no measurement leg (see
   # layout/README.md, "Post-layout parasitic extraction"), so the verdict
   # here is the extraction model + body_bias, asserted below.
-  ( cd "${DIR}" && PDK_ROOT="${PDK_ROOT}" uvx --from "${PEX_KLT_FROM}" klt pex \
+  ( cd "${DIR}" && PDK_ROOT="${PDK_ROOT}" \
+      uvx --from "${PEX_KLT_FROM}" --with "klayout==${KLAYOUT_PY_VERSION}" klt pex \
       --extract-only --deck sg13cmos5l --pdk ihp-sg13cmos5l --top "${TOP}" \
       --pins VIN,VOUT,VSS,VREF,IBIAS,EN \
       -o "sg13cmos5l-${CELL}.pex.spice" --format json \
@@ -405,11 +411,16 @@ say "8. ERC -- klt erc supply spec (T1 item 11)"
 # committed spec drifts from them.
 python3 "${HERE}/erc_ties.py" --check "${TAPS}" "${ERC_SPEC}"
 # Run from the repo root with repo-relative paths: the report records both.
+# `--deck sg13cmos5l` is load-bearing: it is what lets the substrate-
+# continuity ERC (klayout-tools#5334) resolve the isolation layers, so
+# `erc.supply_short` is *evaluated* (its `substrate` half lands in
+# `erc_coverage.checked`) instead of disclosed `inapplicable` as
+# `substrate_isolation_undecidable` -- which would trip the assertion below.
 # Exit 4 is the antenna half (no limit table for this PDK) -- not item 11's
 # subject; the structural verdict is `erc_status`, asserted below.
 ERC_GDS_REL="layout/sg13cmos5l-${CELL}/sg13cmos5l-${CELL}.gds"
 ERC_SPEC_REL="layout/sg13cmos5l-${CELL}/erc-supply-spec.json"
-( cd "${REPO}" && klt erc "${ERC_GDS_REL}" "${ERC_SPEC_REL}" --format json \
+( cd "${REPO}" && klt erc "${ERC_GDS_REL}" "${ERC_SPEC_REL}" --deck sg13cmos5l --format json \
     > "${ERC_REPORT}" ) || test $? -eq 4
 python3 - "${ERC_REPORT}" <<'PY'
 import json, sys
@@ -429,7 +440,7 @@ PY
 
 say "8b. ERC negative control -- one tap box moved off its tap MUST be flagged"
 python3 "${HERE}/erc_ties.py" --mutate "${TAPS}" "${ERC_SPEC}" "${WORK}/erc-mutated-spec.json"
-( cd "${REPO}" && klt erc "${ERC_GDS_REL}" "${WORK}/erc-mutated-spec.json" --format json \
+( cd "${REPO}" && klt erc "${ERC_GDS_REL}" "${WORK}/erc-mutated-spec.json" --deck sg13cmos5l --format json \
     > "${WORK}/erc-mutated.json" ) || test $? -ne 1
 python3 - "${WORK}/erc-mutated.json" <<'PY'
 import json, sys

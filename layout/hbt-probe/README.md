@@ -40,16 +40,16 @@ testcase, not a transistor sweep, and not a vendor-runset verification.
 
 The probe is pinned to the same build layout-check CI already installs:
 
-* **klt** `0.8.0` — PyPI release, tag commit `c572046be644e0407f693f2410f3abb799d68a3a`
+* **klt** `0.9.2` — PyPI release, tag commit `046ba74652fc096bd97071fc3237f7159dd40183`
   (`KLAYOUT_TOOLS_VERSION` in `.github/workflows/ci.yml`). The pin is
   enforced before every tool run; any other build is refused.
 * **KLayout** `0.30.12` — the resolved engine recorded in every raw report
-  (`provenance.klayout_version`). This build warns on every run that it was
-  *tested* against `0.30.10`; that upstream disclosure is preserved
-  deliberately (`pins.klayout_tested_version`), and the engine actually used
-  is pinned and recorded rather than left floating.
+  (`provenance.klayout_version`). This build is *tested* against `0.30.12`
+  (`pins.klayout_tested_version`) — the same engine CI pins — so the
+  engine-mismatch warning the previous pin emitted no longer appears; the
+  engine actually used is still pinned and recorded rather than left floating.
 * **Deck** `sg13g2`, content hash
-  `sha256:894326a4e37fb24fef2f7ffc6ae1da55a0e262b0f0bc1c09adc4862909278fda` —
+  `sha256:cf6dfeadf75bd95bf89beb0a64e06ed43b65f6ff782df10ae200ea200a73d8e9` —
   re-verified from every fresh report's `provenance.deck.content_hash`.
 
 The signoff grader runs on the same release (`KLAYOUT_TOOLS_VERSION`), but is
@@ -119,7 +119,7 @@ Only after an upstream-verified, deliberate behavior change:
 
 ```bash
 uv venv /tmp/hbt-probe-venv
-uv pip install --python /tmp/hbt-probe-venv/bin/python "klayout-tools==0.8.0" "klayout==0.30.12"
+uv pip install --python /tmp/hbt-probe-venv/bin/python "klayout-tools==0.9.2" "klayout==0.30.12"
 PATH="/tmp/hbt-probe-venv/bin:$PATH" python3 layout/hbt-probe/hbt_probe.py --record
 python3 layout/hbt-probe/hbt_probe.py --check
 ```

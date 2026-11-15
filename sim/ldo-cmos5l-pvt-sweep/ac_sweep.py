@@ -11,6 +11,7 @@ of ten so that the count is exactly `ppd * decades + 1`.
     python3 ac_sweep.py ceiling 10g     # -> canonical ceiling, e.g. 10g
     python3 ac_sweep.py rows 10g        # -> expected wrdata rows, e.g. 201
     python3 ac_sweep.py check-trace F 10g   # exit 1 if trace F is truncated/mis-ranged
+    python3 ac_sweep.py check-template T    # exit 1 unless T has the @@LG_AC_MAX@@ line
 """
 import math
 import re
@@ -63,6 +64,29 @@ def analysis_line(ceiling):
     return f"ac dec {POINTS_PER_DECADE} {FLOOR_HZ:g} {canonical(ceiling)}"
 
 
+TEMPLATE_TOKEN_LINE = f"ac dec {POINTS_PER_DECADE} {FLOOR_HZ:g} @@LG_AC_MAX@@"
+
+
+def check_template(path):
+    """Assert a loop-gain template carries exactly the canonical token line
+    `ac dec 20 1 @@LG_AC_MAX@@` (issue #128), so the rendered line
+    (analysis_line) and the derived row count (expected_rows) cannot drift
+    apart from the template. Until #236 this assertion was duplicated as a
+    `grep -qxF` in run_sweep.sh AND run_loopgain2.sh; it lives here, once,
+    next to the contract it guards. Returns an error string, or None when
+    the template is in sync."""
+    try:
+        with open(path, encoding="utf-8") as fh:
+            lines = fh.read().splitlines()
+    except OSError as exc:
+        return f"{path}: unreadable ({exc})"
+    if not any(ln == TEMPLATE_TOKEN_LINE for ln in lines):
+        return (f"{path}: no exact '{TEMPLATE_TOKEN_LINE}' line; the loop-gain "
+                "ceiling contract (ac_sweep.py rows/line) and the template have "
+                "drifted -- update them together")
+    return None
+
+
 def check_trace(path, ceiling):
     """Return a list of problems with a loop-gain wrdata trace (empty = ok):
     exact row count for the configured sweep, 4 columns, first/last frequency
@@ -95,6 +119,12 @@ def main(argv):
         for b in bad:
             print(f"ac_sweep: {b}", file=sys.stderr)
         return 1 if bad else 0
+    if len(argv) == 3 and argv[1] == "check-template":
+        bad = check_template(argv[2])
+        if bad:
+            print(f"ac_sweep: {bad}", file=sys.stderr)
+            return 1
+        return 0
     if len(argv) != 3 or argv[1] not in ("ceiling", "rows", "line"):
         print(__doc__, file=sys.stderr)
         return 2

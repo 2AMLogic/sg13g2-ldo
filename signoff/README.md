@@ -8,7 +8,7 @@ the way a hand-read checklist does.
 
 | File | What it is |
 | --- | --- |
-| `sg13g2-ldo.json` | The **block manifest** for `klt signoff --manifest`: `block: sg13g2-ldo`, `kind: analog`, one pinned evidence citation per T1 item this repo can honestly cite, and (item 5) a `spec_rows` declaration of all ten DR-0007 target-spec rows with their ratification state, so the grader computes the coverage gap instead of being told there is none. |
+| `sg13g2-ldo.json` | The **block manifest** for `klt signoff --manifest`: `block: sg13g2-ldo`, `kind: analog`, one pinned evidence citation per T1 item this repo can honestly cite, (item 5) a `spec_rows` declaration of all ten DR-0007 target-spec rows with their ratification state, and (item 6) a declaration of DR-0007's two statistical rows — row 2 cited against its Open target, row 8 declared a `gap` — so the grader computes the coverage gap instead of being told there is none. |
 | `sg13g2-ldo.t1-report.json` | The **verdict of record**: the exact `klt signoff --manifest sg13g2-ldo.json --format json` output, committed. `t1_item_count: 11, t1_met_count: 8, tier: null` — this block is **not T1 yet**, and the report says so per item with a `reason`. |
 
 ## Reading the report
@@ -17,9 +17,14 @@ Today's honest read is **8/11 met** (items 1, 2, 3, 4, 8, 9, 10, 11). Issue
 #55 added the first graded `klt sim` corner-matrix envelope and cited it under
 item 5; the item deliberately still reads `unmet`, now with reason
 `partial_coverage` rather than `no_evidence`, because the envelope grades the
-one ratified spec row and the manifest declares all ten. `t1_met_count` is
-unchanged at 8. Citing real evidence that grades the item `unmet` is the point:
-the gap is now the grader's arithmetic, not this file's prose. Issue #67 appended an `EN` port and two devices to `design/sg13cmos5l/netlist/ldo_core_cmos5l.spice`. That left the selected PVT record stale against the design, and item 8 dropped to `unmet` (`check_failed`). PR #87 then re-ran the full 45-point grid on the EN design (`EN` tied to `VIN`) on the EDA batch fleet: record `sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81`, made with `run_sweep.sh --batch`. Selecting that record makes the characterization artifact current again, so item 8 is `met` once more, in the artifact-completeness sense described below. The enabled-state results differ from the pre-EN record by at most 0.015 deg of phase margin and 0.023 dB of gain margin (DR-0008 addendum). Issue #89 then added a `G1` disable pull-down inside the error amplifier (an `EN` pin on `ldo_erramp_cmos5l`, an inverter and a 1 x 1 um NMOS; DR-0008 addendum "G1 disable pull-down"). Both design netlists changed, so the grid (record `20261011-051956-eda9285`) and the startup campaign (record `20261011-031426-df3f802`) were re-run on the batch fleet and reselected, and the item-5 informational evidence was regenerated for the new record. The enabled state moves by at most -0.0021 deg of phase margin, -0.0086 dB of gain margin and +0.043 nA of Iq; every row verdict is unchanged. The disabled state is measured by the one-corner DC smoke check (`sim/ldo-cmos5l-enable/`, 2.0006 uA at 3.30 V, tt/27C) and by the startup bench's off-state samples (2.000-2.264 uA over 135 PVT points). These are measurements, not a target; no shutdown-current row exists. The layout was regenerated with the three devices, and the DRC/LVS/ERC reports and their item 2/3/4/11 pins were refreshed (`layout/README.md`).
+one ratified spec row and the manifest declares all ten. Issue #225 did the
+same for item 6: the row-2 Monte Carlo campaign is now cited (five
+per-corner `klt yield` reports) under a declaration of both statistical rows,
+and the item reads `unmet` / `partial_coverage` — row 2 covered against its
+still-Open target, row 8 declared a `gap` — instead of `no_evidence`.
+`t1_met_count` is unchanged at 8. Citing real evidence that grades the item
+`unmet` is the point: the gap is now the grader's arithmetic, not this file's
+prose. Issue #67 appended an `EN` port and two devices to `design/sg13cmos5l/netlist/ldo_core_cmos5l.spice`. That left the selected PVT record stale against the design, and item 8 dropped to `unmet` (`check_failed`). PR #87 then re-ran the full 45-point grid on the EN design (`EN` tied to `VIN`) on the EDA batch fleet: record `sim/ldo-cmos5l-pvt-sweep/records/20261010-025634-60a3e81`, made with `run_sweep.sh --batch`. Selecting that record makes the characterization artifact current again, so item 8 is `met` once more, in the artifact-completeness sense described below. The enabled-state results differ from the pre-EN record by at most 0.015 deg of phase margin and 0.023 dB of gain margin (DR-0008 addendum). Issue #89 then added a `G1` disable pull-down inside the error amplifier (an `EN` pin on `ldo_erramp_cmos5l`, an inverter and a 1 x 1 um NMOS; DR-0008 addendum "G1 disable pull-down"). Both design netlists changed, so the grid (record `20261011-051956-eda9285`) and the startup campaign (record `20261011-031426-df3f802`) were re-run on the batch fleet and reselected, and the item-5 informational evidence was regenerated for the new record. The enabled state moves by at most -0.0021 deg of phase margin, -0.0086 dB of gain margin and +0.043 nA of Iq; every row verdict is unchanged. The disabled state is measured by the one-corner DC smoke check (`sim/ldo-cmos5l-enable/`, 2.0006 uA at 3.30 V, tt/27C) and by the startup bench's off-state samples (2.000-2.264 uA over 135 PVT points). These are measurements, not a target; no shutdown-current row exists. The layout was regenerated with the three devices, and the DRC/LVS/ERC reports and their item 2/3/4/11 pins were refreshed (`layout/README.md`).
 
 Issue #128 then re-ran the same 45-point grid on the batch fleet with the loop-gain sweep extended from 100 MHz to 10 GHz (record `20261011-070111-5391c68`, same design netlists) and reselected it. Every DC and PSRR column is identical to the previous record. Under the unchanged DR-0014 rules row 10 PM and GM are still 45 `ambiguous` and 0 pass / 0 fail (`ceiling_unbounded`): the loop gain flattens near +1 dB above the second 0 dB crossing instead of falling away. Statuses are unchanged (exit 3, 8/11 met). The item-5 evidence below now lives under that record's `evidence/` directory.
 
@@ -33,10 +38,10 @@ Per item:
 - **met — item 11 (power delivery, structural)**: `layout/sg13cmos5l-ldo_core_cmos5l/erc_supply_report.json` (with item 4's LVS report as the second part), `input_verified: true`. VIN/VOUT/VSS each resolve to one island, zero `erc.supply_short`, zero `erc.missing_tie` from three **checked** ties (`nwell_tie_VIN`, `nwell_tie_TAIL`, `substrate_tie_VSS`; `erc_coverage.skipped` empty, nothing `degenerate_*`). **What `met` means here, and what it does not** (the claimant-side disclosures the grader does not enforce): every tie rests on a *caller assertion* — the report's `power_delivery` block lists all three under both `ties_checked_by_assertion` (tap boxes) and `ties_checked_by_well_assertion` (the well side: `well_requires_boxes` selects which NWell each n-tie is about, and the substrate tie sits in native substrate, so its region is asserted via `well_layer: null` + `well_boxes`). The boxes are not hand-typed: they are the generator's own `draw_tap_bar` calls (`layout/sg13cmos5l-ldo_core_cmos5l/erc-tap-boxes.json`, verified against the spec by `layout/erc_ties.py --check` in `layout/run_flow.sh`), and the n-ties are additionally layer-narrowed (`tap_requires` nSD), which this stream can express because it draws implants. The substrate tie's asserted region is the tap bar grown by 20 µm (the PDK deck's LU.b reach), so `erc_coverage.well_assertion_coverage` reports `uncovered_tap_fraction ≈ 0.977`: tap geometry elsewhere in the layout (every n+ source/drain contact is Activ too) was never examined by that tie, only the NMOS-group region was. `erc_coverage.layers_in_stream_without_declaration` is `28/0, 31/2, 44/0, 63/0, 99/39, 111/0` (marker/label layers carrying no routing). A tie-box mutation control (one tap box moved off its tap) MUST raise `erc.missing_tie`; `layout/run_flow.sh` stage 8b runs it. Connectivity of the taps beyond "a contacted tap reaches the net" is `klt lvs`'s job (item 4).
 - **met — items 1, 9, 10 (tool-produced attestations, #60/#199) and item 2 (hand-rolled, #60)**: four separate `kind: generic` envelopes under [`evidence/`](evidence/), each declaring its own `t1_item` and naming its audited artifact in `provenance.input.path` (`scope: repo`) with `provenance.input.content_hash`; the manifest cites each with the same `content_hash`, and every row renders `met` with `citation.artifact_binding.input_verified: true`. Because several files back each item, the bound artifact is a committed **inventory** (`evidence/item<N>-<slug>.inventory.json`) rather than a single file. **Scope: the SG13CMOS5L implementation only** (`design/sg13cmos5l/`, `layout/sg13cmos5l-ldo_core_cmos5l/`, the shipped `sim/` benches, repo-level files).
 
-  **Items 1, 9 and 10 are produced by `klt signoff --attest N --inventory … -o …` at the pinned klt (0.8.0), not by this repo** (#199). Their envelopes carry `attestation.producer: "klt signoff --attest"`, and their `status` is **derived**, not asserted: `pass` only when every check the tool ran passed, with `attestation.checks[]` naming each one and `attestation.passed_count`/`check_count` in the summary. Their inventories are the `klt` `t1-attestation-inventory` schema (`schema_version: 1`), which carries **no hashes**: the per-file sha256 is recorded by the producer in the envelope's `present` checks, so an inventoried file's content edit changes the *envelope*, never the inventory the manifest pins. `--attest N --inventory … --check <envelope>` re-attests and exits 0 only if the committed envelope still reproduces **and** still passes; it never rewrites it. Per item:
+  **Items 1, 9 and 10 are produced by `klt signoff --attest N --inventory … -o …` at the pinned klt (0.9.2), not by this repo** (#199). Their envelopes carry `attestation.producer: "klt signoff --attest"`, and their `status` is **derived**, not asserted: `pass` only when every check the tool ran passed, with `attestation.checks[]` naming each one and `attestation.passed_count`/`check_count` in the summary. Their inventories are the `klt` `t1-attestation-inventory` schema (`schema_version: 1`), which carries **no hashes**: the per-file sha256 is recorded by the producer in the envelope's `present` checks, so an inventoried file's content edit changes the *envelope*, never the inventory the manifest pins. What the manifest pin covers is the envelope's own `provenance.input` binding (klayout-tools#4188): item 1 binds its whole input set (sources + derived + the inventory, `provenance.input.paths`, pinned by the combined digest #3044), items 9 and 10 bind the inventory file alone (pinned by its sha256). `--attest N --inventory … --check <envelope>` re-attests and exits 0 only if the committed envelope still reproduces **and** still passes; it never rewrites it. Per item:
   - **1 design sources** — `sources`: the SG13CMOS5L `.sch`/`.sym`, `design/netlist.py`, `design/xschemrc`, `design/README.md`. `derived`: the three `design/sg13cmos5l/netlist/*.spice`, each with the freshness check `python3 design/netlist.py --design sg13cmos5l --cell <cell> --check`. That command — not `klt netlist … --check` — is the one that **reproduces the committed bytes**: the committed netlists are post-processed by `design/netlist.py` (repo-relative `sch_path` line, generated-by header), so a bare `klt netlist --check` reports `drifted` on all three. A present-but-stale netlist therefore fails. `ldo_ilimit_cmos5l` is declared `pending_integration` (`design/netlist.py`, #190) — that only suppresses the *cross-cell* instantiation invariant, which a `--cell` run does not evaluate anyway; its own export reproduces byte-for-byte and is attested fresh on the same footing as the other two, not waived. The SG13G2-branch placeholder sources are not attested. The whole-design `design/netlist.py --design sg13cmos5l --check` (which does evaluate the cross-cell invariants) stays a separate CI step.
   - **2 layout** — the committed GDS, its generator and the shared generator module. **Still hand-rolled**: `klt signoff --attest` deliberately does not attest item 2 (its binding is the committed stream itself, klayout-tools#2718), so `signoff/evidence_inventory.py` remains its producer and its inventory keeps the sorted-paths-plus-sha256 shape.
-  - **9 testbenches shipped** — `testbenches`: every `tb_*.spice[.tmpl]` and `run_*.sh` under `sim/`, the `klt sim` request documents including the row-2 negative control, the corner libraries, runner preambles and experiment READMEs. That is the pre-#199 107-file set plus the two row-4 files #55 added (the graded bench's generator and its template), kept deliberately: a shipped bench is not a standalone file (it needs its driver, its corner library and its preamble to cold-start), so trimming to the `.spice` files alone would attest a bench set a third party could not run. `cold_start`: `sim/ldo-cmos5l-pvt-sweep/run_sweep.sh --check-env`, run for real — it generates and syntax-checks one netlist per bench at mos_tt/27C and writes no `records/` entry. `pins`: the PDK name/revision (`ihp-sg13cmos5l` at `f7bca326…`, matching `IHP_SG13CMOS5L_COMMIT` and `sim/pdk-cmos5l.json`) plus the klt, ngspice and openvaf-r versions. The cold start resolves `PDK_ROOT` from the environment; `pins` is what declares the revision the committed evidence was produced against. The benches' *results* are still not re-run here — items 5/6/8 own those.
+  - **9 testbenches shipped** — `testbenches`: every `tb_*.spice[.tmpl]` and `run_*.sh` under `sim/`, the `klt sim` request documents including the row-2 negative control, the corner libraries, runner preambles and experiment READMEs. That is the pre-#199 107-file set plus the two row-4 files #55 added (the graded bench's generator and its template) and the shared bench renderer #236 added (`sim/tools/render_deck.py`, which every sweep/campaign driver now calls), kept deliberately: a shipped bench is not a standalone file (it needs its driver, its corner library and its preamble to cold-start), so trimming to the `.spice` files alone would attest a bench set a third party could not run. `cold_start`: `sim/ldo-cmos5l-pvt-sweep/run_sweep.sh --check-env`, run for real — it generates and syntax-checks one netlist per bench at mos_tt/27C and writes no `records/` entry. `pins`: the PDK name/revision (`ihp-sg13cmos5l` at `f7bca326…`, matching `IHP_SG13CMOS5L_COMMIT` and `sim/pdk-cmos5l.json`) plus the klt, ngspice and openvaf-r versions. The cold start resolves `PDK_ROOT` from the environment; `pins` is what declares the revision the committed evidence was produced against. The benches' *results* are still not re-run here — items 5/6/8 own those.
   - **10 repo hygiene** — `hygiene`: `README.md`, `LICENSE`, `CLAUDE.md`, `spec/README.md` and the CI workflow. `checks`: the repo's own offline audit commands for the two things T1 item 10 asks CI to keep valid — `python3 signoff/evidence_inventory.py check` and `python3 -m unittest signoff.test_evidence_inventory` (evidence formats) and `python3 -m unittest discover -s sim/tools -p test_preflight.py` (the simulation harness). None invokes `klt signoff`, so the gate never grades itself. `python3 sim/characterization/generate.py --check` is deliberately **not** declared: it reproduces a float-bearing artifact and is pinned to a specific runner image in its own CI job, and declaring it would make item 10 inherit that sensitivity.
 
   **Where each attestation is re-checked, and why nothing is `local_only`.** A `local_only: true` command is run by `--attest` but *skipped* by `--attest --check`, which carries the committed outcome through as a visible `skipped_checks` entry. That would mean CI never re-runs the freshness commands or the cold start — the opposite of what this evidence is for — so every declared command is re-run by CI, on a job that has its toolchain:
@@ -162,16 +167,18 @@ Per item:
     still carries the measurement definitions, units, tested axes, floor flags
     and branch scope that the grade cannot.
   - **Correction to a claim this file used to make.** The item-6 statement
-    below says a manifest entry "carries only `file`/`command`/`cwd`/
+    below used to say a manifest entry "carries only `file`/`command`/`cwd`/
     `content_hash`" and that "there is no way to tell the grader that the block
     has two statistical rows, that the citation covers only one, or that its
     target is unratified". That was true of the build it was written against;
-    it is **not** true of the pinned `0.8.0` build, which accepts
+    it is **not** true of the pinned `0.9.2` build, which accepts
     `spec_rows` with per-row `ratified` and per-citation `rows`
-    (klayout-tools#2959/#2908) — exactly what item 5 now uses. Whether to cite
-    item 6 under that mechanism is #56's decision, not this one's, so item 6 is
-    left uncited and its statement is left as written apart from this pointer.
-- **unmet — item 6 (`no_evidence`), with real but deliberately uncited evidence.** See "Item 6 coverage statement" below.
+    (klayout-tools#2959/#2908) — exactly what item 5 now uses. Issue #225
+    measured the pinned build on a scratch manifest (verdict and negative
+    controls recorded in the item-6 statement below) and cited the campaign;
+    the statement is rewritten accordingly.
+
+- **unmet — item 6 (`partial_coverage`; cited, 1 of 2 statistical rows covered, #225)**: see "Item 6 coverage statement" below.
 - **unmet — item 7 (`no_evidence`)**: item 7 needs `klt pex` (post-layout re-simulation, #57). That envelope will be cited when it is produced — never fabricated to turn a row green.
 
 ## Item 6 coverage statement
@@ -180,12 +187,62 @@ T1 item 6 covers **every** statistical row of the target spec. DR-0007 classifie
 
 | Row | Ratification | Monte Carlo evidence | Status for item 6 |
 |---|---|---|---|
-| 2 — Output 1.8 V ±2 % | **Open** (unratified) | `sim/ldo-cmos5l-monte-carlo/` (issue #56): SG13CMOS5L, regulator-only accuracy (ideal 0.90 V reference, reference error excluded), Vin 3.30 V, no load. PDK MOS + `rhigh` mismatch at five process/temperature corners, N = 400 each, fixed seeds, deterministic negative control, per-population `klt yield` reports. Results are in that experiment's record. | Evidence against a **proposed** window, not a ratified one |
-| 8 — Current limit 65–80 mA | **Open** | none: no limiter exists (#63) | **Deferred**, not "no statistical row" |
+| 2 — Output 1.8 V ±2 % | **Open** (unratified) | `sim/ldo-cmos5l-monte-carlo/` (issue #56): SG13CMOS5L, regulator-only accuracy (ideal 0.90 V reference, reference error excluded), Vin 3.30 V, no load. PDK MOS + `rhigh` mismatch at five process/temperature corners, N = 400 each, fixed seeds, deterministic negative control, per-population `klt yield` reports. Results are in that experiment's record. | **Cited** (#225) — evidence against a **proposed** window, not a ratified one; the grader lists the row under `unratified_rows` covered or not |
+| 8 — Current limit 65–80 mA | **Open** | none: no limiter is integrated in the core yet (#164 implements DR-0017, #190 integrates it) | **Declared a `gap`**, not "no statistical row" |
 
-**Why item 6 stays uncited.** The pinned grading build marks item 6 `met` as soon as one cited `klt yield` envelope has `status` `pass` or `reported` (`signoff.py` at `b15edf5e`: `passed = envelope.get("status") in ("pass", "reported")`). A manifest entry carries only `file`/`command`/`cwd`/`content_hash`. There is no way to tell the grader that the block has two statistical rows, that the citation covers only one, or that its target is unratified. Citing a row-2 yield report would therefore publish item 6 as satisfied while row 8 has no evidence and row 2's target is Open. That presents partial coverage as full, which #56's acceptance criteria rule out. Uncited, the item reads `no_evidence`. That is also inaccurate (the row-2 evidence exists), and this statement exists to correct it. The tool gap is filed as klayout-tools#2908.
+**What is cited (issue #225).** The manifest declares `spec_rows["6"]` — the
+two DR-0007 statistical rows, row 2 with `ratified: false`, row 8 as a `gap`
+— and cites the campaign record `20261012-093854-934dbd7` under
+`evidence["6"]` as a list of five per-population `klt yield` reports (tt 27
+°C, ff 125 °C, fs −40 °C, sf 125 °C, ss −40 °C; N = 400 each), each claiming
+exactly `dr0007-row2-output`. A yield citation's `content_hash` pin is the
+sha256 of the **sample-set document** the report names (the grader's
+`_yield_samples_content_hash`), not of the report file — the samples are the
+input the staleness gate re-hashes.
 
-The campaign is ready to cite once item 6 can be graded honestly, i.e. once row 2 is ratified, row 8 has its own campaign, and the grader can express row coverage. Its per-population `klt yield` reports sit beside their sample-set documents, so each report's `samples` field resolves relative to the report itself. That is the input the grader re-hashes for a yield citation's `content_hash`. The experiment's record shows what a citation would grade to today, plus a tamper check on a copy.
+**The measured verdict (live run, pinned build, 2026-11-14).** Grading this
+manifest with the pinned `klayout-tools==0.8.0` gives item 6 `unmet` /
+`partial_coverage`: all five corner citations grade `met` individually, and
+the item's `detail` reports `declared_gaps:
+[dr0007-row8-current-limit]`, `unratified_rows: [dr0007-row2-output]`,
+`uncovered_rows: []` and `row_sources: {"dr0007-row2-output": "asserted"}`.
+The row coverage is asserted by the manifest, not derived from the reports —
+`klt yield` reports carry no `spec_row` tags (unlike the item-5 `klt sim`
+envelope's derived coverage). The grade cannot flip to `met` by citing more:
+a row declared `ratified: false` stays in `unratified_rows` covered or not.
+Two negative controls, run on scratch manifests against the same pinned
+build, confirm the grade is not permissive: a citation whose `rows` names the
+declared-gap row 8 grades `invalid_evidence`, and a `not_applicable` entry
+alongside a declared row set grades `invalid_evidence`. The capability is
+klayout-tools#2908 (closed completed 2026-10-16) as implemented by #2959; it
+ships in the pinned build, and the earlier "there is no way to tell the
+grader" paragraph above this section's history was wrong for it — it is
+superseded by this section, not by silence.
+
+**What `partial_coverage` means, and what it does not.** It means the
+grader's own arithmetic now states the gap: one of two statistical rows is
+covered by machine-graded evidence, the other cannot have any yet. Row 2's
+citations carry the campaign's discipline: N = 400 per corner, per-population
+`sample_size.verdict: sufficient`, fixed seeds recorded in the campaign's
+request documents, and — on the `tt` population, where the campaign attaches
+it — a deterministic negative control graded `detected`. The other four cited
+corner reports declare no negative control, which `klt yield` treats as a
+warning (`not_declared`), not a failure; the multi-citation grade does not
+restate either field per citation, which is why they are disclosed here. It
+does **not** mean the row is met or
+the block meets its accuracy spec: row 2's evidence is against the **Open**
+±2 % window — provisional by construction, and ratifying it is `spec/` +
+`ratification/` work (#56), never a `signoff/` edit — and row 8 has no
+evidence at all until a limiter exists and its campaign runs. Item 6 stays
+`unmet` while any declared row is a gap or unratified; `t1_met_count` is
+unchanged at 8.
+
+The grader can now express row coverage, so what separates today's citation
+from a future `met` is only evidence: row 2's ratification (two-key review,
+#56) and a row-8 campaign (#164, #190). The per-population `klt yield`
+reports sit beside their sample-set documents, so each report's `samples`
+field resolves relative to the report itself; the experiment's record shows
+what a citation grades to, plus a tamper check on a copy.
 
 ## Claim disclosures the grader cannot make for us
 
@@ -269,13 +326,22 @@ Exit `0` writes the envelope (only if its bytes changed). Exit `3` means a
 declared check failed and **nothing is written** — read
 `attestation.checks[]` in the `--format json` output, fix the real failure,
 and never relax the check to make it pass. Then repoint each item's manifest
-`content_hash` to the sha256 of its **inventory** (not its envelope — that is
-what the envelope's `provenance.input.content_hash` records), and re-verify:
+`content_hash` to what the envelope's `provenance.input` binds — at the
+pinned `0.9.2` build the two forms differ (klayout-tools#4188): item 1 binds
+its **whole input set** (sources, derived netlists and the inventory, via
+`provenance.input.paths`), so its pin is the **combined digest** the grader
+recomputes from those members; items 9 and 10 bind the **inventory alone**
+(`provenance.input.path`/`content_hash`), so their pins are the inventory
+sha256. Then re-verify:
 
 ```bash
-for slug in item1-design-sources item9-testbenches item10-repo-hygiene; do
+for slug in item9-testbenches item10-repo-hygiene; do
   sha256sum "signoff/evidence/${slug}.inventory.json"   # -> evidence.<N>.content_hash
 done
+# item 1: the combined digest over its envelope's provenance.input.paths —
+# members sorted bytewise by path, sha256 over "<hex>  <path>\n" lines
+# (klayout-tools#3044). Easiest check: grade the manifest and read the
+# reported `actual` (see below), or read it off the envelope the same way.
 # then, per item, the gate CI runs:
 klt signoff --attest 10 \
   --inventory signoff/evidence/item10-repo-hygiene.inventory.json \
@@ -344,22 +410,24 @@ envelope-grading rules this report depends on — the `erc` evidence kind,
 compound item 11 grading, and input-artifact verification (`input_verified`,
 which re-hashes the cited input rather than trusting the envelope's say-so)
 — shipped upstream **after** the v0.5.0 release, so the manifest is graded
-with the released klayout-tools 0.8.0 (#196; it was a post-release git
-commit, `b82427b30c96`, before), the build whose version stamp the ERC
-envelope records:
+with the released klayout-tools 0.9.2 (#210; it was the released 0.8.0,
+#196, before — and a post-release git commit, `b82427b30c96`, before that),
+the build whose version stamp the ERC envelope records:
 
 ```bash
 uv venv /tmp/klt-signoff-venv
-uv pip install --python /tmp/klt-signoff-venv/bin/python "klayout-tools==0.8.0"
+uv pip install --python /tmp/klt-signoff-venv/bin/python "klayout-tools==0.9.2"
 ```
 
-This is the same PyPI install as CI (`KLAYOUT_TOOLS_VERSION` in `.github/workflows/ci.yml`; a release build stamps a bare `klt 0.8.0`, whereas a `pip install git+...@sha` build stamps a dev version and fails an `==0.8.0` pin, klayout-tools#2823).
+This is the same PyPI install as CI (`KLAYOUT_TOOLS_VERSION` in `.github/workflows/ci.yml`; a release build stamps a bare `klt 0.9.2`, whereas a `pip install git+...@sha` build stamps a dev version and fails an `==0.9.2` pin, klayout-tools#2823).
 
 **No pin bump for #60.** Items 1/2/9/10 cite artifact-anchored generic evidence, which klayout-tools#2843 (merge commit `3a75c3ae705b`) added. The existing pin `b82427b30c96` (`0.7.0+gb82427b30c96`) already descends from that merge, so the tool was not changed. Regrading under the same build changed exactly items 1, 2, 9 and 10 (`unmet` to `met`); items 3, 4, 8 and 11 stayed `met`, and the build block did not move. The root `README.md` status line (4 to 8 of 11) is a pinned item-8 source, so `generate.py` was re-run and the item-8 pin moved to `sha256:53b0a278…`. The item 3/4/11 envelopes were not regenerated.
 
-**No pin bump for #199.** Converting items 1, 9 and 10 to `klt signoff --attest` uses a producer the pinned 0.8.0 already ships (klayout-tools#2844, whose `--attest` the pin's `signoff --help` lists). The grading build did not move, the envelopes were produced by the pinned release itself, and regrading changed the three items' citation text only — statuses unchanged, still 8/11 met, still exit 3.
+**#199 conversion, re-produced at the current pin.** Converting items 1, 9 and 10 to `klt signoff --attest` uses a producer both pinned builds ship (klayout-tools#2844, whose `--attest` the pin's `signoff --help` lists). #199 landed while the pin was `0.8.0`; the #210 bump to `0.9.2` post-dates it, so the merge that brought the two together re-produced all three attest envelopes with the pinned `0.9.2` itself — statuses unchanged, still 8/11 met, still exit 3.
 
 **Pin bump (#196).** The grading build moved from the post-release commit `b82427b30c96` to the released `klayout-tools==0.8.0`, installed from PyPI in CI and in the throwaway-environment recipe above; the report's `build` block now carries the bare `0.8.0` stamp. The layout reports the citations point at were regenerated on the same build in the same PR (`layout/README.md`, #196), so the whole evidence set carries one stamp.
+
+**Pin bump (#210).** The grading build moved to the released `klayout-tools==0.9.2` — the first release whose `klt erc` evaluates `erc.supply_short` through the substrate (klayout-tools#5334), discharging the 2026-11-11 operator ruling that had held the bump until the check ran instead of being disclosed `inapplicable`. The ERC report was regenerated with `--deck sg13cmos5l` (see `layout/README.md`, item 11) and every layout report the citations point at was regenerated on the same build in the same PR, so the evidence set again carries one stamp.
 
 Bump the pin deliberately — in the same PR as the regenerated report —
 when a `klt` release ships the item-11 grading rules; CI (the

@@ -3,21 +3,21 @@
   "kind": "generic",
   "status": "pass",
   "t1_item": 9,
-  "summary": "T1 item 9 (Testbenches shipped): 112/112 attestation checks passed (klt signoff --attest)",
+  "summary": "T1 item 9 (Testbenches shipped): 113/113 attestation checks passed (klt signoff --attest)",
   "source": "signoff/evidence/item9-testbenches.inventory.json",
   "attestation": {
     "producer": "klt signoff --attest",
     "inventory_schema_version": 1,
     "hash_algorithm": "sha256-raw-bytes",
-    "check_count": 112,
-    "passed_count": 112,
+    "check_count": 113,
+    "passed_count": 113,
     "checks": [
       {
         "check": "present",
         "role": "testbench",
         "path": "sim/README.md",
         "passed": true,
-        "content_hash": "sha256:4e70657ada45a1e279c30347b8fd8b01c43b6f7132a0ff233b74ca405a4c6fe5"
+        "content_hash": "sha256:29b570131c1156821d98ba29f7bd8ed1cd606f827b3549718b12ebf6f129b2bb"
       },
       {
         "check": "present",
@@ -332,7 +332,7 @@
         "role": "testbench",
         "path": "sim/ldo-cmos5l-monte-carlo/README.md",
         "passed": true,
-        "content_hash": "sha256:b613f6fb514e5b666e8877ea78ab84c1cc107330631eead9c09afca5392d68e2"
+        "content_hash": "sha256:895726ab0b086695014cf5017048a9958bcc232a0197c545fbd16fd134b91a2e"
       },
       {
         "check": "present",
@@ -423,7 +423,7 @@
         "role": "testbench",
         "path": "sim/ldo-cmos5l-pvt-sweep/ac_sweep.py",
         "passed": true,
-        "content_hash": "sha256:6f24f6372296653243196835e89f3a3c9957653a36fc0ed45eee5a18e4fa5002"
+        "content_hash": "sha256:12c79e205de22f9cfd2852c0277da10c0a22f5c67e5fb169420aee78b9b5c19f"
       },
       {
         "check": "present",
@@ -437,7 +437,7 @@
         "role": "testbench",
         "path": "sim/ldo-cmos5l-pvt-sweep/dropout_campaign.py",
         "passed": true,
-        "content_hash": "sha256:0eaaf4b25b665283725ba5eea095926176e98ede2757d82de94b51963971661c"
+        "content_hash": "sha256:45e4ed1789fda314effa0f53c9ca7b3606c0a07925880b5c17b6c494b85bbbc9"
       },
       {
         "check": "present",
@@ -479,28 +479,28 @@
         "role": "testbench",
         "path": "sim/ldo-cmos5l-pvt-sweep/run_e1op.sh",
         "passed": true,
-        "content_hash": "sha256:f44d385b533cd25b1395114944c0c3069ed521e193f80b08947b0e95992619b7"
+        "content_hash": "sha256:f626e0ebbe3f61fe63444c81b364fa0452aceb062078e1c6160827cdde1160f5"
       },
       {
         "check": "present",
         "role": "testbench",
         "path": "sim/ldo-cmos5l-pvt-sweep/run_loopgain2.sh",
         "passed": true,
-        "content_hash": "sha256:8aa6990c0928688e953f691e2aa3b9722cf59cd1da787b814f9a379954c9dafa"
+        "content_hash": "sha256:f389af7e241de3b0f99f3351e219a9fc711dd767331f4438fb49aed3614d3d1c"
       },
       {
         "check": "present",
         "role": "testbench",
         "path": "sim/ldo-cmos5l-pvt-sweep/run_sweep.sh",
         "passed": true,
-        "content_hash": "sha256:cd3806471a40138adf4b22f4f434a13262cce653788e6a3a42b90a67ba9bb499"
+        "content_hash": "sha256:a244d3eb1c459fd6c9a4e99cb9c8b8a28a839640ce498e679b6055c5c262e5cd"
       },
       {
         "check": "present",
         "role": "testbench",
         "path": "sim/ldo-cmos5l-pvt-sweep/startup_campaign.py",
         "passed": true,
-        "content_hash": "sha256:a445a7177f5c17451efe2cda003ff6b863ef45f371922b90dd74ed9dab843333"
+        "content_hash": "sha256:b378bf7c84e19772fd7c75312c17799f16a647ff27cdd4fc7462e0647f98e5e9"
       },
       {
         "check": "present",
@@ -759,7 +759,7 @@
         "role": "testbench",
         "path": "sim/pass-device-screening/run_sweep.sh",
         "passed": true,
-        "content_hash": "sha256:b9f1ec9bd73e4be50d613cd071e2341b922cd19075a8c3728474772050c4d03f"
+        "content_hash": "sha256:f46e3e42634461f02534492f6464ea18f412338c7b04798df9a2fab4d4086a8a"
       },
       {
         "check": "present",
@@ -774,6 +774,13 @@
         "path": "sim/pass-device-screening/testbench/tb_stress_pmos.spice.tmpl",
         "passed": true,
         "content_hash": "sha256:b3a061b4ca9bb5e79161271d296cdbdc6d3220213c5421097cfd7a8b76a15792"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/tools/render_deck.py",
+        "passed": true,
+        "content_hash": "sha256:1342231eb9d396774dfb3f838ec31f58a704b3f86e047d6f0188b61c8406a833"
       },
       {
         "check": "command",
@@ -808,7 +815,7 @@
     ]
   },
   "provenance": {
-    "klt_version": "0.8.0",
+    "klt_version": "0.9.2",
     "klayout_version": null,
     "pdk": null,
     "deck": null,
@@ -817,7 +824,7 @@
         "path": "signoff/evidence/item9-testbenches.inventory.json",
         "scope": "repo"
       },
-      "content_hash": "sha256:0e90d5006d93bbcd77734cbac929d0e509f3c2ec2551289846f21066c5cb27a2"
+      "content_hash": "sha256:bbd66ede822e682d20e41945fd7dee5e83bedeaeeef8e48712d821127617d08f"
     }
   }
 }

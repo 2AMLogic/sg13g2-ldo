@@ -44,7 +44,9 @@ import math
 import re
 import sys
 import traceback
+from dataclasses import dataclass
 from pathlib import Path
+from typing import Callable
 
 GENERATOR_VERSION = 1
 HERE = Path(__file__).resolve().parent
@@ -778,8 +780,51 @@ def load_row10(root: Path, sel: dict, rec: dict, pvt_rows: list[dict], sources: 
             "dr": blk["decision_record"], "ceiling_hz": next(iter(ceilings))}
 
 
-def build(root: Path) -> tuple[dict, dict, str]:
-    """Return (report, envelope, markdown). Raises GenError on any hard error."""
+# --------------------------------------------------------------------------- #
+# per-row grading: shared context, one module-level function per spec row
+# --------------------------------------------------------------------------- #
+
+
+@dataclass(frozen=True)
+class RowContext:
+    """Shared, already-validated inputs for the per-row graders.
+
+    Built once by ``_row_context`` (the former setup block of ``build``): the
+    selection-derived records, the PVT grid, the spec tables, the provenance
+    list and the column readers. Each ``row_N_*`` function grades exactly one
+    spec row over this context and returns its row dict.
+    """
+    root: Path
+    sel: dict
+    rec: dict
+    dev: dict
+    prow: list
+    pid: list
+    bc: dict
+    ac_cond: dict
+    R: dict
+    dr_rel: str
+    pvt_rel: str
+    dc_rel: str
+    dev_path: Path
+    evidence_state: str
+    stale: bool
+    fresh_checks: list
+    sources: list          # shared mutable: row 7 appends a provenance entry
+    dcev: dict
+    su: dict
+    r10: dict
+    ccw: dict
+    cc_tol_rel: str
+    col: Callable[[str], list]
+    dc_col: Callable[..., tuple]
+
+
+def _row_context(root: Path) -> RowContext:
+    """Load and validate everything the ten row graders share.
+
+    Any pin mismatch, malformed table or incomplete grid raises GenError here,
+    before a single row is graded."""
     sel = load_selection(root)
     sources: list[dict] = []
     rec = sel["circuit_record"]
@@ -863,43 +908,57 @@ def build(root: Path) -> tuple[dict, dict, str]:
     ccw = cc_window(read_csv(cc_path))
     cc_tol_rel = rec["files"]["cc_tolerance_csv"]["path"]
 
-    rows: list[dict] = []
-
-    def add(rdef, metrics, coverage_state, gaps, evidence, stretch_note=None,
-            row_verdict=None, notes=None):
-        mv = [m["verdict"] for m in metrics]
-        if row_verdict is None:
-            worst = min(mv, key=lambda v: _METRIC_ORDER[v])
-            if worst == "pass":
-                row_verdict = ("pass_full_coverage" if coverage_state == "full"
-                               else "pass_partial_coverage")
-            else:
-                row_verdict = worst
-        assert row_verdict in ROW_VERDICTS
-        rows.append({
-            **{k: rdef[k] for k in ("id", "parameter", "target", "stretch")},
-            "ratification": {
-                "state": rdef["ratification"], "readme_status": rdef["readme_status"],
-                "dr0007_disposition": rdef["dr0007_disposition"],
-                "dr0007_type": rdef["dr0007_type"], "record": dr_rel},
-            "verdict": row_verdict,
-            "evidence_state": evidence,
-            "coverage": {"state": coverage_state, "gaps": gaps},
-            "metrics": metrics,
-            "stretch_note": stretch_note,
-            "notes": notes or [],
-        })
-
     R = {r["id"]: r for r in readme_rows}
 
-    # 1 Input -------------------------------------------------------------
-    drows = read_csv(dev_path)
+    return RowContext(root=root, sel=sel, rec=rec, dev=dev, prow=prow, pid=pid,
+                      bc=bc, ac_cond=ac_cond, R=R, dr_rel=dr_rel, pvt_rel=pvt_rel,
+                      dc_rel=dc_rel, dev_path=dev_path, evidence_state=evidence_state,
+                      stale=stale, fresh_checks=fresh_checks, sources=sources,
+                      dcev=dcev, su=su, r10=r10, ccw=ccw, cc_tol_rel=cc_tol_rel,
+                      col=col, dc_col=dc_col)
+
+
+def _make_row(rdef, metrics, coverage_state, gaps, evidence, dr_rel,
+              stretch_note=None, row_verdict=None, notes=None) -> dict:
+    """Assemble one report row (the former ``add`` closure of ``build``).
+
+    Verdict derivation is shared by every row: worst metric verdict wins, a
+    pass becomes full/partial coverage from the coverage state, and an
+    explicit ``row_verdict`` overrides both."""
+    mv = [m["verdict"] for m in metrics]
+    if row_verdict is None:
+        worst = min(mv, key=lambda v: _METRIC_ORDER[v])
+        if worst == "pass":
+            row_verdict = ("pass_full_coverage" if coverage_state == "full"
+                           else "pass_partial_coverage")
+        else:
+            row_verdict = worst
+    assert row_verdict in ROW_VERDICTS
+    return {
+        **{k: rdef[k] for k in ("id", "parameter", "target", "stretch")},
+        "ratification": {
+            "state": rdef["ratification"], "readme_status": rdef["readme_status"],
+            "dr0007_disposition": rdef["dr0007_disposition"],
+            "dr0007_type": rdef["dr0007_type"], "record": dr_rel},
+        "verdict": row_verdict,
+        "evidence_state": evidence,
+        "coverage": {"state": coverage_state, "gaps": gaps},
+        "metrics": metrics,
+        "stretch_note": stretch_note,
+        "notes": notes or [],
+    }
+
+
+def row_1_input(ctx: RowContext) -> dict:
+    """Row 1, Input: bare-device context only -- no closed-loop evaluation of
+    the input window exists."""
+    drows = read_csv(ctx.dev_path)
     if not drows:
         raise GenError("bare-device screening csv is empty")
     vsg = [num(r, "vsg_stress_v", "screening") for r in drows]
     n_exceed = sum(1 for r in drows if r.get("vsg_exceeds_3p3v_rating") == "YES")
-    dev_rel = dev["files"]["screening_csv"]["path"]
-    add(R[1], [
+    dev_rel = ctx.dev["files"]["screening_csv"]["path"]
+    return _make_row(ctx.R[1], [
         unavailable("closed-loop input-range operation (3.3 V +/-10 %)", "V",
                     "not_measured",
                     "No committed closed-loop record evaluates the input window as a row "
@@ -918,126 +977,141 @@ def build(root: Path) -> tuple[dict, dict, str]:
     ], "none", [
         "no closed-loop evaluation of the input window",
         "DR-0001 |Vsg| <= 3.3 V gate at Vin = 3.63 V needs a current limiter that does not exist",
-    ], "bare_device_only")
+    ], "bare_device_only", ctx.dr_rel)
 
-    # 2 Output ------------------------------------------------------------
-    vo = col("vout_no_load_v")
+
+def row_2_output(ctx: RowContext) -> dict:
+    """Row 2, Output: no-load VOUT against the +/-2 % window."""
+    vo = ctx.col("vout_no_load_v")
     lo, hi = 1.8 * 0.98, 1.8 * 1.02
     m_lo = metric("VOUT no load, lower bound 1.8 V -2 %", "V", "ge", rnd(lo),
-                  "vout_no_load_v", pvt_rel, vo, bc["dc_iq_and_vout"])
+                  "vout_no_load_v", ctx.pvt_rel, vo, ctx.bc["dc_iq_and_vout"])
     m_hi = metric("VOUT no load, upper bound 1.8 V +2 %", "V", "le", rnd(hi),
-                  "vout_no_load_v", pvt_rel, vo, bc["dc_iq_and_vout"])
+                  "vout_no_load_v", ctx.pvt_rel, vo, ctx.bc["dc_iq_and_vout"])
     m_lo["observed_range"] = {"min": rnd(min(v for v, _ in vo)), "max": rnd(max(v for v, _ in vo))}
-    add(R[2], [m_lo, m_hi], "partial", [
+    return _make_row(ctx.R[2], [m_lo, m_hi], "partial", [
         "corner grid only: error-amp offset and divider mismatch are statistical and unexercised (Monte Carlo missing, #56)",
         "ideal 0.90 V reference: measures the regulator only, excluding reference error",
-    ], evidence_state, stretch_note="programmable variants deferred; no evidence")
+    ], ctx.evidence_state, ctx.dr_rel,
+        stretch_note="programmable variants deferred; no evidence")
 
-    # 3 Load --------------------------------------------------------------
-    v50 = col("vout_at_vinmax_50ma_v")
+
+def row_3_load(ctx: RowContext) -> dict:
+    """Row 3, Load: DC regulation at 50 mA; no 0 mA dynamic evidence."""
+    v50 = ctx.col("vout_at_vinmax_50ma_v")
+    lo, hi = 1.8 * 0.98, 1.8 * 1.02
     m3lo = metric("VOUT at 50 mA, lower bound 1.8 V -2 %", "V", "ge", rnd(lo),
-                  "vout_at_vinmax_50ma_v", pvt_rel, v50, "50 mA load, Vin = 3.63 V (record md: dcsweep bench)")
+                  "vout_at_vinmax_50ma_v", ctx.pvt_rel, v50, "50 mA load, Vin = 3.63 V (record md: dcsweep bench)")
     m3hi = metric("VOUT at 50 mA, upper bound 1.8 V +2 %", "V", "le", rnd(hi),
-                  "vout_at_vinmax_50ma_v", pvt_rel, v50, "50 mA load, Vin = 3.63 V (record md: dcsweep bench)")
-    add(R[3], [m3lo, m3hi,
-               unavailable("dynamic behaviour at 0 mA (no external preload)", "A", "not_measured",
-                           "AC loop-gain and PSRR benches run at 1 mA only; no 0 mA dynamic evidence.")],
-        "partial", [
-            "DC regulation at 50 mA only checked here at Vin = 3.63 V",
-            "no 0 mA dynamic/stability evidence",
-            "100 mA stretch has no evidence",
-        ], evidence_state, stretch_note="100 mA: no evidence")
+                  "vout_at_vinmax_50ma_v", ctx.pvt_rel, v50, "50 mA load, Vin = 3.63 V (record md: dcsweep bench)")
+    row = _make_row(ctx.R[3], [m3lo, m3hi,
+                               unavailable("dynamic behaviour at 0 mA (no external preload)", "A", "not_measured",
+                                           "AC loop-gain and PSRR benches run at 1 mA only; no 0 mA dynamic evidence.")],
+                    "partial", [
+                        "DC regulation at 50 mA only checked here at Vin = 3.63 V",
+                        "no 0 mA dynamic/stability evidence",
+                        "100 mA stretch has no evidence",
+                    ], ctx.evidence_state, ctx.dr_rel, stretch_note="100 mA: no evidence")
     # row verdict for 3: a not_measured metric blocks full pass but the
     # measured DC part passes -> partial. Recompute explicitly.
-    rows[-1]["verdict"] = ("fail" if "fail" in (m3lo["verdict"], m3hi["verdict"])
-                           else "pass_partial_coverage")
+    row["verdict"] = ("fail" if "fail" in (m3lo["verdict"], m3hi["verdict"])
+                      else "pass_partial_coverage")
+    return row
 
-    # 4 Dropout -----------------------------------------------------------
-    dv = col("dropout_v_50ma")
-    fl = col("dropout_v_50ma_floor")
+
+def row_4_dropout(ctx: RowContext) -> dict:
+    """Row 4, Dropout at 50 mA, with floor-censored points kept as bounds."""
+    dv = ctx.col("dropout_v_50ma")
+    fl = ctx.col("dropout_v_50ma_floor")
     cens = {i for i in range(len(dv)) if dv[i][0] <= fl[i][0] + 1e-12}
-    m4 = metric("dropout at 50 mA", "V", "lt", 0.3, "dropout_v_50ma", pvt_rel, dv,
-                bc["dropout"], censored=cens,
+    m4 = metric("dropout at 50 mA", "V", "lt", 0.3, "dropout_v_50ma", ctx.pvt_rel, dv,
+                ctx.bc["dropout"], censored=cens,
                 note="Values equal to the sweep floor are censored: the true dropout is <= the "
                      "reported value. For a '<' target an upper bound that already satisfies the "
                      "bound is sufficient; the worst case is an exact (uncensored) measurement.")
     m4["censored_points_floor_v"] = rnd(fl[0][0])
     if m4["worst_case"] and any(
-            m4["worst_case"]["at"] == pid[i] for i in cens):
+            m4["worst_case"]["at"] == ctx.pid[i] for i in cens):
         m4["worst_case_is_censored"] = True
     else:
         m4["worst_case_is_censored"] = False
     n_over_stretch = sum(1 for v, _ in dv if v > 0.2 + 1e-12)
-    add(R[4], [m4], "full", [], evidence_state,
-        stretch_note=f"stretch < 200 mV is NOT ratified and is not demonstrated: {n_over_stretch} of "
-                     f"{len(dv)} points exceed 0.20 V; {len(cens)} points are censored at the floor "
-                     f"so cannot demonstrate a strict '< 0.20 V'.")
+    return _make_row(ctx.R[4], [m4], "full", [], ctx.evidence_state, ctx.dr_rel,
+                     stretch_note=f"stretch < 200 mV is NOT ratified and is not demonstrated: {n_over_stretch} of "
+                                  f"{len(dv)} points exceed 0.20 V; {len(cens)} points are censored at the floor "
+                                  f"so cannot demonstrate a strict '< 0.20 V'.")
 
-    # 5 Line / load regulation -------------------------------------------
-    lr = col("line_reg_mv_per_v")
-    ld = col("load_reg_pct")
-    not_in_reg = {i for i, r in enumerate(prow) if r["line_reg_in_regulation"] != "True"}
+
+def row_5_regulation(ctx: RowContext) -> dict:
+    """Row 5, Line / load regulation: legacy record columns plus the derived
+    per-load / per-supply informational DC series."""
+    lr = ctx.col("line_reg_mv_per_v")
+    ld = ctx.col("load_reg_pct")
+    not_in_reg = {i for i, r in enumerate(ctx.prow) if r["line_reg_in_regulation"] != "True"}
     m5a = metric("line regulation, legacy record column (no load)", "mV/V", "lt", 5.0,
-                 "line_reg_mv_per_v", pvt_rel, lr, bc["line_regulation"], ambiguous=not_in_reg)
+                 "line_reg_mv_per_v", ctx.pvt_rel, lr, ctx.bc["line_regulation"], ambiguous=not_in_reg)
     m5b = metric("load regulation, legacy record column (Vin = 3.63 V)", "%", "lt", 1.0,
-                 "load_reg_pct", pvt_rel, ld, bc["load_regulation"])
+                 "load_reg_pct", ctx.pvt_rel, ld, ctx.bc["load_regulation"])
     m5 = [m5a, m5b]
     dc_note = ("Informational DC summary (derived offline from the committed raw DC grids, "
                "no new simulation). A point is valid only if both end points are within 1 % of "
                "1.8 V; invalid points are counted as ambiguous and never dropped. Discrete "
                "sampled loads/supplies only: not a continuous-window claim.")
     for key, label in DC_LOADS:
-        pts, bad = dc_col(f"line_reg_mv_per_v_{key}", valid=f"line_reg_valid_{key}")
+        pts, bad = ctx.dc_col(f"line_reg_mv_per_v_{key}", valid=f"line_reg_valid_{key}")
         m = metric(f"line regulation at {label} load (Vin 2.97-3.63 V)", "mV/V", "lt", 5.0,
-                   f"line_reg_mv_per_v_{key}", dc_rel, pts, DC_COND_LINE, ambiguous=bad, note=dc_note)
+                   f"line_reg_mv_per_v_{key}", ctx.dc_rel, pts, DC_COND_LINE, ambiguous=bad, note=dc_note)
         m["n_invalid"] = len(bad)
         m5.append(m)
     for key, label in DC_VINS:
-        pts, bad = dc_col(f"load_reg_pct_vin{key}", valid=f"load_reg_valid_vin{key}")
+        pts, bad = ctx.dc_col(f"load_reg_pct_vin{key}", valid=f"load_reg_valid_vin{key}")
         m = metric(f"load regulation 0-50 mA at Vin = {label}", "%", "lt", 1.0,
-                   f"load_reg_pct_vin{key}", dc_rel, pts, DC_COND_LOAD, ambiguous=bad, note=dc_note)
+                   f"load_reg_pct_vin{key}", ctx.dc_rel, pts, DC_COND_LOAD, ambiguous=bad, note=dc_note)
         m["n_invalid"] = len(bad)
         m5.append(m)
-    add(R[5], m5, "partial", [
+    return _make_row(ctx.R[5], m5, "partial", [
         "line regulation sampled at 5 discrete loads (0, 12.5, 25, 37.5, 50 mA) over Vin 2.97-3.63 V; "
         "load regulation sampled at 3 discrete supplies (2.97, 3.30, 3.63 V) -- not continuous coverage of the window",
         "'inside the accuracy window' (coupling with the statistical VOUT row, #56) not covered for either metric",
         "ideal 0.90 V reference: reference error is excluded; corner grid only, no Monte Carlo",
-    ], evidence_state)
+    ], ctx.evidence_state, ctx.dr_rel)
 
-    # 6 PSRR --------------------------------------------------------------
-    p1 = col("psrr_db_1khz")
-    p100 = col("psrr_db_100khz")
-    m6a = metric("PSRR @ 1 kHz", "dB", "gt", 50.0, "psrr_db_1khz", pvt_rel, p1, ac_cond)
-    m6b = metric("PSRR @ 100 kHz", "dB", "gt", 20.0, "psrr_db_100khz", pvt_rel, p100, ac_cond)
+
+def row_6_psrr(ctx: RowContext) -> dict:
+    """Row 6, PSRR at the single recorded AC condition."""
+    p1 = ctx.col("psrr_db_1khz")
+    p100 = ctx.col("psrr_db_100khz")
+    m6a = metric("PSRR @ 1 kHz", "dB", "gt", 50.0, "psrr_db_1khz", ctx.pvt_rel, p1, ctx.ac_cond)
+    m6b = metric("PSRR @ 100 kHz", "dB", "gt", 20.0, "psrr_db_100khz", ctx.pvt_rel, p100, ctx.ac_cond)
     n_s = sum(1 for v, _ in p1 if v <= 60.0)
-    add(R[6], [m6a, m6b], "partial", [
+    return _make_row(ctx.R[6], [m6a, m6b], "partial", [
         "single AC condition: Vin = 3.30 V, 1 mA, 1 uF, ESR 0 -- not 50 mA, not the Cout/ESR window",
         "Cc is un-cornered (MoM-cap model has no corner spread; record labels PSRR insufficient-evidence)",
-    ], evidence_state,
+    ], ctx.evidence_state, ctx.dr_rel,
         stretch_note=f"stretch > 60 dB @ 1 kHz not met: {n_s} of {len(p1)} points are <= 60 dB; stretch is not ratified.",
-        notes=[f"Cc value tolerance (ss/125C only, {cc_tol_rel}): all of PM, GM and PSRR rows hold for "
-               f"Cc in x{ccw['low_x_nominal']}..x{ccw['high_x_nominal']} of nominal."])
+        notes=[f"Cc value tolerance (ss/125C only, {ctx.cc_tol_rel}): all of PM, GM and PSRR rows hold for "
+               f"Cc in x{ctx.ccw['low_x_nominal']}..x{ctx.ccw['high_x_nominal']} of nominal."])
 
-    # 7 Iq ----------------------------------------------------------------
-    iq = col("iq_a")
-    for v, _ in iq:
-        pass
+
+def row_7_iq(ctx: RowContext) -> dict:
+    """Row 7, Iq: no-load record column plus the full-load figure derived
+    offline from the committed raw DC grid."""
+    iq = ctx.col("iq_a")
     iq_uA = [(v * 1e6, p) for v, p in iq]
-    m7 = metric("Iq, no load", "uA", "lt", 30.0, "iq_a", pvt_rel, iq_uA, bc["dc_iq_and_vout"],
+    m7 = metric("Iq, no load", "uA", "lt", 30.0, "iq_a", ctx.pvt_rel, iq_uA, ctx.bc["dc_iq_and_vout"],
                 note="column iq_a is in A; converted to uA (x1e6) for the row's unit")
-    sup = sel["superseded_evidence"][0]
-    sup_text = (root / sup["statement_source"])
+    sup = ctx.sel["superseded_evidence"][0]
+    sup_text = (ctx.root / sup["statement_source"])
     if not sup_text.is_file():
         raise GenError(f"superseded evidence source missing: {sup['statement_source']}")
     if sup["quoted_substring"] not in sup_text.read_text(encoding="utf-8"):
         raise GenError(f"superseded evidence quote not found in {sup['statement_source']}")
-    sources.append({"role": "superseded_evidence_statement", "path": sup["statement_source"],
-                    "sha256": sha256_file(sup_text), "pinned": False})
-    fl_pts, fl_bad = dc_col("iq_fullload_excl_load_a", 1e6, valid="iq_fullload_valid")
-    proxy = [v for v, _ in dc_col("iq_fullload_noise_proxy_a", 1e6)[0]]
+    ctx.sources.append({"role": "superseded_evidence_statement", "path": sup["statement_source"],
+                        "sha256": sha256_file(sup_text), "pinned": False})
+    fl_pts, fl_bad = ctx.dc_col("iq_fullload_excl_load_a", 1e6, valid="iq_fullload_valid")
+    proxy = [v for v, _ in ctx.dc_col("iq_fullload_noise_proxy_a", 1e6)[0]]
     mfl = metric("Iq at full load (50 mA), load current excluded", "uA", "lt", 30.0,
-                 "iq_fullload_excl_load_a", dc_rel, fl_pts, DC_COND_IQ, ambiguous=fl_bad,
+                 "iq_fullload_excl_load_a", ctx.dc_rel, fl_pts, DC_COND_IQ, ambiguous=fl_bad,
                  note="Derived offline as |i(Vin)| - Iload from the committed raw DC grid (column in A, "
                       "converted to uA). Precision caveat: the grid is printed to 9 significant digits, "
                       "so a ~22 uA difference of two ~50 mA currents is quantized at 1e-10 A (0.0001 uA); "
@@ -1047,24 +1121,34 @@ def build(root: Path) -> tuple[dict, dict, str]:
     mfl["n_invalid"] = len(fl_bad)
     mfl["precision_floor_uA"] = rnd(max(proxy))
     mfl["superseded_statement"] = {"source": sup["statement_source"], "describes": sup["describes"]}
-    add(R[7], [m7, mfl], "partial", [
+    row = _make_row(ctx.R[7], [m7, mfl], "partial", [
         "Iq at full load is measured at Vin = 3.30 V only (no other supplies)",
         "full-load Iq is a difference of two ~50 mA currents; quantized at 1e-10 A, solver noise not bounded beyond that",
         "ideal 0.90 V reference and ideal Ibias sink: reference/bias-generator current excluded; corner grid only",
-    ], evidence_state,
+    ], ctx.evidence_state, ctx.dr_rel,
         stretch_note=f"stretch < 10 uA not met: max observed no-load Iq {m7['worst_case']['value']:.4g} uA"
                      + (f", max full-load Iq {mfl['worst_case']['value']:.4g} uA." if mfl["worst_case"] else "."))
-    rows[-1]["verdict"] = ("fail" if "fail" in (m7["verdict"], mfl["verdict"])
-                           else "ambiguous" if mfl["verdict"] == "ambiguous"
-                           else "pass_partial_coverage")
+    row["verdict"] = ("fail" if "fail" in (m7["verdict"], mfl["verdict"])
+                      else "ambiguous" if mfl["verdict"] == "ambiguous"
+                      else "pass_partial_coverage")
+    return row
 
-    # 8 not implemented -----------------------------------------------
-    add(R[8], [unavailable("current limit window", "mA", "not_implemented",
-                           "No current limiter in the design; record md lists current limit as 'not implemented'.",
-                           source={"record": rec["files"]["record_md"]["path"]})],
+
+def row_8_current_limit(ctx: RowContext) -> dict:
+    """Row 8, Current limit: no limiter exists in the design."""
+    return _make_row(ctx.R[8], [
+        unavailable("current limit window", "mA", "not_implemented",
+                    "No current limiter in the design; record md lists current limit as 'not implemented'.",
+                    source={"record": ctx.rec["files"]["record_md"]["path"]})],
         "none", ["no limiter exists; statistical row (DR-0007) cannot be graded until one does"],
-        "none")
-    # 9 Startup: measured campaign (proposed methodology; row stays Open) --
+        "none", ctx.dr_rel)
+
+
+def row_9_startup(ctx: RowContext) -> dict:
+    """Row 9, Startup: the explicitly selected measured campaign (proposed
+    methodology, DR-0009); measured failures are failures, missing or
+    insufficient points are never passes."""
+    su = ctx.su
     sp = su["points"]
     ev = [p for p in sp if p["verdict"] != "insufficient"]
     bad_idx = {i for i, p in enumerate(sp) if p["verdict"] == "insufficient"}
@@ -1151,31 +1235,40 @@ def build(root: Path) -> tuple[dict, dict, str]:
         "source": {"record_md": su["md_rel"], "csv": su_rel},
     }
     for ccol, label in (("start_overshoot_v", "start overshoot above 1.8 V [V]"),
-                       ("start_peak_vout_v", "start peak VOUT [V]"),
-                       ("start_settle_time_s", "start settle time [s]"),
-                       ("start_max_down_excursion_v", "start max downward excursion [V]"),
-                       ("reen_overshoot_v", "re-enable overshoot [V]"),
-                       ("reen_max_down_excursion_v", "re-enable max downward excursion [V]")):
+                        ("start_peak_vout_v", "start peak VOUT [V]"),
+                        ("start_settle_time_s", "start settle time [s]"),
+                        ("start_max_down_excursion_v", "start max downward excursion [V]"),
+                        ("reen_overshoot_v", "re-enable overshoot [V]"),
+                        ("reen_max_down_excursion_v", "re-enable max downward excursion [V]")):
         vals = [(q[ccol], q["id"]) for q in ev if ccol in q]
         if vals:
             startup_summary["extrema"][label] = {"min": _extreme(vals, "min"), "max": _extreme(vals, "max")}
-    add(R[9], st_metrics, "partial", [
+    row = _make_row(ctx.R[9], st_metrics, "partial", [
         "proposed methodology (DR-0009) only; the target's 'controlled ramp' has no numeric bound and is not graded",
         "one load/Cout/ESR point only: 1 mA, 1 uF, 0 ohm ESR -- not 0-50 mA, 0.33-4.7 uF, 0-500 mohm",
         "Vin grid is 2.97/3.30/3.63 V; Cc and the 0.90 V reference are not cornered; schematic level, no post-layout evidence",
     ] + ([f"{len(su['missing'])} requested point(s) missing and {su['n_insufficient']} insufficient of "
-          f"{su['n_requested']}"] if su["missing"] or su["n_insufficient"] else []), st_state, row_verdict=st_verdict,
+          f"{su['n_requested']}"] if su["missing"] or su["n_insufficient"] else []), st_state, ctx.dr_rel,
+        row_verdict=st_verdict,
         notes=[f"Measured: {len(ev)} of {su['n_requested']} requested points evaluated, "
                f"{su['n_fail']} fail, {su['n_pass']} pass, {su['n_insufficient']} insufficient, "
                f"{len(su['missing'])} missing ({su_rel}). {n_settled_and_failing} of {n_settled} points "
                "that settle within 3 ms still fail the proposed overshoot / monotonicity checks.",
                "Proposed methodology, not ratified: DR-0007 row 9 stays Open; no ratification and no whole-spec pass is inferred."])
-    rows[-1]["startup_campaign"] = startup_summary
+    row["startup_campaign"] = startup_summary
+    return row
 
-    # 10 Stability: DR-0014 (proposed) classification of the committed traces --
-    # Verdict-bearing PM/GM come from the pinned offline classification of THIS
-    # record's own loop-gain traces (load_row10). The pre-DR-0014 first-crossing
-    # reading is kept beside it as superseded context, never as a verdict.
+
+def row_10_stability(ctx: RowContext) -> dict:
+    """Row 10, Stability: DR-0014 (proposed) classification of the committed
+    traces.
+
+    Verdict-bearing PM/GM come from the pinned offline classification of THIS
+    record's own loop-gain traces (load_row10). The pre-DR-0014 first-crossing
+    reading is kept beside it as superseded context, never as a verdict."""
+    prow = ctx.prow
+    r10 = ctx.r10
+    pid = ctx.pid
     multi = [i for i, r in enumerate(prow) if int(num(r, "n_0db_crossings", "pvt")) != 1]
     pm_pts, gm_pts, pm_amb, gm_amb, rows10 = [], [], set(), set(), []
     for i, r in enumerate(prow):
@@ -1207,7 +1300,7 @@ def build(root: Path) -> tuple[dict, dict, str]:
     n_low_ok = sum(1 for cr in rows10 if cr["low_end_ok"] == "True")
     r10_rel = r10["csv_rel"]
     ceil_txt = _fmt_hz(r10["ceiling_hz"])
-    r10_cond = (ac_cond + f"; loop-gain trace 1 Hz-{ceil_txt}, 20 points/decade (the committed bench's sweep "
+    r10_cond = (ctx.ac_cond + f"; loop-gain trace 1 Hz-{ceil_txt}, 20 points/decade (the committed bench's sweep "
                 "floor and ceiling); PROPOSED classification (DR-0014), not ratified")
     ceil_dir = ("rising" if min(ceil_d) > 0 else "falling" if max(ceil_d) < 0 else "mixed")
     pm_first = [num(r, "phase_margin_deg", "pvt") for r in prow]
@@ -1244,25 +1337,33 @@ def build(root: Path) -> tuple[dict, dict, str]:
         f"of {len(prow)} >= 10 dB, range {min(gm_first):.4g}..{max(gm_first):.4g} dB; no committed trace bounds the "
         f"sweep ceiling ({ceil_txt}), so none of these is a pass under DR-0014",
     ]
-    add(R[10], [m10a, m10b], "partial", [
+    row = _make_row(ctx.R[10], [m10a, m10b], "partial", [
         "one (Cout, ESR, load) point only: 1 uF, 0 ohm, 1 mA -- not 0.33-4.7 uF, 0-500 mohm, 0-50 mA",
         "Cc is un-cornered; Cc tolerance checked at ss/125C only",
         f"sweep ceiling {ceil_txt} bounded at {n_bounded} of {len(prow)} points (loop gain {min(ceil_g):.3g}..{max(ceil_g):.3g} dB "
         f"and {ceil_dir} at the ceiling): no PM or GM pass can be scored under DR-0014 until a bench bounds the "
         f"loop gain above {ceil_txt}",
         f"{len(multi)} of {len(prow)} points have two 0 dB crossings",
-    ], evidence_state,
-        notes=[f"Cc value tolerance (ss/125C only, {cc_tol_rel}): PM, GM and PSRR all hold for Cc in "
-               f"x{ccw['low_x_nominal']}..x{ccw['high_x_nominal']} of nominal (first-crossing reading, pre-DR-0014).",
+    ], ctx.evidence_state, ctx.dr_rel,
+        notes=[f"Cc value tolerance (ss/125C only, {ctx.cc_tol_rel}): PM, GM and PSRR all hold for Cc in "
+               f"x{ctx.ccw['low_x_nominal']}..x{ctx.ccw['high_x_nominal']} of nominal (first-crossing reading, pre-DR-0014).",
                f"PM/GM verdicts follow the PROPOSED margin classification {r10['dr']} applied offline to the "
                f"committed traces ({r10_rel}); row 10 stays Open (DR-0007) and nothing is ratified."])
-    rows[-1]["margin_classification"] = {
+    row["margin_classification"] = {
         "decision_record": r10["dr"], "status": "proposed", "source": r10_rel,
         "points": len(prow), "low_end_premise_holds": n_low_ok, "ceiling_bounded": n_bounded,
         "ceiling_gain_db_range": rng(ceil_g), "ceiling_last_decade_change_db_range": rng(ceil_d),
         "multi_crossing_points": len(multi),
         "sweep_ceiling_hz": r10["ceiling_hz"],
     }
+    return row
+
+
+def _assemble_outputs(ctx: RowContext, rows: list) -> tuple[dict, dict]:
+    """Run the completeness checks and assemble the report and envelope (the
+    former tail of ``build``)."""
+    sources = ctx.sources
+    su = ctx.su
 
     # --- completeness ----------------------------------------------------
     checks = []
@@ -1270,9 +1371,10 @@ def build(root: Path) -> tuple[dict, dict, str]:
     def chk(name, ok, detail=""):
         checks.append({"check": name, "ok": bool(ok), "detail": detail})
 
-    # The four checks hard-coded True below are enforced earlier in build(): any
-    # violation raises GenError (and main() writes a status:fail envelope) before
-    # this point, so reaching here means they held. They are listed for the record.
+    # The four checks hard-coded True below are enforced upstream, in
+    # _row_context and the loaders it calls: any violation raises GenError
+    # (and main() writes a status:fail envelope) before this point, so
+    # reaching here means they held. They are listed for the record.
     chk("all selected records exist and match their sha256 pins", True,
         f"{sum(1 for s in sources if s['pinned'])} pinned sources verified")
     chk("README target table: 10 rows, expected names and target text", True)
@@ -1287,15 +1389,15 @@ def build(root: Path) -> tuple[dict, dict, str]:
         all(all(("source" in m and m["source"]) or m.get("reason") for m in r["metrics"]) for r in rows))
     chk("startup campaign: selected record, csv, manifest and every trace match their pins; no duplicate or "
         "unexpected point; manifest agrees with the csv", True,
-        f"{su['n_requested']} requested points, {len(sp)} result rows")
+        f"{su['n_requested']} requested points, {len(su['points'])} result rows")
     chk("startup campaign has a result row for every requested point", not su["missing"],
         f"{len(su['missing'])} of {su['n_requested']} requested points missing")
     chk("startup evidence is current against the design (core and error amplifier checked independently)",
         not su["stale_components"],
         "core and error-amplifier netlist hashes match the startup freshness pins" if not su["stale_components"]
         else "stale against the design: " + ", ".join(su["stale_components"]))
-    chk("selected record is current against the design netlists", not stale,
-        "design netlist hashes match the freshness pins" if not stale
+    chk("selected record is current against the design netlists", not ctx.stale,
+        "design netlist hashes match the freshness pins" if not ctx.stale
         else "design netlist changed since the selected record: select a newer record")
     failures = [c for c in checks if not c["ok"]]
     complete = not failures
@@ -1321,22 +1423,22 @@ def build(root: Path) -> tuple[dict, dict, str]:
         ],
         "selection": {
             "file": "sim/characterization/selection.json",
-            "sha256": sha256_file(root / "sim/characterization/selection.json"),
-            "circuit_record_id": rec["id"],
-            "experiment": rec["experiment"],
-            "device_context_record_id": dev["id"],
+            "sha256": sha256_file(ctx.root / "sim/characterization/selection.json"),
+            "circuit_record_id": ctx.rec["id"],
+            "experiment": ctx.rec["experiment"],
+            "device_context_record_id": ctx.dev["id"],
             "startup_record_id": su["rid"],
             "startup_stage": su["cfg"]["stage"],
-            "policy": sel["policy"],
+            "policy": ctx.sel["policy"],
         },
         "sources": sorted(sources, key=lambda s: (s["role"], s["path"])),
-        "design_freshness": {"state": evidence_state, "basis": rec["design_freshness_basis"],
-                             "pins": fresh_checks},
-        "bench_conditions": bc,
-        "cc_tolerance_window": ccw,
+        "design_freshness": {"state": ctx.evidence_state, "basis": ctx.rec["design_freshness_basis"],
+                             "pins": ctx.fresh_checks},
+        "bench_conditions": ctx.bc,
+        "cc_tolerance_window": ctx.ccw,
         "dc_informational_evidence": {
-            "summary": dc_rel, "inventory": dcev["inventory_path"],
-            "raw_dc_grids_verified": dcev["n_raw_grids"], "points": 45,
+            "summary": ctx.dc_rel, "inventory": ctx.dcev["inventory_path"],
+            "raw_dc_grids_verified": ctx.dcev["n_raw_grids"], "points": 45,
             "status": "informational only; rows 5 and 7 remain Open/unratified; not item-5 grading evidence",
         },
         "rows": rows,
@@ -1381,6 +1483,25 @@ def build(root: Path) -> tuple[dict, dict, str]:
             "generator": {"path": "sim/characterization/generate.py", "version": GENERATOR_VERSION},
         },
     }
+    return report, envelope
+
+
+def build(root: Path) -> tuple[dict, dict, str]:
+    """Return (report, envelope, markdown). Raises GenError on any hard error."""
+    ctx = _row_context(root)
+    rows = [
+        row_1_input(ctx),
+        row_2_output(ctx),
+        row_3_load(ctx),
+        row_4_dropout(ctx),
+        row_5_regulation(ctx),
+        row_6_psrr(ctx),
+        row_7_iq(ctx),
+        row_8_current_limit(ctx),
+        row_9_startup(ctx),
+        row_10_stability(ctx),
+    ]
+    report, envelope = _assemble_outputs(ctx, rows)
     md = render_md(report, envelope)
     return report, envelope, md
 
