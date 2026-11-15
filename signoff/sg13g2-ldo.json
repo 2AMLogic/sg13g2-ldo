@@ -42,6 +42,16 @@
         "id": "dr0007-row10-stability",
         "ratified": false
       }
+    ],
+    "6": [
+      {
+        "id": "dr0007-row2-output",
+        "ratified": false
+      },
+      {
+        "id": "dr0007-row8-current-limit",
+        "gap": "no current limiter is integrated in the core yet; no row-8 campaign exists (#164, #190)"
+      }
     ]
   },
   "evidence": {
@@ -51,7 +61,7 @@
     },
     "2": {
       "file": "signoff/evidence/item2-layout.envelope.json",
-      "content_hash": "sha256:548c792b08c891e9401c10feee5a414c2359521497e7ccf4ec67f2be2d138c9e"
+      "content_hash": "sha256:e38d3754698085921d894722295b99eb732f2b5b0af11ddf4133c6072985a9cd"
     },
     "3": {
       "file": "layout/sg13cmos5l-ldo_core_cmos5l/drc_report.json",
@@ -59,7 +69,7 @@
     },
     "4": {
       "file": "layout/sg13cmos5l-ldo_core_cmos5l/lvs_report.json",
-      "content_hash": "sha256:5a3258118e17646cc5665b330ab40b50f353e2a1f7a49e37640e8c1fbd83ccf5"
+      "content_hash": "sha256:03e88f9d7801813527c7b4494f8406b2ef8e808a5b1bfbbffbe8405884593937"
     },
     "5": [
       {
@@ -70,17 +80,54 @@
         ]
       }
     ],
+    "6": [
+      {
+        "file": "sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/yield/tt_27C.yield.json",
+        "content_hash": "sha256:1e1698cde04c3168770e3d5e6fa1f53d81730029358c8c30b386dc36ec01a162",
+        "rows": [
+          "dr0007-row2-output"
+        ]
+      },
+      {
+        "file": "sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/yield/ff_rwcs_125C.yield.json",
+        "content_hash": "sha256:ccdf8c75dbe361bc1acdf414d516ed570df4b57f9777cd3d6a9b268fa3d95681",
+        "rows": [
+          "dr0007-row2-output"
+        ]
+      },
+      {
+        "file": "sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/yield/fs_rbcs_-40C.yield.json",
+        "content_hash": "sha256:2e72c308e9cbcf3809c14d0aafac1ab01cb8b3856813693c33ebbba74b248805",
+        "rows": [
+          "dr0007-row2-output"
+        ]
+      },
+      {
+        "file": "sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/yield/sf_rwcs_125C.yield.json",
+        "content_hash": "sha256:51a1e7312e4a4177744a5c4b4f56b9b2d469cf9f46f65e5f6a3f43c59e3d4ad3",
+        "rows": [
+          "dr0007-row2-output"
+        ]
+      },
+      {
+        "file": "sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/yield/ss_rbcs_-40C.yield.json",
+        "content_hash": "sha256:22b79154c9c6fcb2f7f4947b3d2cb4898b2bb07a83b08ed2fa7252b5dc47e98d",
+        "rows": [
+          "dr0007-row2-output"
+        ]
+      }
+    ],
     "8": {
       "file": "sim/characterization/characterization-envelope.json",
       "content_hash": "sha256:b9938dc30227e3f193d10b5768f981b72538ae755c6289580e8bac128f5b694e"
     },
     "9": {
       "file": "signoff/evidence/item9-testbenches.envelope.json",
-      "content_hash": "sha256:bc80c4365529080a7ef5fb09ad67dd973b9438f16d24825edf1929da8d0cbf74"
+      "content_hash": "sha256:7ef82d08d351bf8ca96ea931d200250b47a5d344b189d8d02f98fcdea03d14fd"
     },
     "10": {
       "file": "signoff/evidence/item10-repo-hygiene.envelope.json",
-      "content_hash": "sha256:f50ae5600335cc0d085d6301d7b9a1121a32d353a4eab3b200d99b3c560202dc"
+      "content_hash": "sha256:6d7bc48a862b57b92b4ed35d4e7b876bd05a699e335ef3f272d53f307ae188ea"
     },
     "11": [
       {
@@ -89,7 +136,7 @@
       },
       {
         "file": "layout/sg13cmos5l-ldo_core_cmos5l/lvs_report.json",
-        "content_hash": "sha256:5a3258118e17646cc5665b330ab40b50f353e2a1f7a49e37640e8c1fbd83ccf5"
+        "content_hash": "sha256:03e88f9d7801813527c7b4494f8406b2ef8e808a5b1bfbbffbe8405884593937"
       }
     ]
   }

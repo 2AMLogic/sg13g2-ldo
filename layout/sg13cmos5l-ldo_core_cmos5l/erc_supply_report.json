@@ -594,13 +594,16 @@
       "erc.missing_tie:[\"substrate_tie_VSS\"]",
       "erc.net_connectivity:[\"VIN\"]",
       "erc.net_connectivity:[\"VOUT\"]",
-      "erc.net_connectivity:[\"VSS\"]"
+      "erc.net_connectivity:[\"VSS\"]",
+      "erc.supply_short",
+      "erc.supply_short.substrate"
     ],
     "skipped": [],
     "inapplicable": [],
     "unknown": [],
     "nothing_checked": false,
     "nothing_checked_reasons": [],
+    "missing_tie_checked": true,
     "checked_by_assertion": [
       "erc.missing_tie:[\"nwell_tie_TAIL\"]",
       "erc.missing_tie:[\"nwell_tie_VIN\"]",
@@ -612,12 +615,8 @@
       "erc.missing_tie:[\"substrate_tie_VSS\"]"
     ],
     "layers_in_stream_without_declaration": [
-      "28/0",
       "31/2",
-      "44/0",
-      "63/0",
-      "99/39",
-      "111/0"
+      "63/0"
     ],
     "well_assertion_coverage": [
       {
@@ -632,10 +631,16 @@
   },
   "ties_disclosure": null,
   "provenance": {
-    "klt_version": "0.8.0",
+    "klt_version": "0.9.2",
+    "klt_git_commit": "046ba74652fc096bd97071fc3237f7159dd40183",
+    "klt_reinstall_spec": "klayout-tools==0.9.2",
     "klayout_version": "0.30.12",
     "pdk": null,
-    "deck": null,
+    "deck": {
+      "name": "sg13cmos5l",
+      "content_hash": "sha256:8b005441745c8f9500d04e0fece081fe5162bb1d562cc8d6e09b60f1f24d1446",
+      "released": true
+    },
     "input": {
       "content_hash": "sha256:06d92e1aadb8b51614016f2f5d953c8bd0674380267f8ab90c2b0cca59576629",
       "role": "layout"
@@ -648,7 +653,17 @@
         "name": "rhigh",
         "body_layer": "128/0",
         "on": "GatPoly",
-        "body_area_um2": 1568.82
+        "body_area_um2": 1568.82,
+        "source": "declared",
+        "superseded_by": null
+      },
+      {
+        "name": "rhigh",
+        "body_layer": "5/0",
+        "on": "GatPoly",
+        "body_area_um2": 0.0,
+        "source": "deck",
+        "superseded_by": "rhigh"
       }
     ],
     "net_exclusions": [],
@@ -667,6 +682,41 @@
         "name": "Metal3",
         "label_layer": "30/2",
         "label_text_count": 13
+      }
+    ],
+    "substrate_bodies": [
+      {
+        "kind": "substrate",
+        "id": "vsubs",
+        "ties": [
+          "substrate_tie_VSS"
+        ]
+      },
+      {
+        "kind": "well",
+        "id": "-3000,-1380,29120,120500",
+        "ties": [
+          "nwell_tie_VIN"
+        ]
+      },
+      {
+        "kind": "well",
+        "id": "170000,-1600,194600,20620",
+        "ties": [
+          "nwell_tie_VIN"
+        ]
+      },
+      {
+        "kind": "well",
+        "id": "42500,-1600,82120,5620",
+        "ties": [
+          "nwell_tie_VIN"
+        ]
+      },
+      {
+        "kind": "well",
+        "id": "86400,-1600,95620,20620",
+        "ties": []
       }
     ]
   }

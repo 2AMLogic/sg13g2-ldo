@@ -144,12 +144,12 @@ env:
   IHP_OPEN_PDK_VERSION: "0.3.0"
   # Pin the klayout-tools ref this workflow checks out its PDK-fetch scripts
   # from, so a future klayout-tools change can't silently alter this repo's
-  # CI. This is the immutable commit of the v0.8.0 tag (c572046be644); the
+  # CI. This is the immutable commit of the v0.9.2 tag (046ba74652fc); the
   # fetch scripts exist at that tag. Bump deliberately, alongside
   # KLAYOUT_TOOLS_VERSION and IHP_OPEN_PDK_VERSION above if they move
   # together. This ref is ONLY the fetch-script source; the klt that the jobs
   # run is installed from PyPI at KLAYOUT_TOOLS_VERSION.
-  KLAYOUT_TOOLS_REF: "c572046be644e0407f693f2410f3abb799d68a3a"
+  KLAYOUT_TOOLS_REF: "046ba74652fc096bd97071fc3237f7159dd40183"
   # IHP-Open-PDK `dev` commit (subtree ihp-sg13cmos5l/, tarball sha256
   # 5eb6f8a9b0b2ecc4fa08cc30627668406f85b1a97834f278036c43f0c0dbc70b) that
   # scripts/fetch-ihp-sg13cmos5l.sh at KLAYOUT_TOOLS_REF pins; only used in
@@ -162,13 +162,13 @@ env:
   # (`pip install klayout-tools==${KLAYOUT_TOOLS_VERSION}`): the signoff
   # grader (signoff-t1-report) and the layout check (layout-check) run on the
   # same build, so committed evidence carries one version stamp. A release
-  # build stamps bare `klt 0.8.0`; a git build stamps a dev version and fails
+  # build stamps bare `klt 0.9.2`; a git build stamps a dev version and fails
   # an `==` pin (klayout-tools#2823), so do not move back to a git install.
   # Bump deliberately, in the same PR as the regenerated
   # signoff/sg13g2-ldo.t1-report.json and every layout/ report (the
   # signoff-t1-report and layout-check jobs fail on any drift, including this
   # pin moving).
-  KLAYOUT_TOOLS_VERSION: "0.8.0"
+  KLAYOUT_TOOLS_VERSION: "0.9.2"
   # The KLayout Python module generate.py draws with. klt only floors it
   # (klayout>=0.30), and the committed GDS / reports were produced with
   # 0.30.12 (their provenance.klayout_version), so pin it exactly: a

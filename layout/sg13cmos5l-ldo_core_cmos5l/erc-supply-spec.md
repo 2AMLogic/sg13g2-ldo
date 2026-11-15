@@ -142,14 +142,20 @@ What this spec asserts, and why each piece is shaped this way:
   `well_layer: null` + `well_boxes` (#2255) and `well_requires_boxes`
   (#2540) -- all in upstream main, ahead of the 0.5.0 release pip/uv installs.
   The committed report's `provenance.klt_version` records the exact source
-  build (0.8.0 since #196; it was 0.7.0+gb82427b30c96, the then signoff pin). All layer numbers above are
+  build (0.9.2 since #210; it was 0.8.0 through #196, and 0.7.0+gb82427b30c96
+  -- the then signoff pin -- before that). All layer numbers above are
   independent of the klt version -- they come from the PDK and the
   curated deck, not from the tool.
 
 Run it from the repo root against the committed GDS (one top cell, so no
---top is needed; `layout/run_flow.sh` stage 8 does this and asserts the result):
+--top is needed; `layout/run_flow.sh` stage 8 does this and asserts the
+result). `--deck sg13cmos5l` is required, not decoration: it is how the
+substrate-continuity model (klayout-tools#5334) resolves the isolation
+layers, so `erc.supply_short` is evaluated (its `substrate` half appears
+under `erc_coverage.checked`) instead of disclosed `inapplicable` as
+`substrate_isolation_undecidable`:
 
     klt erc layout/sg13cmos5l-ldo_core_cmos5l/sg13cmos5l-ldo_core_cmos5l.gds \
-      layout/sg13cmos5l-ldo_core_cmos5l/erc-supply-spec.json --format json
+      layout/sg13cmos5l-ldo_core_cmos5l/erc-supply-spec.json --deck sg13cmos5l --format json
 
 ```

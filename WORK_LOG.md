@@ -2,6 +2,14 @@
 
 Chronological record of recently merged pull requests and closed issues, maintained by the Loom Guide role.
 
+## Archives
+
+- [2026-09](work_log/WORK_LOG_2026-09.md)
+
+### 2026-11-14
+
+- **Issue #230** (closed): sim/ldo-cmos5l-pvt-sweep: five copies of sha256-a-file in one directory, under three names and two path conventions
+
 ### 2026-11-10
 
 - **PR #211**: ci: gate attribution yield verdicts and supersede two stale klt 0.7.0 reports
@@ -195,14 +203,3 @@ Chronological record of recently merged pull requests and closed issues, maintai
 - **Issue #20** (closed): 5A phase 2/4: sg13g2-ldo schematic capture for SG13CMOS5L (1.2V/3.3V rails)
 - **Issue #19** (closed): 5A phase 1/4: SG13CMOS5L device-topology decision (sg13g2-ldo pass device + error amplifier)
 
-### 2026-09-10
-
-- **PR #18**: docs: resync ci.yml README with the pass-device-screening-check job
-- **PR #16**: spec: ratify DR-0001 (sg13_hv_pmos pass-device flavor)
-- **Issue #17** (closed): Docs: .github/workflows/README.md is stale — omits the pass-device-screening-check CI job
-- **Issue #14** (closed): spec: ratify DR-0001 (pass-device flavor) from the sim/pass-device-screening evidence
-
-### 2026-09-09
-
-- **PR #15**: sim: sg13_hv_pmos pass-device screening deck (issue #13)
-- **Issue #13** (closed): sim: `sg13_hv_pmos` pass-device screening deck (Vth, Ron·W at the 2.10 V dropout point, Cgate, continuous-short stress) across the HV corner grid — the input to porting-plan §4 item 1

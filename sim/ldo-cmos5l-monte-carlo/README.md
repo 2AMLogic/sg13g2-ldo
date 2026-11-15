@@ -22,11 +22,19 @@ against the **proposed** row-2 window, 1.8 V ±2 % = **1.764–1.836 V**.
   through the installed two-key review (`ratification/`) and a decision
   record, never through this directory.
 - **Row 8 (current-limit window) stays deferred.** It is statistical by
-  construction, but no limiter exists yet (#63), so there is nothing to
-  sample. It is **not** "no statistical row".
-- **This campaign does not discharge T1 item 6.** Item 6 covers every
-  statistical row. Row 8 is unevidenced and row 2's target is unratified.
-  `signoff/README.md` explains why item 6 is left uncited.
+  construction, but no limiter is integrated in the core yet (#164
+  implements DR-0017, #190 integrates it), so there is nothing to sample.
+  It is **not** "no statistical row".
+- **This campaign is cited under T1 item 6, and still does not discharge
+  it (#225).** Item 6 covers every statistical row. `signoff/sg13g2-ldo.json`
+  declares `spec_rows["6"]` — row 2 `ratified: false`, row 8 a declared
+  `gap` — and cites the five per-corner `klt yield` reports of record
+  `20261012-093854-934dbd7` for row 2. The item therefore grades `unmet` /
+  `partial_coverage`, never `met`: row 2's evidence is against an **Open**
+  target (`unratified_rows`) and row 8 has no evidence (`declared_gaps`).
+  Ratifying row 2 stays with #56 / `ratification/`; `signoff/README.md`'s
+  item-6 coverage statement carries the measured verdict and negative
+  controls.
 - **Complementary, not overlapping:** #55 owns the deterministic corner
   evidence (T1 item 5). #62 owns startup.
 
@@ -257,8 +265,10 @@ samples, and that the re-derived reports reproduce.
   (`maturin develop --release` in `native/yield/`). No host-wide tool was
   installed or changed.
 - **Upstream issues filed from this campaign:** klayout-tools#2908 (item 6
-  has no notion of the statistical-row set or of partial/unratified coverage)
-  and klayout-tools#2909 (a bit-identical sample set is reported as
+  had no notion of the statistical-row set or of partial/unratified
+  coverage) — **closed as completed 2026-10-16**; the capability ships in
+  the pinned `klayout-tools==0.8.0` build and the row-2 citations now use it
+  (#225). And klayout-tools#2909 (a bit-identical sample set is reported as
   non-degenerate). The second is visible in this campaign's `tt_nom`
   attribution report.
 

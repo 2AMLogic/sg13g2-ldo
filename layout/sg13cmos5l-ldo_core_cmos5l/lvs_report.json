@@ -1,11 +1,14 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "engine": "klayout",
   "layout": {
     "path": "layout/sg13cmos5l-ldo_core_cmos5l/sg13cmos5l-ldo_core_cmos5l.extracted.spice",
     "scope": "repo"
   },
-  "reference": "sg13cmos5l-ldo_core_cmos5l.lvs_reference.spice",
+  "reference": {
+    "path": "layout/sg13cmos5l-ldo_core_cmos5l/sg13cmos5l-ldo_core_cmos5l.lvs_reference.spice",
+    "scope": "repo"
+  },
   "top": "SG13CMOS5L_LDO_CORE_CMOS5L",
   "reference_top": "SG13CMOS5L_LDO_CORE_CMOS5L",
   "parameter_tolerance": null,
@@ -22,6 +25,7 @@
     "anchor_top_level_pins": null,
     "strict_top_level_pin_count": false,
     "compare_mos_flavour": false,
+    "ignore_mos_bulk": false,
     "supply_nets": [
       "GND",
       "VCC",
@@ -43,6 +47,7 @@
     "instance_count": 0,
     "expected_nets": null,
     "unchecked_expected_pins": [],
+    "excluded_pins": [],
     "findings": [],
     "finding_count": 0
   },
@@ -117,21 +122,23 @@
     "engine": "klayout",
     "engine_version": "0.30.12",
     "netgen_binary": null,
-    "layout_sha256": "5a3258118e17646cc5665b330ab40b50f353e2a1f7a49e37640e8c1fbd83ccf5",
+    "layout_sha256": "03e88f9d7801813527c7b4494f8406b2ef8e808a5b1bfbbffbe8405884593937",
     "reference_sha256": "8364aac0d0e9106004531dbbcb633f8c158eb610f9e11bcb509b872f2642dfea",
     "extracted_netlist": null
   },
   "provenance": {
-    "klt_version": "0.8.0",
+    "klt_version": "0.9.2",
+    "klt_git_commit": "046ba74652fc096bd97071fc3237f7159dd40183",
+    "klt_reinstall_spec": "klayout-tools==0.9.2",
     "klayout_version": "0.30.12",
     "pdk": null,
     "deck": {
       "name": "sg13cmos5l",
-      "content_hash": "sha256:5a43b8eb0e1a4c228169cd33d820bf75ca5640812587f68c07f24f4aa2a1738f",
+      "content_hash": "sha256:8b005441745c8f9500d04e0fece081fe5162bb1d562cc8d6e09b60f1f24d1446",
       "released": true
     },
     "input": {
-      "content_hash": "sha256:5a3258118e17646cc5665b330ab40b50f353e2a1f7a49e37640e8c1fbd83ccf5",
+      "content_hash": "sha256:03e88f9d7801813527c7b4494f8406b2ef8e808a5b1bfbbffbe8405884593937",
       "role": "netlist"
     },
     "klayout_version_mismatch": false
