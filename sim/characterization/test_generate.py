@@ -299,6 +299,7 @@ class PerRowGraderTests(unittest.TestCase):
         cls.ctx = G._row_context(REPO)
         committed = json.loads((REPO / "sim/characterization" / G.REPORT_JSON).read_text())
         cls.committed = {r["id"]: r for r in committed["rows"]}
+        cls.committed_sources = committed["sources"]
 
     def test_row_9_equals_the_committed_report_row(self):
         self.assertEqual(G.row_9_startup(self.ctx), self.committed[9])
@@ -332,6 +333,68 @@ class PerRowGraderTests(unittest.TestCase):
         self.assertEqual(row["metrics"][0]["n_fail"], 1)
         self.assertEqual(row["metrics"][1]["verdict"], "ambiguous")
         self.assertIn("margin_classification", row)
+
+    def test_row_7_does_not_mutate_its_context_when_called_repeatedly(self):
+        # row_7_iq must be a pure function of its context (#240): calling it
+        # any number of times leaves ctx.sources exactly as _row_context left
+        # it. The context is built locally, not from the class-shared cls.ctx:
+        # dataclasses.replace() shares the sources list, so a leak here would
+        # reach the sibling tests through their replace() guard idioms.
+        ctx = G._row_context(REPO)
+        before_len = len(ctx.sources)
+        before_sup = [s for s in ctx.sources
+                      if s["role"] == "superseded_evidence_statement"]
+        self.assertEqual(len(before_sup), 1)
+        G.row_7_iq(ctx)
+        G.row_7_iq(ctx)
+        self.assertEqual(len(ctx.sources), before_len)
+        self.assertEqual([s for s in ctx.sources
+                          if s["role"] == "superseded_evidence_statement"],
+                         before_sup)
+
+    def test_row_7_provenance_entry_matches_the_committed_report(self):
+        # The superseded-statement entry is produced by _row_context (#240);
+        # it must equal the committed report's entry so the move cannot
+        # silently change its content.
+        produced = [s for s in self.ctx.sources
+                    if s["role"] == "superseded_evidence_statement"]
+        self.assertEqual(len(produced), 1)
+        committed = [s for s in self.committed_sources
+                     if s["role"] == "superseded_evidence_statement"]
+        self.assertEqual(len(committed), 1)
+        self.assertEqual(produced[0], committed[0])
+
+
+class SupersededEvidenceContextTests(unittest.TestCase):
+    """Row 7's superseded-statement validation lives in _row_context (#240):
+    the guards fire at context construction, not mid-build inside the grader.
+    Runs against a throwaway COPY of the inputs (never the working tree)."""
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, self.tmp, True)
+        copy_inputs(self.tmp)
+
+    def statement_source(self):
+        sel = json.loads((self.tmp / "sim/characterization/selection.json").read_text())
+        return self.tmp / sel["superseded_evidence"][0]["statement_source"]
+
+    def test_missing_statement_source_raises_at_context_construction(self):
+        self.statement_source().unlink()
+        with self.assertRaises(G.GenError) as cm:
+            G._row_context(self.tmp)
+        self.assertIn("required source missing", str(cm.exception))
+        self.assertIn("superseded_evidence_statement", str(cm.exception))
+
+    def test_broken_quoted_substring_raises_at_context_construction(self):
+        p = self.statement_source()
+        sel = json.loads((self.tmp / "sim/characterization/selection.json").read_text())
+        quoted = sel["superseded_evidence"][0]["quoted_substring"]
+        self.assertIn(quoted, p.read_text())
+        p.write_text(p.read_text().replace(quoted, "TAMPERED", 1))
+        with self.assertRaises(G.GenError) as cm:
+            G._row_context(self.tmp)
+        self.assertIn("quote not found", str(cm.exception))
 
 
 class NegativeControls(unittest.TestCase):
