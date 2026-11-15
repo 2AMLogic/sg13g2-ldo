@@ -55,6 +55,24 @@ class Contract(unittest.TestCase):
         self.assertEqual(acs.POINTS_PER_DECADE, 20)
         self.assertEqual(acs.FLOOR_HZ, 1.0)
 
+    def test_check_template_accepts_every_real_loopgain_template(self):
+        for base in ("loopgain", "loopgain2v", "loopgain2i"):
+            path = os.path.join(HERE, "testbench", f"tb_{base}_cmos5l.spice.tmpl")
+            self.assertIsNone(acs.check_template(path), base)
+
+    def test_check_template_rejects_drift(self):
+        with tempfile.TemporaryDirectory() as d:
+            path = os.path.join(d, "tb.spice.tmpl")
+            open(path, "w").write("* x\nac dec 20 1 @@LG_CEILING@@\n")
+            self.assertIsNotNone(acs.check_template(path))
+            open(path, "w").write("* x\nac dec 40 1 @@LG_AC_MAX@@\n")
+            self.assertIsNotNone(acs.check_template(path))
+            self.assertIsNotNone(acs.check_template(os.path.join(d, "nope.tmpl")))
+            rc = subprocess.run([sys.executable, os.path.join(HERE, "ac_sweep.py"),
+                                 "check-template", path], capture_output=True, text=True)
+            self.assertEqual(rc.returncode, 1)
+            self.assertIn("drifted", rc.stderr)
+
 
 class Traces(unittest.TestCase):
     def setUp(self):

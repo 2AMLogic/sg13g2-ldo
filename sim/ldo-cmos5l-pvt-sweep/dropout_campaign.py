@@ -34,7 +34,9 @@ import tempfile
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.abspath(os.path.join(HERE, "..", ".."))
 sys.path.insert(0, HERE)
+sys.path.insert(0, os.path.join(HERE, "..", "tools"))
 import dropout_metrics as dcm  # noqa: E402
+import render_deck  # noqa: E402
 
 CORNERS = ["tt", "ff", "ss", "sf", "fs"]
 TEMPS = [-40, 27, 125]
@@ -46,7 +48,8 @@ DESIGN_NETLISTS = ["design/sg13cmos5l/netlist/ldo_core_cmos5l.spice",
                    "design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice"]
 INPUTS = [TEMPLATE, "sim/ldo-cmos5l-pvt-sweep/dropout_metrics.py", "sim/ldo-cmos5l-pvt-sweep/dc_metrics.py",
           "sim/ldo-cmos5l-pvt-sweep/dropout_campaign.py",
-          "sim/ldo-cmos5l-pvt-sweep/batch_backend.py", "sim/pdk-cmos5l.json"] + DESIGN_NETLISTS
+          "sim/ldo-cmos5l-pvt-sweep/batch_backend.py", "sim/tools/render_deck.py",
+          "sim/pdk-cmos5l.json"] + DESIGN_NETLISTS
 FATAL = re.compile(r"Unable to find definition of model|couldn't be loaded|Unknown model type|"
                    r"fatal error|gmin stepping failed|no convergence|iteration limit reached", re.I)
 SINGULAR = re.compile(r"singular matrix", re.I)
@@ -213,14 +216,17 @@ def cmd_run(a):
     queue = os.path.join(queue_dir, "queue.tsv")
     with open(queue, "w") as q:
         for c, t, r, pid in coords():
-            text = tmpl
-            for k, v in {"PDK_ROOT": pdk_root, "PDK": pdk, "OSDI_DIR": osdi, "MOS_SECTION": f"mos_{c}",
-                         "RES_SECTION": f"res_{r}", "CAP_SECTION": "cap_typ", "TEMP": str(t),
-                         "DESIGN_NETLIST": os.path.join(REPO, DESIGN_NETLISTS[0]),
-                         "DC_CSV": os.path.join(corners, f"{pid}_dc.csv")}.items():
-                text = text.replace(f"@@{k}@@", v)
+            # One renderer for every deck (#236): sim/tools/render_deck.py,
+            # the same module the .sh drivers and startup_campaign.py call.
+            # It also fails loudly on any unsubstituted @@TOKEN@@, which
+            # this loop's old inline str.replace chain did not.
+            body = render_deck.render(tmpl, {
+                "PDK_ROOT": pdk_root, "PDK": pdk, "OSDI_DIR": osdi, "MOS_SECTION": f"mos_{c}",
+                "RES_SECTION": f"res_{r}", "CAP_SECTION": "cap_typ", "TEMP": str(t),
+                "DESIGN_NETLIST": os.path.join(REPO, DESIGN_NETLISTS[0]),
+                "DC_CSV": os.path.join(corners, f"{pid}_dc.csv")})
             path = os.path.join(snaps, f"{pid}.spice")
-            open(path, "w").write(text)
+            open(path, "w").write(body)
             q.write(f"{pid}\t{path}\n")
     cmd = [sys.executable, os.path.join(HERE, "batch_backend.py"), "run", "--queue", queue,
            "--corners-out", corners, "--work", os.path.join(queue_dir, "work"), "--osdi-dir", osdi,
