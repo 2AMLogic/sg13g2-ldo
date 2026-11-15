@@ -267,10 +267,17 @@ samples, and that the re-derived reports reproduce.
 - **Upstream issues filed from this campaign:** klayout-tools#2908 (item 6
   had no notion of the statistical-row set or of partial/unratified
   coverage) — **closed as completed 2026-10-16**; the capability ships in
-  the pinned `klayout-tools==0.8.0` build and the row-2 citations now use it
-  (#225). And klayout-tools#2909 (a bit-identical sample set is reported as
-  non-degenerate). The second is visible in this campaign's `tt_nom`
-  attribution report.
+  the then-pinned `klayout-tools==0.8.0` build (the pin is 0.9.2 since
+  #210) and the row-2 citations now use it (#225). And klayout-tools#2909
+  (a bit-identical sample set is reported as non-degenerate) — **closed as
+  completed 2026-10-20**. The second is visible in this campaign's
+  `tt_nom` attribution report. And klayout-tools#5786 (**open** as of this
+  edit, filed 2026-11-15): a tool-side grading/disclosure gap — a
+  multi-citation item-6 grade does not restate the per-citation
+  `yield_campaign` fields (negative-control declaration, sample-size
+  verdict) it aggregates, which is why this campaign's item-6 disclosure
+  has to live in prose (`signoff/README.md` names #5786 as the upstream
+  tracker).
 
 ## Records
 
