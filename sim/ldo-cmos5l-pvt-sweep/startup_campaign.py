@@ -468,7 +468,6 @@ def cmd_collect(a):
                     try:
                         tr, command = trace_from_raw(raw)
                         engines.add(command.split(",")[0].strip())
-                        lg = (c.get("artifacts") or {}).get("log")
                         row["raw_sha256"] = sha256_file(raw)
                     except (CampaignError, bb.BackendError, OSError, ValueError) as e:
                         why = f"rawfile unreadable: {e}"
