@@ -42,6 +42,16 @@
         "id": "dr0007-row10-stability",
         "ratified": false
       }
+    ],
+    "6": [
+      {
+        "id": "dr0007-row2-output",
+        "ratified": false
+      },
+      {
+        "id": "dr0007-row8-current-limit",
+        "gap": "no current limiter is integrated in the core yet; no row-8 campaign exists (#164, #190)"
+      }
     ]
   },
   "evidence": {
@@ -70,13 +80,50 @@
         ]
       }
     ],
+    "6": [
+      {
+        "file": "sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/yield/tt_27C.yield.json",
+        "content_hash": "sha256:1e1698cde04c3168770e3d5e6fa1f53d81730029358c8c30b386dc36ec01a162",
+        "rows": [
+          "dr0007-row2-output"
+        ]
+      },
+      {
+        "file": "sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/yield/ff_rwcs_125C.yield.json",
+        "content_hash": "sha256:ccdf8c75dbe361bc1acdf414d516ed570df4b57f9777cd3d6a9b268fa3d95681",
+        "rows": [
+          "dr0007-row2-output"
+        ]
+      },
+      {
+        "file": "sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/yield/fs_rbcs_-40C.yield.json",
+        "content_hash": "sha256:2e72c308e9cbcf3809c14d0aafac1ab01cb8b3856813693c33ebbba74b248805",
+        "rows": [
+          "dr0007-row2-output"
+        ]
+      },
+      {
+        "file": "sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/yield/sf_rwcs_125C.yield.json",
+        "content_hash": "sha256:51a1e7312e4a4177744a5c4b4f56b9b2d469cf9f46f65e5f6a3f43c59e3d4ad3",
+        "rows": [
+          "dr0007-row2-output"
+        ]
+      },
+      {
+        "file": "sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/yield/ss_rbcs_-40C.yield.json",
+        "content_hash": "sha256:22b79154c9c6fcb2f7f4947b3d2cb4898b2bb07a83b08ed2fa7252b5dc47e98d",
+        "rows": [
+          "dr0007-row2-output"
+        ]
+      }
+    ],
     "8": {
       "file": "sim/characterization/characterization-envelope.json",
       "content_hash": "sha256:b9938dc30227e3f193d10b5768f981b72538ae755c6289580e8bac128f5b694e"
     },
     "9": {
       "file": "signoff/evidence/item9-testbenches.envelope.json",
-      "content_hash": "sha256:3b94fe98620620c881f292820142d7cf0b4d71d810bf828a2ce58f8550d26290"
+      "content_hash": "sha256:11c6c46567ba47dc0efa2ec1b3730e3ac89056a67ad70d28919563c6e43c48c2"
     },
     "10": {
       "file": "signoff/evidence/item10-repo-hygiene.envelope.json",
