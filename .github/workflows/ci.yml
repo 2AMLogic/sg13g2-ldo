@@ -22,7 +22,8 @@ name: CI
 #                                 pinned klt and fails on T1 report drift.
 #                                 No PDK, no simulator.
 #   characterization-report       sim/characterization generate.py --check
-#                                 plus the offline unit tests and topology
+#                                 plus the offline unit tests, the test
+#                                 main-guard check (#247) and the topology
 #                                 guard. No PDK, no simulator.
 #   monte-carlo-record            sim/ldo-cmos5l-monte-carlo records
 #                                 reproduce from their raw reports.
@@ -522,6 +523,22 @@ jobs:
         # that sed and the renderer stay byte-identical -- the "decks do not
         # move" gate, re-proven every push.
         run: python3 -m unittest discover -s sim/tools -p 'test_render_deck.py' -v
+
+      - name: Test-main-guard checker unit tests (fixtures + negative controls; offline)
+        # Issue #247: unit tests for sim/tools/check_test_main_guard.py in
+        # the same temp-git-repo shape as test_check_append_only.py.
+        run: python3 -m unittest discover -s sim/tools -p 'test_check_test_main_guard.py' -v
+
+      - name: Tracked test files keep the `if __name__` guard last (offline)
+        # Issue #247 (the trap #235 paid for): unittest.main() inside the
+        # `if __name__ == "__main__":` guard calls sys.exit(), so a top-level
+        # def/class placed after the guard never runs under a direct
+        # `python3 <file>` spot-check, which then reports OK on a silently
+        # truncated collection. Every other CI step imports the module
+        # (`unittest discover` / `-m unittest`), which is immune to guard
+        # placement by construction -- this ast-based, stdlib-only gate is
+        # the only check that can see it.
+        run: python3 sim/tools/check_test_main_guard.py
 
       - name: SG13CMOS5L loop-gain topology guard (offline; positive check + negative controls)
         # Offline shell-only check (#94): --check-topology-guard exits before

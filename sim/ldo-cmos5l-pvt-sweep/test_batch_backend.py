@@ -486,5 +486,70 @@ class TwoInjectionExport(unittest.TestCase):
             bb.bench_of("loopgain2x_tt_27c_rtyp")
 
 
+class ReadRawRoundTrip(unittest.TestCase):
+    """issue #226: complex_rawfile finally feeds the parser it was built
+    for -- read_raw had no coverage despite two live call sites."""
+
+    @staticmethod
+    def _probes():
+        return [("V(OUT)", [complex(1.8, 0.01), complex(1.7, -0.02)]),
+                ("v(fb)", [complex(-0.02, 0.003), complex(0.01, 0.02)])]
+
+    @staticmethod
+    def _points(probes, freqs):
+        return [[complex(f, 0.0)] + [vals[k] for _, vals in probes]
+                for k, f in enumerate(freqs)]
+
+    def test_round_trip_recovers_names_values_and_command(self):
+        probes = self._probes()
+        freqs = [1e6, 1e7]
+        with tempfile.NamedTemporaryFile("w", suffix=".raw", delete=False) as fh:
+            fh.write(complex_rawfile(probes, self._points(probes, freqs)))
+            path = fh.name
+        try:
+            names, data, cplx, command = bb.read_raw(path)
+        finally:
+            os.remove(path)
+        self.assertEqual(names, ["freq", "v(out)", "v(fb)"])  # lowercased, ordered
+        self.assertTrue(cplx)
+        self.assertEqual(command, "")          # fixture emits no Command: line
+        self.assertEqual([len(data[n]) for n in names], [2, 2, 2])
+        for k, f in enumerate(freqs):
+            self.assertAlmostEqual(data["freq"][k].real, f, places=7)
+            for name, vals in probes:
+                z = data[name.lower()][k]
+                self.assertAlmostEqual(z.real, vals[k].real, places=7)
+                self.assertAlmostEqual(z.imag, vals[k].imag, places=7)
+
+    def test_command_line_is_captured(self):
+        probes = self._probes()
+        text = complex_rawfile(probes, self._points(probes, [1e6]))
+        lines = text.splitlines()
+        lines.insert(2, "Command: ac dec 20 1 1e10")
+        with tempfile.NamedTemporaryFile("w", suffix=".raw", delete=False) as fh:
+            fh.write("\n".join(lines) + "\n")
+            path = fh.name
+        try:
+            _, _, _, command = bb.read_raw(path)
+        finally:
+            os.remove(path)
+        self.assertEqual(command, "ac dec 20 1 1e10")
+
+    def test_corrupt_point_index_raises(self):
+        probes = self._probes()
+        lines = complex_rawfile(probes, self._points(probes, [1e6, 1e7])).splitlines()
+        for k, ln in enumerate(lines):
+            if ln.startswith("1\t"):       # the point-1 index row
+                lines[k] = "7" + ln[1:]
+        with tempfile.NamedTemporaryFile("w", suffix=".raw", delete=False) as fh:
+            fh.write("\n".join(lines) + "\n")
+            path = fh.name
+        try:
+            with self.assertRaisesRegex(bb.BackendError, "rawfile point index"):
+                bb.read_raw(path)
+        finally:
+            os.remove(path)
+
+
 if __name__ == "__main__":
     unittest.main()

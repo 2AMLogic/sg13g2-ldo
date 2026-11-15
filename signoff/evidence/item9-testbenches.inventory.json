@@ -246,7 +246,7 @@
     },
     {
       "path": "sim/ldo-cmos5l-pvt-sweep/dropout_campaign.py",
-      "sha256": "sha256:45e4ed1789fda314effa0f53c9ca7b3606c0a07925880b5c17b6c494b85bbbc9"
+      "sha256": "sha256:1fbf0123985d1647df1bbfac6f3b2e57e1ac4367fb7c937a13c991ecd7f70e78"
     },
     {
       "path": "sim/ldo-cmos5l-pvt-sweep/dropout_metrics.py",
@@ -254,7 +254,7 @@
     },
     {
       "path": "sim/ldo-cmos5l-pvt-sweep/e1_oppoints.py",
-      "sha256": "sha256:a3f5f104d4ee7a96c175d252dbe0669d9aea41106cff150ca6141142962925f2"
+      "sha256": "sha256:973490fa4234b49d73e0c6ab433f868563e0fdb4d1cda8e489b1e9bcdb3c54b7"
     },
     {
       "path": "sim/ldo-cmos5l-pvt-sweep/loopgain2.py",
@@ -266,7 +266,7 @@
     },
     {
       "path": "sim/ldo-cmos5l-pvt-sweep/row4_envelope.py",
-      "sha256": "sha256:2f08785d7bd7e0d02b7a6134ce5aedba160fe71bba4454e24f11b2792126b193"
+      "sha256": "sha256:b2b8c97ca86b45c344f9ca88172522ed7dffe5c40bdf3ac763295866d8bf1ada"
     },
     {
       "path": "sim/ldo-cmos5l-pvt-sweep/run_e1op.sh",
@@ -278,11 +278,11 @@
     },
     {
       "path": "sim/ldo-cmos5l-pvt-sweep/run_sweep.sh",
-      "sha256": "sha256:a244d3eb1c459fd6c9a4e99cb9c8b8a28a839640ce498e679b6055c5c262e5cd"
+      "sha256": "sha256:ad57729bda69da5609c2f006a4e6efd464dc7bc2c92044c771486d9f939f5484"
     },
     {
       "path": "sim/ldo-cmos5l-pvt-sweep/startup_campaign.py",
-      "sha256": "sha256:b378bf7c84e19772fd7c75312c17799f16a647ff27cdd4fc7462e0647f98e5e9"
+      "sha256": "sha256:bed74807356441a974558c40731ec7f3263ec3f56791fca8603e23ff6bee3576"
     },
     {
       "path": "sim/ldo-cmos5l-pvt-sweep/startup_eval.py",
@@ -293,8 +293,16 @@
       "sha256": "sha256:686672f20e35164aeddba67f9a837014047a31e5f2e5c4c415b0ed47a788ec0e"
     },
     {
+      "path": "sim/ldo-cmos5l-pvt-sweep/sweep_report.py",
+      "sha256": "sha256:bece561f60b82f77c4fe9e33300c5b693dac0e22921befad2b9bdf30768de4fe"
+    },
+    {
       "path": "sim/ldo-cmos5l-pvt-sweep/test_e1_oppoints.py",
       "sha256": "sha256:24908a04073bca67bca677f5c664ffb1763061e65af347eb5c4bdf6644e15564"
+    },
+    {
+      "path": "sim/ldo-cmos5l-pvt-sweep/test_sweep_report.py",
+      "sha256": "sha256:7763b12a804396525b94bd281241cb8f0bbce1f1f8b0b9de49576bb144922e4f"
     },
     {
       "path": "sim/ldo-cmos5l-pvt-sweep/testbench/tb_dcsweep_cmos5l.spice.tmpl",
