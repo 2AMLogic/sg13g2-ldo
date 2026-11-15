@@ -8,9 +8,12 @@ the broker probe runs against a throwaway local HTTP server.
 
 from __future__ import annotations
 
+import contextlib
 import hashlib
 import http.server
+import io
 import json
+import os
 import socket
 import subprocess
 import tempfile
@@ -152,6 +155,161 @@ class Writer(Base):
         (self.stage / "corners/r1/link.log").symlink_to(self.stage / "r1.json")
         with self.assertRaises(es.StoreError):
             es.stage_files(self.stage / "corners/r1", "sim/b/corners/r1")
+
+    # ------------------------------------------------------------------
+    # Issue #251 item 1: every OSError on the store path is StoreError.
+    # ------------------------------------------------------------------
+
+    def test_unreadable_staged_file_is_store_error(self):
+        # sha256_file's open()/read().
+        if os.geteuid() == 0:  # root reads anything; a missing file hits the same handler
+            target, label = self.stage / "missing.json", "No such file"
+        else:
+            target, label = self.stage / "r1.json", "Permission denied"
+            target.chmod(0)
+            self.addCleanup(target.chmod, 0o644)
+        self.files = [(target, "sim/b/records/r1.json")]
+        with self.assertRaisesRegex(es.StoreError, "cannot read .* to hash it") as cm:
+            self.store_files()
+        self.assertIn(label, str(cm.exception))
+        self.assert_nothing_committed()
+
+    def test_manifest_parent_cannot_be_created_is_store_error(self):
+        # install_manifest's parent mkdir: a non-directory in the way.
+        (self.root / "manifests").write_text("not a directory\n")
+        with self.assertRaisesRegex(es.StoreError, "cannot create manifest directory"):
+            self.store_files()
+        self.assertFalse(self.mpath.exists())
+        self.assertFalse(self.summary.exists())
+
+    @unittest.skipIf(os.geteuid() == 0, "root ignores file permissions")
+    def test_unwritable_manifest_path_is_store_error(self):
+        # install_manifest's open(..., "x") for any OSError but FileExistsError.
+        self.mpath.parent.mkdir(parents=True)
+        self.mpath.parent.chmod(0o500)
+        self.addCleanup(self.mpath.parent.chmod, 0o755)
+        with self.assertRaisesRegex(es.StoreError, "cannot install manifest"):
+            self.store_files()
+        self.assertFalse(self.mpath.exists())
+        self.assertFalse(self.summary.exists())
+
+    # ------------------------------------------------------------------
+    # Issue #251 item 2: a failed summary write rolls the manifest back,
+    # so the docstring's "nothing is then installed" is literally true.
+    # ------------------------------------------------------------------
+
+    def test_blocked_summary_directory_rolls_the_manifest_back(self):
+        # Deterministic rollback case: the summary's parent path is occupied
+        # by a file, so its mkdir fails with a non-FileExistsError OSError.
+        (self.root / "sim/b").mkdir(parents=True, exist_ok=True)
+        (self.root / "sim/b/records").write_text("occupies the summary directory\n")
+        with self.assertRaisesRegex(es.StoreError, "cannot create summary directory"):
+            self.store_files()
+        self.assertFalse(self.mpath.exists())
+        self.assertFalse(self.summary.exists())
+
+    @unittest.skipIf(os.geteuid() == 0, "root ignores file permissions")
+    def test_unwritable_summary_directory_is_store_error_and_rolls_back(self):
+        self.summary.parent.mkdir(parents=True)
+        self.summary.parent.chmod(0o500)
+        self.addCleanup(self.summary.parent.chmod, 0o755)
+        with self.assertRaisesRegex(es.StoreError, "cannot write summary"):
+            self.store_files()
+        self.assertFalse(self.mpath.exists())
+
+    def test_summary_appearing_during_store_rolls_the_manifest_back(self):
+        manifest = {"schema_version": 1, "entries": []}
+
+        def racing_put(files, root):
+            self.summary.parent.mkdir(parents=True, exist_ok=True)
+            self.summary.write_text("raced in\n")
+            return manifest, []
+
+        with self.assertRaisesRegex(es.StoreError, "appeared concurrently"):
+            es.store_files(self.files, repo_root=self.root, bench="b", rid="r1",
+                           summary_text="# record\n", summary_path=self.summary,
+                           put=racing_put)
+        self.assertFalse(self.mpath.exists())  # rolled back: nothing installed
+
+    def test_scan_of_untraversable_stage_is_store_error(self):
+        # stage_files (issue #251 AC: settled by measurement, not assumption):
+        # rglob/is_symlink raise PermissionError on a readable but
+        # non-traversable stage directory; it must surface as StoreError.
+        if os.geteuid() == 0:
+            self.skipTest("root ignores file permissions")
+        os.chmod(self.stage / "corners/r1", 0o444)
+        self.addCleanup(os.chmod, self.stage / "corners/r1", 0o755)
+        with self.assertRaisesRegex(es.StoreError, "cannot scan staged evidence"):
+            es.stage_files(self.stage / "corners/r1", "sim/b/corners/r1")
+
+
+class EntrySchema(unittest.TestCase):
+    """Issue #251 item 3: the writer's entry check enforces the same field
+    sets as the CI checker, so a klt schema drift fails at write time."""
+
+    def entry(self):
+        sha = "a" * 64
+        return {"sha256": sha, "size": 3, "kind": "evidence",
+                "producer": {"tool": "klt", "version": "t", "loom.repo": REPO,
+                             "commit": None},
+                "uri": f"artifact:evidence/owner__repo/{sha[:2]}/{sha}",
+                "name": "sim/b/records/r1.json"}
+
+    def test_minimal_and_full_entries_pass(self):
+        self.assertIsNone(es._entry_problem(self.entry()))
+        with_media = self.entry()
+        with_media["media_type"] = "application/json"
+        self.assertIsNone(es._entry_problem(with_media))
+
+    def test_unknown_top_level_field_rejected(self):
+        for field in ("extra", "digest", "hash"):
+            e = self.entry()
+            e[field] = "x"
+            with self.subTest(field=field):
+                self.assertIn("unknown field", es._entry_problem(e))
+
+    def test_missing_required_field_rejected(self):
+        for field in ("sha256", "size", "kind", "producer", "uri"):
+            e = self.entry()
+            del e[field]
+            with self.subTest(field=field):
+                self.assertIn("missing", es._entry_problem(e))
+
+    def test_producer_field_set_enforced_both_directions(self):
+        extra = self.entry()
+        extra["producer"]["note"] = "x"
+        self.assertIn("producer must carry exactly", es._entry_problem(extra))
+        missing = self.entry()
+        del missing["producer"]["commit"]
+        self.assertIn("producer must carry exactly", es._entry_problem(missing))
+
+    def test_non_dict_producer_still_refused(self):
+        e = self.entry()
+        e["producer"] = "klt"
+        self.assertIn("no producer", es._entry_problem(e))
+
+
+class SchemaAgreement(unittest.TestCase):
+    """Issue #251 item 3: the writer's field tuples are pinned to the CI
+    checker's — drift fails here, in the artifact-manifests job, not after a
+    run's puts are spent. The checker is loaded the test-only way
+    ``scripts/tests/`` already does: ``scripts/`` is not a package and
+    neither module touches ``sys.path``."""
+
+    @classmethod
+    def setUpClass(cls):
+        import importlib.util
+        checker = (Path(__file__).resolve().parents[3] / "scripts"
+                   / "check_artifact_manifests.py")
+        spec = importlib.util.spec_from_file_location("check_artifact_manifests",
+                                                      checker)
+        cls.chk = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(cls.chk)
+
+    def test_field_tuples_match(self):
+        self.assertEqual(es.ENTRY_REQUIRED_FIELDS, self.chk.REQUIRED)
+        self.assertEqual(es.ENTRY_OPTIONAL_FIELDS, self.chk.OPTIONAL)
+        self.assertEqual(es.ENTRY_PRODUCER_FIELDS, self.chk.PRODUCER_FIELDS)
 
 
 def klt_probe_answer(cmd, *, current=True):
@@ -385,6 +543,27 @@ class CampaignCli(unittest.TestCase):
         (inside / "a.json").write_text("{}\n")
         self.assertEqual(self.main(staged=inside), 1)
         self.assertFalse((self.root / "manifests").exists())
+
+    def test_store_path_oserror_exits_10_and_rolls_the_manifest_back(self):
+        # Issue #251: a store-path OSError used to escape as a traceback with
+        # exit 1 and no message; now it is exit 10 with EVIDENCE NOT STORED,
+        # and the manifest installed moments earlier is rolled back.
+        (self.root / "sim/bench/evidence").write_text("blocks the summary directory\n")
+        from unittest import mock
+        store = {}
+        real_put = es.put_files
+        err = io.StringIO()
+        with mock.patch.object(es, "preflight", side_effect=None), \
+             mock.patch.object(es, "put_files",
+                               side_effect=lambda f, r: real_put(f, r, run=fake_klt(store))), \
+             contextlib.redirect_stderr(err):
+            rc = self.mod.main(["bench", "20261022-abc", str(self.staged),
+                                "--summary", str(self.summary)])
+        self.assertEqual(rc, 10)
+        self.assertIn("EVIDENCE NOT STORED", err.getvalue())
+        self.assertNotIn("Traceback", err.getvalue())
+        self.assertFalse(
+            (self.root / "manifests/artifacts/bench-20261022-abc.manifest.json").exists())
 
 
 if __name__ == "__main__":
