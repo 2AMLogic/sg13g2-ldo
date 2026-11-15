@@ -226,9 +226,67 @@
         "**Declare item 6 a gap** for the analog partition. The digital partition of the same block may still use `not_applicable`. **Several statistical rows, only some evidenced** (issue #2908): item 6 is a claim about *every* statistical row, so a manifest may declare the row set under `spec_rows.\"6\"` and cite one `klt yield` report per row set (`rows` on each citation). Item 6 grades `met` only when every declared row is covered by a passing citation against a ratified target. A row with no citation (`uncovered_rows`), a row declared a `gap` because no evidence can exist yet (`declared_gaps`), or a row declared `ratified: false` (`unratified_rows`, evidence against a proposed limit is provisional) grades `unmet` / `partial_coverage`, never `met`. Without a declaration the item grades as before; a `not_applicable` entry contradicts a declared row set and is `invalid_evidence`."
       ],
       "status": "unmet",
-      "reason": "no_evidence",
+      "reason": "partial_coverage",
       "graded_by_build": true,
-      "citation": null
+      "citation": null,
+      "citations_graded": [
+        {
+          "citation": "sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/yield/tt_27C.yield.json",
+          "rows": [
+            "dr0007-row2-output"
+          ],
+          "status": "met",
+          "reason": null
+        },
+        {
+          "citation": "sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/yield/ff_rwcs_125C.yield.json",
+          "rows": [
+            "dr0007-row2-output"
+          ],
+          "status": "met",
+          "reason": null
+        },
+        {
+          "citation": "sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/yield/fs_rbcs_-40C.yield.json",
+          "rows": [
+            "dr0007-row2-output"
+          ],
+          "status": "met",
+          "reason": null
+        },
+        {
+          "citation": "sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/yield/sf_rwcs_125C.yield.json",
+          "rows": [
+            "dr0007-row2-output"
+          ],
+          "status": "met",
+          "reason": null
+        },
+        {
+          "citation": "sim/ldo-cmos5l-monte-carlo/records/20261012-093854-934dbd7/yield/ss_rbcs_-40C.yield.json",
+          "rows": [
+            "dr0007-row2-output"
+          ],
+          "status": "met",
+          "reason": null
+        }
+      ],
+      "detail": {
+        "failed_rows": [],
+        "uncovered_rows": [],
+        "declared_gaps": [
+          {
+            "id": "dr0007-row8-current-limit",
+            "gap": "no current limiter is integrated in the core yet; no row-8 campaign exists (#164, #190)"
+          }
+        ],
+        "unratified_rows": [
+          "dr0007-row2-output"
+        ],
+        "row_sources": {
+          "dr0007-row2-output": "asserted"
+        }
+      }
     },
     {
       "tier": "T1",
@@ -282,7 +340,7 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:3eb892803ab81d4e21480e97ebe6eb8ef14786651aa69aebde4ef8669789f55c",
+        "content_hash": "sha256:bc80c4365529080a7ef5fb09ad67dd973b9438f16d24825edf1929da8d0cbf74",
         "input_verified": true,
         "exit_status": 0,
         "artifact_binding": {
@@ -291,7 +349,7 @@
             "path": "signoff/evidence/item9-testbenches.inventory.json",
             "scope": "repo"
           },
-          "content_hash": "sha256:3eb892803ab81d4e21480e97ebe6eb8ef14786651aa69aebde4ef8669789f55c",
+          "content_hash": "sha256:bc80c4365529080a7ef5fb09ad67dd973b9438f16d24825edf1929da8d0cbf74",
           "input_verified": true,
           "summary": "The shipped ngspice testbenches/templates, their cold-start entry points (run_*.sh) and experiment READMEs are committed; every constituent hash matches the inventory and each README names its entry point. Testbenches are NOT re-run by this attestation and no measurement result is claimed.",
           "source": "signoff/evidence/item9-testbenches.inventory.json"
@@ -313,7 +371,7 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:78a11513d547c2be8940d7b51cf3104407067fcbfa7a0c01bed08d24911d6da4",
+        "content_hash": "sha256:c0c9a8945ef1383fba0bf47bc0141f10b313f510b957fe34e5e48862744e3aed",
         "input_verified": true,
         "exit_status": 0,
         "artifact_binding": {
@@ -322,7 +380,7 @@
             "path": "signoff/evidence/item10-repo-hygiene.inventory.json",
             "scope": "repo"
           },
-          "content_hash": "sha256:78a11513d547c2be8940d7b51cf3104407067fcbfa7a0c01bed08d24911d6da4",
+          "content_hash": "sha256:c0c9a8945ef1383fba0bf47bc0141f10b313f510b957fe34e5e48862744e3aed",
           "input_verified": true,
           "summary": "README, LICENSE, spec index, agent instructions and the CI workflow are committed; every constituent hash matches the inventory and the CI workflow still defines the PDK-free signoff gates. Hygiene presence/freshness only.",
           "source": "signoff/evidence/item10-repo-hygiene.inventory.json"
