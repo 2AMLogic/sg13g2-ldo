@@ -20,8 +20,9 @@ accident. ``--design sg13g2`` is the default, so every pre-#20 invocation
 (including ``.github/workflows/ci.yml``'s) behaves exactly as before.
 
 Every ``<design dir>/*.sch`` cell netlists **as a ``.subckt``** (never a
-flat deck), with xschem's electrical rule check enabled (``xschem netlist
--erc``), into ``<design dir>/netlist/<cell>.spice``:
+flat deck) via ``klt netlist`` with xschem's electrical rule check enabled
+(``--erc``, i.e. ``xschem netlist -erc``), into
+``<design dir>/netlist/<cell>.spice``:
 
 * ``ldo_core.spice`` carries the whole hierarchy -- ``ldo_core`` plus every
   sub-circuit it instantiates (currently just ``ldo_erramp_placeholder``).
@@ -39,24 +40,35 @@ it fails if the committed netlists are stale, if the export is not
 reproducible, if xschem's own ERC reports a problem, or if the pinout/
 port-order invariants below are broken.
 
-This repo has no ``sim/`` harness yet (this issue is T1 item 1 only --
-schematic sources and their netlist, not verification; ``sim/`` stays an
-empty placeholder), so PDK discovery and the xschem invocation are
-self-contained in this one file rather than imported from a shared module,
-unlike 2AMLogic/gf180-ldo's ``design/netlist.py``, which delegates both to
-``sim/harness/pdk.py`` and ``sim/harness/xschem_export.py``. The
-control-flow *pattern* here (export, ERC-failure detection by scraping
-xschem's own stdout/stderr since a clean run prints nothing but a broken
-one does not reliably signal failure through the exit code alone across
-xschem versions, path normalization, --check diff mode, pinout invariants)
-is adapted from that file -- this is infrastructure/tooling, not circuit
-content, and is explicitly not covered by this issue's clean-room mandate
-on the schematic itself (see design/ldo_core.sch's own header note and
-design/README.md). The SG13G2 PDK-discovery search order below instead
-matches this fleet's own sg13g2-bandgap/sg13g2-pll ``sim/env.sh`` and
-``design/xschemrc`` convention (``PDK_ROOT``/``PDK`` env vars, then the
-usual open_pdks-shaped search roots), so every SG13G2 canary in the fleet
-agrees on how the PDK is found.
+The xschem invocation itself is delegated to ``klt netlist`` (issue #176,
+operator ruling of 2026-10-19: shared export with parity gates kept).
+klayout-tools owns headless xschem with a real exit status and a
+wall-clock timeout that escalates SIGTERM -> SIGKILL across the whole
+process group -- a raw ``xschem`` call has neither, a hung xschem is a
+known hazard on shared fleet workers, and ``klt netlist`` is the
+sanctioned entry point there. ``--erc`` turns on xschem's electrical
+rule check and turns findings into a non-zero exit, and ``--pdk``/
+``--pdk-root`` cross-check the resolved PDK against what ``design/
+xschemrc`` declares. What deliberately stays local in this thin wrapper:
+the per-design table and its PDK-variant authority (``find_pdk`` below --
+a design's symbols resolve against exactly one variant, and this repo,
+not the caller's environment, says which), the friendly ``PdkNotFound``
+hint, the deterministic two-line header and ``normalize()``, the exact
+byte-for-byte ``--check`` comparison (``klt netlist --check`` tolerates
+directory/format differences and is not equivalent to this repository's
+byte identity), the pinout/port-order/hierarchy invariants, and the
+``ERC_FAILURE_RE`` backstop over klt's captured diagnostics (``--erc``'s
+exit-1 behavior is proven by controls for the undriven-node, overlapped-
+instance and missing-symbol classes, not exhaustively for every wording
+the regex knows -- see its comment below). ``klt`` must be on ``PATH``;
+CI installs the pinned ``klayout-tools`` release (``KLAYOUT_TOOLS_VERSION``
+in ``.github/workflows/ci.yml``). The control-flow *pattern* here
+(export, ERC-failure detection, path normalization, --check diff mode,
+pinout invariants) is adapted from 2AMLogic/gf180-ldo's
+``design/netlist.py`` -- infrastructure/tooling, not circuit content,
+and explicitly not covered by this repo's clean-room mandate on the
+schematic itself (see design/ldo_core.sch's own header note and
+design/README.md).
 """
 
 from __future__ import annotations
@@ -114,12 +126,14 @@ SUBCKT_RE = re.compile(r"^\.subckt\s+(\S+)\s*(.*)$", re.IGNORECASE)
 SYM_PIN_RE = re.compile(r"^B\s+\d+\s+\S+\s+\S+\s+\S+\s+\S+\s*\{(.*)\}\s*$")
 SCH_PIN_RE = re.compile(r"^C\s+\{(?:i|o|io)pin\.sym\}\s+.*?\{(.*)\}\s*$")
 
-# xschem exits 0 in some versions even when its own ERC/connectivity checks
-# fail (they are printed, not always reflected in the exit code), so grep
-# stdout+stderr for the failure classes it emits during netlisting:
-# undriven/floating nodes, shorted nodes/pins, and missing symbols (a
-# silently-unresolved reference nets everything under an auto-generated
-# name instead of erroring).
+# klt netlist (with --erc) already fails with a real non-zero exit status
+# on the ERC findings it knows how to detect. This regex stays as a local
+# backstop over klt's captured stdout+stderr: xschem's own diagnostics
+# carry the undriven/floating, shorted and missing-symbol wordings below,
+# and --erc's exit behavior is proven by controls for the undriven-node,
+# overlapped-instance and missing-symbol classes -- not exhaustively for
+# every failure class the regex recognizes (issue #176's ruling: do not
+# drop an existing diagnostic during migration).
 ERC_FAILURE_RE = re.compile(
     r"(undriven node|open net|shorted output node|instance pin shorted|"
     r"symbol not found|IS MISSING)",
@@ -277,14 +291,6 @@ def cells(design: Design) -> list[str]:
     return [design.top_cell] + [n for n in names if n != design.top_cell]
 
 
-def xschem_env(pdk: Pdk, design: Design) -> dict[str, str]:
-    env = dict(os.environ)
-    env["PDK_ROOT"] = str(pdk.root)
-    env["PDK"] = pdk.variant
-    env["XSCHEM_USER_LIBRARY_PATH"] = str(design.dir)
-    return env
-
-
 def normalize(text: str) -> str:
     """Make xschem output machine-independent (and therefore diffable)."""
     text = text.replace(str(REPO_ROOT) + os.sep, "")
@@ -292,27 +298,44 @@ def normalize(text: str) -> str:
     return text.rstrip("\n") + "\n"
 
 
-def run_xschem_netlist(sch: Path, outdir: Path, env: dict[str, str]) -> str:
-    """Run xschem headless (batch, ERC on) on ``sch``, return normalized netlist text."""
+def run_klt_netlist(sch: Path, outdir: Path, pdk: Pdk) -> str:
+    """Export ``sch`` via ``klt netlist`` (ERC on); return normalized netlist text.
+
+    klt owns the headless xschem invocation: real exit status, wall-clock
+    timeout with SIGTERM -> SIGKILL across the process group, ``--erc``
+    electrical rule check, and the PDK cross-check against the rcfile. The
+    design's own variant (``pdk``) is passed explicitly so the environment
+    cannot silently swap PDKs; ``--no-provenance-header`` keeps the netlist
+    body free of klt's provenance comment (machine-dependent bytes), and
+    ``normalize()`` below still rewrites any absolute path xschem records.
+    """
     if not sch.is_file():
         raise ExportError(f"no such cell: {sch}")
+    out = outdir / f"{sch.stem}.spice"
     cmd = [
-        "xschem",
-        "-x",  # no X11: batch
-        "-q",  # quit when done
-        "-r",  # no tclreadline (stdin/stdout may be redirected)
-        "--rcfile", str(XSCHEMRC),
-        "-o", str(outdir),
+        "klt",
+        "netlist",
         str(sch),
-        "--command", "xschem netlist -erc",
+        "-o", str(out),
+        "--rcfile", str(XSCHEMRC),
+        "--pdk", pdk.variant,
+        "--pdk-root", str(pdk.root),
+        "--erc",
+        "--no-provenance-header",
     ]
-    proc = subprocess.run(cmd, env=env, capture_output=True, text=True)
-    produced = outdir / f"{sch.stem}.spice"
+    try:
+        proc = subprocess.run(cmd, capture_output=True, text=True)
+    except FileNotFoundError as exc:
+        raise ExportError(
+            "klt not found on PATH -- install the pinned klayout-tools "
+            "release (CI installs klayout-tools==${KLAYOUT_TOOLS_VERSION}; "
+            "see .github/workflows/ci.yml)"
+        ) from exc
     noisy = proc.stdout + proc.stderr
     erc_problem = ERC_FAILURE_RE.search(noisy)
-    if proc.returncode != 0 or not produced.is_file() or erc_problem:
+    if proc.returncode != 0 or not out.is_file() or erc_problem:
         raise ExportError(
-            f"xschem failed for {sch.stem} (exit {proc.returncode})\n"
+            f"klt netlist failed for {sch.stem} (exit {proc.returncode})\n"
             f"--- stdout ---\n{proc.stdout}\n--- stderr ---\n{proc.stderr}"
         )
     header = (
@@ -320,7 +343,7 @@ def run_xschem_netlist(sch: Path, outdir: Path, env: dict[str, str]) -> str:
         f"{sch.relative_to(REPO_ROOT)}\n"
         f"* Do not edit: edit the schematic and re-run the export.\n"
     )
-    return header + normalize(produced.read_text())
+    return header + normalize(out.read_text())
 
 
 def symbol_pins(design: Design, cell: str) -> list[str] | None:
@@ -450,7 +473,6 @@ def run(
     except PdkNotFound as exc:
         print(f"design/netlist.py: {exc}", file=sys.stderr)
         return 2
-    env = xschem_env(pdk, design)
 
     wanted = [only] if only else cells(design)
     netlists: dict[str, str] = {}
@@ -458,7 +480,7 @@ def run(
         outdir = Path(tmp)
         for cell in wanted:
             sch = design.sch(cell)
-            netlists[cell] = run_xschem_netlist(sch, outdir, env)
+            netlists[cell] = run_klt_netlist(sch, outdir, pdk)
             if verbose:
                 print(f"  netlisted {cell} (PDK: {pdk.path}, via {pdk.source})")
 

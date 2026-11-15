@@ -607,8 +607,8 @@ double-counts the width offset), not DR-0017's `≈ 7.4 µm`. `Ccl` is a
 model) and the DC smoke decks replace it with an open circuit.
 
 **Netlisting.** `python3 design/netlist.py --design sg13cmos5l` (needs
-xschem ≥ 3.4.7 and the PDK the committed netlists were made with; see
-"Exporting and checking this branch").
+xschem ≥ 3.4.7, `klt`, and the PDK the committed netlists were made with;
+see "Exporting and checking this branch").
 
 ### PDK caveats honoured (evidence rules carried in)
 
@@ -718,8 +718,9 @@ python3 design/netlist.py --design sg13cmos5l --check -v # verify + ERC
 python3 design/netlist.py --design sg13cmos5l --cell ldo_erramp_cmos5l -v
 ```
 
-Requirements are the same as the SG13G2 branch (**`xschem` >= 3.4.7**), plus
-an `ihp-sg13cmos5l` install *next to* an `ihp-sg13g2` install under the same
+Requirements are the same as the SG13G2 branch (**`xschem` >= 3.4.7**,
+**`klt`**), plus an `ihp-sg13cmos5l` install *next to* an `ihp-sg13g2`
+install under the same
 `PDK_ROOT`. `--design` selects the source directory, the top cell, the
 expected port list, and the PDK variant together (see `DESIGNS` in
 `design/netlist.py`), so neither branch can be netlisted against the other's
@@ -749,14 +750,18 @@ python3 design/netlist.py --check    # verify committed netlists are current
 python3 design/netlist.py --cell ldo_erramp_placeholder -v
 ```
 
-Requirements: **`xschem` >= 3.4.7** on `PATH`, plus the `ihp-sg13g2` PDK
-installed. `design/netlist.py` resolves the PDK itself (`PDK_ROOT`/`PDK` env
-vars, falling back to the usual open_pdks-shaped search roots:
-`/usr/share/pdk`, `/usr/local/share/pdk`, `~/share/pdk`, `~/.ciel`,
-`~/.volare`) — this repo has no `sim/` harness yet, so there is no second
-PDK-discovery implementation to keep in sync; see `design/netlist.py`'s own
-module docstring for the full resolution order and its relationship to this
-fleet's `sg13g2-bandgap`/`sg13g2-pll` `sim/env.sh` convention.
+Requirements: **`xschem` >= 3.4.7** and **`klt`** (klayout-tools; CI
+installs the pinned `KLAYOUT_TOOLS_VERSION` release) on `PATH`, plus the
+`ihp-sg13g2` PDK installed. `design/netlist.py` resolves the PDK itself
+(`PDK_ROOT`/`PDK` env vars, falling back to the usual open_pdks-shaped
+search roots: `/usr/share/pdk`, `/usr/local/share/pdk`, `~/share/pdk`,
+`~/.ciel`, `~/.volare`) — PDK resolution stays local to the thin wrapper
+on purpose (issue #176's ruling: the design, not the caller's
+environment, owns which variant each branch netlists against, and the
+provenance/`PdkNotFound` handling is this repo's); see
+`design/netlist.py`'s own module docstring for the full resolution order
+and its relationship to this fleet's `sg13g2-bandgap`/`sg13g2-pll`
+`sim/env.sh` convention.
 
 > **Why the version floor:** Ubuntu 24.04's apt package (xschem 3.4.4-1) has
 > a `top_is_subckt` regression — it fails to wrap the top-of-invocation cell
@@ -776,28 +781,38 @@ fleet's `sg13g2-bandgap`/`sg13g2-pll` `sim/env.sh` convention.
 > [3.4.7+ release tarball](https://github.com/StefanSchippers/xschem/releases),
 > then `./configure && make && sudo make install`.
 
-Under the hood, per cell, with xschem's electrical rule check enabled:
+Under the hood, per cell, with xschem's electrical rule check enabled,
+the export is delegated to klayout-tools' `klt netlist` (issue #176):
 
 ```bash
-xschem -x -q -r --rcfile design/xschemrc -o <outdir> design/<cell>.sch \
-  --command "xschem netlist -erc"
+klt netlist design/<cell>.sch -o <tmpdir>/<cell>.spice \
+  --rcfile design/xschemrc --pdk <variant> --pdk-root <root> \
+  --erc --no-provenance-header
 ```
 
-`-x` batch (no X11), `-q` quit when done, `-r` no tclreadline.
+`klt` owns the headless xschem invocation (`-n -s -q -x -r`, always):
+a real exit status, a wall-clock timeout that escalates SIGTERM ->
+SIGKILL across the whole process group (a raw `xschem` call has neither,
+and a hung xschem is a known hazard on shared fleet workers), `--erc`
+(xschem's `netlist -erc` electrical rule check, surfaced as a non-zero
+exit), `--no-provenance-header` (no machine-dependent provenance comment
+in the netlist body), and the PDK cross-check against the rcfile.
 `design/xschemrc` sets the library path (xschem generic devices → PDK
 symbols → `design/`) and, critically, `top_is_subckt 1`: **every** cell —
 including the top — netlists as a `.subckt`, never as a flat simulation
 deck. Cells here are blocks a future testbench instantiates; the deck
 belongs to the testbench.
 
-`netlist.py` then rewrites the absolute paths xschem records in its
-`sch_path`/`sym_path` comments to repo-relative form, and treats any of
-xschem's undriven-node / open-net / shorted-node / shorted-pin /
-missing-symbol messages as a hard failure (xschem does not reliably signal
-these through its exit code alone, so a naive exit-code check would miss
-them). That is what makes the export **deterministic and ERC-checked**: the
-same sources produce byte-identical netlists on any machine, and a broken
-wire never silently ships.
+`netlist.py` then prepends its two-line provenance header, rewrites the
+absolute paths xschem records in its `sch_path`/`sym_path` comments to
+repo-relative form, and treats any of xschem's undriven-node / open-net /
+shorted-node / shorted-pin / missing-symbol messages in klt's captured
+diagnostics as a hard failure (`--erc`'s exit-1 behavior is proven by
+controls for the undriven-node, overlapped-instance and missing-symbol
+classes; the message regex stays as a backstop so no known diagnostic is
+dropped). That is what makes the export **deterministic and
+ERC-checked**: the same sources produce byte-identical netlists on any
+machine, and a broken wire never silently ships.
 
 ### What `--check` verifies
 
