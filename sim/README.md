@@ -187,6 +187,53 @@ rename, both sides must be listed). There is no blanket exception for any
 class; the historical `coverage-inventory.*` edits in `434c822` are not
 grandfathered and are a negative test.
 
+## Stored evidence
+
+New evidence bytes go to the fleet artifact store, not to git (issue #183).
+Git keeps a **manifest** per run, `manifests/artifacts/<bench>-<run-id>.manifest.json`,
+plus the run's Markdown summary. Evidence bytes are private and manifests are
+public: a manifest `uri` is the logical `artifact:<key>`, which only the
+broker resolves, so it names no storage location.
+
+**History is untouched.** Everything already committed under `sim/*/{records,
+corners,...}/` (including the per-corner `.log` files that `.gitignore` keeps
+as committed evidence) stays exactly where it is; this rule applies to runs
+minted after #183 and nothing is migrated or deleted.
+
+Flow for a new campaign (corner grids and Monte Carlo still go to the batch
+fleet via `klt sim` / `run_sweep.sh --batch`, never a hand-launched local grid):
+
+1. Stage the bulk outputs (rawfiles, per-corner `.cir`/`.csv`/`.log`) in
+   `sim/.work/<run-id>/` (git-ignored) or outside the repo.
+2. `python3 sim/run_store_evidence.py <bench> <run-id> <staged-dir> --summary <summary.md>`
+   puts every file through `klt artifact put` and commits exactly two files:
+   `manifests/artifacts/<bench>-<run-id>.manifest.json` and
+   `sim/<bench>/evidence/<run-id>.md` (the summary plus a "Stored evidence"
+   table; `--kind` picks another protected directory). Existing manifests or
+   summaries are never overwritten.
+3. Commit the manifest and the summary (and the usual `records/` JSON/Markdown).
+   Verify the bytes with `klt artifact verify <manifest>` or
+   `python3 scripts/check_artifact_manifests.py verify <manifest>`.
+
+Configuration is the environment only: `KLT_ARTIFACT_BROKER` (broker base URL)
+and optionally `KLT_ARTIFACT_REPO`. No default exists and none is written in
+this repo. `klt` must be klayout-tools `7e3561f` or later (first revision that
+writes `artifact:<key>`); the writer probes the behaviour.
+
+**Fail closed.** If the broker is unset, unreachable or refuses, or `klt` lacks
+`artifact put` or is too old, the writer exits 10 with nothing committed and
+the staged bytes left in place. There is no fallback that commits the bytes
+instead.
+
+CI job `artifact-manifests` runs `scripts/check_artifact_manifests.py check`
+(schema, `artifact:` uris only, stored bytes not also committed) and the unit
+tests for the checker and writer. It never contacts the broker, so a passing
+job means schema-valid, not hash-verified. This repo has no evidence-size
+budget, so there is no "count manifests, not bytes" rule to apply. Manifests
+are append-only evidence by convention (never edit or delete one);
+`sim/tools/check_append_only.py` covers only the six `sim/*/<class>/**`
+classes and does not gate `manifests/`.
+
 ## OSDI device models: required setup
 
 SG13G2's HV/LV MOS (PSP103.6) compact model is Verilog-A; ngspice can only

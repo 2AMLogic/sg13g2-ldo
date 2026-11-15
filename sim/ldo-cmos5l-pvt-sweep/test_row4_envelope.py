@@ -261,10 +261,6 @@ class CommittedRecords(unittest.TestCase):
                             for p in problems), problems)
 
 
-if __name__ == "__main__":
-    unittest.main()
-
-
 class ManifestCoupling(unittest.TestCase):
     """The manifest side of the citation: a relaxation there must fail too."""
 
@@ -332,3 +328,7 @@ class ManifestCoupling(unittest.TestCase):
         del m["evidence"]["5"]
         self.write(m)
         self.assertEqual(ev.cited_record(), (None, None))
+
+
+if __name__ == "__main__":
+    unittest.main()
