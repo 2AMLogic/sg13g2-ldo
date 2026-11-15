@@ -108,6 +108,9 @@ ITEMS = {
             f"{_SIM}/batch_backend.py",
             # issue #128: loop-gain AC ceiling contract used by run_sweep.sh
             f"{_SIM}/ac_sweep.py",
+            # issue #236: the single @@TOKEN@@ renderer every sweep/campaign
+            # driver calls (was eight site-local substitution chains)
+            "sim/tools/render_deck.py",
             f"{_SIM}/testbench/tb_dcsweep_cmos5l.spice.tmpl",
             f"{_SIM}/testbench/tb_loopgain_cmos5l.spice.tmpl",
             # issue #135: two-injection (Middlebrook) loop-gain benches and campaign driver

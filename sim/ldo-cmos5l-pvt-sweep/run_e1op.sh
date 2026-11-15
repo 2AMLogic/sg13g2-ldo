@@ -134,22 +134,18 @@ diff <(sed -n 's/^wrdata \S* //p' "${SCRIPT_DIR}/testbench/tb_e1op_cmos5l.spice.
 
 render_deck() {  # <mos> <res> <temp> <load_a> <cout_f> <out> <csv>
   local mos="$1" res="$2" temp="$3" load_a="$4" cout_f="$5" out="$6" csv="$7"
-  sed \
-    -e "s|@@PDK_ROOT@@|${PDK_ROOT}|g" \
-    -e "s|@@PDK@@|${PDK}|g" \
-    -e "s|@@OSDI_DIR@@|${OSDI_DIR}|g" \
-    -e "s|@@MOS_SECTION@@|${mos}|g" \
-    -e "s|@@RES_SECTION@@|${res}|g" \
-    -e "s|@@CAP_SECTION@@|cap_typ|g" \
-    -e "s|@@TEMP@@|${temp}|g" \
-    -e "s|@@CC_W@@|170u (nominal)|g" \
-    -e "s|@@DESIGN_NETLIST@@|${DESIGN_NETLIST}|g" \
-    -e "s|@@LOAD_A@@|${load_a}|g" \
-    -e "s|@@COUT_F@@|${cout_f}|g" \
-    -e "s|@@COUT_BOTTOM@@|0|g" \
-    -e "s|@@ESR_LINE@@|* ESR=0: Cout wired directly to ground (all four E1 points)|g" \
-    -e "s|@@DC_CSV@@|${csv}|g" \
-    "${SCRIPT_DIR}/testbench/tb_e1op_cmos5l.spice.tmpl" > "${out}"
+  # One renderer for every deck (#236): sim/tools/render_deck.py, the same
+  # module run_sweep.sh and run_loopgain2.sh call; it fails loudly on any
+  # unsubstituted @@TOKEN@@.
+  python3 "${SIM_DIR}/tools/render_deck.py" \
+    "${SCRIPT_DIR}/testbench/tb_e1op_cmos5l.spice.tmpl" "${out}" \
+    "PDK_ROOT=${PDK_ROOT}" "PDK=${PDK}" "OSDI_DIR=${OSDI_DIR}" \
+    "MOS_SECTION=${mos}" "RES_SECTION=${res}" "CAP_SECTION=cap_typ" \
+    "TEMP=${temp}" "CC_W=170u (nominal)" \
+    "DESIGN_NETLIST=${DESIGN_NETLIST}" "LOAD_A=${load_a}" "COUT_F=${cout_f}" \
+    "COUT_BOTTOM=0" \
+    "ESR_LINE=* ESR=0: Cout wired directly to ground (all four E1 points)" \
+    "DC_CSV=${csv}"
 }
 
 point_field() {  # <index> <field 2..6: mos res temp load_a cout_f>

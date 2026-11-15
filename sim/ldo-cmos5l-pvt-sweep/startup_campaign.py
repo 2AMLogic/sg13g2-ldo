@@ -44,7 +44,9 @@ import time
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.abspath(os.path.join(HERE, "..", ".."))
 sys.path.insert(0, HERE)
+sys.path.insert(0, os.path.join(HERE, "..", "tools"))
 import batch_backend as bb  # noqa: E402
+import render_deck  # noqa: E402
 import startup_eval as se  # noqa: E402
 
 TEMPLATE = os.path.join(HERE, "testbench", "tb_startup_cmos5l.spice.tmpl")
@@ -110,7 +112,6 @@ def halfstep_points(binding):
 
 # ---- request generation ----------------------------------------------------
 def render_body(p, design_rel, preamble_rel):
-    tmpl = open(TEMPLATE, encoding="utf-8").read()
     r = load_resistor(p["load_ma"])
     rload = f"Rload VOUT 0 {r}" if r else "* Rload omitted: load = 0 (output open)"
     if p["esr_mohm"] == 0:
@@ -118,14 +119,20 @@ def render_body(p, design_rel, preamble_rel):
     else:
         bottom, esr_line = "COUT_ESR", f"Resr COUT_ESR 0 {p['esr_mohm']}e-3"
     vin = f"{p['vin']:.2f}"
-    body = (tmpl.replace("@@DESIGN_NETLIST@@", design_rel)
-            .replace("@@VIN_V@@", vin)
-            .replace("@@RLOAD_LINE@@", rload)
-            .replace("@@COUT_BOTTOM@@", bottom)
-            .replace("@@COUT_F@@", f"{p['cout_nf']}n")
-            .replace("@@ESR_LINE@@", esr_line))
-    if "@@" in body:
-        raise CampaignError("unsubstituted placeholder in rendered body")
+    # One renderer for every deck (#236): sim/tools/render_deck.py, the same
+    # module the .sh drivers call. Its universal leftover-@@ guard replaces
+    # the local one this function used to carry (same CampaignError type).
+    try:
+        body = render_deck.render(open(TEMPLATE, encoding="utf-8").read(), {
+            "DESIGN_NETLIST": design_rel,
+            "VIN_V": vin,
+            "RLOAD_LINE": rload,
+            "COUT_BOTTOM": bottom,
+            "COUT_F": f"{p['cout_nf']}n",
+            "ESR_LINE": esr_line,
+        })
+    except render_deck.RenderError as exc:
+        raise CampaignError(str(exc)) from exc
     lines = body.splitlines()
     # the preamble (pre_osdi of the staged binaries) goes in front, as in
     # batch_backend.py
