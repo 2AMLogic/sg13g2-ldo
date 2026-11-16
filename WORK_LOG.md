@@ -8,6 +8,7 @@ Chronological record of recently merged pull requests and closed issues, maintai
 
 ### 2026-11-16
 
+- **PR #277**: chore(loom): resync installed Loom to v0.19.1302
 - **PR #294**: docs: Tree docstring says four gated files, matching FILES in check_pin_sync tests
 - **Issue #289** (closed): Two stale descriptions of check_pin_sync.py's scope after #267 widened the table to six pairs
 - **PR #291**: fix: fail closed when put_files' manifest temp dir raises OSError
