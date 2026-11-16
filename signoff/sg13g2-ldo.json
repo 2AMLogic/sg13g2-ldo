@@ -57,7 +57,7 @@
   "evidence": {
     "1": {
       "file": "signoff/evidence/item1-design-sources.envelope.json",
-      "content_hash": "sha256:485e2783f46ba934244b3d9eb9d72239d428140162bd4c56c6a57a94f02c8836"
+      "content_hash": "sha256:3dd788327acf44e47d91e71ba47b01e0c96a9e95fdfcf2edb8a28ce9ded76127"
     },
     "2": {
       "file": "signoff/evidence/item2-layout.envelope.json",
@@ -123,11 +123,11 @@
     },
     "9": {
       "file": "signoff/evidence/item9-testbenches.envelope.json",
-      "content_hash": "sha256:11c6c46567ba47dc0efa2ec1b3730e3ac89056a67ad70d28919563c6e43c48c2"
+      "content_hash": "sha256:3d960e0355b78ed9ea873d14597eda2c413642ff78d74cf175d81c41153f416b"
     },
     "10": {
       "file": "signoff/evidence/item10-repo-hygiene.envelope.json",
-      "content_hash": "sha256:440ac6dea8ca2b706d27847fff10db102f2a67ccdda023ca4fbedc152fa358f2"
+      "content_hash": "sha256:c0eb904b26ffb2763a5a47b59f5bff748029da3636f1d9b818b74490cd2735ff"
     },
     "11": [
       {

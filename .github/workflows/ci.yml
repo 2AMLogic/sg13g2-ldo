@@ -11,7 +11,9 @@ name: CI
 #                                 netlists reproduce byte-for-byte from the
 #                                 .sch sources, xschem's ERC is clean, and
 #                                 the pinout invariants hold. Needs xschem
-#                                 plus the ihp-sg13g2 AND ihp-sg13cmos5l PDKs.
+#                                 plus the ihp-sg13g2 AND ihp-sg13cmos5l PDKs,
+#                                 and klt (the pinned release; the export is
+#                                 delegated to `klt netlist`, issue #176).
 #   pass-device-screening-check   sim/pass-device-screening AND
 #                                 sim/pass-device-screening-hbt run_sweep.sh
 #                                 --check-env (ngspice + ihp-sg13g2 PDK; the
@@ -198,6 +200,15 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
+      - name: Install klayout-tools at the pinned release
+        # design/netlist.py delegates the xschem export to `klt netlist`
+        # (issue #176) -- bounded process-group execution, --erc, and the
+        # PDK/rcfile cross-check -- so this job now runs klt itself and
+        # installs the same pinned release every other klt-running job uses.
+        run: |
+          pip install "klayout-tools==${KLAYOUT_TOOLS_VERSION}"
+          klt --version
 
       - name: Build and install xschem 3.4.7 from source (top_is_subckt regression)
         # Ubuntu 24.04's apt package (3.4.4-1) mis-handles top_is_subckt --
