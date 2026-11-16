@@ -68,6 +68,43 @@ class InventoryCheck(unittest.TestCase):
         open(self.p("sim/ldo-cmos5l-pvt-sweep/testbench/tb_new.spice.tmpl"), "w").write("x")
         self.assertFails("not inventoried")
 
+    def test_unlisted_companion_test_beside_pinned_driver(self):
+        # issue #246: the companion-test rule. A pinned driver that has no
+        # sibling test stays fine (baseline passes), but the moment such a
+        # test appears on disk it must be pinned -- check() has to name it,
+        # mirroring the glob pass above.
+        open(self.p("sim/ldo-cmos5l-enable/test_derive.py"), "w").write("x")
+        self.assertFails("test_derive.py")
+
+    def test_companion_test_removed_from_files_is_named(self):
+        # issue #246: the failure direction that motivated the rule. Drop a
+        # pinned companion test from the declared files of the COPY's own
+        # generator and run that copy: the test still exists on disk beside
+        # its pinned driver, and check() must fail naming the file (before
+        # the stale-inventory comparison can mask it).
+        rel = "signoff/evidence_inventory.py"
+        text = open(self.p(rel), encoding="utf-8").read()
+        needle = 'f"{_SIM}/test_row4_envelope.py",\n'
+        self.assertIn(needle, text)
+        open(self.p(rel), "w", encoding="utf-8").write(text.replace(needle, "", 1))
+        r = subprocess.run(
+            [sys.executable, "-I", self.p(rel), "check"],
+            env=dict(os.environ, EVIDENCE_ROOT=self.tmp),
+            capture_output=True, text=True,
+        )
+        self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+        self.assertIn("test_row4_envelope.py", r.stdout)
+        self.assertIn("companion test of", r.stdout)
+
+    def test_pinned_test_is_not_treated_as_its_own_driver(self):
+        # issue #246 edge case: the rule walks pinned non-test *.py only --
+        # a pinned test_<name>.py must not send the check hunting for a
+        # test_test_<name>.py sibling. Plant one that would only be demanded
+        # by the buggy reading; check() must still pass.
+        open(self.p("sim/ldo-cmos5l-pvt-sweep/test_test_e1_oppoints.py"), "w").write("x")
+        r = _run(self.tmp)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+
     def test_swapped_t1_item(self):
         path = self.p(ei._env_path(9))
         env = json.load(open(path))
