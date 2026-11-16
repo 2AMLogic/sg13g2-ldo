@@ -130,7 +130,7 @@
       "revision": "f7bca32694fe3d58be0cc7d9df4b9f5db7161a14"
     },
     "tools": {
-      "klt": "0.8.0",
+      "klt": "0.9.2",
       "ngspice": ">=46 (OSDI ABI v0.4; records generated with ngspice-46)",
       "openvaf-r": "v24.0.1mob"
     }

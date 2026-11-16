@@ -290,7 +290,14 @@ jobs:
             --check signoff/evidence/item1-design-sources.envelope.json
 
   pass-device-screening-check:
-    name: sim/pass-device-screening{,-hbt} run_sweep.sh --check-env + item 9 attest (ngspice + both PDKs + klt)
+    # The `name:` below is a REQUIRED status-check context (repo ruleset
+    # "required-checks") and must stay byte-identical to main's: GitHub
+    # matches required checks by context string, so renaming the job
+    # orphans the old context and blocks every merge until an operator
+    # edits the ruleset. This job's item 9 attest duty (and the cmos5l
+    # fetch + OSDI build it adds) is documented in the header comment's
+    # pass-device-screening-check entry.
+    name: sim/pass-device-screening{,-hbt} run_sweep.sh --check-env (ngspice + ihp-sg13g2 PDK + klt)
     # Pinned to 24.04 (noble): ubuntu-latest rolled to 26.04, which lacks the
     # libxml2.so.2 that the pinned openvaf-r links against (#186). The pins in
     # sim/tools/build-osdi.sh (openvaf-r, noble libllvm21) are noble-specific.

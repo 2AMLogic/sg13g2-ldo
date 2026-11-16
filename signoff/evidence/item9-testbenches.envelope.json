@@ -821,7 +821,7 @@
         "role": "tools",
         "passed": true,
         "value": {
-          "klt": "0.8.0",
+          "klt": "0.9.2",
           "ngspice": ">=46 (OSDI ABI v0.4; records generated with ngspice-46)",
           "openvaf-r": "v24.0.1mob"
         }
@@ -838,7 +838,7 @@
         "path": "signoff/evidence/item9-testbenches.inventory.json",
         "scope": "repo"
       },
-      "content_hash": "sha256:3ed4f6ca5d8e258dca66e99c544cee9842ce05926f90e18b1b7f73816883aa50"
+      "content_hash": "sha256:e7d7da8923194ad9ae1cc896f3be35ffcb7d991be3be888b90abf0480d936c26"
     }
   }
 }
