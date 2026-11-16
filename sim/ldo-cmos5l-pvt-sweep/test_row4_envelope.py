@@ -261,6 +261,92 @@ class CommittedRecords(unittest.TestCase):
                             for p in problems), problems)
 
 
+class PdkPinProjection(unittest.TestCase):
+    """DR-0021: the PDK pin is judged on a canonical projection, not file bytes.
+
+    Runs against a throwaway REPO/ROOT so the committed fact sheet and records
+    are never touched.
+    """
+
+    RID = "20260101-000000-test"
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp(prefix="row4-pdkpin-test.")
+        self._repo, self._root = ev.REPO, ev.ROOT
+        ev.REPO = self.tmp
+        ev.ROOT = os.path.join(self.tmp, "row4-envelope")
+        os.makedirs(os.path.join(ev.ROOT, self.RID))
+        os.makedirs(os.path.join(self.tmp, "sim"))
+        self.pin = os.path.join(self.tmp, ev.PDK_PIN)
+        self.doc = {"_comment": "prose", "fetch_method": "prose",
+                    "pinned_commit": "a" * 40, "pinned_tarball_sha256": "b" * 64,
+                    "pinned_tarball_url": "https://example.invalid/x.tar.gz",
+                    "subtree": "ihp-sg13cmos5l/"}
+        self.write_pin(self.doc)
+
+    def tearDown(self):
+        ev.REPO, ev.ROOT = self._repo, self._root
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def write_pin(self, doc, **kw):
+        with open(self.pin, "w") as f:
+            json.dump(doc, f, **kw)
+
+    def write_prov(self, prov):
+        with open(os.path.join(ev.ROOT, self.RID, "provenance.json"), "w") as f:
+            json.dump(prov, f)
+
+    def new_record(self):
+        self.write_prov({"input_sha256": {},
+                         ev.PDK_PIN_PROJECTION_FIELD: ev.pdk_pin_projection_sha256()})
+
+    def edit(self, **changes):
+        self.write_pin({**self.doc, **changes})
+
+    def test_new_record_does_not_byte_pin_the_fact_sheet(self):
+        self.assertNotIn(ev.PDK_PIN, ev.INPUTS)
+
+    def test_prose_edit_keeps_new_record_fresh(self):
+        self.new_record()
+        self.edit(fetch_method="reworded", _comment="also reworded")
+        self.assertEqual(ev.stale_inputs(self.RID), [])
+
+    def test_key_order_and_whitespace_do_not_matter(self):
+        self.new_record()
+        self.write_pin(dict(reversed(list(self.doc.items()))), indent=4)
+        self.assertEqual(ev.stale_inputs(self.RID), [])
+
+    def test_each_projected_key_change_makes_the_citation_stale(self):
+        self.new_record()
+        for key in ev.PDK_PIN_KEYS:
+            with self.subTest(key=key):
+                self.edit(**{key: self.doc[key] + "x"})
+                out = ev.stale_inputs(self.RID)
+                self.assertEqual(len(out), 1, out)
+                self.assertIn("stale", out[0])
+
+    def test_missing_projected_key_is_an_error_not_a_skip(self):
+        self.new_record()
+        for key in ev.PDK_PIN_KEYS:
+            with self.subTest(key=key):
+                doc = dict(self.doc)
+                del doc[key]
+                self.write_pin(doc)
+                out = ev.stale_inputs(self.RID)
+                self.assertEqual(len(out), 1, out)
+                self.assertIn(key, out[0])
+                with self.assertRaises(ValueError):
+                    ev.pdk_pin_projection_sha256()
+
+    def test_legacy_record_still_fails_on_any_byte_change(self):
+        self.write_prov({"input_sha256": {ev.PDK_PIN: ev.sha256_file(self.pin)}})
+        self.assertEqual(ev.stale_inputs(self.RID), [])
+        self.edit(fetch_method="reworded")
+        out = ev.stale_inputs(self.RID)
+        self.assertEqual(len(out), 1, out)
+        self.assertIn("changed since the run", out[0])
+
+
 class ManifestCoupling(unittest.TestCase):
     """The manifest side of the citation: a relaxation there must fail too."""
 

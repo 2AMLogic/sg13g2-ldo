@@ -11,7 +11,10 @@ the inventories, and checks -- stdlib only, no PDK, no klt, no simulator -- that
   1. each committed inventory is byte-identical to what the declared file set
      hashes to NOW (a mutated, deleted or added-by-glob constituent fails);
   2. each completeness glob is fully covered (a new testbench / GDS that nobody
-     inventoried fails rather than being silently unattested);
+     inventoried fails rather than being silently unattested), and each pinned
+     non-test ``*.py`` is pinned together with its sibling ``test_<name>.py``
+     when that test exists (issue #246: an edit that weakens a cited
+     negative-control test must move a hash, not slip through unpinned);
   3. each envelope declares the right ``t1_item``, names its inventory in
      ``provenance.input.path`` and records that inventory's current hash;
   4. the manifest pins that same hash for the item;
@@ -62,6 +65,10 @@ ITEMS = {
         "files": [
             "design/README.md",
             "design/netlist.py",
+            # issue #246: netlist.py's companion unit test -- a pinned driver's
+            # sibling test_<name>.py is pinned beside it, so the pair's hashes
+            # move together.
+            "design/test_netlist.py",
             "design/xschemrc",
             "design/sg13cmos5l/ldo_core_cmos5l.sch",
             "design/sg13cmos5l/ldo_core_cmos5l.sym",
@@ -113,11 +120,18 @@ ITEMS = {
             f"{_SIM}/sweep_report.py",
             f"{_SIM}/test_sweep_report.py",
             f"{_SIM}/batch_backend.py",
+            # issue #246: every driver below gets its sibling test_<name>.py
+            # pinned beside it (same rule as item 1) -- the check enforces the
+            # pairing, so weakening one of the cited negative-control tests
+            # cannot land without a hash moving.
+            f"{_SIM}/test_batch_backend.py",
             # issue #128: loop-gain AC ceiling contract used by run_sweep.sh
             f"{_SIM}/ac_sweep.py",
+            f"{_SIM}/test_ac_sweep.py",
             # issue #236: the single @@TOKEN@@ renderer every sweep/campaign
             # driver calls (was eight site-local substitution chains)
             "sim/tools/render_deck.py",
+            "sim/tools/test_render_deck.py",
             f"{_SIM}/testbench/tb_dcsweep_cmos5l.spice.tmpl",
             f"{_SIM}/testbench/tb_loopgain_cmos5l.spice.tmpl",
             # issue #135: two-injection (Middlebrook) loop-gain benches and campaign driver
@@ -125,6 +139,7 @@ ITEMS = {
             f"{_SIM}/testbench/tb_loopgain2i_cmos5l.spice.tmpl",
             f"{_SIM}/run_loopgain2.sh",
             f"{_SIM}/loopgain2.py",
+            f"{_SIM}/test_loopgain2.py",
             f"{_SIM}/row10_loopgain2.py",
             # issue #158: E1 DC operating-point bench, campaign driver and reducer
             f"{_SIM}/run_e1op.sh",
@@ -135,9 +150,12 @@ ITEMS = {
             # issue #69: startup bench, its batch driver and evaluator
             f"{_SIM}/testbench/tb_startup_cmos5l.spice.tmpl",
             f"{_SIM}/startup_campaign.py",
+            f"{_SIM}/test_startup_campaign.py",
             f"{_SIM}/startup_eval.py",
+            f"{_SIM}/test_startup_eval.py",
             # issue #89: off-state supply current read from committed startup traces
             f"{_SIM}/startup_offstate.py",
+            f"{_SIM}/test_startup_offstate.py",
             # issue #70: row-4 dropout bench (DR-0012), its batch driver and reducer
             f"{_SIM}/testbench/tb_dropout_cmos5l.spice.tmpl",
             f"{_SIM}/dropout_campaign.py",
@@ -146,6 +164,10 @@ ITEMS = {
             # cites) and its generator / offline checker
             f"{_SIM}/testbench/tb_row4_envelope_cmos5l.spice.tmpl",
             f"{_SIM}/row4_envelope.py",
+            # issue #246: the file signoff/README.md cites by name as carrying
+            # item 5's negative controls -- pinned so weakening one of them
+            # moves a hash and trips the gate.
+            f"{_SIM}/test_row4_envelope.py",
             f"{_MC}/README.md",
             f"{_MC}/run_campaign.sh",
             f"{_MC}/runner-preamble.cir",
@@ -442,6 +464,20 @@ def check() -> int:
                 for hit in _glob(pat):
                     if hit not in covered and "/netlist-snapshots/" not in hit:
                         errs.append(f"{tag}: {hit} matches {pat!r} but is not inventoried")
+            # issue #246, the companion-test rule: a pinned non-test *.py whose
+            # sibling test_<name>.py exists on disk must pin that test in the
+            # same item. A driver's unit tests are part of what the item
+            # attests; leaving them out let the one file the README cites by
+            # name (item 5's negative controls) drift with no hash moving.
+            for p in sorted(covered):
+                d, b = os.path.split(p)
+                if not b.endswith(".py") or b.startswith("test_"):
+                    continue
+                t = os.path.join(d, "test_" + b)
+                if os.path.isfile(os.path.join(ROOT, t)) and t not in covered:
+                    errs.append(
+                        f"{tag}: {t} exists but is not inventoried (companion test of {p})"
+                    )
             if any(e.startswith(tag + ":") for e in errs):
                 continue
             inv_text = _dump(_inventory(item))

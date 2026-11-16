@@ -234,7 +234,7 @@
     },
     {
       "path": "sim/ldo-cmos5l-pvt-sweep/README.md",
-      "sha256": "sha256:dbabcb14424a892449907b0046e32fb1331fbedcd9c59d444d2eb523ff0db07e"
+      "sha256": "sha256:9eaf50b7beaa47ea6179be752f89257cccd530e1812f3298c41abef179e9dcaa"
     },
     {
       "path": "sim/ldo-cmos5l-pvt-sweep/ac_sweep.py",
@@ -266,7 +266,7 @@
     },
     {
       "path": "sim/ldo-cmos5l-pvt-sweep/row4_envelope.py",
-      "sha256": "sha256:b2b8c97ca86b45c344f9ca88172522ed7dffe5c40bdf3ac763295866d8bf1ada"
+      "sha256": "sha256:deb577ec6aacfe5c854bcc4082e79d34a34ea8dab344f0226e6f17487bc3e3c0"
     },
     {
       "path": "sim/ldo-cmos5l-pvt-sweep/run_e1op.sh",
@@ -297,8 +297,36 @@
       "sha256": "sha256:bece561f60b82f77c4fe9e33300c5b693dac0e22921befad2b9bdf30768de4fe"
     },
     {
+      "path": "sim/ldo-cmos5l-pvt-sweep/test_ac_sweep.py",
+      "sha256": "sha256:76a779cbd52b07b3ba88dde9e25d9a7bb5e89537f38f75c354d9f034608577f1"
+    },
+    {
+      "path": "sim/ldo-cmos5l-pvt-sweep/test_batch_backend.py",
+      "sha256": "sha256:7a094d66a8489e42ac626766d5c8ecf35a118b65bfef6a89d4dd38f0efd84b17"
+    },
+    {
       "path": "sim/ldo-cmos5l-pvt-sweep/test_e1_oppoints.py",
       "sha256": "sha256:24908a04073bca67bca677f5c664ffb1763061e65af347eb5c4bdf6644e15564"
+    },
+    {
+      "path": "sim/ldo-cmos5l-pvt-sweep/test_loopgain2.py",
+      "sha256": "sha256:c8298f674a37352efcf252dcd266d6d6603e528cc4816563e79d8c4596a19df7"
+    },
+    {
+      "path": "sim/ldo-cmos5l-pvt-sweep/test_row4_envelope.py",
+      "sha256": "sha256:e3749d046af7d450734c8b1385e7cfcbe2e610957bb34d462cdd91dbc56707e0"
+    },
+    {
+      "path": "sim/ldo-cmos5l-pvt-sweep/test_startup_campaign.py",
+      "sha256": "sha256:1ddcdfa30dc7ec6c4d64d0dd0e1fdfda1c46b4380824a048561f5c19638a6f5d"
+    },
+    {
+      "path": "sim/ldo-cmos5l-pvt-sweep/test_startup_eval.py",
+      "sha256": "sha256:df473212f026195f8161f4cca450e5ae2fdea0393722cc6a28eec86a6fdcb149"
+    },
+    {
+      "path": "sim/ldo-cmos5l-pvt-sweep/test_startup_offstate.py",
+      "sha256": "sha256:1add5afffdad6363097eadcb0954e6c6ac0686d8f0845c9fe52e7aac4114f576"
     },
     {
       "path": "sim/ldo-cmos5l-pvt-sweep/test_sweep_report.py",
@@ -451,6 +479,10 @@
     {
       "path": "sim/tools/render_deck.py",
       "sha256": "sha256:1342231eb9d396774dfb3f838ec31f58a704b3f86e047d6f0188b61c8406a833"
+    },
+    {
+      "path": "sim/tools/test_render_deck.py",
+      "sha256": "sha256:9c152c6ed11e8fbe939b563cca2d255d4b7ffe7cbd17932e6e643059acb828f3"
     }
   ]
 }
