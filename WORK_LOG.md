@@ -8,6 +8,8 @@ Chronological record of recently merged pull requests and closed issues, maintai
 
 ### 2026-11-16
 
+- **PR #294**: docs: Tree docstring says four gated files, matching FILES in check_pin_sync tests
+- **Issue #289** (closed): Two stale descriptions of check_pin_sync.py's scope after #267 widened the table to six pairs
 - **PR #291**: fix: fail closed when put_files' manifest temp dir raises OSError
 - **PR #288**: feat: gate the intra-file PDK pin copies and ci.yml's SG13G2 version
 - **PR #279**: docs: decouple pdk-cmos5l fetch_method from the ci.yml KLAYOUT_TOOLS_REF value
