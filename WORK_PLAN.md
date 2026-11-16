@@ -25,16 +25,13 @@ _None._
 
 Human-approved issues ready for implementation (`loom:issue`).
 
-- **#56**: Monte Carlo: klt yield evidence for the statistical ratified spec rows (T1 item 6)
-- **#272**: evidence_store: put_files' private temp dir can still escape as a non-StoreError (residual of the #262 class)
+- **#289**: Two stale descriptions of check_pin_sync.py's scope after #267 widened the table to six pairs
 
 ## In Progress
 
 Issues currently being built (`loom:building`).
 
 - **#199**: T1 grading: attest items 1, 9, 10 with klt signoff --attest instead of hand-rolled inventory envelopes
-- **#267**: Gate sim/pdk-cmos5l.json's pinned_tarball_url SHA against its own pinned_commit
-- **#275**: sim/pdk-cmos5l.json's fetch_method cites a stale KLAYOUT_TOOLS_REF (159527a5, ci.yml says 046ba746)
 
 ## PRs Awaiting Review
 
@@ -47,7 +44,6 @@ _None._
 PRs that passed review and are queued for Champion auto-merge (`loom:pr`).
 
 - **#277**: chore(loom): resync installed Loom to v0.19.1302
-- **#288**: feat: gate the intra-file PDK pin copies and ci.yml's SG13G2 version
 
 ## Proposed
 
@@ -59,9 +55,7 @@ Issues carrying `loom:curated`.
 - **#199**: T1 grading: attest items 1, 9, 10 with klt signoff --attest instead of hand-rolled inventory envelopes *(curated)*
 - **#218**: sim: run the two-injection loop-gain bench at DR-0015 point P3 (experiment E2) *(curated)*
 - **#219**: sim: f_ug-vs-Cc probe at heavy load, DR-0015 point P3 (experiment E3) *(curated)*
-- **#267**: Gate sim/pdk-cmos5l.json's pinned_tarball_url SHA against its own pinned_commit *(curated)*
-- **#272**: evidence_store: put_files' private temp dir can still escape as a non-StoreError (residual of the #262 class) *(curated)*
-- **#275**: sim/pdk-cmos5l.json's fetch_method cites a stale KLAYOUT_TOOLS_REF (159527a5, ci.yml says 046ba746) *(curated)*
+- **#289**: Two stale descriptions of check_pin_sync.py's scope after #267 widened the table to six pairs *(curated)*
 
 ## Proposed (Architect / Hermit)
 
@@ -80,11 +74,11 @@ Issues carrying `loom:curated`.
 | Operator merge-risk holds | 1 |
 | Very important | 0 |
 | Important | 1 |
-| Ready (`loom:issue`) | 2 |
-| In Progress (`loom:building`) | 3 |
+| Ready (`loom:issue`) | 1 |
+| In Progress (`loom:building`) | 1 |
 | PRs awaiting review | 0 |
-| Approved PRs awaiting merge | 2 |
-| Curated | 9 |
+| Approved PRs awaiting merge | 1 |
+| Curated | 7 |
 | Architect / Hermit proposals | 3 |
 | Active epics | 1 |
 <!-- guide:plan-body:end -->

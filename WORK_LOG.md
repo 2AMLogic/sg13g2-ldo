@@ -8,6 +8,13 @@ Chronological record of recently merged pull requests and closed issues, maintai
 
 ### 2026-11-16
 
+- **PR #291**: fix: fail closed when put_files' manifest temp dir raises OSError
+- **PR #288**: feat: gate the intra-file PDK pin copies and ci.yml's SG13G2 version
+- **PR #279**: docs: decouple pdk-cmos5l fetch_method from the ci.yml KLAYOUT_TOOLS_REF value
+- **Issue #292** (closed): DR-0021's Status bullet names the pre-#279 row-4 cited record
+- **Issue #275** (closed): sim/pdk-cmos5l.json's fetch_method cites a stale KLAYOUT_TOOLS_REF (159527a5, ci.yml says 046ba746)
+- **Issue #272** (closed): evidence_store: put_files' private temp dir can still escape as a non-StoreError (residual of the #262 class)
+- **Issue #267** (closed): Gate sim/pdk-cmos5l.json's pinned_tarball_url SHA against its own pinned_commit
 - **PR #280**: docs: correct DR-0017 stale item-6 citation claim via addendum; regrade ROADMAP items 5/6
 - **Issue #254** (closed): spec: DR-0017 line 632 still says "Item 6 stays uncited" — stale after #225 cited the row-2 campaign
 - **PR #274**: signoff: pin each driver's companion test and enforce the pairing
