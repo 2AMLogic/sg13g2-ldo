@@ -8,6 +8,8 @@ Chronological record of recently merged pull requests and closed issues, maintai
 
 ### 2026-11-16
 
+- **PR #284**: feat: pin row-4 PDK provenance by canonical projection instead of file bytes
+- **Issue #282** (closed): row4-envelope provenance pins whole input files byte-level: a prose-only edit forces a fleet re-run
 - **PR #281**: docs: name the pinned design and layout READMEs in signoff items 1 and 2 bullets
 - **PR #271**: docs: record DR-0020 — row-9 startup overshoot remedy plan
 - **PR #261**: refactor(sim): route row4_envelope tb_text through render_deck
