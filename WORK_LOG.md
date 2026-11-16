@@ -6,6 +6,18 @@ Chronological record of recently merged pull requests and closed issues, maintai
 
 - [2026-09](work_log/WORK_LOG_2026-09.md)
 
+### 2026-11-16
+
+- **PR #273**: evidence_store: convert preflight's remaining escape sites to StoreError
+- **PR #266**: ci: gate ci.yml's klt/KLayout/PDK pins against their hardcoded copies
+- **PR #264**: docs: record klayout-tools#5786 in the campaign's upstream-issues list and date the item-6 0.8.0 verdict
+- **PR #260**: docs: refresh stale layout/DRC/LVS status in challenge-6 proposal
+- **Issue #269** (closed): signoff CI: reproduction green can predate a sibling regeneration merge, so it does not prove post-merge reproduction
+- **Issue #262** (closed): evidence_store: preflight's uri-scheme probe can still escape as a traceback (residual #251 item-1 site)
+- **Issue #252** (closed): docs/chipalooza/challenge-6-proposal.md still says layout is empty and DRC/LVS not started — refresh or delete
+- **Issue #250** (closed): Gate layout/run_flow.sh's klt + KLayout engine pins against ci.yml (no drift check today)
+- **Issue #248** (closed): signoff: record klayout-tools#5786 in the Monte Carlo campaign's upstream-issues list
+
 ### 2026-11-15
 
 - **PR #259**: refactor(design): delegate netlist.py's xschem export to klt netlist
