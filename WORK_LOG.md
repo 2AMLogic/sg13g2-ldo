@@ -8,6 +8,12 @@ Chronological record of recently merged pull requests and closed issues, maintai
 
 ### 2026-11-16
 
+- **PR #281**: docs: name the pinned design and layout READMEs in signoff items 1 and 2 bullets
+- **PR #271**: docs: record DR-0020 — row-9 startup overshoot remedy plan
+- **PR #261**: refactor(sim): route row4_envelope tb_text through render_deck
+- **Issue #276** (closed): signoff README item-1 bullet under-describes what item 1 pins (omits design/README.md and design/test_netlist.py)
+- **Issue #245** (closed): A ninth @@TOKEN@@ render site survived #236: row4_envelope.py tb_text() has no leftover-@@ guard
+- **Issue #221** (closed): spec: proposed decision record for a row-9 startup remedy on SG13CMOS5L (plan only)
 - **PR #273**: evidence_store: convert preflight's remaining escape sites to StoreError
 - **PR #266**: ci: gate ci.yml's klt/KLayout/PDK pins against their hardcoded copies
 - **PR #264**: docs: record klayout-tools#5786 in the campaign's upstream-issues list and date the item-6 0.8.0 verdict
