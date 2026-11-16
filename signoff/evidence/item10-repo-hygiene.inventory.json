@@ -6,7 +6,7 @@
   "files": [
     {
       "path": ".github/workflows/ci.yml",
-      "sha256": "sha256:0b9d97ce0ac31a2e229123ae70d05ae9066be0410237fc05ce3281d8d6611249"
+      "sha256": "sha256:58f20c32a929500417e88917a52896ba76ad853387c2146dec3183cc44a52732"
     },
     {
       "path": "CLAUDE.md",
