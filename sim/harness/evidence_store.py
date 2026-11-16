@@ -16,7 +16,8 @@ Evidence bytes are private and manifests are public (operator decision 1.1,
 2026-10-22): a manifest is safe in this public repo, and only callers the
 broker admits can resolve its ``uri``s.
 
-**Fail closed.** Every failure here raises :class:`StoreError`: no broker
+**Fail closed.** Every failure on the ``preflight`` path, and every checked
+operation on the store path, raises :class:`StoreError`: no broker
 configured, no ``klt`` with the ``artifact`` verb, a ``klt`` older than
 klayout-tools ``7e3561f`` (it would write bucket-naming ``s3`` uris), a
 broker that cannot be reached or refuses, a put that fails part-way, a
@@ -133,13 +134,20 @@ def probe_broker(base: str, repo: str, timeout: float = PROBE_TIMEOUT_S) -> None
     """One ``stat`` of the empty digest: proves the broker is reachable and
     admits this caller for ``repo`` before any simulation time is spent. A
     ``200`` (present or not) or ``404`` passes; anything else raises."""
-    parts = urlsplit(base)
+    try:
+        parts = urlsplit(base)
+    except ValueError as exc:
+        raise StoreError(f"${ENV_BROKER} is not a plain http(s) base URL") from exc
     if parts.scheme not in ("http", "https") or not parts.hostname \
             or parts.username is not None or parts.password is not None \
             or parts.query or parts.fragment:
         raise StoreError(f"${ENV_BROKER} is not a plain http(s) base URL")
     cls = http.client.HTTPSConnection if parts.scheme == "https" else http.client.HTTPConnection
-    conn = cls(parts.netloc, timeout=timeout)
+    try:
+        conn = cls(parts.netloc, timeout=timeout)
+    except http.client.HTTPException as exc:
+        raise StoreError(f"${ENV_BROKER} is not a plain http(s) base URL "
+                         f"({exc})") from exc
     body = {"kind": "evidence", "repo": repo, "sha256": _EMPTY_SHA256}
     try:
         conn.request("POST", parts.path.rstrip("/") + "/v1/stat",
@@ -206,21 +214,32 @@ def check_klt_uri_scheme(exe: str, *, run=subprocess.run) -> None:
                           "commit": None},
              "uri": f"{LEGACY_URI_SCHEME}://probe/evidence/probe__probe/{sha[:2]}/{sha}",
              "name": "sim/probe"}
-    with tempfile.TemporaryDirectory(prefix="klt-scheme-probe-") as tmp:
-        mpath = os.path.join(tmp, "probe.manifest.json")
-        with open(mpath, "w", encoding="utf-8") as fh:
-            json.dump({"schema_version": 1, "entries": [entry]}, fh)
-        try:
-            p = run([exe, "artifact", "verify", mpath, "--broker", _PROBE_BROKER,
-                     "--format", "json"], capture_output=True, text=True,
-                    timeout=PROBE_TIMEOUT_S, check=False, cwd=tmp)
-            rc, stderr = p.returncode, p.stderr or ""
-        except subprocess.TimeoutExpired:
-            raise StoreError(f"`klt` uri-scheme probe timed out after {PROBE_TIMEOUT_S}s; "
-                             "cannot confirm klt writes artifact:<key> uris") from None
-        except OSError as exc:
-            raise StoreError(f"`klt` uri-scheme probe failed to start ({exc}); "
-                             "cannot confirm klt writes artifact:<key> uris") from None
+    # Sites A/B/C (issue #262): the temp-dir construction, the manifest
+    # write, and the with-block's cleanup rmtree can all raise OSError on a
+    # full or unwritable $TMPDIR — cleanup even after the probe itself
+    # passed — and every one of them must come out as StoreError. The inner
+    # handlers below raise StoreError (not OSError), so they pass through
+    # this one untouched.
+    try:
+        with tempfile.TemporaryDirectory(prefix="klt-scheme-probe-") as tmp:
+            mpath = os.path.join(tmp, "probe.manifest.json")
+            with open(mpath, "w", encoding="utf-8") as fh:
+                json.dump({"schema_version": 1, "entries": [entry]}, fh)
+            try:
+                p = run([exe, "artifact", "verify", mpath, "--broker", _PROBE_BROKER,
+                         "--format", "json"], capture_output=True, text=True,
+                        timeout=PROBE_TIMEOUT_S, check=False, cwd=tmp)
+                rc, stderr = p.returncode, p.stderr or ""
+            except subprocess.TimeoutExpired:
+                raise StoreError(f"`klt` uri-scheme probe timed out after {PROBE_TIMEOUT_S}s; "
+                                 "cannot confirm klt writes artifact:<key> uris") from None
+            except OSError as exc:
+                raise StoreError(f"`klt` uri-scheme probe failed to start ({exc}); "
+                                 "cannot confirm klt writes artifact:<key> uris") from None
+    except OSError as exc:
+        raise StoreError(f"cannot create, populate, or clean up the klt "
+                         f"uri-scheme probe's temporary directory ({exc}); "
+                         "cannot confirm klt writes artifact:<key> uris") from exc
     try:
         err = json.loads(stderr)["error"]
         problems = err.get("problems")

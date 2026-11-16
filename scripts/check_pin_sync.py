@@ -1,0 +1,221 @@
+#!/usr/bin/env python3
+"""Pin-sync gate: the tool pins .github/workflows/ci.yml declares vs their
+hardcoded copies elsewhere in the tree (issue #250).
+
+`layout/run_flow.sh` carries two literal pins that duplicate ci.yml's
+workflow-level `env:` keys -- the `klayout-tools==X.Y.Z` spec in PEX_KLT_FROM
+(ci.yml's KLAYOUT_TOOLS_VERSION) and the KLAYOUT_PY_VERSION literal default --
+and `sim/pdk-cmos5l.json`'s top-level `pinned_commit` duplicates ci.yml's
+IHP_SG13CMOS5L_COMMIT, whose own ci.yml comment asserts "keep in sync" with
+no mechanical check. Nothing compared them, so a pin bump that edited ci.yml
+and missed a copy left CI green while the next local full-mode or pex-mode
+regeneration (`--check` never re-runs those stages) stamped the evidence with
+a different build. This script is that check.
+
+One subcommand:
+
+``check --root DIR``
+    Reads every gated file under DIR (the two code/YAML files as text, the
+    JSON as JSON), extracts each pinned value and compares the pairs. All
+    pairs are judged and every problem reported before the exit code is
+    chosen, so one broken site cannot hide a second one.
+
+Fail closed. A missing key, an unreadable file, a pin line that matches zero
+or more than one time, a PEX_KLT_FROM that is not a `klayout-tools==<version>`
+spec, or a pinned_commit that is not a non-empty string is exit 2, never a
+pass -- a gate that stopped matching after an unrelated edit and quietly
+passed would be worse than no gate. A same-named nested key cannot satisfy a
+top-level extraction (pdk-cmos5l.json's historical superseded_pin block
+carries its own pinned_commit and is deliberately not gated).
+
+The KLAYOUT_PY_VERSION comparison is deliberately against the *literal
+default in run_flow.sh's source text* -- the `0.30.12` inside
+`${KLAYOUT_PY_VERSION:-0.30.12}` -- never against the resolved shell
+variable. In CI the workflow-level env: supplies that variable, so a gate
+that read the runtime value would compare ci.yml against itself and pass
+green with the literal arbitrarily stale. This script does not import `os`:
+the literal source text is the only comparable side.
+
+Exit codes: 0 every gated pair agrees; 1 at least one pair disagrees (each
+drift line names the file, the key and both values); 2 fail-closed
+extraction error (ambiguous or missing match, unreadable file).
+
+Stdlib only.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import re
+import sys
+from pathlib import Path
+
+CI = ".github/workflows/ci.yml"
+FLOW = "layout/run_flow.sh"
+CMOS5L = "sim/pdk-cmos5l.json"
+
+EXIT_OK, EXIT_DRIFT, EXIT_ERROR = 0, 1, 2
+
+
+class GateError(Exception):
+    """Ambiguous or missing extraction: exit 2, fail closed."""
+
+
+def _read(root: Path, rel: str) -> str:
+    try:
+        return (root / rel).read_text(encoding="utf-8")
+    except OSError as exc:
+        raise GateError(f"{rel}: unreadable: {exc}") from exc
+
+
+def _exactly_one(pattern: re.Pattern[str], text: str, where: str, what: str) -> str:
+    found = pattern.findall(text)
+    if not found:
+        raise GateError(f"{where}: {what} matched no line; the gate matches "
+                        "exactly one (fail closed -- if the site moved or was "
+                        "renamed, update this gate deliberately)")
+    if len(found) > 1:
+        raise GateError(f"{where}: {what} matched {len(found)} lines; expected "
+                        "exactly one (fail closed, not first-match-wins)")
+    return found[0]
+
+
+def ci_env(root: Path, key: str) -> str:
+    """A workflow-level `env:` key's value, from ci.yml's literal text.
+
+    The two-space indent is the anchor that keeps job- and step-scoped keys
+    and prose comments out of the match."""
+    text = _read(root, CI)
+    return _exactly_one(
+        re.compile(rf'^  {re.escape(key)}: "([^"\n]*)"[ \t]*$', re.MULTILINE),
+        text, CI, f'env key {key!r} (a `  {key}: "..."` line)')
+
+
+def pex_klt_version(root: Path) -> str:
+    """The version in run_flow.sh's PEX_KLT_FROM `klayout-tools==<version>`
+    pin. The spec string as a whole is never compared, only the pinned
+    version; a non-`==` spec (for example the git URL `${PEX_KLT_FROM##*@}`
+    suggests run_flow.sh once carried) cannot be compared to a PyPI release
+    pin and fails closed rather than silently comparing nothing."""
+    text = _read(root, FLOW)
+    spec = _exactly_one(
+        re.compile(r'^PEX_KLT_FROM="([^"\n]*)"[ \t]*$', re.MULTILINE),
+        text, FLOW, 'PEX_KLT_FROM (a `PEX_KLT_FROM="..."` line)')
+    m = re.match(r"^klayout-tools(?:\[[a-z]+\])?==(\S+)$", spec)
+    if not m:
+        raise GateError(f"{FLOW}: PEX_KLT_FROM is {spec!r}, not a "
+                        "`klayout-tools==<version>` pin; only an == PyPI spec "
+                        "can be compared to ci.yml's KLAYOUT_TOOLS_VERSION "
+                        "(fail closed)")
+    return m.group(1)
+
+
+def flow_py_default(root: Path) -> str:
+    """The literal default in run_flow.sh's
+    `KLAYOUT_PY_VERSION="${KLAYOUT_PY_VERSION:-<default>}"` -- the source
+    text, never the resolved environment variable (see the module docstring)."""
+    text = _read(root, FLOW)
+    return _exactly_one(
+        re.compile(
+            r'^KLAYOUT_PY_VERSION="\$\{KLAYOUT_PY_VERSION:-([^}\n]*)\}"[ \t]*$',
+            re.MULTILINE),
+        text, FLOW,
+        'KLAYOUT_PY_VERSION literal default (a '
+        '`KLAYOUT_PY_VERSION="${KLAYOUT_PY_VERSION:-...}"` line)')
+
+
+def json_top(root: Path, rel: str, key: str) -> str:
+    """A top-level string value from a JSON fact sheet, via stdlib json so a
+    same-named nested key cannot shadow it."""
+    try:
+        data = json.loads(_read(root, rel))
+    except ValueError as exc:
+        raise GateError(f"{rel}: not valid JSON: {exc}") from exc
+    if not isinstance(data, dict) or key not in data:
+        raise GateError(f"{rel}: top-level key {key!r} missing (fail closed)")
+    value = data[key]
+    if not isinstance(value, str) or not value:
+        raise GateError(f"{rel}: top-level key {key!r} is not a non-empty "
+                        "string (fail closed)")
+    return value
+
+
+class Site:
+    """One extraction site of a pin pair."""
+
+    def __init__(self, file: str, key: str, read):
+        self.file, self.key, self.read = file, key, read
+
+    def value(self, root: Path) -> str:
+        return self.read(root)
+
+
+class Pair:
+    def __init__(self, what: str, ci: Site, copy: Site):
+        self.what, self.ci, self.copy = what, ci, copy
+
+
+# The gated pairs: one literal table entry per duplicated pin. This is the
+# right size -- a config-driven pin registry is out of scope (issue #250).
+PAIRS = (
+    Pair("klayout-tools (klt) release pin",
+         Site(CI, "KLAYOUT_TOOLS_VERSION", lambda r: ci_env(r, "KLAYOUT_TOOLS_VERSION")),
+         Site(FLOW, "PEX_KLT_FROM spec version", pex_klt_version)),
+    Pair("KLayout Python module pin",
+         Site(CI, "KLAYOUT_PY_VERSION", lambda r: ci_env(r, "KLAYOUT_PY_VERSION")),
+         Site(FLOW, "KLAYOUT_PY_VERSION literal default", flow_py_default)),
+    Pair("IHP SG13CMOS5L PDK dev commit",
+         Site(CI, "IHP_SG13CMOS5L_COMMIT", lambda r: ci_env(r, "IHP_SG13CMOS5L_COMMIT")),
+         Site(CMOS5L, "pinned_commit", lambda r: json_top(r, CMOS5L, "pinned_commit"))),
+)
+
+
+def check(root: Path) -> int:
+    errors: list[str] = []
+    drifts: list[str] = []
+    compared = 0
+    for pair in PAIRS:
+        values = []
+        for site in (pair.ci, pair.copy):
+            try:
+                values.append(site.value(root))
+            except GateError as exc:
+                errors.append(str(exc))
+                values.append(None)
+        if values[0] is not None and values[1] is not None:
+            compared += 1
+            if values[0] != values[1]:
+                drifts.append(
+                    f"{pair.what}: {pair.ci.file} {pair.ci.key}={values[0]!r} "
+                    f"!= {pair.copy.file} {pair.copy.key}={values[1]!r}")
+    for e in errors:
+        print(f"ERROR: {e}", file=sys.stderr)
+    for d in drifts:
+        print(f"DRIFT: {d}", file=sys.stderr)
+    if errors:
+        print(f"FAIL: {len(errors)} fail-closed extraction error(s); "
+              f"{compared} of {len(PAIRS)} pair(s) compared", file=sys.stderr)
+        return EXIT_ERROR
+    if drifts:
+        print(f"FAIL: {len(drifts)} of {len(PAIRS)} pin pair(s) disagree "
+              "between ci.yml and its hardcoded copies", file=sys.stderr)
+        return EXIT_DRIFT
+    print(f"OK: all {len(PAIRS)} gated pin pair(s) agree ("
+          + "; ".join(p.what for p in PAIRS) + ")")
+    return EXIT_OK
+
+
+def main(argv=None) -> int:
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    sub = ap.add_subparsers(dest="cmd", required=True)
+    c = sub.add_parser("check",
+                       help="compare every gated pin pair; exit 0 only when all agree")
+    c.add_argument("--root", default=".",
+                   help="repository root holding the gated files (default: .)")
+    args = ap.parse_args(argv)
+    return check(Path(args.root))
+
+
+if __name__ == "__main__":
+    sys.exit(main())
