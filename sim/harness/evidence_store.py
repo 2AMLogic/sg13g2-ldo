@@ -16,13 +16,17 @@ Evidence bytes are private and manifests are public (operator decision 1.1,
 2026-10-22): a manifest is safe in this public repo, and only callers the
 broker admits can resolve its ``uri``s.
 
-**Fail closed.** Every failure on the ``preflight`` path, and every checked
-operation on the store path, raises :class:`StoreError`: no broker
+**Fail closed.** Every failure on the ``preflight`` path, and every
+:class:`OSError` on the store path, raises :class:`StoreError`: no broker
 configured, no ``klt`` with the ``artifact`` verb, a ``klt`` older than
 klayout-tools ``7e3561f`` (it would write bucket-naming ``s3`` uris), a
 broker that cannot be reached or refuses, a put that fails part-way, a
-manifest that does not match the bytes it claims. Nothing is then installed
-under ``manifests/`` or ``sim/``; the staged bytes stay in the git-ignored
+manifest that does not match the bytes it claims, a temporary directory
+that cannot be created or cleaned up. The one deliberate exception is
+:func:`manifest_path`'s :class:`ValueError` for an invalid bench or run
+id -- a caller contract, caught by ``sim/run_store_evidence.py`` before
+any byte is stored. On :class:`StoreError` nothing is installed under
+``manifests/`` or ``sim/``; the staged bytes stay in the git-ignored
 scratch tree so the run is not lost, and the caller reports the failure.
 There is no fallback that commits the bytes instead.
 
@@ -316,31 +320,40 @@ def put_files(files: list[tuple[Path, str]], repo_root: Path, *,
         raise StoreError("two staged files map to the same evidence name")
     expected: dict[str, tuple[str, int]] = {}
     empty: list[str] = []
-    with tempfile.TemporaryDirectory(prefix="evidence-manifest-") as tmp:
-        tmp_manifest = os.path.join(tmp, "manifest.json")
-        for path, name in files:
-            sha, size = sha256_file(path)
-            if size == 0:
-                empty.append(name)
-                continue
-            expected[name] = (sha, size)
-            cmd = [klt, "artifact", "put", str(path), "--name", name,
-                   "--manifest", tmp_manifest, "--format", "json"]
+    # Issue #272: the temp-dir construction and the with-block's cleanup
+    # rmtree can raise OSError on a full or unwritable $TMPDIR — cleanup
+    # even after every put succeeded — and both must come out as
+    # StoreError. The inner handlers below raise StoreError (a
+    # RuntimeError), so they pass through this one untouched.
+    try:
+        with tempfile.TemporaryDirectory(prefix="evidence-manifest-") as tmp:
+            tmp_manifest = os.path.join(tmp, "manifest.json")
+            for path, name in files:
+                sha, size = sha256_file(path)
+                if size == 0:
+                    empty.append(name)
+                    continue
+                expected[name] = (sha, size)
+                cmd = [klt, "artifact", "put", str(path), "--name", name,
+                       "--manifest", tmp_manifest, "--format", "json"]
+                try:
+                    p = run(cmd, cwd=str(repo_root), capture_output=True, text=True,
+                            timeout=PUT_TIMEOUT_S, check=False)
+                except (OSError, subprocess.TimeoutExpired) as exc:
+                    raise StoreError(f"klt artifact put {name}: {type(exc).__name__}") from None
+                if p.returncode != 0:
+                    raise StoreError(f"klt artifact put {name} failed "
+                                     f"(exit {p.returncode}): {_klt_error(p.stderr)}")
+            if not expected:
+                raise StoreError("nothing to store: every staged file is empty")
             try:
-                p = run(cmd, cwd=str(repo_root), capture_output=True, text=True,
-                        timeout=PUT_TIMEOUT_S, check=False)
-            except (OSError, subprocess.TimeoutExpired) as exc:
-                raise StoreError(f"klt artifact put {name}: {type(exc).__name__}") from None
-            if p.returncode != 0:
-                raise StoreError(f"klt artifact put {name} failed "
-                                 f"(exit {p.returncode}): {_klt_error(p.stderr)}")
-        if not expected:
-            raise StoreError("nothing to store: every staged file is empty")
-        try:
-            with open(tmp_manifest, encoding="utf-8") as fh:
-                manifest = json.load(fh)
-        except (OSError, ValueError) as exc:
-            raise StoreError(f"klt wrote no readable manifest: {exc}") from None
+                with open(tmp_manifest, encoding="utf-8") as fh:
+                    manifest = json.load(fh)
+            except (OSError, ValueError) as exc:
+                raise StoreError(f"klt wrote no readable manifest: {exc}") from None
+    except OSError as exc:
+        raise StoreError(f"cannot create or clean up the evidence manifest's "
+                         f"temporary directory ({exc})") from exc
     entries = manifest.get("entries") if isinstance(manifest, dict) else None
     if not isinstance(entries, list) or manifest.get("schema_version") != 1:
         raise StoreError("klt manifest is not {schema_version: 1, entries: [...]}")
