@@ -73,6 +73,8 @@ import tempfile
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.abspath(os.path.join(HERE, "..", ".."))
 ROOT = os.path.join(HERE, "row4-envelope")
+sys.path.insert(0, os.path.join(HERE, "..", "tools"))
+import render_deck  # noqa: E402
 
 TEMPLATE = "sim/ldo-cmos5l-pvt-sweep/testbench/tb_row4_envelope_cmos5l.spice.tmpl"
 DESIGN_NETLIST = "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice"
@@ -115,7 +117,8 @@ OSDI_ORDER = ["psp103", "psp103_nqs", "mosvar", "r3_cmc", "cap_cmomi", "cap_cmom
 # hash (a hash only says "unchanged"; reproduction says "these exact bytes come
 # out of the code that is committed now").
 INPUTS = [TEMPLATE, PDK_PIN, DESIGN_NETLIST,
-          "design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice"]
+          "design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice",
+          "sim/tools/render_deck.py"]
 
 PROBE_COORDS = [("tt", 27, "typ"), ("ss", 125, "typ")]
 
@@ -153,7 +156,11 @@ def corner_id(mos, temp, res):
 # --------------------------------------------------------------------------- #
 
 def tb_text(design_netlist_include, template_text):
-    return template_text.replace("@@DESIGN_NETLIST@@", design_netlist_include)
+    # One renderer for every deck (#236): sim/tools/render_deck.py, the same
+    # module the .sh drivers and the other campaign drivers call. It fails
+    # loudly on any unsubstituted @@TOKEN@@, which the one-token str.replace
+    # chain this used to carry did not (#245).
+    return render_deck.render(template_text, {"DESIGN_NETLIST": design_netlist_include})
 
 
 def corners_lib_text(models_dir, cs):
