@@ -57,7 +57,7 @@
   "evidence": {
     "1": {
       "file": "signoff/evidence/item1-design-sources.envelope.json",
-      "content_hash": "sha256:9d5eabc38c889b9b0dd11f05662545f6ca3f5e3d4e8a85bb7c39cf21e3c429c7"
+      "content_hash": "sha256:278c966411c6b5f23dbcb009d1b1348b603a983278e46212e28533f082dd635a"
     },
     "2": {
       "file": "signoff/evidence/item2-layout.envelope.json",

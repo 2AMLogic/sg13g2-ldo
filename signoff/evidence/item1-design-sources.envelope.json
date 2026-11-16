@@ -17,14 +17,14 @@
         "role": "source",
         "path": "design/README.md",
         "passed": true,
-        "content_hash": "sha256:385b0e0c6c88adde490eda2376086d8f24158257831faeba512d1793039f8d26"
+        "content_hash": "sha256:ee06d9f1714b4fc7d04cafab58f856c78da407d0548387dfd8f420153f151760"
       },
       {
         "check": "present",
         "role": "source",
         "path": "design/netlist.py",
         "passed": true,
-        "content_hash": "sha256:d20899e2bb3c8e68e25ba2225a903b8af51bee432ab40075932e965a6718a679"
+        "content_hash": "sha256:73e207c7b0931fbee711a5ae4d58a892eb3b563a64a7ecd252eb3e482df78b96"
       },
       {
         "check": "present",
@@ -164,14 +164,14 @@
             "path": "design/README.md",
             "scope": "repo"
           },
-          "content_hash": "sha256:385b0e0c6c88adde490eda2376086d8f24158257831faeba512d1793039f8d26"
+          "content_hash": "sha256:ee06d9f1714b4fc7d04cafab58f856c78da407d0548387dfd8f420153f151760"
         },
         {
           "path": {
             "path": "design/netlist.py",
             "scope": "repo"
           },
-          "content_hash": "sha256:d20899e2bb3c8e68e25ba2225a903b8af51bee432ab40075932e965a6718a679"
+          "content_hash": "sha256:73e207c7b0931fbee711a5ae4d58a892eb3b563a64a7ecd252eb3e482df78b96"
         },
         {
           "path": {
@@ -251,7 +251,7 @@
           "content_hash": "sha256:c6c269ebc15b76991ab98fa96e2d742a3b6f58c042232f04e4c7986b8f2682fa"
         }
       ],
-      "content_hash": "sha256:9d5eabc38c889b9b0dd11f05662545f6ca3f5e3d4e8a85bb7c39cf21e3c429c7"
+      "content_hash": "sha256:278c966411c6b5f23dbcb009d1b1348b603a983278e46212e28533f082dd635a"
     }
   }
 }
