@@ -1304,6 +1304,15 @@ grid, which dispatch hosts submit to the EDA batch fleet
 is the same request over two coordinates, it is recorded as `probe: true`,
 and `check` refuses to let it be cited.
 
+**Pin semantics** ([DR-0021](../../spec/decision-records/DR-0021-row4-pdk-pin-projection.md)).
+The template, both design netlists and `render_deck.py` are byte-pinned in
+`provenance.json` `input_sha256`. The PDK fact sheet `sim/pdk-cmos5l.json` is
+not: new records store `pdk_pin_projection_sha256`, the sha256 of the canonical
+JSON of `pinned_commit`, `pinned_tarball_sha256`, `pinned_tarball_url` and
+`subtree`, so a prose edit to the sheet no longer stales the citation while a
+change to any of those four keys does. Records minted before DR-0021 keep the
+whole-file byte pin.
+
 **What is graded.** DR-0007 row 4, *Dropout @ 50 mA < 300 mV worst corner*,
 measured with the **legacy** definition that row was ratified with
 (`dc_metrics.dropout_v_50ma`: the lowest Vin whose VOUT is still within 1 % of
