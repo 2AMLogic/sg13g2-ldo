@@ -128,7 +128,7 @@ coverage; verdicts pass 4 / fail 20 / insufficient 0):
 | Overshoot by output network | 330 nF/0 mohm 0.499 … 0.942 V; 330 nF/500 mohm 0.414 … 0.809 V; 4700 nF/0 mohm 0.057 … 0.129 V; 4700 nF/500 mohm 0.021 … 0.044 V | [M] ext `.csv`, grouped `start_overshoot_v` |
 | Points already passing row 9 with no circuit change | 4 of 24, all `c4700nf_e500mohm`: `st_ff_27c_rtyp_v3630mv_i{0,50}ma` and `st_ss_-40c_rtyp_v3630mv_i{0,50}ma`; peaks 1.8212-1.8334 V, `start_monotonic=True`, `start_settled=True`, verdict `pass` | [M] ext `.csv`; count corroborated by ext `.md` "pass 4, fail 20" |
 | **Hot/`rwcs` miss at that same network** | both `st_ff_125c_rwcs_v3630mv_i{0,50}ma_c4700nf_e500mohm` points **fail**: `start_peak` 1.8440 / 1.8420 V above the 1.836 V edge, `start_downward excursion` 6.83 / 6.47 mV > 1 mV, `reen_peak` 1.8360 / 1.8409 V, and the 0 mA point additionally logs `off-state |VOUT| 0.185718 V > 0.05 V` and `start_not settled in band by end of window (final 1.837210 V)` | [M] ext `.csv` `reasons` column |
-| Start settle time, the eight 4700 nF points | 11.08, 11.18, 14.34, 15.49, 20.96, 21.04, 24.84, 25.26 us (i.e. **11.1 … 25.3 us**); the four passing `c4700nf_e500mohm` points are 11.1 … 15.5 us | [M] ext `.csv` `start_settle_time_s` |
+| Start settle time, the eight 4700 nF points | 11.08, 11.82, 14.34, 15.49, 20.96, 21.04, 24.84, 25.26 us (i.e. **11.1 … 25.3 us**); the four passing `c4700nf_e500mohm` points are 11.1 … 15.5 us | [M] ext `.csv` `start_settle_time_s` |
 | Start settle time, the one over-budget point | `st_ss_-40c_rtyp_v3630mv_i50ma_c330nf_e0mohm_t1000ns` settles at **5.999 ms** — over the 3 ms budget, at the *small*-Cout end | [M] ext `.csv` |
 | Points never settling in the window | `start_settled=False` at **15 of 24**; `start_monotonic=True` at 4 of 24 | [M] ext `.csv` |
 | Start peak supply current | 0.5172 … 0.6911 A | [M] ext `.md` |
@@ -153,8 +153,8 @@ Amplifier in regulation — `sim/ldo-cmos5l-pvt-sweep/records/20261012-115531-cf
 sits at 2.67-3.03 V across the four points P1/P2/P5/P6 (P6 is the 1 mA
 point), i.e. `Vsg(Mpass)` = `VIN - EAOUT` = **0.27 … 0.63 V** in regulation
 [M, from the CSV `op:v(eaout)` column against `op:v(en)` = `VIN`]. The
-minimum measured divider current is 1.974 us (P2, ff/wcs/-40 C) [M, same
-CSV `op:i(vdivsense)`]. Worst no-load Iq on this branch is 24.72 us over
+minimum measured divider current is 1.974 uA (P2, ff/wcs/-40 C) [M, same
+CSV `op:i(vdivsense)`]. Worst no-load Iq on this branch is 24.72 uA over
 the 45-point DC grid [M, `sim/ldo-cmos5l-pvt-sweep/records/20261011-070111-5391c68.csv`
 `iq_a`, quoted in `DR-0017`].
 
@@ -348,8 +348,8 @@ the equal `Rtop`/`Rbot` legs [M]]) instead of onto a step.
 - **Row 7 (Iq).** The ramp branch is a mirror of the external `IBIAS`
   charging `C_ss` — nA-class by design (candidate values below). Added
   static Iq is budgeted **< 1 uA** [A] (one mirror branch plus leakage),
-  against the row-7 target `< 30 uA` with 24.72 us measured worst no-load
-  Iq today [M] — about 5 us of headroom [C]. Row 7 stays Open; the
+  against the row-7 target `< 30 uA` with 24.72 uA measured worst no-load
+  Iq today [M] — about 5 uA of headroom [C]. Row 7 stays Open; the
   implementation must re-measure Iq over the grid, including the ramp
   branch's disabled state (the reset device must add only leakage when
   `EN` is low [A]).
@@ -526,7 +526,7 @@ mechanism:
    time is `T_ramp` (candidate <= ~500 us) against a 3 ms window — at
    every network the record must serve, including 330 nF/ESR 0 where
    today's 5.999 ms settle is itself the decay this candidate removes
-   [C/A]. Iq: a sub-uA-class branch [A] against ~5 us of measured
+   [C/A]. Iq: a sub-uA-class branch [A] against ~5 uA of measured
    headroom under the row-7 target [M/C] — budget pressure stated, row 7
    stays Open. Rows 6/10: no small-signal change expected at regulation
    [A], re-run mandatory. `DR-0008`: an internal node, an unchanged port
@@ -557,7 +557,10 @@ implementation's to finalize):
 (sub-circuit inside ldo_core_cmos5l, no port change)
 VREFR: internal reference node fed to Xamp in place of VREF
 Iss:   IBIAS-mirrored ramp current, candidate 10-50 nA [A]
-Css:   cap_cmomi on VREFR, candidate 10-22 pF [A]  (T_ramp = Css*VREF/Iss: 180-450 us)
+Css:   cap_cmomi on VREFR, candidate 10-22 pF [A]
+       (Iss and Css are a paired choice, not independent ranges: pick a
+        pairing with T_ramp = Css*VREF/Iss <= ~500 us; candidate pairings
+        10 pF/20 nA = 450 us, 10 pF/50 nA = 180 us, 22 pF/50 nA = 396 us)
 Xrst:  reset device (EN-driven), discharges Css when EN is low [A]
 Xclmp: optional clamp bounding VREFR <= VREF once the ramp completes [A]
 Xamp:  reference pin moves VREF -> VREFR (cell unchanged, six-port invariant holds)
