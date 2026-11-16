@@ -194,6 +194,56 @@ class Writer(Base):
         self.assertFalse(self.summary.exists())
 
     # ------------------------------------------------------------------
+    # Issue #272: put_files's manifest temp dir is the last store-path
+    # OSError residual; construction and cleanup both come out as
+    # StoreError.
+    # ------------------------------------------------------------------
+
+    def test_manifest_tempdir_construction_failure_is_store_error(self):
+        # The TemporaryDirectory constructor: an unwritable/full $TMPDIR.
+        from unittest import mock
+
+        with mock.patch("tempfile.TemporaryDirectory",
+                        side_effect=OSError(13, "Permission denied")), \
+                self.assertRaisesRegex(es.StoreError,
+                                       "evidence manifest's temporary directory") as cm:
+            self.store_files()
+        self.assertIsInstance(cm.exception.__cause__, OSError)  # from exc, not from None
+        self.assertFalse(self.store)  # the constructor fired before any put
+        self.assert_nothing_committed()
+
+    def test_manifest_tempdir_cleanup_failure_after_successful_puts_is_store_error(self):
+        # The with-block's cleanup rmtree can fail on a parent made
+        # unwritable while the puts ran -- i.e. after every put already
+        # succeeded (measured on 3.12.3: parent chmod 0o500 after entry;
+        # tempfile's reset-perms retry does not cover the parent).
+        from unittest import mock
+        parent = tempfile.TemporaryDirectory()
+        self.addCleanup(parent.cleanup)
+        parent_path = Path(parent.name)
+        real_td = tempfile.TemporaryDirectory
+
+        class CleanupFails(real_td):
+            def __init__(self, *a, **kw):
+                kw["dir"] = parent_path
+                super().__init__(*a, **kw)
+
+            def __exit__(self, *exc):
+                parent_path.chmod(0o500)
+                try:
+                    return super().__exit__(*exc)
+                finally:
+                    parent_path.chmod(0o700)
+
+        with mock.patch("tempfile.TemporaryDirectory", CleanupFails), \
+                self.assertRaisesRegex(es.StoreError,
+                                       "evidence manifest's temporary directory") as cm:
+            self.store_files()
+        self.assertTrue(self.store)  # every put succeeded before cleanup failed
+        self.assertIsInstance(cm.exception.__cause__, OSError)
+        self.assert_nothing_committed()
+
+    # ------------------------------------------------------------------
     # Issue #251 item 2: a failed summary write rolls the manifest back,
     # so the docstring's "nothing is then installed" is literally true.
     # ------------------------------------------------------------------
@@ -675,6 +725,31 @@ class CampaignCli(unittest.TestCase):
         self.assertNotIn("Traceback", err.getvalue())
         self.assertFalse(
             (self.root / "manifests/artifacts/bench-20261022-abc.manifest.json").exists())
+
+    def test_put_files_tempdir_failure_exits_10_not_traceback(self):
+        # Issue #272 end-to-end: the manifest temp dir's failure used to
+        # escape put_files as a bare OSError traceback (exit 1, no
+        # message); now it is exit 10 with EVIDENCE NOT STORED, and
+        # nothing is installed (the staged bytes stay in scratch).
+        from unittest import mock
+        store = {}
+        real_put = es.put_files
+        err = io.StringIO()
+        with mock.patch.object(es, "preflight", side_effect=None), \
+             mock.patch.object(es, "put_files",
+                               side_effect=lambda f, r: real_put(f, r, run=fake_klt(store))), \
+             mock.patch("tempfile.TemporaryDirectory",
+                        side_effect=OSError(28, "No space left on device")), \
+             contextlib.redirect_stderr(err):
+            rc = self.mod.main(["bench", "20261022-abc", str(self.staged),
+                                "--summary", str(self.summary)])
+        self.assertEqual(rc, 10)
+        self.assertIn("EVIDENCE NOT STORED", err.getvalue())
+        self.assertIn("evidence manifest's temporary directory", err.getvalue())
+        self.assertNotIn("Traceback", err.getvalue())
+        self.assertFalse((self.root / "manifests").exists())
+        self.assertFalse((self.root / "sim/bench/evidence").exists())
+        self.assertTrue((self.staged / "a.json").exists())  # staged bytes kept
 
 
 if __name__ == "__main__":
