@@ -14,8 +14,8 @@ This file is the reasoned plan. [`WORK_PLAN.md`](../WORK_PLAN.md) is the generat
 |---|---|---|
 | 1 Design sources, 2 Layout, 9 Testbenches, 10 Repo hygiene | met | Inventory envelopes under `signoff/evidence/`; items 1, 9, 10 are repo-made inventories, not `klt signoff --attest` (#199) |
 | 3 DRC clean, 4 LVS clean | met | `layout/sg13cmos5l-ldo_core_cmos5l/{drc,lvs}_report.json`; deck coverage limits are disclosed in `signoff/README.md` |
-| 5 Corner verification vs a ratified spec | unmet, `no_evidence` | No `klt sim` corner-matrix envelope for the one ratified row (#55) |
-| 6 Monte Carlo for statistical rows | unmet, `no_evidence` | Row-2 campaign exists (`sim/ldo-cmos5l-monte-carlo/`) but is deliberately uncited; row 8 has no campaign (#56) |
+| 5 Corner verification vs a ratified spec | unmet, `partial_coverage` | The ratified row 4 is covered by a `klt sim` corner-matrix envelope (`sim/ldo-cmos5l-pvt-sweep/row4-envelope/`, cited under `evidence["5"]`, #55); the other nine rows are unratified and uncovered |
+| 6 Monte Carlo for statistical rows | unmet, `partial_coverage` | Row 2's Monte Carlo campaign (`sim/ldo-cmos5l-monte-carlo/`, #56) is cited under `evidence["6"]` (#225) against the Open ±2 % window; row 8 is a declared `gap` (no limiter in the core yet; #164, #190) |
 | 7 Post-layout verification | unmet, `no_evidence` | `pex_report.json` is extraction only, `status: not_checked` (slice 1, #172); no re-simulation yet |
 | 8 Characterization report | met | `sim/characterization/`; "met" means complete and fresh, not that the circuit meets spec |
 | 11 Power delivery (structural) | met | `erc_supply_report.json`, three asserted ties |
@@ -56,7 +56,7 @@ Unblocked by a named item above or by an upstream fix.
 Direction; each needs its question answered first.
 
 - **Ratify more rows.** Each Open row needs evidence over its full window and two independent review keys (`ratification/`). Question: which rows can be evidenced as written, and which need the E4 answer first?
-- **Item 6 citation.** Question: can the grader express partial row coverage (klayout-tools#2908)? Until it can, and until row 2 is ratified and row 8 has a campaign, citing the row-2 reports would overstate coverage.
+- **Item 6 citation.** Answered: the grader expresses partial row coverage (klayout-tools#2908, shipping in the pinned build), and the row-2 reports are cited (#225), so item 6 grades `unmet` / `partial_coverage`, not `no_evidence`. What remains is evidence, not grader capability: row 2's ratification (#56) and a row-8 campaign (#164, #190).
 - **SG13G2 (BiCMOS) implementation.** Resized pass device, transistor-level amplifier, closed-loop dropout bench. Question: is the SG13G2 branch carried to parity with SG13CMOS5L, and with which pass device, given DR-0001 and the HBT screen in DR-0001a?
 - **Layout for whatever the compensation and startup work changes**, then the full `signoff/README.md#regenerating` order. Question: which candidate survives screening?
 - **Shuttle seat and measured silicon**, the last two rungs of the README's maturity ladder. `measurements/` is empty. Question: none worth asking before T1.

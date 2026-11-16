@@ -776,3 +776,38 @@ netlist it was made from): `sim/ldo-cmos5l-pvt-sweep/{records,corners,netlist-sn
   `sim/pass-device-screening/records/20260909-220347-ed18110.csv`.
 - `sim/ldo-cmos5l-monte-carlo/README.md` (PDK mismatch coefficients).
 - `spec/porting-plan.md` §1.2, §1.3 (thermal postures), §2.3, §4 items 6 and 8.
+
+## Addendum: item 6 citation and the #55/#56 boundary pointers (#254)
+
+**Status impact: none.** The record stays **Accepted for bounded
+development only**; no row disposition, target, gate or grade changes, and
+row 8 stays **Open**. This addendum corrects two ownership pointers in
+`## Follow-up boundaries` whose premises moved after the record was
+written. The boundary itself (#55 deterministic coverage, #56 statistical
+evidence) is untouched, and both bullets are left as written.
+
+- **The #56 bullet's last sentence ("Item 6 stays uncited for the reasons
+  `signoff/README.md` gives") is stale as of PR #239 (issue #225, merged
+  2026-11-15) and states the opposite of what `signoff/README.md` now
+  gives.** Item 6 **is cited**: `signoff/sg13g2-ldo.json` declares
+  `spec_rows["6"]` (row 2 with `ratified: false`, row 8 declared a `gap`:
+  "no current limiter is integrated in the core yet; no row-8 campaign
+  exists (#164, #190)") and cites the row-2 campaign
+  `20261012-093854-934dbd7` as five per-population `klt yield` reports,
+  each claiming exactly `dr0007-row2-output`. The grader grades item 6
+  `unmet` / `partial_coverage`, not `no_evidence`: partial because row 2
+  is unratified and row 8 has no campaign, not because anything is
+  uncited. `signoff/README.md`'s "Item 6 coverage statement" is the
+  authoritative statement of those reasons and supersedes the quoted
+  sentence. The grader capability that makes the citation expressible is
+  klayout-tools#2908 (implemented by klayout-tools#2959), shipping in the
+  pinned `klt` build (0.9.2; the #225 citation landed on the then-pinned
+  0.8.0 build).
+- **The #55 bullet is written about an open issue; #55 closed completed
+  2026-11-14.** Its deterministic-coverage work landed as the row-4
+  corner-matrix envelope cited under `evidence["5"]` (item 5 grades
+  `unmet` / `partial_coverage` for the mirrored reason: one covered row,
+  the other nine uncovered and unratified). This is pointer staleness,
+  not a false claim: the bullet's substance still holds (nothing
+  deterministic covers row 8 yet), and row 8 is still released later and
+  on evidence by the two review keys, as the Status block states.
