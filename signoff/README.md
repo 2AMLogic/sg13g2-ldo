@@ -200,9 +200,11 @@ sha256 of the **sample-set document** the report names (the grader's
 `_yield_samples_content_hash`), not of the report file — the samples are the
 input the staleness gate re-hashes.
 
-**The measured verdict (live run, pinned build, 2026-11-14).** Grading this
-manifest with the pinned `klayout-tools==0.8.0` gives item 6 `unmet` /
-`partial_coverage`: all five corner citations grade `met` individually, and
+**The measured verdict (live run on the then-pinned `klayout-tools==0.8.0`,
+2026-11-14; the pin moved to 0.9.2 in #210 and the item-6 verdict is
+unchanged there).** Grading this manifest with `klayout-tools==0.8.0` gives
+item 6 `unmet` / `partial_coverage`: all five corner citations grade `met`
+individually, and
 the item's `detail` reports `declared_gaps:
 [dr0007-row8-current-limit]`, `unratified_rows: [dr0007-row2-output]`,
 `uncovered_rows: []` and `row_sources: {"dr0007-row2-output": "asserted"}`.
@@ -210,7 +212,7 @@ The row coverage is asserted by the manifest, not derived from the reports —
 `klt yield` reports carry no `spec_row` tags (unlike the item-5 `klt sim`
 envelope's derived coverage). The grade cannot flip to `met` by citing more:
 a row declared `ratified: false` stays in `unratified_rows` covered or not.
-Two negative controls, run on scratch manifests against the same pinned
+Two negative controls, run on scratch manifests against that same 0.8.0
 build, confirm the grade is not permissive: a citation whose `rows` names the
 declared-gap row 8 grades `invalid_evidence`, and a `not_applicable` entry
 alongside a declared row set grades `invalid_evidence`. The capability is
@@ -228,7 +230,9 @@ request documents, and — on the `tt` population, where the campaign attaches
 it — a deterministic negative control graded `detected`. The other four cited
 corner reports declare no negative control, which `klt yield` treats as a
 warning (`not_declared`), not a failure; the multi-citation grade does not
-restate either field per citation, which is why they are disclosed here. It
+restate either field per citation, which is why they are disclosed here — a
+grading/disclosure gap filed upstream as klayout-tools#5786 (**open** as of
+this edit), the tracker for why this disclosure has to live in prose. It
 does **not** mean the row is met or
 the block meets its accuracy spec: row 2's evidence is against the **Open**
 ±2 % window — provisional by construction, and ratifying it is `spec/` +
