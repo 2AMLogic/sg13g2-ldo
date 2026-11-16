@@ -49,6 +49,10 @@
       "sha256": "sha256:e3d1ca4acba13e00ba705a4772081a915d0fad6e519aafdf36ec2a3c94fbc04e"
     },
     {
+      "path": "design/test_netlist.py",
+      "sha256": "sha256:8e0a3d7da14531dfeb75de61a351180b74539e4a7cec01fa0690c8c3b3fd0854"
+    },
+    {
       "path": "design/xschemrc",
       "sha256": "sha256:c8a9b5673ac045073a88fb97a405d9e5e3fe0edf729edadeb1b4eb856d6366f1"
     }

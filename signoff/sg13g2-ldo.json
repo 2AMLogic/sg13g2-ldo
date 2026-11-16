@@ -57,7 +57,7 @@
   "evidence": {
     "1": {
       "file": "signoff/evidence/item1-design-sources.envelope.json",
-      "content_hash": "sha256:3dd788327acf44e47d91e71ba47b01e0c96a9e95fdfcf2edb8a28ce9ded76127"
+      "content_hash": "sha256:49250d333f8aca055a8c65594195e2d04023dff100adae69a07edb4de4c87c1c"
     },
     "2": {
       "file": "signoff/evidence/item2-layout.envelope.json",
@@ -119,11 +119,11 @@
     ],
     "8": {
       "file": "sim/characterization/characterization-envelope.json",
-      "content_hash": "sha256:b9938dc30227e3f193d10b5768f981b72538ae755c6289580e8bac128f5b694e"
+      "content_hash": "sha256:61676e9de0f7cdcfe488b7678a982e9b61aa40f3954aa376f6cab8068ded1e87"
     },
     "9": {
       "file": "signoff/evidence/item9-testbenches.envelope.json",
-      "content_hash": "sha256:09bed762e230a1d83dcc7ea7d32a0aab1a3c717d9fa61884611f632b783a9344"
+      "content_hash": "sha256:fac5b221ada6a5927f309ea11d088f2d664a8e258c60ec5738f62670c10444b1"
     },
     "10": {
       "file": "signoff/evidence/item10-repo-hygiene.envelope.json",

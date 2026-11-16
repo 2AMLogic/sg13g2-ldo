@@ -73,6 +73,8 @@ import tempfile
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.abspath(os.path.join(HERE, "..", ".."))
 ROOT = os.path.join(HERE, "row4-envelope")
+sys.path.insert(0, os.path.join(HERE, "..", "tools"))
+import render_deck  # noqa: E402
 
 TEMPLATE = "sim/ldo-cmos5l-pvt-sweep/testbench/tb_row4_envelope_cmos5l.spice.tmpl"
 DESIGN_NETLIST = "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice"
@@ -114,8 +116,18 @@ OSDI_ORDER = ["psp103", "psp103_nqs", "mosvar", "r3_cmc", "cap_cmomi", "cap_cmom
 # byte-reproduction of the request and summary files, which is stronger than a
 # hash (a hash only says "unchanged"; reproduction says "these exact bytes come
 # out of the code that is committed now").
-INPUTS = [TEMPLATE, PDK_PIN, DESIGN_NETLIST,
-          "design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice"]
+INPUTS = [TEMPLATE, DESIGN_NETLIST,
+          "design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice",
+          "sim/tools/render_deck.py"]
+
+# DR-0021: the PDK pin is NOT byte-pinned. sim/pdk-cmos5l.json is a prose fact
+# sheet no code consumes, so a whole-file hash made a documentation edit stale
+# the citation. New records pin a canonical projection of the keys that decide
+# which PDK tree was fetched; legacy records (PDK_PIN inside `input_sha256`)
+# keep their whole-file byte compare.
+PDK_PIN_KEYS = ("pinned_commit", "pinned_tarball_sha256", "pinned_tarball_url",
+                "subtree")
+PDK_PIN_PROJECTION_FIELD = "pdk_pin_projection_sha256"
 
 PROBE_COORDS = [("tt", 27, "typ"), ("ss", 125, "typ")]
 
@@ -130,6 +142,27 @@ class Error(Exception):
 def sha256_file(path):
     with open(path, "rb") as f:
         return hashlib.sha256(f.read()).hexdigest()
+
+
+def pdk_pin_projection_sha256(path=None):
+    """sha256 of the canonical JSON of the PDK pin's fetch-determining keys.
+
+    Canonical = sort_keys + fixed separators, so key order and whitespace in
+    the fact sheet do not matter. A missing or non-string projected key raises
+    ValueError: a renamed key must never be a silent skip (it would pin an
+    empty projection and let a real pin change through).
+    """
+    path = path or os.path.join(REPO, PDK_PIN)
+    with open(path) as f:
+        doc = json.load(f)
+    bad = [k for k in PDK_PIN_KEYS
+           if not isinstance(doc.get(k), str) or not doc[k]]
+    if bad:
+        raise ValueError(f"{PDK_PIN}: projected key(s) {bad} missing or not a "
+                         "non-empty string; the PDK pin cannot be projected")
+    canon = json.dumps({k: doc[k] for k in PDK_PIN_KEYS}, sort_keys=True,
+                       separators=(",", ":"))
+    return hashlib.sha256(canon.encode()).hexdigest()
 
 
 def coords(probe=False):
@@ -153,7 +186,11 @@ def corner_id(mos, temp, res):
 # --------------------------------------------------------------------------- #
 
 def tb_text(design_netlist_include, template_text):
-    return template_text.replace("@@DESIGN_NETLIST@@", design_netlist_include)
+    # One renderer for every deck (#236): sim/tools/render_deck.py, the same
+    # module the .sh drivers and the other campaign drivers call. It fails
+    # loudly on any unsubstituted @@TOKEN@@, which the one-token str.replace
+    # chain this used to carry did not (#245).
+    return render_deck.render(template_text, {"DESIGN_NETLIST": design_netlist_include})
 
 
 def corners_lib_text(models_dir, cs):
@@ -487,6 +524,7 @@ def cmd_submit(a):
                                   "PROPOSED and not expressible as a klt sim request",
         "batch_job_ids": sorted(set(re.findall(r"klt-sim-[0-9a-f]+", stderr_text))),
         "input_sha256": {p: sha256_file(os.path.join(REPO, p)) for p in INPUTS},
+        PDK_PIN_PROJECTION_FIELD: pdk_pin_projection_sha256(),
     }
     with open(os.path.join(record_dir, "provenance.json"), "w") as f:
         json.dump(prov, f, indent=1, sort_keys=True)
@@ -670,6 +708,18 @@ def stale_inputs(rid):
     """
     prov = json.load(open(os.path.join(ROOT, rid, "provenance.json")))
     out = []
+    if PDK_PIN_PROJECTION_FIELD in prov:
+        try:
+            now = pdk_pin_projection_sha256()
+        except (OSError, ValueError) as e:
+            out.append(f"cited record {rid}: {e}")
+        else:
+            want = prov[PDK_PIN_PROJECTION_FIELD]
+            if now != want:
+                out.append(f"cited record {rid}: PDK pin {PDK_PIN} changed in "
+                           f"{'/'.join(PDK_PIN_KEYS)} since the run (recorded "
+                           f"{want[:12]}..., tree {now[:12]}...); the citation is "
+                           "stale -- re-run `row4_envelope.py submit` and re-pin item 5")
     for rel, want in sorted(prov.get("input_sha256", {}).items()):
         path = os.path.join(REPO, rel)
         if not os.path.exists(path):

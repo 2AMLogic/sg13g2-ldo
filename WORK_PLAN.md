@@ -7,7 +7,7 @@ This roadmap is generated from the repository's current Loom label state.
 
 Judge-approved PRs under a hold (`loom:blocked` or `loom:operator`) — only a human merge decision is missing.
 
-_None._
+- **#277**: chore(loom): resync installed Loom to v0.19.1302
 
 ## Very Important
 
@@ -25,30 +25,28 @@ _None._
 
 Human-approved issues ready for implementation (`loom:issue`).
 
-_None._
+- **#267**: Gate sim/pdk-cmos5l.json's pinned_tarball_url SHA against its own pinned_commit
+- **#272**: evidence_store: put_files' private temp dir can still escape as a non-StoreError (residual of the #262 class)
 
 ## In Progress
 
 Issues currently being built (`loom:building`).
 
 - **#199**: T1 grading: attest items 1, 9, 10 with klt signoff --attest instead of hand-rolled inventory envelopes
-- **#245**: A ninth @@TOKEN@@ render site survived #236: row4_envelope.py tb_text() has no leftover-@@ guard
-- **#248**: signoff: record klayout-tools#5786 in the Monte Carlo campaign's upstream-issues list
-- **#250**: Gate layout/run_flow.sh's klt + KLayout engine pins against ci.yml (no drift check today)
-- **#252**: docs/chipalooza/challenge-6-proposal.md still says layout is empty and DRC/LVS not started — refresh or delete
+- **#254**: spec: DR-0017 line 632 still says "Item 6 stays uncited" — stale after #225 cited the row-2 campaign
+- **#275**: sim/pdk-cmos5l.json's fetch_method cites a stale KLAYOUT_TOOLS_REF (159527a5, ci.yml says 046ba746)
 
 ## PRs Awaiting Review
 
 PRs waiting on Judge (`loom:review-requested`).
 
-- **#264**: docs: record klayout-tools#5786 in the campaign's upstream-issues list and date the item-6 0.8.0 verdict
+_None._
 
 ## Approved (Awaiting Merge)
 
 PRs that passed review and are queued for Champion auto-merge (`loom:pr`).
 
-- **#260**: docs: refresh stale layout/DRC/LVS status in challenge-6 proposal
-- **#261**: refactor(sim): route row4_envelope tb_text through render_deck
+- **#277**: chore(loom): resync installed Loom to v0.19.1302
 
 ## Proposed
 
@@ -60,17 +58,16 @@ Issues carrying `loom:curated`.
 - **#199**: T1 grading: attest items 1, 9, 10 with klt signoff --attest instead of hand-rolled inventory envelopes *(curated)*
 - **#218**: sim: run the two-injection loop-gain bench at DR-0015 point P3 (experiment E2) *(curated)*
 - **#219**: sim: f_ug-vs-Cc probe at heavy load, DR-0015 point P3 (experiment E3) *(curated)*
-- **#221**: spec: proposed decision record for a row-9 startup remedy on SG13CMOS5L (plan only) *(curated)*
-- **#245**: A ninth @@TOKEN@@ render site survived #236: row4_envelope.py tb_text() has no leftover-@@ guard *(curated)*
-- **#248**: signoff: record klayout-tools#5786 in the Monte Carlo campaign's upstream-issues list *(curated)*
-- **#250**: Gate layout/run_flow.sh's klt + KLayout engine pins against ci.yml (no drift check today) *(curated)*
 - **#254**: spec: DR-0017 line 632 still says "Item 6 stays uncited" — stale after #225 cited the row-2 campaign *(curated)*
-- **#262**: evidence_store: preflight's uri-scheme probe can still escape as a traceback (residual #251 item-1 site) *(curated)*
+- **#267**: Gate sim/pdk-cmos5l.json's pinned_tarball_url SHA against its own pinned_commit *(curated)*
+- **#272**: evidence_store: put_files' private temp dir can still escape as a non-StoreError (residual of the #262 class) *(curated)*
+- **#275**: sim/pdk-cmos5l.json's fetch_method cites a stale KLAYOUT_TOOLS_REF (159527a5, ci.yml says 046ba746) *(curated)*
 
 ## Proposed (Architect / Hermit)
 
 - **#228**: Remove the placeholder root package.json: five dead scripts that steer agent build-gate detection to a Node toolchain this repo does not have *(hermit)*
 - **#229**: Twenty-seven unused module-level constants — four of them claim behaviour they do not have (the dimension #226's scan did not cover) *(hermit)*
+- **#270**: Remove check_artifact_manifests.py verify subcommand: hand-rolled twin of klt artifact verify *(hermit)*
 
 ## Epics
 
@@ -80,14 +77,14 @@ Issues carrying `loom:curated`.
 
 | Bucket | Count |
 |------|-------|
-| Operator merge-risk holds | 0 |
+| Operator merge-risk holds | 1 |
 | Very important | 0 |
 | Important | 1 |
-| Ready (`loom:issue`) | 0 |
-| In Progress (`loom:building`) | 5 |
-| PRs awaiting review | 1 |
-| Approved PRs awaiting merge | 2 |
-| Curated | 12 |
-| Architect / Hermit proposals | 2 |
+| Ready (`loom:issue`) | 2 |
+| In Progress (`loom:building`) | 3 |
+| PRs awaiting review | 0 |
+| Approved PRs awaiting merge | 1 |
+| Curated | 10 |
+| Architect / Hermit proposals | 3 |
 | Active epics | 1 |
 <!-- guide:plan-body:end -->
