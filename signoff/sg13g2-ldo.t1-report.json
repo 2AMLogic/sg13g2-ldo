@@ -33,7 +33,7 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:3dd788327acf44e47d91e71ba47b01e0c96a9e95fdfcf2edb8a28ce9ded76127",
+        "content_hash": "sha256:49250d333f8aca055a8c65594195e2d04023dff100adae69a07edb4de4c87c1c",
         "input_verified": true,
         "exit_status": 0,
         "artifact_binding": {
@@ -42,7 +42,7 @@
             "path": "signoff/evidence/item1-design-sources.inventory.json",
             "scope": "repo"
           },
-          "content_hash": "sha256:3dd788327acf44e47d91e71ba47b01e0c96a9e95fdfcf2edb8a28ce9ded76127",
+          "content_hash": "sha256:49250d333f8aca055a8c65594195e2d04023dff100adae69a07edb4de4c87c1c",
           "input_verified": true,
           "summary": "SG13CMOS5L schematics/symbols, their generator and the regenerated ngspice netlists are committed; every constituent hash matches the inventory. Freshness/identity only, not a design-correctness or performance claim.",
           "source": "signoff/evidence/item1-design-sources.inventory.json"
@@ -340,7 +340,7 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:3d960e0355b78ed9ea873d14597eda2c413642ff78d74cf175d81c41153f416b",
+        "content_hash": "sha256:ba7ac2a313551243121625b2932e1ab74d22bfb358ea7437a9e3204a717802b0",
         "input_verified": true,
         "exit_status": 0,
         "artifact_binding": {
@@ -349,7 +349,7 @@
             "path": "signoff/evidence/item9-testbenches.inventory.json",
             "scope": "repo"
           },
-          "content_hash": "sha256:3d960e0355b78ed9ea873d14597eda2c413642ff78d74cf175d81c41153f416b",
+          "content_hash": "sha256:ba7ac2a313551243121625b2932e1ab74d22bfb358ea7437a9e3204a717802b0",
           "input_verified": true,
           "summary": "The shipped ngspice testbenches/templates, their cold-start entry points (run_*.sh) and experiment READMEs are committed; every constituent hash matches the inventory and each README names its entry point. Testbenches are NOT re-run by this attestation and no measurement result is claimed.",
           "source": "signoff/evidence/item9-testbenches.inventory.json"
