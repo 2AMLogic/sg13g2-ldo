@@ -2,7 +2,7 @@
 
 A 3.3 V in, 1.8 V out, 0–50 mA low-dropout regulator ported to IHP SG13G2 / SG13CMOS5L to exercise the open flow (xschem, ngspice, klayout-tools) and surface its gaps upstream.
 
-**Status as of 2026-11-16, `main` @ `a15b2d7a`.**
+**Status as of 2026-11-16, `main` @ `0fbcf949`.**
 
 This file is the reasoned plan. [`WORK_PLAN.md`](../WORK_PLAN.md) is the generated view of issue labels and [`WORK_LOG.md`](../WORK_LOG.md) is the merge history; neither is restated here. The graded state lives in [`signoff/`](../signoff/README.md), and that directory wins over anything below if they disagree.
 
@@ -23,7 +23,7 @@ This file is the reasoned plan. [`WORK_PLAN.md`](../WORK_PLAN.md) is the generat
 **Spec: 1 of 10 rows ratified** (row 4, dropout @ 50 mA; [DR-0007](../spec/decision-records/DR-0007-target-spec-row-ratification.md)). The other nine are Open. What the committed evidence says about the Open rows on SG13CMOS5L:
 
 - **Row 10 stability and row 6 PSRR miss inside the dynamic window.** The load x Cout x ESR campaign (536 operating points, `sim/ldo-cmos5l-pvt-sweep/README.md`, "Dynamic DoE") samples phase margin down to -52.70 deg and PSRR @ 1 kHz down to 43.55 dB. [DR-0015](../spec/decision-records/DR-0015-sg13cmos5l-dynamic-window-stability-diagnosis.md) (Proposed) diagnoses three miss classes and ranks a load-tracking compensation family first; its experiment E1 is measured, E2 is run only at the legacy 1 mA / 1 uF point, E3 and E4 are open.
-- **Row 9 startup fails 135 of 135 grid points** on overshoot and monotonicity under the proposed methodology ([DR-0009](../spec/decision-records/DR-0009-sg13cmos5l-startup-measurement-methodology.md)); the core has an enable input but no soft start.
+- **Row 9 startup fails 135 of 135 grid points** on overshoot and monotonicity under the proposed methodology ([DR-0009](../spec/decision-records/DR-0009-sg13cmos5l-startup-measurement-methodology.md)); the core has an enable input but no soft start. The remedy plan is written ([DR-0020](../spec/decision-records/DR-0020-sg13cmos5l-startup-remedy-plan.md), Proposed); implementation is not started.
 - **Row 8 current limit: a standalone cell exists, not integrated.** `ldo_ilimit_cmos5l` and a one-point nominal smoke record landed in PR #179 per [DR-0017](../spec/decision-records/DR-0017-sg13cmos5l-current-limiter-plan.md); the core netlist does not instantiate it.
 - **Row 2 output accuracy** has Monte Carlo evidence against the proposed window (five corners, N = 400 each); the row is still Open.
 
@@ -33,10 +33,8 @@ This file is the reasoned plan. [`WORK_PLAN.md`](../WORK_PLAN.md) is the generat
 
 Can start today; each is one PR.
 
-1. **Artifact store for new sim evidence** (#183, PR #184). Done when PR #184 merges with CI green: manifests in git, bytes through `klt artifact`. The PR conflicts with `main`; the two failures it was parked on (#185, #186) are closed, so it needs a rebase onto `main` and a fresh CI run, not new design.
-2. **DR-0015 E2 at point P3** (no issue; seed 1). `run_loopgain2.sh` hard-codes the legacy operating point. Done when the two-injection bench runs at P3 (ff / -40 C / res_wcs, 50 mA, 0.33 uF, 0 ohm), a new append-only record is committed, and a DR-0015 addendum states whether the P3 verdicts stay `fail` or become decidable.
-3. **DR-0015 E3: `f_ug`-vs-`Cc` probe at P3** (no issue; seed 2). Done when three runs (`Cc` at 0.5x, 1x, 2x) are recorded and an addendum states which node owns the class-2 third pole, or that the probe cannot tell.
-4. **Row 9: a startup remedy plan** (no issue; seed 3). Done when a Proposed decision record names the cause of the overshoot from committed traces, compares candidate remedies, and lists the benches and records a follow-up must refresh. No core edit, no row change; the same shape DR-0017 gave row 8.
+1. **DR-0015 E2 at point P3** (no issue; seed 1). `run_loopgain2.sh` hard-codes the legacy operating point. Done when the two-injection bench runs at P3 (ff / -40 C / res_wcs, 50 mA, 0.33 uF, 0 ohm), a new append-only record is committed, and a DR-0015 addendum states whether the P3 verdicts stay `fail` or become decidable.
+2. **DR-0015 E3: `f_ug`-vs-`Cc` probe at P3** (no issue; seed 2). Done when three runs (`Cc` at 0.5x, 1x, 2x) are recorded and an addendum states which node owns the class-2 third pole, or that the probe cannot tell.
 
 ## Next
 
@@ -46,9 +44,7 @@ Unblocked by a named item above or by an upstream fix.
 - **Compensation prototype screen (DR-0015 family B)**, at most 72 AC runs. Only if E1–E4 leave family B standing. Done when each candidate has a verdict at the six recorded points; a candidate that does not clear every recorded `fail` stops there.
 - **Item 7 slice 2: post-layout re-simulation.** The row-4 bench exists as a `klt sim` request (#55, closed completed 2026-11-14); re-run it on `sg13cmos5l-ldo_core_cmos5l.pex.spice`. Done when `pex_report.json` carries delta rows instead of `nothing_checked` and is cited under item 7. No issue yet.
 - **Dynamic-coverage close-out** (#64). The parameterised benches and one refinement round are on `main`; the issue stays blocked on an approved refinement stopping rule. Done when the rule is written into `sim/ldo-cmos5l-pvt-sweep/README.md` and the issue is closed or re-scoped against it.
-- **Bump the klayout-tools pin** (#210). After klayout-tools#5334 (`klt erc` substrate continuity) ships. Done when `layout/run_flow.sh` stage 8 passes unchanged with `erc.supply_short` evaluated and every `layout/` report and the T1 report are regenerated. A reported short is a layout finding to fix here.
 - **Tool-made attestations for items 1, 9, 10** (#199). Needs an attesting host where `design/netlist.py --check` passes (xschem 3.4.7, as CI builds) and the cold-start commands run. Done when the three envelopes come from `klt signoff --attest` and `--check` gates them in CI.
-- **Delegate xschem export to `klt netlist`** (#176). After klayout-tools#4952 and #4953. Done when the regenerated netlists are byte-identical to the committed ones.
 
 ## Later
 
@@ -63,9 +59,9 @@ Direction; each needs its question answered first.
 ## Blocked and waiting
 
 - **Limiter integration is parked on an operator decision** (#190): authorising the batch campaign and layout rework that instantiating `ldo_ilimit_cmos5l` in the core requires. #164, #166, #167, #168 and the row-8 half of #56 all wait behind it.
-- **#210** waits on klayout-tools#5334; **#176** on klayout-tools#4952 / #4953. #56's remaining work is evidence, not a tool fix: row 2's ratification and the row-8 campaign (the latter waits behind #190, above).
+- **#56**'s remaining work is evidence, not a tool fix: row 2's ratification and the row-8 campaign (the latter waits behind #190, above).
 - **The T1 tracker (#5)** rests until #56 closes (#55 closed completed 2026-11-14).
-- **Dispatchable today, as the tracker reads:** nothing is drawable without a hand. #183 has a conflicting open PR, and items 2–4 above have no issue yet.
+- **Dispatchable today, as the tracker reads:** nothing is drawable without a hand. Items 1–2 above have no issue yet.
 
 ## Not planned
 
