@@ -1,7 +1,13 @@
 # Chipalooza Challenge #6 — sign-off proposal: SG13CMOS5L low-dropout regulator
 
 **Status: schematic captured, electrical spec table fully PVT-verified and
-passing; physical implementation (layout / DRC / LVS) not started.** This
+passing (section 4). Frozen 2026-09-16, hours before the
+physical-implementation half (#28, split from the same parent issue, #22,
+as this document) closed — that half has since landed, and
+`layout/README.md` and `signoff/` are the authority on the current
+physical-verification state, winning over this document on any
+disagreement (`docs/ROADMAP.md`); section 5 points at them instead of
+restating their verdicts.** This
 document covers phases 2/4-3/4 of the SG13CMOS5L port tracked by #12 (Epic
 `2AMLogic/2am#542`, Phase 5A): device-topology decision + schematic capture
 (#20, ratified by
@@ -9,16 +15,15 @@ document covers phases 2/4-3/4 of the SG13CMOS5L port tracked by #12 (Epic
 PVT-cornered closed-loop verification (#21), and the `Mpass` resize plus
 error-amp re-compensation that verification motivated (#25, ratified by
 [`DR-0003`](../../spec/decision-records/DR-0003-sg13cmos5l-mpass-resize-and-compensation.md)).
-**Every spec row in section 4 currently passes at every one of the 15 PVT
-corners swept.** The Challenge #6 brief's full sign-off bar (schematic +
-pre-layout sim -> layout + post-layout sim over PVT -> DRC/LVS-clean GDS,
-open-source-EDA-verifiable) is **not yet fully met**: this repo's `layout/`
-directory is empty as of this writing, and DRC/LVS sign-off has not
-happened — that work is tracked separately in #28 (split from the same
-parent issue, #22, as this document) and is explicitly **not** a
-prerequisite for this document (see section 5). This document proposes the
-block and reports what has been verified so far, honestly bounded by what
-has not — no claim without a testbench, per `CLAUDE.md`.
+**Every spec row in section 4 passes at every one of the 15 PVT corners
+swept in the record it cites.** Against the Challenge #6 brief's full
+sign-off bar (schematic + pre-layout sim -> layout + post-layout sim over
+PVT -> DRC/LVS-clean GDS, open-source-EDA-verifiable), what this document
+itself established was the first stage only: at freeze time the layout
+half was still open (tracked in #28) and explicitly **not** a prerequisite
+for this document (see section 5). This document proposes the block and
+reports what its own phases verified, honestly bounded by what they had
+not — no claim without a testbench, per `CLAUDE.md`.
 
 Block-only document: no personal or institutional detail below, per the
 epic's (`2AMLogic/2am#542`) Tier 1 disclosure scope.
@@ -132,8 +137,11 @@ branch" has the full account; summarized here):
   technique that actually closed the phase-margin gap (`DR-0003` "What
   actually closes the gap").
 - **Feedback divider** — `Rtop`/`Rbot` (300 k-ohm each, `FB = VOUT/2`),
-  still behavioral `res.sym`, not yet a PDK resistor flavor (a known gap
-  for the layout phase, #28 — see section 5).
+  behavioral `res.sym` at freeze time; since converted to real
+  `sg13cmos5l_pr/rhigh` instances by #28 (`w=1u l=25.43u b=7`, 300.44
+  k-ohm per leg by the PDK symbol's own value expression), with the
+  conversion's resistor-corner spread separately verified by #31 —
+  `design/README.md` "Known gaps" records both.
 - **Bias scheme** — an external `IBIAS` current input, mirrored on-block
   via a diode-connected `Mb0`; `Mtail` (`m=3`) and `Mload2` (`m=6`) mirror
   from it, so an external sink of `Iref` sets tail = `3*Iref` and second
@@ -232,46 +240,59 @@ below should be read as pre-committing to that outcome either way.
 | Brief stage | Status |
 |---|---|
 | Schematic + pre-layout sim | **Done.** `design/sg13cmos5l/ldo_core_cmos5l.sch` (+ `ldo_erramp_cmos5l.sch`) captured and ratified (#20, `DR-0002`); resized and re-compensated against closed-loop PVT evidence (#25, `DR-0003`). Three PVT-cornered pre-layout testbenches (DC sweep, loop gain, PSRR) land 51/51 PASS across the full 15-corner grid plus sensitivity sweeps (#21, #25, section 4 above). |
-| Layout + post-layout sim over PVT | **Not started.** `layout/` is empty in this repo as of this writing (`layout/README.md`: "Empty until the first work lands here"). No post-layout parasitic-extraction re-simulation exists yet. Tracked in #28 (the sibling sub-issue split from the same parent, #22, as this document) — this document has **no dependency** on #28's completion (see the note at the top of this document and #29's own "No dependency on the layout half" note); re-check #28's actual status before relying on the sentence above if you are reading this after #28 has progressed. |
-| DRC/LVS-clean GDS, in-repo, open-source-EDA-verifiable | **Not started**, for the same reason: no layout exists yet to run DRC or LVS against. `Mpass` (`w=2800u`, still `ng=1 m=1`) and `Rz` (`l=1200u` at the PDK's `rhigh` minimum width, an implied ~1.2-1.7 MOhm, 1200:1 aspect ratio) are both large, schematic-level-only draws #25 sized purely against electrical targets and flagged explicitly as a known gap for the layout phase (`DR-0003` "Consequences", `design/README.md` "Known gaps") — neither has been floorplanned. The feedback divider is also still behavioral `res.sym`, not a PDK resistor flavor, and needs to become one before LVS can see it (`design/README.md` "Known gaps"). |
+| Layout + post-layout sim over PVT | The layout half landed after this document was frozen: #28 (closed 2026-09-16, the sibling sub-issue split from the same parent, #22, as this document — never a prerequisite for this document; see the note at the top and #29's own "No dependency on the layout half" note) drew the full core, and parasitic extraction is committed (`layout/sg13cmos5l-ldo_core_cmos5l/pex_report.json`). What post-layout re-simulation over PVT has and has not earned since is deliberately not restated here: `layout/README.md` is the authority on the layout tree, and `signoff/sg13g2-ldo.t1-report.json` (T1 item 7, "Post-layout verification") on the graded verdict — this row points at them rather than copying a status that drifts, per `docs/ROADMAP.md`. |
+| DRC/LVS-clean GDS, in-repo, open-source-EDA-verifiable | Landed with #28 and its successors: the committed GDS under `layout/sg13cmos5l-ldo_core_cmos5l/` is generator-drawn, DRC-verified against both the curated `klt` deck and the PDK's own deck, and LVS-verified by `layout/run_flow.sh`, whose committed reports and negative controls CI re-checks (`layout-check` job). The three draws this row originally flagged as open layout-phase gaps were each closed and are recorded as closed in `design/README.md` "Known gaps": `Mpass` (floorplanned 4 rows x 28 fingers x 25 um = 2800 um; `ng`/`m` stay `1` in the schematic on purpose), `Rz` (`l=28.81u b=39`, forty meandered stripes, `leff` unchanged at ~1200 um), and the feedback divider (real `rhigh`, see section 3). The graded DRC/LVS verdicts are T1 items 3/4 in `signoff/sg13g2-ldo.t1-report.json` — read them there, not here. |
 
-**This document does not claim manufacturability the design has not yet
-earned.** The brief's full sign-off bar requires all three stages; only
-the first is landed. Section 4's PASS verdicts are schematic-level,
+**This document does not claim manufacturability the design has not
+earned.** The brief's full sign-off bar requires all three stages; this
+document's own phases established the first, and where the later stages
+stand since is what `signoff/`'s graded tier report exists to say — this
+paragraph defers to it rather than restating a verdict that moves as work
+lands. Section 4's PASS verdicts are schematic-level,
 pre-layout electrical verification only — real, PVT-cornered, and honestly
 reported, but not a substitute for the DRC/LVS-clean, post-layout-verified
 GDS the brief's deliverable gate ultimately requires. This mirrors
 `CLAUDE.md`'s "no claim without a testbench" rule applied to a process
 claim (implementation status), not just to a spec-row claim.
 
-## 6. Known gaps carried into any future layout pass
+## 6. Gaps this document's phases left open, and where each went
 
 Restated here from `design/README.md`/`DR-0003` so a reader of this
-proposal does not have to cross-reference them to understand what #28
-still has to resolve:
+proposal does not have to cross-reference them to understand what the
+layout phase inherited from these phases. The layout phase happened (#28,
+closed 2026-09-16, and successors); `design/README.md` "Known gaps" is the
+authority on each item's current state, and the disposition below records
+only what is already closed there:
 
-- **`Mpass` (`w=2800u`) and `Rz` (`l=1200u`) are both large,
-  schematic-level-only draws.** `Mpass` needs multi-finger/multi-row
-  layout (`ng`/`m` are both still `1`); `Rz` needs the PDK's own `rhigh`
-  PCell meandering (`b` bends parameter, currently `0`) to fit a
-  practical die footprint.
-- **The feedback divider is behavioral `res.sym`, not a PDK resistor
-  flavor** — needs a real `rsil`/`rppd`/`rhigh` divider before LVS can see
-  it.
-- **No CI job** runs `--design sg13cmos5l --check` or the PVT sweep for
-  this branch yet; both are local/manual steps
-  (`sim/ldo-cmos5l-pvt-sweep/README.md` "CI",
-  `2AMLogic/klayout-tools#1929`).
+- **`Mpass` (`w=2800u`) and `Rz` (`l=1200u`) were both large,
+  schematic-level-only draws** at freeze time — no floorplan existed for
+  either. **Closed by #28:** `Mpass` is drawn as 4 rows x 28 fingers x
+  25 um, `Rz` as forty meandered `rhigh` stripes (`l=28.81u b=39`, `leff`
+  unchanged at ~1200 um); the schematic's `ng`/`m` = `1` is deliberate,
+  the row/finger split being a layout decision recorded in
+  `layout/sg13cmos5l-ldo_core_cmos5l/generate.py`.
+- **The feedback divider was behavioral `res.sym`, not a PDK resistor
+  flavor.** **Closed by #28** (real `rhigh` legs — see section 3) **and
+  verified by #31** against the full resistor-corner grid
+  (`design/README.md` "Known gaps").
+- **No CI job ran `--design sg13cmos5l --check` or the PVT sweep for this
+  branch** at freeze time. Since then `design/netlist.py --design
+  sg13cmos5l --check` and `layout/run_flow.sh --check` became ungated CI
+  jobs on every push/PR; the full PVT corner sweep still is not one —
+  corner/Monte Carlo sweeps run locally or on the batch fleet, and their
+  committed records are re-verified offline by CI
+  (`.github/workflows/ci.yml` header,
+  `sim/ldo-cmos5l-pvt-sweep/README.md` "CI").
 - **The MoM-cap (`Cc`) model has no characterized process-corner spread on
   this PDK** (see section 4's stability-row caveat) — resolving this
   needs real CMOS5L silicon characterization, out of scope for any
-  schematic- or layout-level phase of this port.
+  schematic- or layout-level phase of this port. Still open, by nature.
 
 None of these block this document's own spec-table claims (section 4),
 which are pre-layout, schematic-level PVT results and are reported as
-such — they are listed here as the concrete input the layout phase (#28)
-needs, consistent with this repo's practice of surfacing costs rather than
-leaving them implicit.
+such — they are listed here as the concrete input the layout phase
+inherited, consistent with this repo's practice of surfacing costs rather
+than leaving them implicit.
 
 ## References
 
@@ -286,7 +307,9 @@ leaving them implicit.
   — the three PVT-cornered testbenches this document's spec table draws
   from (#21, #25), including the loop-gain measurement method and the
   MoM-cap sensitivity sweep this document's stability-row caveat cites.
-- `layout/README.md` — current (empty) state of this repo's layout tree.
+- `layout/README.md` — the layout tree's own account (committed GDS, its
+  generator, and the DRC/LVS/ERC/PEX flow that verifies them); this
+  document's authority on physical implementation, per `docs/ROADMAP.md`.
 - [`2AMLogic/2am` `docs/pdk/sg13cmos5l.md`](https://github.com/2AMLogic/2am/blob/main/docs/pdk/sg13cmos5l.md)
   — the fleet's SG13CMOS5L PDK notes.
 - [`2AMLogic/2am#542`](https://github.com/2AMLogic/2am/issues/542) — Epic
