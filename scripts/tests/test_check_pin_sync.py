@@ -41,7 +41,7 @@ FILES = (CI, FLOW, CMOS5L, G2)
 
 
 class Tree(unittest.TestCase):
-    """Base class: a temp-root copy of the three gated files, plus mutation
+    """Base class: a temp-root copy of the four gated files, plus mutation
     helpers. Carries no tests of its own."""
 
     def setUp(self):
