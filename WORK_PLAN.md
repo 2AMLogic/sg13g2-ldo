@@ -25,7 +25,7 @@ _None._
 
 Human-approved issues ready for implementation (`loom:issue`).
 
-- **#289**: Two stale descriptions of check_pin_sync.py's scope after #267 widened the table to six pairs
+_None._
 
 ## In Progress
 
@@ -55,7 +55,6 @@ Issues carrying `loom:curated`.
 - **#199**: T1 grading: attest items 1, 9, 10 with klt signoff --attest instead of hand-rolled inventory envelopes *(curated)*
 - **#218**: sim: run the two-injection loop-gain bench at DR-0015 point P3 (experiment E2) *(curated)*
 - **#219**: sim: f_ug-vs-Cc probe at heavy load, DR-0015 point P3 (experiment E3) *(curated)*
-- **#289**: Two stale descriptions of check_pin_sync.py's scope after #267 widened the table to six pairs *(curated)*
 
 ## Proposed (Architect / Hermit)
 
@@ -74,11 +73,11 @@ Issues carrying `loom:curated`.
 | Operator merge-risk holds | 1 |
 | Very important | 0 |
 | Important | 1 |
-| Ready (`loom:issue`) | 1 |
+| Ready (`loom:issue`) | 0 |
 | In Progress (`loom:building`) | 1 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 1 |
-| Curated | 7 |
+| Curated | 6 |
 | Architect / Hermit proposals | 3 |
 | Active epics | 1 |
 <!-- guide:plan-body:end -->
