@@ -8,6 +8,8 @@ Chronological record of recently merged pull requests and closed issues, maintai
 
 ### 2026-11-16
 
+- **PR #280**: docs: correct DR-0017 stale item-6 citation claim via addendum; regrade ROADMAP items 5/6
+- **Issue #254** (closed): spec: DR-0017 line 632 still says "Item 6 stays uncited" — stale after #225 cited the row-2 campaign
 - **PR #274**: signoff: pin each driver's companion test and enforce the pairing
 - **Issue #246** (closed): signoff item-9 inventory pins test_e1_oppoints.py but not test_row4_envelope.py
 - **PR #284**: feat: pin row-4 PDK provenance by canonical projection instead of file bytes
