@@ -8,6 +8,16 @@ Chronological record of recently merged pull requests and closed issues, maintai
 
 ### 2026-11-15
 
+- **PR #259**: refactor(design): delegate netlist.py's xschem export to klt netlist
+- **PR #263**: fix(characterization): move superseded-statement provenance into _row_context so row_7_iq is pure
+- **PR #255**: sim: drop four never-read bindings in item-9 testbench modules
+- **PR #257**: fix: evidence writer's fail-closed contract is now literal (StoreError, rollback, pinned schema)
+- **PR #242**: test: cover read_raw via complex_rawfile; drop dead corner_key
+- **Issue #176** (closed): Simplify design/netlist.py: delegate xschem export to klt netlist
+- **Issue #240** (closed): row_7_iq duplicates its provenance entry when called twice (shared mutable RowContext.sources)
+- **Issue #232** (closed): Remove four never-read bindings in the hash-pinned item-9 testbench modules
+- **Issue #251** (closed): evidence_store: narrow gaps in the documented fail-closed contract
+- **Issue #226** (closed): sim/ldo-cmos5l-pvt-sweep: four never-called helpers — adopt complex_rawfile as read_raw's missing test, drop corner_key
 - **PR #253**: test(sim): add guard-last checker for tracked test files
 - **PR #241**: build: bump klayout-tools pins to the 0.9.2 release and regenerate evidence
 - **PR #227**: refactor(sim): extract run_sweep.sh's post-process heredoc into a tested sweep_report module
