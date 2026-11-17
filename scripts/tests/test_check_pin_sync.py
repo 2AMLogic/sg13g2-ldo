@@ -1,11 +1,11 @@
 """Regression tests for scripts/check_pin_sync.py (issue #250).
 
-Every case runs the gate against a throwaway copy of the three gated files
-(`.github/workflows/ci.yml`, `layout/run_flow.sh`, `sim/pdk-cmos5l.json`) in
-a temp directory, so the extraction patterns are exercised against the repo's
-actual text, never a hand-sketched fixture. Each pin pair gets a negative
-control -- a tampered copy the gate must reject -- plus the all-agree pass
-case and the fail-closed cases. Stdlib only; no network.
+Every case runs the gate against a throwaway copy of the four gated files
+(`.github/workflows/ci.yml`, `layout/run_flow.sh`, `sim/pdk-cmos5l.json`,
+`sim/pdk.json`) in a temp directory, so the extraction patterns are exercised
+against the repo's actual text, never a hand-sketched fixture. Each pin pair
+gets a negative control -- a tampered copy the gate must reject -- plus the
+all-agree pass case and the fail-closed cases. Stdlib only; no network.
 
 The load-bearing case is the CI-blindness control: `KLAYOUT_PY_VERSION` is a
 workflow-level `env:` key, so in CI the resolved variable equals ci.yml's own
@@ -36,11 +36,12 @@ spec.loader.exec_module(pin)
 CI = pin.CI
 FLOW = pin.FLOW
 CMOS5L = pin.CMOS5L
-FILES = (CI, FLOW, CMOS5L)
+G2 = pin.G2
+FILES = (CI, FLOW, CMOS5L, G2)
 
 
 class Tree(unittest.TestCase):
-    """Base class: a temp-root copy of the three gated files, plus mutation
+    """Base class: a temp-root copy of the four gated files, plus mutation
     helpers. Carries no tests of its own."""
 
     def setUp(self):
@@ -89,6 +90,11 @@ class RealRepo(unittest.TestCase):
             rc = pin.main(["check", "--root", str(ROOT)])
         self.assertEqual(rc, 0, err.getvalue())
         self.assertIn("agree", out.getvalue())
+        # Issue #267: every pair must actually be reached -- a new pair that
+        # errored into a skip would drop this count below 6 of 6.
+        self.assertIn(f"{len(pin.PAIRS)} of {len(pin.PAIRS)} pair(s) compared",
+                      out.getvalue())
+        self.assertEqual(len(pin.PAIRS), 6)
 
 
 class KltPin(Tree):
@@ -235,6 +241,141 @@ class PdkCommit(Tree):
         rc, _, err = self.run_gate()
         self.assertEqual(rc, 2)
         self.assertIn("not valid JSON", err)
+
+
+class TarballCommit(Tree):
+    """Pair 4 (issue #267): pdk-cmos5l.json pinned_tarball_url's commit
+    segment vs its own top-level pinned_commit (intra-file)."""
+
+    def test_url_drift_fails_naming_file_key_and_both_values(self):
+        self.replace(CMOS5L,
+                     "tar.gz/f7bca32694fe3d58be0cc7d9df4b9f5db7161a14",
+                     "tar.gz/" + "c" * 40)
+        rc, _, err = self.run_gate()
+        self.assertEqual(rc, 1)
+        self.assertIn(CMOS5L, err)
+        self.assertIn("pinned_tarball_url", err)
+        self.assertIn("pinned_commit", err)
+        self.assertIn("c" * 40, err)
+        self.assertIn("f7bca32694fe3d58be0cc7d9df4b9f5db7161a14", err)
+
+    def test_bumped_commit_missed_url_is_caught(self):
+        # The exact defect this issue closes, as a control: a bump edits
+        # pinned_commit and ci.yml's copy but misses the URL's segment (pair
+        # 3 still agrees, so only this pair can catch it). Before pair 4 the
+        # gate exited 0 on this edit -- measured live at issue filing.
+        sha = "d" * 40
+        self.replace(CMOS5L,
+                     '"pinned_commit": "f7bca32694fe3d58be0cc7d9df4b9f5db7161a14"',
+                     '"pinned_commit": "' + sha + '"')
+        self.replace(CI,
+                     'IHP_SG13CMOS5L_COMMIT: "f7bca32694fe3d58be0cc7d9df4b9f5db7161a14"',
+                     'IHP_SG13CMOS5L_COMMIT: "' + sha + '"')
+        rc, _, err = self.run_gate()
+        self.assertEqual(rc, 1)
+        self.assertIn("pinned_tarball_url", err)
+        self.assertIn(sha, err)
+        self.assertIn("f7bca32694fe3d58be0cc7d9df4b9f5db7161a14", err)
+
+    def test_malformed_url_fails_closed(self):
+        # A URL whose tail is no longer /tar.gz/<40-hex> must be an
+        # extraction error (exit 2), never a pass.
+        self.replace(CMOS5L,
+                     "tar.gz/f7bca32694fe3d58be0cc7d9df4b9f5db7161a14",
+                     "tar.gz/not-a-40-hex-commit")
+        rc, _, err = self.run_gate()
+        self.assertEqual(rc, 2)
+        self.assertIn("pinned_tarball_url", err)
+        self.assertIn("fail closed", err)
+
+    def test_superseded_pin_may_disagree_without_failing(self):
+        # Only top-level keys are gated (stdlib json extraction), so the
+        # nested historical superseded_pin.pinned_commit must never satisfy
+        # either side of this pair.
+        data = json.loads((self.root / CMOS5L).read_text(encoding="utf-8"))
+        data["superseded_pin"]["pinned_commit"] = "e" * 40
+        (self.root / CMOS5L).write_text(json.dumps(data), encoding="utf-8")
+        rc, out, _ = self.run_gate()
+        self.assertEqual(rc, 0, out)
+
+
+class ReleaseTag(Tree):
+    """Pair 5 (issue #267): pdk.json release_url's refs/tags segment vs its
+    own top-level release_tag (intra-file)."""
+
+    def test_url_drift_fails_naming_file_key_and_both_values(self):
+        self.replace(G2, "archive/refs/tags/v0.3.0.tar.gz",
+                     "archive/refs/tags/v9.9.9.tar.gz")
+        rc, _, err = self.run_gate()
+        self.assertEqual(rc, 1)
+        self.assertIn(G2, err)
+        self.assertIn("release_url", err)
+        self.assertIn("release_tag", err)
+        self.assertIn("v9.9.9", err)
+        self.assertIn("v0.3.0", err)
+
+    def test_malformed_url_fails_closed(self):
+        # A URL whose tail is no longer /refs/tags/<tag>.tar.gz must be an
+        # extraction error (exit 2), never a pass.
+        self.replace(G2, "archive/refs/tags/v0.3.0.tar.gz",
+                     "archive/main.zip")
+        rc, _, err = self.run_gate()
+        self.assertEqual(rc, 2)
+        self.assertIn("release_url", err)
+        self.assertIn("fail closed", err)
+
+    def test_tag_drift_fails(self):
+        self.replace(G2, '"release_tag": "v0.3.0"', '"release_tag": "v0.4.0"')
+        rc, _, err = self.run_gate()
+        self.assertEqual(rc, 1)
+        self.assertIn("v0.4.0", err)
+        self.assertIn("v0.3.0", err)
+
+
+class CiReleaseVersion(Tree):
+    """Pair 6 (issue #267): ci.yml IHP_OPEN_PDK_VERSION vs pdk.json
+    release_tag, the `v` prefix normalized on the sim/pdk.json side."""
+
+    def test_ci_side_drift_fails_naming_file_key_and_both_values(self):
+        self.replace(CI, 'IHP_OPEN_PDK_VERSION: "0.3.0"',
+                     'IHP_OPEN_PDK_VERSION: "9.9.9"')
+        rc, _, err = self.run_gate()
+        self.assertEqual(rc, 1)
+        self.assertIn(CI, err)
+        self.assertIn(G2, err)
+        self.assertIn("IHP_OPEN_PDK_VERSION", err)
+        self.assertIn("9.9.9", err)
+        self.assertIn("0.3.0", err)   # the extracted, v-stripped tag
+
+    def test_bumped_tag_missed_ci_fails(self):
+        # The bump this pair exists to catch, as a control: pdk.json bumped
+        # internally consistently (pair 5 stays green) but ci.yml missed.
+        self.replace(G2, '"release_tag": "v0.3.0"', '"release_tag": "v0.4.0"')
+        self.replace(G2, "archive/refs/tags/v0.3.0.tar.gz",
+                     "archive/refs/tags/v0.4.0.tar.gz")
+        rc, _, err = self.run_gate()
+        self.assertEqual(rc, 1)
+        self.assertIn("IHP_OPEN_PDK_VERSION", err)
+        self.assertIn("0.4.0", err)
+        self.assertIn("0.3.0", err)
+
+    def test_tag_without_v_fails_closed(self):
+        # The `v` is normalized on exactly one side; a tag that arrives
+        # without it must fail closed, not silently normalize to a pass.
+        self.replace(G2, '"release_tag": "v0.3.0"', '"release_tag": "0.3.0"')
+        rc, _, err = self.run_gate()
+        self.assertEqual(rc, 2)
+        self.assertIn("release_tag", err)
+        self.assertIn("fail closed", err)
+
+    def test_prose_tag_fails_closed(self):
+        # pdk-cmos5l.json's release_tag is deliberately prose ("none -- ...");
+        # any non-`v<version>` shape here must be refused, not compared.
+        self.replace(G2, '"release_tag": "v0.3.0"',
+                     '"release_tag": "none -- not a release tag"')
+        rc, _, err = self.run_gate()
+        self.assertEqual(rc, 2)
+        self.assertIn("release_tag", err)
 
 
 class FailClosed(Tree):

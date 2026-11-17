@@ -46,6 +46,17 @@ being present; ratification state is stated per row.
   crossing is neither a miss nor infinite margin. It keeps the
   `PM >= 45 deg` / `GM >= 10 dB` targets unchanged, and row 10 stays Open in
   `DR-0007`.
+- [`DR-0020`](decision-records/DR-0020-sg13cmos5l-startup-remedy-plan.md)
+  (**proposed**, not ratified) is the row-9 startup remedy plan: it states the
+  overshoot mechanism from committed evidence (rail-to-rail error-amplifier
+  saturation, cold start and re-enable), compares four candidate remedies
+  (output-network specification, internal reference ramp, pass-gate slew
+  limit, reliance on the `DR-0017` limiter), recommends the internal
+  reference ramp with unvalidated candidate values and a bounded
+  confirm/reject experiment, and carries the consumer inventory a follow-up
+  implementation would make stale. It keeps the row-9 target (`monotonic,
+  controlled ramp, inside ±2% within 3 ms of enable`) and every other target
+  unchanged, and row 9 stays Open in `DR-0007`.
 - [`porting-plan.md`](porting-plan.md) — informational port plan from the
   gf180/sky130 siblings; not a spec and not a decision record.
 

@@ -6,6 +6,40 @@ Chronological record of recently merged pull requests and closed issues, maintai
 
 - [2026-09](work_log/WORK_LOG_2026-09.md)
 
+### 2026-11-16
+
+- **PR #277**: chore(loom): resync installed Loom to v0.19.1302
+- **PR #294**: docs: Tree docstring says four gated files, matching FILES in check_pin_sync tests
+- **Issue #289** (closed): Two stale descriptions of check_pin_sync.py's scope after #267 widened the table to six pairs
+- **PR #291**: fix: fail closed when put_files' manifest temp dir raises OSError
+- **PR #288**: feat: gate the intra-file PDK pin copies and ci.yml's SG13G2 version
+- **PR #279**: docs: decouple pdk-cmos5l fetch_method from the ci.yml KLAYOUT_TOOLS_REF value
+- **Issue #292** (closed): DR-0021's Status bullet names the pre-#279 row-4 cited record
+- **Issue #275** (closed): sim/pdk-cmos5l.json's fetch_method cites a stale KLAYOUT_TOOLS_REF (159527a5, ci.yml says 046ba746)
+- **Issue #272** (closed): evidence_store: put_files' private temp dir can still escape as a non-StoreError (residual of the #262 class)
+- **Issue #267** (closed): Gate sim/pdk-cmos5l.json's pinned_tarball_url SHA against its own pinned_commit
+- **PR #280**: docs: correct DR-0017 stale item-6 citation claim via addendum; regrade ROADMAP items 5/6
+- **Issue #254** (closed): spec: DR-0017 line 632 still says "Item 6 stays uncited" — stale after #225 cited the row-2 campaign
+- **PR #274**: signoff: pin each driver's companion test and enforce the pairing
+- **Issue #246** (closed): signoff item-9 inventory pins test_e1_oppoints.py but not test_row4_envelope.py
+- **PR #284**: feat: pin row-4 PDK provenance by canonical projection instead of file bytes
+- **Issue #282** (closed): row4-envelope provenance pins whole input files byte-level: a prose-only edit forces a fleet re-run
+- **PR #281**: docs: name the pinned design and layout READMEs in signoff items 1 and 2 bullets
+- **PR #271**: docs: record DR-0020 — row-9 startup overshoot remedy plan
+- **PR #261**: refactor(sim): route row4_envelope tb_text through render_deck
+- **Issue #276** (closed): signoff README item-1 bullet under-describes what item 1 pins (omits design/README.md and design/test_netlist.py)
+- **Issue #245** (closed): A ninth @@TOKEN@@ render site survived #236: row4_envelope.py tb_text() has no leftover-@@ guard
+- **Issue #221** (closed): spec: proposed decision record for a row-9 startup remedy on SG13CMOS5L (plan only)
+- **PR #273**: evidence_store: convert preflight's remaining escape sites to StoreError
+- **PR #266**: ci: gate ci.yml's klt/KLayout/PDK pins against their hardcoded copies
+- **PR #264**: docs: record klayout-tools#5786 in the campaign's upstream-issues list and date the item-6 0.8.0 verdict
+- **PR #260**: docs: refresh stale layout/DRC/LVS status in challenge-6 proposal
+- **Issue #269** (closed): signoff CI: reproduction green can predate a sibling regeneration merge, so it does not prove post-merge reproduction
+- **Issue #262** (closed): evidence_store: preflight's uri-scheme probe can still escape as a traceback (residual #251 item-1 site)
+- **Issue #252** (closed): docs/chipalooza/challenge-6-proposal.md still says layout is empty and DRC/LVS not started — refresh or delete
+- **Issue #250** (closed): Gate layout/run_flow.sh's klt + KLayout engine pins against ci.yml (no drift check today)
+- **Issue #248** (closed): signoff: record klayout-tools#5786 in the Monte Carlo campaign's upstream-issues list
+
 ### 2026-11-15
 
 - **PR #259**: refactor(design): delegate netlist.py's xschem export to klt netlist

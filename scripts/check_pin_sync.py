@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Pin-sync gate: the tool pins .github/workflows/ci.yml declares vs their
-hardcoded copies elsewhere in the tree (issue #250).
+"""Pin-sync gate: every duplicated pin literal this tree declares, checked
+pair-wise for agreement (issues #250, #267).
 
 `layout/run_flow.sh` carries two literal pins that duplicate ci.yml's
 workflow-level `env:` keys -- the `klayout-tools==X.Y.Z` spec in PEX_KLT_FROM
@@ -10,23 +10,33 @@ IHP_SG13CMOS5L_COMMIT, whose own ci.yml comment asserts "keep in sync" with
 no mechanical check. Nothing compared them, so a pin bump that edited ci.yml
 and missed a copy left CI green while the next local full-mode or pex-mode
 regeneration (`--check` never re-runs those stages) stamped the evidence with
-a different build. This script is that check.
+a different build. This script is that check. Issue #267 widened the table
+with the pairs the first pass missed: two intra-file pairs --
+`sim/pdk-cmos5l.json`'s `pinned_tarball_url` must end in its own top-level
+`pinned_commit`, and `sim/pdk.json`'s `release_url` must end in its own
+top-level `release_tag` -- plus ci.yml's IHP_OPEN_PDK_VERSION against
+`sim/pdk.json`'s `release_tag`, whose leading `v` is normalized on the
+`sim/pdk.json` side only.
 
 One subcommand:
 
 ``check --root DIR``
-    Reads every gated file under DIR (the two code/YAML files as text, the
-    JSON as JSON), extracts each pinned value and compares the pairs. All
-    pairs are judged and every problem reported before the exit code is
-    chosen, so one broken site cannot hide a second one.
+    Reads every gated file under DIR (the YAML and shell files as text, the
+    JSON fact sheets as JSON), extracts each pinned value and compares the
+    pairs. All pairs are judged and every problem reported before the exit
+    code is chosen, so one broken site cannot hide a second one.
 
 Fail closed. A missing key, an unreadable file, a pin line that matches zero
 or more than one time, a PEX_KLT_FROM that is not a `klayout-tools==<version>`
 spec, or a pinned_commit that is not a non-empty string is exit 2, never a
 pass -- a gate that stopped matching after an unrelated edit and quietly
-passed would be worse than no gate. A same-named nested key cannot satisfy a
-top-level extraction (pdk-cmos5l.json's historical superseded_pin block
-carries its own pinned_commit and is deliberately not gated).
+passed would be worse than no gate. The URL/tag extractors hold the same
+posture: a pinned_tarball_url that no longer ends in `/tar.gz/<40-hex>`, a
+release_url that no longer ends in `/refs/tags/<tag>.tar.gz`, or a
+release_tag without its leading `v` is exit 2 too. A same-named nested key
+cannot satisfy a top-level extraction (pdk-cmos5l.json's historical
+superseded_pin block carries its own pinned_commit and is deliberately not
+gated).
 
 The KLAYOUT_PY_VERSION comparison is deliberately against the *literal
 default in run_flow.sh's source text* -- the `0.30.12` inside
@@ -54,6 +64,7 @@ from pathlib import Path
 CI = ".github/workflows/ci.yml"
 FLOW = "layout/run_flow.sh"
 CMOS5L = "sim/pdk-cmos5l.json"
+G2 = "sim/pdk.json"
 
 EXIT_OK, EXIT_DRIFT, EXIT_ERROR = 0, 1, 2
 
@@ -141,6 +152,53 @@ def json_top(root: Path, rel: str, key: str) -> str:
     return value
 
 
+def tarball_commit(root: Path) -> str:
+    """The commit segment of pdk-cmos5l.json's pinned_tarball_url: the
+    codeload URL must end in `/tar.gz/<40-hex>`, and only that trailing
+    segment is compared to pinned_commit -- never the whole URL, mirroring
+    pex_klt_version's extract-the-version-not-the-spec posture. A URL that
+    stops matching the shape fails closed (issue #267)."""
+    url = json_top(root, CMOS5L, "pinned_tarball_url")
+    m = re.search(r"/tar\.gz/([0-9a-f]{40})\Z", url)
+    if not m:
+        raise GateError(f"{CMOS5L}: pinned_tarball_url is {url!r}, which does "
+                        "not end in `/tar.gz/<40-hex commit>`; only a "
+                        "codeload URL carrying the pinned commit can be "
+                        "compared to pinned_commit (fail closed)")
+    return m.group(1)
+
+
+def release_url_tag(root: Path) -> str:
+    """The tag segment of pdk.json's release_url: the GitHub archive URL must
+    end in `/refs/tags/<tag>.tar.gz`, and only that trailing segment is
+    compared to release_tag. A URL that stops matching the shape fails
+    closed (issue #267)."""
+    url = json_top(root, G2, "release_url")
+    m = re.search(r"/refs/tags/([^/\s]+)\.tar\.gz\Z", url)
+    if not m:
+        raise GateError(f"{G2}: release_url is {url!r}, which does not end in "
+                        "`/refs/tags/<tag>.tar.gz`; only a GitHub archive URL "
+                        "carrying the tagged release can be compared to "
+                        "release_tag (fail closed)")
+    return m.group(1)
+
+
+def g2_release_version(root: Path) -> str:
+    """pdk.json's release_tag with its leading `v` stripped, so it compares
+    equal to ci.yml's bare IHP_OPEN_PDK_VERSION. The `v` is normalized on
+    this side only -- ci.yml's key stays raw -- and a tag without the
+    leading `v` fails closed rather than silently normalizing to a pass
+    (issue #267)."""
+    tag = json_top(root, G2, "release_tag")
+    m = re.match(r"^v(\S+)$", tag)
+    if not m:
+        raise GateError(f"{G2}: release_tag is {tag!r}, not a `v<version>` "
+                        "tag; the leading `v` is normalized on this side "
+                        "only, so a tag without it cannot be compared to "
+                        "ci.yml's bare IHP_OPEN_PDK_VERSION (fail closed)")
+    return m.group(1)
+
+
 class Site:
     """One extraction site of a pin pair."""
 
@@ -152,8 +210,8 @@ class Site:
 
 
 class Pair:
-    def __init__(self, what: str, ci: Site, copy: Site):
-        self.what, self.ci, self.copy = what, ci, copy
+    def __init__(self, what: str, left: Site, right: Site):
+        self.what, self.left, self.right = what, left, right
 
 
 # The gated pairs: one literal table entry per duplicated pin. This is the
@@ -168,6 +226,26 @@ PAIRS = (
     Pair("IHP SG13CMOS5L PDK dev commit",
          Site(CI, "IHP_SG13CMOS5L_COMMIT", lambda r: ci_env(r, "IHP_SG13CMOS5L_COMMIT")),
          Site(CMOS5L, "pinned_commit", lambda r: json_top(r, CMOS5L, "pinned_commit"))),
+    # Issue #267: intra-file -- pdk-cmos5l.json's codeload URL must carry its
+    # own pinned_commit. Only the trailing segment is compared, never the
+    # whole URL: an upstream URL-shape change is a fail-closed extraction
+    # error, not a template this gate would have to hardcode and maintain.
+    Pair("IHP SG13CMOS5L tarball URL commit",
+         Site(CMOS5L, "pinned_commit", lambda r: json_top(r, CMOS5L, "pinned_commit")),
+         Site(CMOS5L, "pinned_tarball_url commit segment", tarball_commit)),
+    # Issue #267: intra-file -- pdk.json's release_url must carry its own
+    # release_tag. pdk-cmos5l.json's release_tag is prose ("none -- ...") by
+    # design and is deliberately not gated.
+    Pair("IHP SG13G2 release tag",
+         Site(G2, "release_tag", lambda r: json_top(r, G2, "release_tag")),
+         Site(G2, "release_url tag segment", release_url_tag)),
+    # Issue #267: ci.yml's bare version vs pdk.json's tag. The `v` prefix is
+    # normalized on the sim/pdk.json side only (g2_release_version strips
+    # it); ci.yml's IHP_OPEN_PDK_VERSION stays raw. A tag without the `v`
+    # fails closed rather than silently normalizing to a pass.
+    Pair("IHP SG13G2 release version",
+         Site(CI, "IHP_OPEN_PDK_VERSION", lambda r: ci_env(r, "IHP_OPEN_PDK_VERSION")),
+         Site(G2, "release_tag version", g2_release_version)),
 )
 
 
@@ -177,7 +255,7 @@ def check(root: Path) -> int:
     compared = 0
     for pair in PAIRS:
         values = []
-        for site in (pair.ci, pair.copy):
+        for site in (pair.left, pair.right):
             try:
                 values.append(site.value(root))
             except GateError as exc:
@@ -187,8 +265,8 @@ def check(root: Path) -> int:
             compared += 1
             if values[0] != values[1]:
                 drifts.append(
-                    f"{pair.what}: {pair.ci.file} {pair.ci.key}={values[0]!r} "
-                    f"!= {pair.copy.file} {pair.copy.key}={values[1]!r}")
+                    f"{pair.what}: {pair.left.file} {pair.left.key}={values[0]!r} "
+                    f"!= {pair.right.file} {pair.right.key}={values[1]!r}")
     for e in errors:
         print(f"ERROR: {e}", file=sys.stderr)
     for d in drifts:
@@ -199,9 +277,11 @@ def check(root: Path) -> int:
         return EXIT_ERROR
     if drifts:
         print(f"FAIL: {len(drifts)} of {len(PAIRS)} pin pair(s) disagree "
-              "between ci.yml and its hardcoded copies", file=sys.stderr)
+              "(each drift line names the file, the key and both values)",
+              file=sys.stderr)
         return EXIT_DRIFT
-    print(f"OK: all {len(PAIRS)} gated pin pair(s) agree ("
+    print(f"OK: all {len(PAIRS)} gated pin pair(s) agree, "
+          f"{compared} of {len(PAIRS)} pair(s) compared ("
           + "; ".join(p.what for p in PAIRS) + ")")
     return EXIT_OK
 

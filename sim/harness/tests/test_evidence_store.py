@@ -194,6 +194,56 @@ class Writer(Base):
         self.assertFalse(self.summary.exists())
 
     # ------------------------------------------------------------------
+    # Issue #272: put_files's manifest temp dir is the last store-path
+    # OSError residual; construction and cleanup both come out as
+    # StoreError.
+    # ------------------------------------------------------------------
+
+    def test_manifest_tempdir_construction_failure_is_store_error(self):
+        # The TemporaryDirectory constructor: an unwritable/full $TMPDIR.
+        from unittest import mock
+
+        with mock.patch("tempfile.TemporaryDirectory",
+                        side_effect=OSError(13, "Permission denied")), \
+                self.assertRaisesRegex(es.StoreError,
+                                       "evidence manifest's temporary directory") as cm:
+            self.store_files()
+        self.assertIsInstance(cm.exception.__cause__, OSError)  # from exc, not from None
+        self.assertFalse(self.store)  # the constructor fired before any put
+        self.assert_nothing_committed()
+
+    def test_manifest_tempdir_cleanup_failure_after_successful_puts_is_store_error(self):
+        # The with-block's cleanup rmtree can fail on a parent made
+        # unwritable while the puts ran -- i.e. after every put already
+        # succeeded (measured on 3.12.3: parent chmod 0o500 after entry;
+        # tempfile's reset-perms retry does not cover the parent).
+        from unittest import mock
+        parent = tempfile.TemporaryDirectory()
+        self.addCleanup(parent.cleanup)
+        parent_path = Path(parent.name)
+        real_td = tempfile.TemporaryDirectory
+
+        class CleanupFails(real_td):
+            def __init__(self, *a, **kw):
+                kw["dir"] = parent_path
+                super().__init__(*a, **kw)
+
+            def __exit__(self, *exc):
+                parent_path.chmod(0o500)
+                try:
+                    return super().__exit__(*exc)
+                finally:
+                    parent_path.chmod(0o700)
+
+        with mock.patch("tempfile.TemporaryDirectory", CleanupFails), \
+                self.assertRaisesRegex(es.StoreError,
+                                       "evidence manifest's temporary directory") as cm:
+            self.store_files()
+        self.assertTrue(self.store)  # every put succeeded before cleanup failed
+        self.assertIsInstance(cm.exception.__cause__, OSError)
+        self.assert_nothing_committed()
+
+    # ------------------------------------------------------------------
     # Issue #251 item 2: a failed summary write rolls the manifest back,
     # so the docstring's "nothing is then installed" is literally true.
     # ------------------------------------------------------------------
@@ -435,6 +485,70 @@ class KltSchemeProbe(unittest.TestCase):
             with self.subTest(label), self.assertRaisesRegex(es.StoreError, message):
                 self.check(run)
 
+    def test_tempdir_construction_failure_is_store_error(self):
+        # Issue #262 site A: an unwritable/full $TMPDIR used to make the
+        # probe's TemporaryDirectory constructor escape as a bare OSError.
+        from unittest import mock
+
+        def raises(exc):
+            def run(cmd, **kw):
+                raise exc
+            return run
+
+        with mock.patch("tempfile.TemporaryDirectory",
+                        side_effect=OSError(13, "Permission denied")), \
+                self.assertRaisesRegex(es.StoreError, "temporary directory"):
+            self.check(raises(OSError("unreachable")))
+
+    def test_manifest_write_failure_is_store_error(self):
+        # Issue #262 site B: a full $TMPDIR used to make the probe manifest's
+        # json.dump escape as a bare OSError.
+        from unittest import mock
+
+        def raises(exc):
+            def run(cmd, **kw):
+                raise exc
+            return run
+
+        with mock.patch("json.dump",
+                        side_effect=OSError(28, "No space left on device")), \
+                self.assertRaisesRegex(es.StoreError, "temporary directory"):
+            self.check(raises(OSError("unreachable")))
+
+    def test_cleanup_failure_after_passing_probe_is_store_error(self):
+        # Issue #262 site C: the with-block's cleanup rmtree can fail on a
+        # parent made unwritable while the probe ran — i.e. after the probe
+        # itself succeeded (measured on 3.12.3: parent chmod 0o500 after
+        # entry; tempfile's own reset-perms retry does not cover the parent).
+        from unittest import mock
+        parent = tempfile.TemporaryDirectory()
+        self.addCleanup(parent.cleanup)
+        parent_path = Path(parent.name)
+        real_td = tempfile.TemporaryDirectory
+
+        class CleanupFails(real_td):
+            def __init__(self, *a, **kw):
+                kw["dir"] = parent_path
+                super().__init__(*a, **kw)
+
+            def __exit__(self, *exc):
+                parent_path.chmod(0o500)
+                try:
+                    return super().__exit__(*exc)
+                finally:
+                    parent_path.chmod(0o700)
+
+        seen = []
+
+        def run(cmd, **kw):
+            seen.append(cmd)
+            return klt_probe_answer(cmd)  # a current klt: the probe succeeds
+
+        with mock.patch("tempfile.TemporaryDirectory", CleanupFails), \
+                self.assertRaisesRegex(es.StoreError, "temporary directory"):
+            self.check(run)
+        self.assertTrue(seen)  # the klt probe itself passed before cleanup failed
+
     def test_min_commit_is_the_artifact_uri_revision(self):
         self.assertTrue(es.KLT_ARTIFACT_MIN_COMMIT.startswith("7e3561f"))
 
@@ -491,6 +605,23 @@ class Probe(unittest.TestCase):
         with self.assertRaises(es.StoreError):
             es.probe_broker("http://u:p@127.0.0.1:1", REPO)
 
+    def test_malformed_ipv6_bracket_refused(self):
+        # Issue #262 site D: urlsplit raises ValueError for malformed
+        # brackets; it must surface as StoreError, not a traceback.
+        for base in ("http://[::1/", "http://[notipv6]/"):
+            with self.subTest(base=base), \
+                    self.assertRaisesRegex(es.StoreError, "is not a plain http"):
+                es.probe_broker(base, REPO)
+
+    def test_bad_port_or_control_char_refused(self):
+        # Issue #262 site E: the connection constructor raises InvalidURL for
+        # a nonnumeric port or a control character; both pass the existing
+        # scheme/credential guard, so they must be converted too.
+        for base in ("http://broker.internal:notaport/", "http://br\x00oker/"):
+            with self.subTest(base=base), \
+                    self.assertRaisesRegex(es.StoreError, "is not a plain http"):
+                es.probe_broker(base, REPO)
+
 
 class CampaignCli(unittest.TestCase):
     """``sim/run_store_evidence.py``: the store path for campaign outputs."""
@@ -537,6 +668,36 @@ class CampaignCli(unittest.TestCase):
         self.assertFalse((self.root / "manifests").exists())
         self.assertFalse((self.root / "sim/bench/evidence").exists())
 
+    def test_preflight_probe_failure_exits_10_not_traceback(self):
+        # Issue #262 end-to-end: a malformed broker URL used to escape the
+        # real preflight as a ValueError traceback (exit 1, no message); now
+        # it is exit 10 with EVIDENCE NOT STORED. Exercises site D (urlsplit)
+        # through the real probe_broker.
+        from unittest import mock
+        real_preflight = es.preflight
+        real_probe = es.probe_broker
+
+        def run_ok(cmd, **kw):
+            if cmd[1:3] == ["artifact", "verify"]:
+                return klt_probe_answer(cmd)
+            return subprocess.CompletedProcess(cmd, 0, "usage", "")
+
+        def preflight(root):
+            return real_preflight(root, which=lambda n: "/bin/klt", run=run_ok,
+                                  probe=real_probe)
+
+        err = io.StringIO()
+        with mock.patch.dict(os.environ, {es.ENV_BROKER: "http://[::1/",
+                                          es.ENV_REPO: REPO}), \
+             mock.patch.object(es, "preflight", side_effect=preflight), \
+             contextlib.redirect_stderr(err):
+            rc = self.mod.main(["bench", "20261022-abc", str(self.staged),
+                                "--summary", str(self.summary)])
+        self.assertEqual(rc, 10)
+        self.assertIn("EVIDENCE NOT STORED", err.getvalue())
+        self.assertNotIn("Traceback", err.getvalue())
+        self.assertFalse((self.root / "manifests").exists())
+
     def test_staged_dir_inside_tracked_tree_refused(self):
         inside = self.root / "sim/bench/evidence/x"
         inside.mkdir(parents=True)
@@ -564,6 +725,31 @@ class CampaignCli(unittest.TestCase):
         self.assertNotIn("Traceback", err.getvalue())
         self.assertFalse(
             (self.root / "manifests/artifacts/bench-20261022-abc.manifest.json").exists())
+
+    def test_put_files_tempdir_failure_exits_10_not_traceback(self):
+        # Issue #272 end-to-end: the manifest temp dir's failure used to
+        # escape put_files as a bare OSError traceback (exit 1, no
+        # message); now it is exit 10 with EVIDENCE NOT STORED, and
+        # nothing is installed (the staged bytes stay in scratch).
+        from unittest import mock
+        store = {}
+        real_put = es.put_files
+        err = io.StringIO()
+        with mock.patch.object(es, "preflight", side_effect=None), \
+             mock.patch.object(es, "put_files",
+                               side_effect=lambda f, r: real_put(f, r, run=fake_klt(store))), \
+             mock.patch("tempfile.TemporaryDirectory",
+                        side_effect=OSError(28, "No space left on device")), \
+             contextlib.redirect_stderr(err):
+            rc = self.mod.main(["bench", "20261022-abc", str(self.staged),
+                                "--summary", str(self.summary)])
+        self.assertEqual(rc, 10)
+        self.assertIn("EVIDENCE NOT STORED", err.getvalue())
+        self.assertIn("evidence manifest's temporary directory", err.getvalue())
+        self.assertNotIn("Traceback", err.getvalue())
+        self.assertFalse((self.root / "manifests").exists())
+        self.assertFalse((self.root / "sim/bench/evidence").exists())
+        self.assertTrue((self.staged / "a.json").exists())  # staged bytes kept
 
 
 if __name__ == "__main__":

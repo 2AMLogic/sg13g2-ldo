@@ -55,10 +55,14 @@ Per item:
   **What `met` means, and what it does not.** The grader proves that the envelope is declared for this item, names exact bytes, that those bytes re-hash to the pinned value, and that nothing was edited since. For items 1, 9 and 10 the envelope's `status` is additionally **derived from checks the tool ran** — a stale netlist, a cold start that no longer starts, or a failing audit command yields `status: fail`, exit 3 and *no envelope written*, so a failing check cannot be committed as a pass. Three things the attestation still does not do, which `signoff/evidence_inventory.py check` therefore still gates in CI ahead of grading (stdlib only, no PDK, with `signoff/test_evidence_inventory.py` negative controls): (a) **completeness** — `--attest` attests exactly the paths its inventory lists, so a new testbench under `sim/`, or a new file under `design/sg13cmos5l/`, that nobody inventoried would be silently unattested; the completeness globs are re-checked against each committed inventory's own path lists; (b) **content checks beyond existence** — each experiment README naming its cold-start entry point, a negative-control request being inventoried, the Apache-2.0 LICENSE text, the root README's title, and CI still carrying every signoff gate (the grader, this audit and all three `--attest … --check` steps, each matched by its own inventory filename so a dropped step cannot hide behind another's); (c) **item 2 in full** — inventory, envelope and manifest pin, plus the GDSII HEADER-record check. Limits unchanged: no attestation here regenerates or inspects the GDS beyond its first record (DRC/LVS/ERC are items 3/4/11), measures anything, or judges design quality. No spec performance or whole-block T1 claim is made. The grader alone does **not** see an inventoried file's content edit — only the attest `--check` does, which is why it gates CI ahead of grading. Editing an inventoried file means re-running the item's `--attest` (items 1/9/10) or `python3 signoff/evidence_inventory.py write` (item 2).
 
 - **unmet — item 5 (`partial_coverage`; cited, 1 of 10 spec rows covered, #55)**:
-  `sim/ldo-cmos5l-pvt-sweep/row4-envelope/20261114-072921-41a8294b/report.json`,
+  `sim/ldo-cmos5l-pvt-sweep/row4-envelope/20261116-080410-7ade0c8f/report.json`,
   a **graded `klt sim` corner-matrix envelope** for the one ratified spec row
   (DR-0007 row 4, dropout @ 50 mA < 300 mV worst corner), pinned by
   `content_hash` to the sha256 of the `tb.spice` the run declares as its input.
+  (Re-minted 2026-11-16: #279's prose edit to `sim/pdk-cmos5l.json` invalidated
+  the original run's `input_sha256` pin on that file, so the 45-corner run was
+  re-submitted on the batch fleet — numbers identical; the superseded
+  `20261114-072921-41a8294b/` directory is retained, append-only.)
   The manifest declares all ten DR-0007 rows under `spec_rows["5"]` and the
   citation claims exactly one of them, so **the grader itself reports the
   coverage gap**: the citation grades `met`, and the item grades `unmet` /
