@@ -90,7 +90,7 @@ name: CI
 # `dev`, pinned to a commit and checksum-verified by klayout-tools'
 # fetch-ihp-sg13cmos5l.sh at the immutable KLAYOUT_TOOLS_REF below; it
 # stamps <PDK_ROOT>/ihp-sg13cmos5l/.fetched-version, there is no .git) is
-# fetched only by netlist-check. Its
+# fetched by both netlist-check and pass-device-screening-check. Its
 # xschem MOS symbols and HV model cards are relative symlinks into the
 # sibling ihp-sg13g2 install, so both must sit under the same PDK_ROOT;
 # the fetch script refuses to run without the sibling. ihp-sg13g2 alone does
@@ -172,8 +172,9 @@ env:
   KLAYOUT_TOOLS_REF: "046ba74652fc096bd97071fc3237f7159dd40183"
   # IHP-Open-PDK `dev` commit (subtree ihp-sg13cmos5l/, tarball sha256
   # 5eb6f8a9b0b2ecc4fa08cc30627668406f85b1a97834f278036c43f0c0dbc70b) that
-  # scripts/fetch-ihp-sg13cmos5l.sh at KLAYOUT_TOOLS_REF pins; only used in
-  # netlist-check's cache key. Keep in sync with that script's
+  # scripts/fetch-ihp-sg13cmos5l.sh at KLAYOUT_TOOLS_REF pins; used in both
+  # jobs' PDK cache keys (netlist-check's and pass-device-screening-check's).
+  # Keep in sync with that script's
   # IHP_SG13CMOS5L_COMMIT and sim/pdk-cmos5l.json (the fetcher records it in
   # <PDK_ROOT>/ihp-sg13cmos5l/.fetched-version). Superseded pin:
   # 607e18d4bd9214a52575c194b4181ef449f9252f (archived ihp-sg13cmos5l repo).
