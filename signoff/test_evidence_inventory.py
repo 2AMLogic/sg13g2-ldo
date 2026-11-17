@@ -107,6 +107,42 @@ class InventoryCheck(unittest.TestCase):
         open(self.p("design/sg13cmos5l/ldo_extra_cmos5l.sch"), "w").write("v {xschem}\n")
         self.assertFails("not inventoried")
 
+    def test_unlisted_companion_test_beside_pinned_driver(self):
+        # issue #246: the companion-test rule. A pinned driver that has no
+        # sibling test stays fine (baseline passes), but the moment such a
+        # test appears on disk it must be pinned -- check() has to name it,
+        # mirroring the glob pass above.
+        open(self.p("sim/ldo-cmos5l-enable/test_derive.py"), "w").write("x")
+        self.assertFails("test_derive.py")
+
+    def test_companion_test_removed_from_inventory_is_named(self):
+        # issue #246: the failure direction that motivated the rule. Drop a
+        # pinned companion test from the copy's own item-9 inventory: the
+        # test still exists on disk beside its pinned driver, and check()
+        # must fail naming the file (before any staleness comparison can
+        # mask it).
+        rel = ei._inv_path(9)
+        inv = json.load(open(self.p(rel)))
+        needle = "sim/ldo-cmos5l-pvt-sweep/test_row4_envelope.py"
+        self.assertIn(needle, inv["testbenches"])
+        inv["testbenches"].remove(needle)
+        with open(self.p(rel), "w", encoding="utf-8") as f:
+            json.dump(inv, f, indent=2)
+            f.write("\n")
+        r = _run(self.tmp)
+        self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+        self.assertIn("test_row4_envelope.py", r.stdout)
+        self.assertIn("companion test of", r.stdout)
+
+    def test_pinned_test_is_not_treated_as_its_own_driver(self):
+        # issue #246 edge case: the rule walks pinned non-test *.py only --
+        # a pinned test_<name>.py must not send the check hunting for a
+        # test_test_<name>.py sibling. Plant one that would only be demanded
+        # by the buggy reading; check() must still pass.
+        open(self.p("sim/ldo-cmos5l-pvt-sweep/test_test_e1_oppoints.py"), "w").write("x")
+        r = _run(self.tmp)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+
     def test_attest_inventory_wrong_kind_is_refused(self):
         path = self.p(ei._inv_path(9))
         inv = json.load(open(path))

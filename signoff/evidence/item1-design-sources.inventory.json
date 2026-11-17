@@ -6,6 +6,7 @@
   "sources": [
     "design/README.md",
     "design/netlist.py",
+    "design/test_netlist.py",
     "design/sg13cmos5l/ldo_core_cmos5l.sch",
     "design/sg13cmos5l/ldo_core_cmos5l.sym",
     "design/sg13cmos5l/ldo_erramp_cmos5l.sch",

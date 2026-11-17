@@ -335,6 +335,24 @@ def write() -> None:
     )
 
 
+def _companion_test_errs(tag: str, covered: set[str]) -> list[str]:
+    """Issue #246, the companion-test rule: a pinned non-test ``*.py`` whose
+    sibling ``test_<name>.py`` exists on disk must be pinned in the same
+    item. A driver's unit tests are part of what the item attests; leaving
+    them out let a cited negative-control test drift with no hash moving.
+    Walks pinned non-test ``*.py`` only, so a pinned ``test_<name>.py`` never
+    sends this check hunting for a ``test_test_<name>.py`` sibling."""
+    errs: list[str] = []
+    for p in sorted(covered):
+        d, b = os.path.split(p)
+        if not b.endswith(".py") or b.startswith("test_"):
+            continue
+        t = os.path.join(d, "test_" + b)
+        if os.path.isfile(os.path.join(ROOT, t)) and t not in covered:
+            errs.append(f"{tag}: {t} exists but is not inventoried (companion test of {p})")
+    return errs
+
+
 def _check_produced(item: int, manifest: dict, errs: list[str]) -> None:
     """Item 2: inventory + envelope + manifest pin are this script's output."""
     spec = ITEMS[item]
@@ -347,6 +365,7 @@ def _check_produced(item: int, manifest: dict, errs: list[str]) -> None:
         for hit in _glob(pat):
             if hit not in covered and "/netlist-snapshots/" not in hit:
                 errs.append(f"{tag}: {hit} matches {pat!r} but is not inventoried")
+    errs += _companion_test_errs(tag, covered)
     if any(e.startswith(tag + ":") for e in errs):
         return
     inv_text = _dump(_inventory(item))
@@ -405,6 +424,7 @@ def _check_attested(item: int, manifest: dict, errs: list[str]) -> None:
         for hit in _glob(pat):
             if hit not in covered and "/netlist-snapshots/" not in hit:
                 errs.append(f"{tag}: {hit} matches {pat!r} but is not inventoried")
+    errs += _companion_test_errs(tag, covered)
     errs += [f"{tag}: {e}" for e in _content(item)]
 
 

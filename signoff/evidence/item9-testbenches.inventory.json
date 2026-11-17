@@ -73,11 +73,18 @@
     "sim/ldo-cmos5l-pvt-sweep/run_e1op.sh",
     "sim/ldo-cmos5l-pvt-sweep/run_loopgain2.sh",
     "sim/ldo-cmos5l-pvt-sweep/run_sweep.sh",
-    "sim/ldo-cmos5l-pvt-sweep/sweep_report.py",
     "sim/ldo-cmos5l-pvt-sweep/startup_campaign.py",
     "sim/ldo-cmos5l-pvt-sweep/startup_eval.py",
     "sim/ldo-cmos5l-pvt-sweep/startup_offstate.py",
+    "sim/ldo-cmos5l-pvt-sweep/sweep_report.py",
+    "sim/ldo-cmos5l-pvt-sweep/test_ac_sweep.py",
+    "sim/ldo-cmos5l-pvt-sweep/test_batch_backend.py",
     "sim/ldo-cmos5l-pvt-sweep/test_e1_oppoints.py",
+    "sim/ldo-cmos5l-pvt-sweep/test_loopgain2.py",
+    "sim/ldo-cmos5l-pvt-sweep/test_row4_envelope.py",
+    "sim/ldo-cmos5l-pvt-sweep/test_startup_campaign.py",
+    "sim/ldo-cmos5l-pvt-sweep/test_startup_eval.py",
+    "sim/ldo-cmos5l-pvt-sweep/test_startup_offstate.py",
     "sim/ldo-cmos5l-pvt-sweep/test_sweep_report.py",
     "sim/ldo-cmos5l-pvt-sweep/testbench/tb_dcsweep_cmos5l.spice.tmpl",
     "sim/ldo-cmos5l-pvt-sweep/testbench/tb_dropout_cmos5l.spice.tmpl",
@@ -115,7 +122,8 @@
     "sim/pass-device-screening/run_sweep.sh",
     "sim/pass-device-screening/testbench/tb_dropout_pmos.spice.tmpl",
     "sim/pass-device-screening/testbench/tb_stress_pmos.spice.tmpl",
-    "sim/tools/render_deck.py"
+    "sim/tools/render_deck.py",
+    "sim/tools/test_render_deck.py"
   ],
   "cold_start": {
     "argv": [

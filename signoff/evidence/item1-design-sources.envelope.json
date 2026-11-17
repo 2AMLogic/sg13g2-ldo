@@ -3,14 +3,14 @@
   "kind": "generic",
   "status": "pass",
   "t1_item": 1,
-  "summary": "T1 item 1 (Design sources): 15/15 attestation checks passed (klt signoff --attest)",
+  "summary": "T1 item 1 (Design sources): 16/16 attestation checks passed (klt signoff --attest)",
   "source": "signoff/evidence/item1-design-sources.inventory.json",
   "attestation": {
     "producer": "klt signoff --attest",
     "inventory_schema_version": 1,
     "hash_algorithm": "sha256-raw-bytes",
-    "check_count": 15,
-    "passed_count": 15,
+    "check_count": 16,
+    "passed_count": 16,
     "checks": [
       {
         "check": "present",
@@ -67,6 +67,13 @@
         "path": "design/sg13cmos5l/ldo_ilimit_cmos5l.sym",
         "passed": true,
         "content_hash": "sha256:9acadf68f9c3e4a44bcf7ad84414592c17292e4288fe79fea9e67de31ae5ca81"
+      },
+      {
+        "check": "present",
+        "role": "source",
+        "path": "design/test_netlist.py",
+        "passed": true,
+        "content_hash": "sha256:8e0a3d7da14531dfeb75de61a351180b74539e4a7cec01fa0690c8c3b3fd0854"
       },
       {
         "check": "present",
@@ -238,6 +245,13 @@
         },
         {
           "path": {
+            "path": "design/test_netlist.py",
+            "scope": "repo"
+          },
+          "content_hash": "sha256:8e0a3d7da14531dfeb75de61a351180b74539e4a7cec01fa0690c8c3b3fd0854"
+        },
+        {
+          "path": {
             "path": "design/xschemrc",
             "scope": "repo"
           },
@@ -248,10 +262,10 @@
             "path": "signoff/evidence/item1-design-sources.inventory.json",
             "scope": "repo"
           },
-          "content_hash": "sha256:c6c269ebc15b76991ab98fa96e2d742a3b6f58c042232f04e4c7986b8f2682fa"
+          "content_hash": "sha256:12fc866e36daa5a3f1db4d8cacdf8bdc44615285c8199106f331267c6293e6ec"
         }
       ],
-      "content_hash": "sha256:278c966411c6b5f23dbcb009d1b1348b603a983278e46212e28533f082dd635a"
+      "content_hash": "sha256:2d09fcd98fa9ffde88d02ec01deb0a2ff49072493aa3523ad8d305ace75481b7"
     }
   }
 }
