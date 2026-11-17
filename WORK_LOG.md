@@ -6,6 +6,13 @@ Chronological record of recently merged pull requests and closed issues, maintai
 
 - [2026-09](work_log/WORK_LOG_2026-09.md)
 
+### 2026-11-17
+
+- **PR #299**: fix: gate item 9 attestation klt/PDK pins in check_pin_sync.py
+- **PR #216**: feat(signoff): attest T1 items 1/9/10 with klt signoff --attest
+- **Issue #298** (closed): Gate item 9's attestation pins (klt / PDK revision) in check_pin_sync.py
+- **Issue #199** (closed): T1 grading: attest items 1, 9, 10 with klt signoff --attest instead of hand-rolled inventory envelopes
+
 ### 2026-11-16
 
 - **PR #277**: chore(loom): resync installed Loom to v0.19.1302

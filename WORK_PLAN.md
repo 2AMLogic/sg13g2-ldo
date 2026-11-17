@@ -31,7 +31,7 @@ _None._
 
 Issues currently being built (`loom:building`).
 
-- **#199**: T1 grading: attest items 1, 9, 10 with klt signoff --attest instead of hand-rolled inventory envelopes
+_None._
 
 ## PRs Awaiting Review
 
@@ -52,7 +52,6 @@ Issues carrying `loom:curated`.
 - **#56**: Monte Carlo: klt yield evidence for the statistical ratified spec rows (T1 item 6) *(curated)*
 - **#64**: sim: parameterise loop-gain/PSRR benches over load, Cout and ESR for rows 3, 6, 10 dynamic coverage *(curated)*
 - **#190**: SG13CMOS5L: integrate ldo_ilimit_cmos5l into the core with refreshed PVT/startup/loop-gain and layout/LVS evidence *(curated)*
-- **#199**: T1 grading: attest items 1, 9, 10 with klt signoff --attest instead of hand-rolled inventory envelopes *(curated)*
 - **#218**: sim: run the two-injection loop-gain bench at DR-0015 point P3 (experiment E2) *(curated)*
 - **#219**: sim: f_ug-vs-Cc probe at heavy load, DR-0015 point P3 (experiment E3) *(curated)*
 
@@ -74,10 +73,10 @@ Issues carrying `loom:curated`.
 | Very important | 0 |
 | Important | 1 |
 | Ready (`loom:issue`) | 0 |
-| In Progress (`loom:building`) | 1 |
+| In Progress (`loom:building`) | 0 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 1 |
-| Curated | 6 |
+| Curated | 5 |
 | Architect / Hermit proposals | 3 |
 | Active epics | 1 |
 <!-- guide:plan-body:end -->
