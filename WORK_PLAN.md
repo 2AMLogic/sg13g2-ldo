@@ -7,7 +7,7 @@ This roadmap is generated from the repository's current Loom label state.
 
 Judge-approved PRs under a hold (`loom:blocked` or `loom:operator`) — only a human merge decision is missing.
 
-- **#277**: chore(loom): resync installed Loom to v0.19.1302
+- **#296**: chore(loom): resync installed Loom to v0.19.1305
 
 ## Very Important
 
@@ -43,7 +43,7 @@ _None._
 
 PRs that passed review and are queued for Champion auto-merge (`loom:pr`).
 
-- **#277**: chore(loom): resync installed Loom to v0.19.1302
+- **#296**: chore(loom): resync installed Loom to v0.19.1305
 
 ## Proposed
 
