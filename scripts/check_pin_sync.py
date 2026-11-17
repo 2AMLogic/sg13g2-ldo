@@ -16,7 +16,15 @@ with the pairs the first pass missed: two intra-file pairs --
 `pinned_commit`, and `sim/pdk.json`'s `release_url` must end in its own
 top-level `release_tag` -- plus ci.yml's IHP_OPEN_PDK_VERSION against
 `sim/pdk.json`'s `release_tag`, whose leading `v` is normalized on the
-`sim/pdk.json` side only.
+`sim/pdk.json` side only. Issue #298 widened it again with the item 9
+attestation inventory: `signoff/evidence/item9-testbenches.inventory.json`
+re-declares both the klt release pin (`pins.tools.klt`) and the PDK dev
+commit (`pins.pdk.revision`) as recorded evidence metadata, so a CI pin
+bump that edited ci.yml and missed the inventory would leave signed
+evidence stamped with a different build. These are the gate's first nested
+JSON sites: `json_top` deliberately refuses nested keys, so both are read
+through `json_path`, which walks the full key path with the same
+fail-closed posture.
 
 One subcommand:
 
@@ -65,6 +73,7 @@ CI = ".github/workflows/ci.yml"
 FLOW = "layout/run_flow.sh"
 CMOS5L = "sim/pdk-cmos5l.json"
 G2 = "sim/pdk.json"
+INV9 = "signoff/evidence/item9-testbenches.inventory.json"
 
 EXIT_OK, EXIT_DRIFT, EXIT_ERROR = 0, 1, 2
 
@@ -150,6 +159,34 @@ def json_top(root: Path, rel: str, key: str) -> str:
         raise GateError(f"{rel}: top-level key {key!r} is not a non-empty "
                         "string (fail closed)")
     return value
+
+
+def json_path(root: Path, rel: str, *keys: str) -> str:
+    """A nested string value from a JSON fact sheet, addressed by its full
+    key path (`json_path(r, INV9, "pins", "tools", "klt")`), via stdlib
+    json. Every intermediate key must exist and hold an object and the
+    final value must be a non-empty string; a missing key, a scalar where
+    an object is expected, or an empty string is exit 2, never a pass --
+    the same posture as `json_top`, one level deeper. The path is walked
+    exactly, so a same-named key at any other depth cannot satisfy the
+    extraction."""
+    if not keys:
+        raise GateError(f"{rel}: empty key path (fail closed)")
+    try:
+        data = json.loads(_read(root, rel))
+    except ValueError as exc:
+        raise GateError(f"{rel}: not valid JSON: {exc}") from exc
+    node: object = data
+    for depth, key in enumerate(keys):
+        prefix = ".".join(keys[: depth + 1])
+        if not isinstance(node, dict) or key not in node:
+            raise GateError(f"{rel}: key {prefix!r} missing from key path "
+                            f"{'.'.join(keys)!r} (fail closed)")
+        node = node[key]
+    if not isinstance(node, str) or not node:
+        raise GateError(f"{rel}: key {'.'.join(keys)!r} is not a non-empty "
+                        "string (fail closed)")
+    return node
 
 
 def tarball_commit(root: Path) -> str:
@@ -246,6 +283,16 @@ PAIRS = (
     Pair("IHP SG13G2 release version",
          Site(CI, "IHP_OPEN_PDK_VERSION", lambda r: ci_env(r, "IHP_OPEN_PDK_VERSION")),
          Site(G2, "release_tag version", g2_release_version)),
+    # Issue #298: the item 9 attestation inventory re-declares both the klt
+    # release pin and the PDK dev commit as recorded evidence metadata. The
+    # ci.yml sides re-read the same keys pairs 1 and 3 gate -- read-only
+    # extractions, safe to repeat -- against the inventory's nested copies.
+    Pair("item 9 attestation klt pin",
+         Site(CI, "KLAYOUT_TOOLS_VERSION", lambda r: ci_env(r, "KLAYOUT_TOOLS_VERSION")),
+         Site(INV9, "pins.tools.klt", lambda r: json_path(r, INV9, "pins", "tools", "klt"))),
+    Pair("item 9 attestation PDK revision",
+         Site(CI, "IHP_SG13CMOS5L_COMMIT", lambda r: ci_env(r, "IHP_SG13CMOS5L_COMMIT")),
+         Site(INV9, "pins.pdk.revision", lambda r: json_path(r, INV9, "pins", "pdk", "revision"))),
 )
 
 
