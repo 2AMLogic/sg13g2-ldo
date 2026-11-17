@@ -1,8 +1,9 @@
 """Regression tests for scripts/check_pin_sync.py (issue #250).
 
-Every case runs the gate against a throwaway copy of the four gated files
+Every case runs the gate against a throwaway copy of the five gated files
 (`.github/workflows/ci.yml`, `layout/run_flow.sh`, `sim/pdk-cmos5l.json`,
-`sim/pdk.json`) in a temp directory, so the extraction patterns are exercised
+`sim/pdk.json`, `signoff/evidence/item9-testbenches.inventory.json`) in a
+temp directory, so the extraction patterns are exercised
 against the repo's actual text, never a hand-sketched fixture. Each pin pair
 gets a negative control -- a tampered copy the gate must reject -- plus the
 all-agree pass case and the fail-closed cases. Stdlib only; no network.
@@ -37,7 +38,8 @@ CI = pin.CI
 FLOW = pin.FLOW
 CMOS5L = pin.CMOS5L
 G2 = pin.G2
-FILES = (CI, FLOW, CMOS5L, G2)
+INV9 = pin.INV9
+FILES = (CI, FLOW, CMOS5L, G2, INV9)
 
 
 class Tree(unittest.TestCase):
@@ -91,10 +93,10 @@ class RealRepo(unittest.TestCase):
         self.assertEqual(rc, 0, err.getvalue())
         self.assertIn("agree", out.getvalue())
         # Issue #267: every pair must actually be reached -- a new pair that
-        # errored into a skip would drop this count below 6 of 6.
+        # errored into a skip would drop this count below 8 of 8.
         self.assertIn(f"{len(pin.PAIRS)} of {len(pin.PAIRS)} pair(s) compared",
                       out.getvalue())
-        self.assertEqual(len(pin.PAIRS), 6)
+        self.assertEqual(len(pin.PAIRS), 8)
 
 
 class KltPin(Tree):
@@ -376,6 +378,103 @@ class CiReleaseVersion(Tree):
         rc, _, err = self.run_gate()
         self.assertEqual(rc, 2)
         self.assertIn("release_tag", err)
+
+
+class AttestationKltPin(Tree):
+    """Pair 7 (issue #298): ci.yml KLAYOUT_TOOLS_VERSION vs the item 9
+    attestation inventory's pins.tools.klt."""
+
+    def test_inventory_klt_drift_fails_naming_both_values(self):
+        # The exact defect this issue closes: a klt bump edits ci.yml but
+        # misses the attestation inventory's copy, leaving signed evidence
+        # stamped with a different build. Before the pair the gate exited 0
+        # on this edit -- measured live at issue filing.
+        self.replace(INV9, '"klt": "0.9.2"', '"klt": "9.9.9"')
+        rc, _, err = self.run_gate()
+        self.assertEqual(rc, 1)
+        self.assertIn(CI, err)
+        self.assertIn(INV9, err)
+        self.assertIn("KLAYOUT_TOOLS_VERSION", err)
+        self.assertIn("pins.tools.klt", err)
+        self.assertIn("9.9.9", err)
+        self.assertIn("0.9.2", err)
+
+    def test_ci_side_drift_fails(self):
+        self.replace(CI, 'KLAYOUT_TOOLS_VERSION: "0.9.2"',
+                     'KLAYOUT_TOOLS_VERSION: "0.9.3"')
+        rc, _, err = self.run_gate()
+        self.assertEqual(rc, 1)
+        self.assertIn("0.9.2", err)
+        self.assertIn("0.9.3", err)
+
+    def test_missing_pins_tools_fails_closed(self):
+        data = json.loads((self.root / INV9).read_text(encoding="utf-8"))
+        del data["pins"]["tools"]
+        (self.root / INV9).write_text(json.dumps(data), encoding="utf-8")
+        rc, _, err = self.run_gate()
+        self.assertEqual(rc, 2)
+        self.assertIn("pins.tools", err)
+        self.assertIn("fail closed", err)
+
+    def test_pins_not_an_object_fails_closed(self):
+        data = json.loads((self.root / INV9).read_text(encoding="utf-8"))
+        data["pins"] = "0.9.2"
+        (self.root / INV9).write_text(json.dumps(data), encoding="utf-8")
+        rc, _, err = self.run_gate()
+        self.assertEqual(rc, 2)
+        self.assertIn("fail closed", err)
+
+    def test_empty_string_fails_closed(self):
+        data = json.loads((self.root / INV9).read_text(encoding="utf-8"))
+        data["pins"]["tools"]["klt"] = ""
+        (self.root / INV9).write_text(json.dumps(data), encoding="utf-8")
+        rc, _, err = self.run_gate()
+        self.assertEqual(rc, 2)
+        self.assertIn("fail closed", err)
+
+
+class AttestationPdkRevision(Tree):
+    """Pair 8 (issue #298): ci.yml IHP_SG13CMOS5L_COMMIT vs the item 9
+    attestation inventory's pins.pdk.revision."""
+
+    def test_inventory_revision_drift_fails_naming_both_values(self):
+        self.replace(INV9,
+                     '"revision": "f7bca32694fe3d58be0cc7d9df4b9f5db7161a14"',
+                     '"revision": "' + "a" * 40 + '"')
+        rc, _, err = self.run_gate()
+        self.assertEqual(rc, 1)
+        self.assertIn(CI, err)
+        self.assertIn(INV9, err)
+        self.assertIn("IHP_SG13CMOS5L_COMMIT", err)
+        self.assertIn("pins.pdk.revision", err)
+        self.assertIn("a" * 40, err)
+        self.assertIn("f7bca32694fe3d58be0cc7d9df4b9f5db7161a14", err)
+
+    def test_ci_side_drift_fails(self):
+        self.replace(CI,
+                     'IHP_SG13CMOS5L_COMMIT: '
+                     '"f7bca32694fe3d58be0cc7d9df4b9f5db7161a14"',
+                     'IHP_SG13CMOS5L_COMMIT: "' + "b" * 40 + '"')
+        rc, _, err = self.run_gate()
+        self.assertEqual(rc, 1)
+        self.assertIn("b" * 40, err)
+
+    def test_missing_pins_fails_closed(self):
+        data = json.loads((self.root / INV9).read_text(encoding="utf-8"))
+        del data["pins"]
+        (self.root / INV9).write_text(json.dumps(data), encoding="utf-8")
+        rc, _, err = self.run_gate()
+        self.assertEqual(rc, 2)
+        self.assertIn("pins", err)
+        self.assertIn("fail closed", err)
+
+    def test_revision_not_a_string_fails_closed(self):
+        data = json.loads((self.root / INV9).read_text(encoding="utf-8"))
+        data["pins"]["pdk"]["revision"] = 42
+        (self.root / INV9).write_text(json.dumps(data), encoding="utf-8")
+        rc, _, err = self.run_gate()
+        self.assertEqual(rc, 2)
+        self.assertIn("fail closed", err)
 
 
 class FailClosed(Tree):
