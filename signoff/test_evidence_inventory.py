@@ -187,6 +187,7 @@ class InventoryCheck(unittest.TestCase):
         text = open(ci).read().replace("item1-design-sources.inventory.json", "gone.json")
         open(ci, "w").write(text)
         self.assertFails("ci.yml lacks 'item1-design-sources.inventory.json'")
+
     def _rewrite_pdk_cache_key(self, replacement: str) -> None:
         """Swap the OSDI-bearing PDK cache key line, then refresh every hash.
 
