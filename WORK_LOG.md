@@ -8,6 +8,8 @@ Chronological record of recently merged pull requests and closed issues, maintai
 
 ### 2026-11-18
 
+- **PR #310**: ci: report required checks on merge_group and plumb the queue base into the append-only gate
+- **Issue #308** (closed): Merge queue: add the merge_group trigger and adapt the PR-metadata gates
 - **PR #306**: fix: drop check_artifact_manifests.py verify twin of klt artifact verify
 - **Issue #270** (closed): Remove check_artifact_manifests.py verify subcommand: hand-rolled twin of klt artifact verify
 
