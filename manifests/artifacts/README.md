@@ -15,6 +15,7 @@ URL belongs in this directory. The run's Markdown summary is committed under
 Manifests are append-only evidence: never edit or delete one. CI runs
 `python3 scripts/check_artifact_manifests.py check --tree <sha>`, which checks
 the schema and that no stored object's bytes are also committed. To check the
-bytes, run `python3 scripts/check_artifact_manifests.py verify <manifest>` or
-`klt artifact verify <manifest>` with `KLT_ARTIFACT_BROKER` set. See
+bytes, run `klt artifact verify <manifest>` with `KLT_ARTIFACT_BROKER` set
+(no `klt` install? klayout-tools ships a dependency-free standalone verifier —
+see its `docs/cli/artifact.md`, "Standalone verifier"). See
 `sim/README.md`, "Stored evidence".

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Stored-evidence manifests: schema guard and hash verifier (issue #183).
+"""Stored-evidence manifests: schema guard (issue #183).
 
 New simulation evidence no longer lands in git. Its bytes go to the fleet
 artifact store through ``klt artifact put`` (``sim/harness/evidence_store.py``,
@@ -7,7 +7,7 @@ artifact store through ``klt artifact put`` (``sim/harness/evidence_store.py``,
 ``manifests/artifacts/<bench>-<run-id>.manifest.json`` plus the run's Markdown
 summary under ``sim/<bench>/``. Evidence bytes are private; manifests are
 public (operator decision 1.1, 2026-10-22). This script is the git-side check
-of that contract. Two subcommands:
+of that contract:
 
 ``check --tree REV``
     Reads every manifest committed in ``REV`` (blob contents via git, so a
@@ -21,46 +21,31 @@ of that contract. Two subcommands:
     forbids. ``check`` never contacts the broker and says so: schema-valid
     is not hash-verified.
 
-``verify MANIFEST...``
-    Fetches every entry through the broker named by ``$KLT_ARTIFACT_BROKER``
-    and recomputes its sha256 and size against the manifest and against the
-    digest the broker's object key names (the same rules as
-    ``klt artifact verify``; this is a stdlib twin so CI and the guard tests
-    need no ``klt`` install). Each entry is ``ok``, ``missing``,
-    ``size_mismatch``, ``hash_mismatch`` or ``key_mismatch``.
+Hash verification (fetching every entry through the broker and re-hashing)
+is ``klt artifact verify <manifest>``'s job, with ``$KLT_ARTIFACT_BROKER``
+set. This script used to carry a stdlib twin of it; that twin was deleted
+once klt shipped a dependency-free verifier (issue #270, operator ruling
+2026-11-15, reversing #183).
 
-Fail closed. No broker configured, an unreachable broker or a broker refusal
-other than "not found" is exit 2, never success and never a schema-only pass.
+Exit codes: 0 ok; 1 a manifest is invalid or names a committed blob;
+2 usage or git error.
 
-The broker hands out short-lived presigned URLs. They are bearer credentials:
-this script keeps them in memory, never prints, logs or writes them, and
-reports a failed transfer by HTTP status only. No URL, host name or bucket is
-configured in this repository; the broker URL comes from the environment.
-
-Exit codes: 0 ok; 1 a manifest is invalid or names a committed blob
-(``check``) or is unreadable (``verify``); 2 usage, git or broker error;
-3 ``verify`` ran and at least one entry is missing or mismatched.
-
-Stdlib only; ``check`` needs ``git`` on PATH.
+Stdlib only; needs ``git`` on PATH.
 """
 
 from __future__ import annotations
 
 import argparse
-import hashlib
-import http.client
 import json
 import os
 import posixpath
 import re
 import subprocess
 import sys
-from urllib.parse import urlsplit
 
 MANIFEST_DIR = "manifests/artifacts/"
 MANIFEST_RE = re.compile(r"^manifests/artifacts/[A-Za-z0-9][A-Za-z0-9._-]*\.manifest\.json$")
 DIR_FILES_ALLOWED = {"manifests/artifacts/README.md"}
-ENV_BROKER = "KLT_ARTIFACT_BROKER"
 
 SCHEMA_VERSION = 1
 KIND = "evidence"
@@ -73,18 +58,12 @@ SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 #: ``artifact:<key>`` (operator ruling H1, 2AMLogic/2am#5553; klayout-tools
 #: ``7e3561f``). It names no storage location; any other scheme is refused.
 URI_RE = re.compile(r"^artifact:([^/\s]\S*)$")
-REPO_RE = re.compile(r"^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$")
 
-BROKER_TIMEOUT_S = 60
-TRANSFER_TIMEOUT_S = 600
-CHUNK = 1 << 20
-MAX_BROKER_BODY = 1 << 20
-
-EXIT_OK, EXIT_INVALID, EXIT_ERROR, EXIT_FAILED = 0, 1, 2, 3
+EXIT_OK, EXIT_INVALID, EXIT_ERROR = 0, 1, 2
 
 
 class ToolError(Exception):
-    """Git or broker failure: exit 2, fail closed."""
+    """Git failure: exit 2."""
 
 
 # --------------------------------------------------------------------------
@@ -256,159 +235,7 @@ def check(repo: str, rev: str) -> int:
     print(f"OK: {manifests} manifest(s), {entries} entr{'y' if entries == 1 else 'ies'} "
           f"in {MANIFEST_DIR} of {rev}: schema valid, no stored bytes committed. "
           "Bytes NOT hash-verified here (no broker contact); run "
-          f"`{posixpath.basename(__file__)} verify <manifest>` with ${ENV_BROKER} set.")
-    return EXIT_OK
-
-
-# --------------------------------------------------------------------------
-# verify: fetch through the broker and re-hash
-# --------------------------------------------------------------------------
-
-
-def _http_parts(url: str, what: str):
-    parts = urlsplit(url)
-    if parts.scheme not in ("http", "https") or not parts.hostname \
-            or parts.username is not None or parts.password is not None:
-        # Never echo the URL: a presigned one is a credential.
-        raise ToolError(f"{what} is not a plain http(s) URL")
-    return parts
-
-
-def _conn(parts, timeout):
-    cls = http.client.HTTPSConnection if parts.scheme == "https" else http.client.HTTPConnection
-    return cls(parts.netloc, timeout=timeout)
-
-
-class Broker:
-    """``POST <base>/v1/<op>`` with a JSON body. Holds no credential: the broker
-    identifies callers by network identity."""
-
-    def __init__(self, base: str):
-        self.parts = _http_parts(base, f"${ENV_BROKER}")
-        if self.parts.query or self.parts.fragment:
-            raise ToolError(f"${ENV_BROKER} must not carry a query or fragment")
-
-    def call(self, op: str, body: dict) -> tuple[int, dict]:
-        conn = _conn(self.parts, BROKER_TIMEOUT_S)
-        try:
-            conn.request("POST", self.parts.path.rstrip("/") + "/v1/" + op,
-                         body=json.dumps(body).encode(),
-                         headers={"Content-Type": "application/json",
-                                  "Accept": "application/json"})
-            resp = conn.getresponse()
-            status, raw = resp.status, resp.read(MAX_BROKER_BODY)
-        except (OSError, http.client.HTTPException) as exc:
-            raise ToolError(f"cannot reach the artifact broker ({type(exc).__name__}); "
-                            "failing closed") from None
-        finally:
-            conn.close()
-        try:
-            payload = json.loads(raw)
-        except ValueError:
-            payload = None
-        if not isinstance(payload, dict):
-            payload = {}
-        return status, payload
-
-
-def _refused(op: str, status: int, payload: dict) -> ToolError:
-    err = payload.get("error") if isinstance(payload.get("error"), str) else f"http_{status}"
-    msg = payload.get("message") if isinstance(payload.get("message"), str) else ""
-    return ToolError(f"artifact broker refused {op} (HTTP {status}): {err}: {msg}")
-
-
-def _fetch_hash(url: str) -> tuple[str, int]:
-    """GET a presigned URL and return (sha256, size) of the body. The URL is
-    never named in any message."""
-    parts = _http_parts(url, "the presigned URL")
-    target = (parts.path or "/") + (f"?{parts.query}" if parts.query else "")
-    conn = _conn(parts, TRANSFER_TIMEOUT_S)
-    h = hashlib.sha256()
-    n = 0
-    try:
-        conn.request("GET", target)
-        resp = conn.getresponse()
-        if resp.status != 200:
-            resp.read(64 << 10)
-            raise ToolError(f"presigned GET was rejected: HTTP {resp.status}")
-        while chunk := resp.read(CHUNK):
-            h.update(chunk)
-            n += len(chunk)
-    except (OSError, http.client.HTTPException) as exc:
-        raise ToolError(f"presigned GET failed: {type(exc).__name__}") from None
-    finally:
-        conn.close()
-    return h.hexdigest(), n
-
-
-def verify_entry(broker: Broker, entry: dict) -> dict:
-    key = uri_key(entry["uri"])
-    repo = repo_from_key(key) or entry["producer"]["loom.repo"]
-    if not REPO_RE.match(repo):
-        raise ToolError(f"entry {entry['sha256']}: repo {repo!r} is not owner/name")
-    result = {"sha256": entry["sha256"], "name": entry.get("name"), "size": entry["size"]}
-    req = {"kind": entry["kind"], "repo": repo, "sha256": entry["sha256"]}
-    status, stat = broker.call("stat", req)
-    if status == 404:
-        return {**result, "status": "missing"}
-    if status != 200:
-        raise _refused("stat", status, stat)
-    if stat.get("exists") is not True:
-        return {**result, "status": "missing"}
-    if isinstance(stat.get("size"), int) and stat["size"] != entry["size"]:
-        return {**result, "status": "size_mismatch", "stored_size": stat["size"]}
-    status, got = broker.call("get", req)
-    if status == 404:
-        return {**result, "status": "missing"}
-    if status != 200:
-        raise _refused("get", status, got)
-    answer_key = got.get("key")
-    if not isinstance(answer_key, str) or answer_key != key \
-            or answer_key.rsplit("/", 1)[-1] != entry["sha256"]:
-        return {**result, "status": "key_mismatch"}
-    url = got.get("url")
-    if not isinstance(url, str) or not url:
-        raise ToolError(f"the broker's get answer for {entry['sha256']} carries no URL")
-    sha, size = _fetch_hash(url)
-    if sha != entry["sha256"]:
-        return {**result, "status": "hash_mismatch", "observed_sha256": sha}
-    if size != entry["size"]:
-        return {**result, "status": "size_mismatch", "observed_size": size}
-    return {**result, "status": "ok"}
-
-
-def verify(paths: list[str], env=None) -> int:
-    env = os.environ if env is None else env
-    base = env.get(ENV_BROKER)
-    if not base:
-        raise ToolError(f"no artifact broker configured: set ${ENV_BROKER}. Hash "
-                        "verification needs the broker; this is not a pass")
-    broker = Broker(base)
-    loaded = []
-    for path in paths:
-        try:
-            with open(path, encoding="utf-8") as fh:
-                manifest = json.load(fh)
-        except (OSError, ValueError) as exc:
-            print(f"FAIL: {path}: unreadable manifest: {exc}", file=sys.stderr)
-            return EXIT_INVALID
-        problems = manifest_problems(manifest)
-        if problems:
-            print(f"FAIL: {path}: " + "; ".join(problems), file=sys.stderr)
-            return EXIT_INVALID
-        loaded.append((path, manifest))
-    failed = 0
-    for path, manifest in loaded:
-        for entry in manifest["entries"]:
-            r = verify_entry(broker, entry)
-            print(f"{r['status']:<14} {r['sha256']}  {r.get('name') or ''}")
-            failed += r["status"] != "ok"
-    total = sum(len(m["entries"]) for _, m in loaded)
-    if failed:
-        print(f"FAIL: {failed} of {total} stored object(s) missing or mismatched",
-              file=sys.stderr)
-        return EXIT_FAILED
-    print(f"OK: {total} stored object(s) fetched and re-hashed; all match")
+          "`klt artifact verify <manifest>` with $KLT_ARTIFACT_BROKER set.")
     return EXIT_OK
 
 
@@ -418,13 +245,9 @@ def main(argv=None) -> int:
     c = sub.add_parser("check", help="schema + no-committed-blob guard for a tree")
     c.add_argument("--tree", required=True, help="commit or tree (e.g. HEAD)")
     c.add_argument("--repo", default=".", help="repository path (default .)")
-    v = sub.add_parser("verify", help="fetch through the broker and re-hash")
-    v.add_argument("manifests", nargs="+", metavar="MANIFEST")
     args = ap.parse_args(argv)
     try:
-        if args.cmd == "check":
-            return check(args.repo, args.tree)
-        return verify(args.manifests)
+        return check(args.repo, args.tree)
     except ToolError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return EXIT_ERROR

@@ -869,8 +869,9 @@ jobs:
     # artifact store; git keeps manifests under manifests/artifacts/. `check`
     # reads the target tree via git: schema, artifact:<key> uris only, and that
     # no stored object's bytes are also committed. CI cannot reach the broker,
-    # so the bytes are NOT hash-verified here (`verify` is out of band; see
-    # sim/README.md, "Stored evidence"). Landed evidence is untouched.
+    # so the bytes are NOT hash-verified here (hash-verification is
+    # `klt artifact verify`, out of band; see sim/README.md, "Stored
+    # evidence"). Landed evidence is untouched.
     runs-on: ubuntu-latest
     steps:
       - name: Check out sg13g2-ldo
@@ -884,7 +885,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Manifest checker tests (fake broker, throwaway git repos)
+      - name: Manifest checker tests (throwaway git repos)
         run: python3 -m unittest discover -s scripts/tests -p 'test_check_artifact_manifests.py' -v
 
       - name: Evidence writer tests (stub klt, fail-closed)
