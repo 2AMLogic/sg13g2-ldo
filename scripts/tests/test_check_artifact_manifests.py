@@ -1,22 +1,16 @@
 """Regression tests for scripts/check_artifact_manifests.py (issue #183).
 
-``verify`` runs against a fake artifact broker: a local HTTP server that
-answers ``/v1/stat`` and ``/v1/get`` like the real one (a presigned URL per
-object) and serves the bytes from memory. ``check`` runs against throwaway
-git repositories. Stdlib only.
+``check`` runs against throwaway git repositories. Stdlib only.
 """
 
 import contextlib
 import hashlib
-import http.server
 import importlib.util
 import io
 import json
 import os
-import socket
 import subprocess
 import tempfile
-import threading
 import unittest
 from pathlib import Path
 
@@ -44,147 +38,6 @@ def entry(data: bytes, name="sim/b/records/r1.json", sha=None, size=None):
     return {"sha256": sha, "size": len(data) if size is None else size, "kind": "evidence",
             "producer": {"tool": "klt", "version": "0.7.0", "loom.repo": REPO, "commit": None},
             "uri": f"artifact:{key_for(sha)}", "name": name}
-
-
-class FakeBroker:
-    """objects: {sha: bytes} the store holds. ``serve_override`` maps a sha to
-    the bytes actually served (a corrupted object); ``key_override`` makes
-    get answer a different key."""
-
-    def __init__(self, objects, serve_override=None, key_override=None, refuse=None):
-        self.objects = objects
-        fake = self
-
-        class H(http.server.BaseHTTPRequestHandler):
-            def _send(self, status, payload=None, raw=None):
-                raw = raw if raw is not None else json.dumps(payload).encode()
-                self.send_response(status)
-                self.send_header("Content-Length", str(len(raw)))
-                self.end_headers()
-                self.wfile.write(raw)
-
-            def do_POST(self):
-                body = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
-                if refuse:
-                    return self._send(403, {"error": refuse, "message": "denied"})
-                sha = body["sha256"]
-                assert body["repo"] == REPO and body["kind"] == "evidence"
-                if sha not in fake.objects:
-                    if self.path == "/v1/stat":
-                        return self._send(200, {"key": key_for(sha), "exists": False})
-                    return self._send(404, {"error": "not_found", "message": "no object"})
-                if self.path == "/v1/stat":
-                    return self._send(200, {"key": key_for(sha), "exists": True,
-                                            "size": len(fake.objects[sha])})
-                key = (key_override or {}).get(sha, key_for(sha))
-                return self._send(200, {"key": key, "exists": True, "method": "GET",
-                                        "url": f"{fake.base}/obj/{sha}?X-Sig=secret"})
-
-            def do_GET(self):
-                sha = self.path.split("/obj/")[1].split("?")[0]
-                data = (serve_override or {}).get(sha, fake.objects.get(sha))
-                self._send(200, raw=data)
-
-            def log_message(self, *a):
-                pass
-
-        self.server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), H)
-        self.base = f"http://127.0.0.1:{self.server.server_address[1]}"
-        threading.Thread(target=self.server.serve_forever, daemon=True).start()
-
-    def close(self):
-        self.server.shutdown()
-        self.server.server_close()
-
-
-class Verify(unittest.TestCase):
-    def setUp(self):
-        td = tempfile.TemporaryDirectory()
-        self.addCleanup(td.cleanup)
-        self.dir = Path(td.name)
-        self.a, self.b = b"alpha evidence\n", b"beta evidence\n"
-        self.sha_a = hashlib.sha256(self.a).hexdigest()
-        self.sha_b = hashlib.sha256(self.b).hexdigest()
-
-    def manifest(self, *entries):
-        p = self.dir / "m.manifest.json"
-        p.write_text(json.dumps({"schema_version": 1, "entries": list(entries)}))
-        return str(p)
-
-    def run_verify(self, broker, path, env=None):
-        out, err = io.StringIO(), io.StringIO()
-        if broker is not None:
-            self.addCleanup(broker.close)
-        env = env if env is not None else {chk.ENV_BROKER: broker.base}
-        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
-            try:
-                rc = chk.verify([path], env=env)
-            except chk.ToolError as exc:
-                print(f"ERROR: {exc}", file=err)
-                rc = chk.EXIT_ERROR
-        return rc, out.getvalue(), err.getvalue()
-
-    def test_match(self):
-        broker = FakeBroker({self.sha_a: self.a, self.sha_b: self.b})
-        path = self.manifest(entry(self.a), entry(self.b, name="sim/b/corners/r1/tt.log"))
-        rc, out, err = self.run_verify(broker, path)
-        self.assertEqual(rc, 0, err)
-        self.assertIn("2 stored object(s) fetched and re-hashed", out)
-        self.assertNotIn("X-Sig", out + err)  # presigned URL never printed
-
-    def test_hash_mismatch(self):
-        broker = FakeBroker({self.sha_a: self.a}, serve_override={self.sha_a: b"tampered\n"})
-        rc, out, err = self.run_verify(broker, self.manifest(entry(self.a)))
-        self.assertEqual(rc, 3)
-        self.assertIn("hash_mismatch", out)
-
-    def test_size_mismatch_against_manifest(self):
-        broker = FakeBroker({self.sha_a: self.a})
-        rc, out, _ = self.run_verify(broker, self.manifest(entry(self.a, size=len(self.a) + 1)))
-        self.assertEqual(rc, 3)
-        self.assertIn("size_mismatch", out)
-
-    def test_missing_object(self):
-        broker = FakeBroker({})
-        rc, out, err = self.run_verify(broker, self.manifest(entry(self.a)))
-        self.assertEqual(rc, 3)
-        self.assertIn("missing", out)
-        self.assertIn("1 of 1", err)
-
-    def test_key_mismatch(self):
-        broker = FakeBroker({self.sha_a: self.a}, key_override={self.sha_a: key_for("f" * 64)})
-        rc, out, _ = self.run_verify(broker, self.manifest(entry(self.a)))
-        self.assertEqual(rc, 3)
-        self.assertIn("key_mismatch", out)
-
-    def test_broker_refusal_is_error_not_pass(self):
-        broker = FakeBroker({self.sha_a: self.a}, refuse="not_granted")
-        rc, _, err = self.run_verify(broker, self.manifest(entry(self.a)))
-        self.assertEqual(rc, 2)
-        self.assertIn("not_granted", err)
-
-    def test_unreachable_broker_fails_closed(self):
-        sock = socket.socket()
-        sock.bind(("127.0.0.1", 0))
-        port = sock.getsockname()[1]
-        sock.close()
-        rc, _, err = self.run_verify(None, self.manifest(entry(self.a)),
-                                     env={chk.ENV_BROKER: f"http://127.0.0.1:{port}"})
-        self.assertEqual(rc, 2)
-        self.assertIn("failing closed", err)
-
-    def test_no_broker_configured_is_not_a_pass(self):
-        rc, _, err = self.run_verify(None, self.manifest(entry(self.a)), env={})
-        self.assertEqual(rc, 2)
-        self.assertIn("not a pass", err)
-
-    def test_invalid_manifest(self):
-        broker = FakeBroker({})
-        bad = entry(self.a)
-        bad["extra"] = 1
-        rc, _, err = self.run_verify(broker, self.manifest(bad))
-        self.assertEqual(rc, 1)
-        self.assertIn("unknown field", err)
 
 
 class Schema(unittest.TestCase):

@@ -212,8 +212,9 @@ fleet via `klt sim` / `run_sweep.sh --batch`, never a hand-launched local grid):
    table; `--kind` picks another protected directory). Existing manifests or
    summaries are never overwritten.
 3. Commit the manifest and the summary (and the usual `records/` JSON/Markdown).
-   Verify the bytes with `klt artifact verify <manifest>` or
-   `python3 scripts/check_artifact_manifests.py verify <manifest>`.
+   Verify the bytes with `klt artifact verify <manifest>` (no `klt` install?
+   klayout-tools ships a dependency-free standalone verifier — see its
+   `docs/cli/artifact.md`, "Standalone verifier").
 
 Configuration is the environment only: `KLT_ARTIFACT_BROKER` (broker base URL)
 and optionally `KLT_ARTIFACT_REPO`. No default exists and none is written in

@@ -17,7 +17,7 @@
         "role": "testbench",
         "path": "sim/README.md",
         "passed": true,
-        "content_hash": "sha256:29b570131c1156821d98ba29f7bd8ed1cd606f827b3549718b12ebf6f129b2bb"
+        "content_hash": "sha256:16e34ec0c711ea6f0aa8225fd578905cbc8ef1593adb579ff60b6a48e4d1d0d7"
       },
       {
         "check": "present",
