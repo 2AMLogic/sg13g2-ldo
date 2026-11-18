@@ -6,6 +6,11 @@ Chronological record of recently merged pull requests and closed issues, maintai
 
 - [2026-09](work_log/WORK_LOG_2026-09.md)
 
+### 2026-11-18
+
+- **PR #306**: fix: drop check_artifact_manifests.py verify twin of klt artifact verify
+- **Issue #270** (closed): Remove check_artifact_manifests.py verify subcommand: hand-rolled twin of klt artifact verify
+
 ### 2026-11-17
 
 - **PR #302**: docs(ci): name both jobs that fetch and cache-key the ihp-sg13cmos5l PDK

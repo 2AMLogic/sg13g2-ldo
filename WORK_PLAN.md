@@ -59,7 +59,6 @@ Issues carrying `loom:curated`.
 
 - **#228**: Remove the placeholder root package.json: five dead scripts that steer agent build-gate detection to a Node toolchain this repo does not have *(hermit)* *(held)*
 - **#229**: Twenty-seven unused module-level constants — four of them claim behaviour they do not have (the dimension #226's scan did not cover) *(hermit)* *(held)*
-- **#270**: Remove check_artifact_manifests.py verify subcommand: hand-rolled twin of klt artifact verify *(hermit)*
 
 ## Epics
 
@@ -77,6 +76,6 @@ Issues carrying `loom:curated`.
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
 | Curated | 5 |
-| Architect / Hermit proposals | 3 |
+| Architect / Hermit proposals | 2 |
 | Active epics | 1 |
 <!-- guide:plan-body:end -->
