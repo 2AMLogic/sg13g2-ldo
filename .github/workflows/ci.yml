@@ -1,7 +1,8 @@
 name: CI
 
-# Jobs, all run on every push to main and every pull request (none gated
-# behind a schedule or label):
+# Jobs, all run on every push to main, every pull request and every
+# merge-queue trial merge (merge_group; none gated behind a schedule or
+# label):
 #
 #   netlist-check                 design/netlist.py --check, for BOTH designs:
 #                                 the default SG13G2 placeholder and
@@ -155,6 +156,10 @@ on:
   push:
     branches: [main]
   pull_request:
+  # Merge queue (2AMLogic/2am#7605): the required checks must also report on
+  # the queue's trial-merge commits, or the queue is refused. No `paths:`
+  # narrowing anywhere -- a path filter would silently drop required checks.
+  merge_group:
   workflow_dispatch: {}
 
 # The IHP-Open-PDK version this workflow fetches and pins its cache key to.
@@ -575,12 +580,19 @@ jobs:
 
   sim-append-only:
     name: sim/ evidence is append-only (PR vs merge base, no PDK / no simulator)
-    # Stdlib-only (#102). Diffs the PR head against its merge base with the
-    # base branch and fails if any already-landed path under sim/*/{records,
-    # corners,netlist-snapshots,evidence,backend-validation,startup}/ was
-    # modified, deleted or renamed. Fails closed if the base cannot be
-    # resolved, hence the full-history checkout.
-    if: github.event_name == 'pull_request'
+    # Stdlib-only (#102). Diffs the event head against its merge base with
+    # the base branch and fails if any already-landed path under
+    # sim/*/{records,corners,netlist-snapshots,evidence,backend-validation,
+    # startup}/ was modified, deleted or renamed. Fails closed if the base
+    # cannot be resolved, hence the full-history checkout.
+    # Events: pull_request diffs the PR head against origin/<base_ref>.
+    # merge_group (merge queue, 2AMLogic/2am#7605) has no github.base_ref,
+    # so base and head come from the event payload's merge_group.base_sha /
+    # head_sha (the trial-merge commit's parents); the full-history checkout
+    # has already fetched them. A missing/empty base_sha or head_sha FAILS
+    # the job rather than skipping the check -- a gate that skips on the
+    # queue would be a silent drop, not a pass.
+    if: github.event_name == 'pull_request' || github.event_name == 'merge_group'
     runs-on: ubuntu-latest
     steps:
       - name: Check out sg13g2-ldo (full history for the merge base)
@@ -597,11 +609,28 @@ jobs:
 
       - name: Landed sim/ evidence is unmodified
         env:
+          EVENT: ${{ github.event_name }}
           BASE_REF: ${{ github.base_ref }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          MG_BASE: ${{ github.event.merge_group.base_sha }}
+          MG_HEAD: ${{ github.event.merge_group.head_sha }}
         run: |
-          git fetch --no-tags origin "+refs/heads/${BASE_REF}:refs/remotes/origin/${BASE_REF}"
+          BASE="origin/${BASE_REF}"; HEAD="${PR_HEAD}"
+          if [ "${EVENT}" = "merge_group" ]; then
+            if [ -z "${MG_BASE}" ] || [ -z "${MG_HEAD}" ]; then
+              echo "append-only gate on merge_group: FAIL (fail closed) --" \
+                   "github.event.merge_group.base_sha/head_sha missing or" \
+                   "empty; refusing to claim the evidence was checked" >&2
+              exit 1
+            fi
+            BASE="${MG_BASE}"; HEAD="${MG_HEAD}"
+            echo "append-only gate on merge_group (trial merge):" \
+                 "base=${BASE} head=${HEAD}" >&2
+          else
+            git fetch --no-tags origin "+refs/heads/${BASE_REF}:refs/remotes/origin/${BASE_REF}"
+          fi
           python3 sim/tools/check_append_only.py \
-            --base "origin/${BASE_REF}" --head "${{ github.event.pull_request.head.sha }}"
+            --base "${BASE}" --head "${HEAD}"
 
   characterization-report:
     name: sim/characterization generate.py --check (T1 item 8 aggregate, no PDK / no simulator)
@@ -892,6 +921,12 @@ jobs:
         run: cd sim && python3 -m unittest discover -s harness/tests -t . -p 'test_evidence_store.py' -v
 
       - name: Stored-evidence manifests are valid and no stored bytes are committed
+        # pull_request: the expression checks the PR head (the merge commit's
+        # second parent). merge_group (merge queue): the first operand is
+        # empty, so this falls back to github.sha -- the trial-merge commit
+        # itself, present in the depth-0 checkout above -- which is exactly
+        # the tree the queue wants checked. No edit needed; verified for the
+        # merge-group rollout (issue #308).
         run: python3 scripts/check_artifact_manifests.py check --tree "${{ github.event.pull_request.head.sha || github.sha }}"
 
   layout-check:

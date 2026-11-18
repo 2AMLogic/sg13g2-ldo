@@ -155,6 +155,42 @@ class Cases(Repo):
         rc, out = self.run_check("pr")
         self.assertEqual(rc, 2, out)
 
+    # Merge-queue cases (issue #308, mirroring sky130-comparator#332): on a
+    # merge_group event the workflow passes the trial merge's base/head as
+    # raw commit SHAs (github.event.merge_group.base_sha / head_sha) instead
+    # of "origin/<base_ref>" + the PR head. "Unavailable base fails closed"
+    # is the same code path as test_missing_base_fails_closed; the SHA-flavor
+    # variant below pins the queue's shape explicitly.
+
+    def test_merge_group_sha_base_passes(self):
+        self.seed()
+        base_sha = self.g("rev-parse", "base").strip()
+        self.write("sim/exp/records/rec2/new.txt", "new\n")
+        self.commit()
+        rc, out = self.run_check(base_sha)
+        self.assertEqual(rc, 0, out)
+
+    def test_merge_group_sha_base_catches_mutation(self):
+        self.seed()
+        base_sha = self.g("rev-parse", "base").strip()
+        self.write("sim/exp/records/rec1/file.txt", "mutated\n")
+        self.commit()
+        rc, out = self.run_check(base_sha)
+        self.assertEqual(rc, 1, out)
+        self.assertIn("sim/exp/records/rec1/file.txt", out)
+
+    def test_merge_group_empty_base_fails_closed(self):
+        self.seed()
+        rc, out = self.run_check("")
+        self.assertEqual(rc, 2, out)
+        self.assertIn("cannot resolve base", out)
+
+    def test_merge_group_unavailable_sha_base_fails_closed(self):
+        self.seed()
+        rc, out = self.run_check("f" * 40)
+        self.assertEqual(rc, 2, out)
+        self.assertIn("cannot resolve base", out)
+
     def write_allow(self, entries, raw=None):
         self.write(ALLOW, raw if raw is not None
                    else json.dumps({"exceptions": entries}))
