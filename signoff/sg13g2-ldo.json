@@ -119,7 +119,7 @@
     ],
     "8": {
       "file": "sim/characterization/characterization-envelope.json",
-      "content_hash": "sha256:61676e9de0f7cdcfe488b7678a982e9b61aa40f3954aa376f6cab8068ded1e87"
+      "content_hash": "sha256:8dfecb4c53caf305ddc4eed5c52e34eab9b55d78c8c861b264c204c0b76e146a"
     },
     "9": {
       "file": "signoff/evidence/item9-testbenches.envelope.json",
