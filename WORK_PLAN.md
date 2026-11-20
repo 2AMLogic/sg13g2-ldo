@@ -13,7 +13,7 @@ _None._
 
 `loom:very-important` (one counts per workspace); every stage takes these first.
 
-_None._
+- **#317**: Row 7 Iq envelope: shared row-envelope module and klt sim record (child of #316)
 
 ## Important
 
@@ -25,7 +25,7 @@ _None._
 
 Human-approved issues (`loom:issue`) ready for implementation — excluding held (`loom:blocked`/`loom:operator`/`loom:frozen`), `loom:building`, and issues closed by an open `loom:pr` PR (listed under Approved).
 
-_None._
+- **#317**: Row 7 Iq envelope: shared row-envelope module and klt sim record (child of #316)
 
 ## In Progress
 
@@ -54,6 +54,9 @@ Issues carrying `loom:curated`.
 - **#190**: SG13CMOS5L: integrate ldo_ilimit_cmos5l into the core with refreshed PVT/startup/loop-gain and layout/LVS evidence *(curated)* *(held)*
 - **#218**: sim: run the two-injection loop-gain bench at DR-0015 point P3 (experiment E2) *(curated)* *(held)*
 - **#219**: sim: f_ug-vs-Cc probe at heavy load, DR-0015 point P3 (experiment E3) *(curated)* *(held)*
+- **#312**: Post-layout slice 2: klt pex schematic-vs-extracted delta for ratified row 4 (dropout) and the T1 item 7 citation *(curated)*
+- **#313**: sim: replay one loop-gain deck at DR-0015 point P3 on the current batch runner, and retire batch_backend.py's deck-side pre_osdi preamble if it is the cause (klayout-tools#5766 hold on #218 and #219) *(curated)*
+- **#317**: Row 7 Iq envelope: shared row-envelope module and klt sim record (child of #316) *(curated)*
 
 ## Proposed (Architect / Hermit)
 
@@ -69,13 +72,13 @@ Issues carrying `loom:curated`.
 | Bucket | Count |
 |------|-------|
 | Operator merge-risk holds | 0 |
-| Very important | 0 |
+| Very important | 1 |
 | Important | 1 |
-| Ready (`loom:issue`, net of holds/building/merge-pending) | 0 |
+| Ready (`loom:issue`, net of holds/building/merge-pending) | 1 |
 | In Progress (`loom:building`) | 0 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
-| Curated | 5 |
+| Curated | 8 |
 | Architect / Hermit proposals | 2 |
 | Active epics | 1 |
 <!-- guide:plan-body:end -->
