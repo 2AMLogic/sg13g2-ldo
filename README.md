@@ -66,7 +66,7 @@ changed by the record.
 | Dropout @ 50 mA | < 300 mV worst corner | < 200 mV | RATIFIED as a shared target (stretch not ratified); branch compliance differs — see the row 4 branch note below |
 | Line / load regulation | < 5 mV/V; < 1% over full load, inside the accuracy window | — | OPEN — unratified (informational loaded line / multi-Vin load regulation measured at discrete points; not ratified) |
 | PSRR | > 50 dB @ 1 kHz, > 20 dB @ 100 kHz | > 60 dB @ 1 kHz | OPEN — unratified (1 mA / 1 µF only; `Cc` un-cornered) |
-| Iq (excluding load) | < 30 µA at no load and at full load | < 10 µA | OPEN — unratified (informational full-load Iq measured at Vin = 3.30 V only; not ratified) |
+| Iq (excluding load) | < 30 µA at no load and at full load | < 10 µA | OPEN — unratified (graded `klt sim` envelope at both loads over the input window, #317; not ratified) |
 | Current limit | 65–80 mA brickwall over PVT; short-survivable | — | OPEN — unratified (not implemented; statistical) |
 | Startup | monotonic, controlled ramp, inside ±2% within 3 ms of enable | — | OPEN — unratified (measured on the SG13CMOS5L core with proposed methodology: all 135 grid points fail the overshoot / monotonicity checks; not ratified) |
 | Stability | 0–50 mA, C_out 0.33–4.7 µF effective, ESR 0–500 mΩ; PM ≥ 45°, GM ≥ 10 dB worst corner | capless variant (separate fork) | OPEN — unratified (one load/C_out/ESR point only) |

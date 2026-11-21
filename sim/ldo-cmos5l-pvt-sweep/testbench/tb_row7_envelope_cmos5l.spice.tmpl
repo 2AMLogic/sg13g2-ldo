@@ -1,0 +1,61 @@
+* sg13g2-ldo -- SG13CMOS5L row-7 (Iq excluding load) GRADED corner matrix.
+* Generated from sim/ldo-cmos5l-pvt-sweep/testbench/tb_row7_envelope_cmos5l.spice.tmpl
+* by sim/ldo-cmos5l-pvt-sweep/row7_envelope.py -- edit the template, never a
+* generated row7-envelope/<record-id>/tb.spice.
+*
+* Same circuit, rails, VREF, IBIAS, Cout and EN tie as
+* tb_row4_envelope_cmos5l.spice.tmpl (and the dcsweep bench behind the DR-0007
+* evidence base), with two differences:
+*
+*   1. Iload defaults to 0 (each step below sets its own load), and
+*   2. this deck is a CIRCUIT BODY ONLY with no analysis of its own.  Where
+*      row 4 declares one scalar `dc` analysis whose `.meas` cards `klt sim`
+*      composes, this bench declares SIX `analysis_steps[]` -- one operating
+*      point per (Vin, Iload) in {2.97, 3.30, 3.63} V x {0, 50 mA} -- each
+*      `alter`ing this deck's own Vin / Iload sources and measuring the raw
+*      supply current.  The graded Iq figures are then DERIVED `expr`
+*      measurements over those step results:
+*
+*        iq_noload_<vin>_a    = <vin>_i0.isup_a            (Iload = 0)
+*        iq_fullload_<vin>_a  = <vin>_i50m.isup_a - 0.05   (Iload = 50 mA)
+*
+*      all six with `limits {max: 30e-6}` and `spec_row: dr0007-row7-iq`
+*      declared INSIDE request.json.  That is the whole point of this bench:
+*      Iq-by-difference is graded by `klt sim` itself (klayout-tools #2482
+*      analysis_steps + derived expr measurements), computed inside ngspice at
+*      full double precision from the step's `isup_a` vector -- never as an
+*      offline subtraction of two printed ~50 mA currents -- so the per-corner
+*      and whole-matrix verdict in report.json is the tool's own.
+*
+* Iq definition (identical to the DR-0007 row-7 evidence base, `iq_a`): the
+* total current drawn from VIN minus the load current sunk by Iload --
+* i.e. the core's quiescent current INCLUDING the 2 uA mirror-reference leg
+* the ideal IBIAS sink draws through the core and INCLUDING the feedback
+* divider's standing current, EXCLUDING the load.  Exclusions this bench's
+* evidence must be read with are stated in row7_envelope.py's summary:
+* the ideal 0.90 V reference and ideal 2 uA IBIAS sink mean NO on-chip
+* reference- or bias-generator current is included (their blocks do not
+* exist here), and the #190 current limiter is not in this netlist.
+*
+* No .lib cards, .temp card, analysis line or .control block: `klt sim`
+* composes all of those from row7-envelope/<record-id>/request.json (a
+* deck-side `.control pre_osdi` block would double-load every OSDI binary
+* and fail the corner -- see row4_envelope.py's header for the incident).
+*
+* Design netlist under test: @@DESIGN_NETLIST@@
+* (a repo-relative .include, resolved by ngspice against this file's own
+* directory, so these bytes are host-independent and the envelope's
+* provenance.input.content_hash reproduces on any checkout.)
+
+.options tnom=27
+
+.include "@@DESIGN_NETLIST@@"
+
+Vin VIN 0 dc 3.30
+Vref VREF 0 dc 0.90
+Ibias IBIAS 0 dc 2u
+Iload VOUT 0 dc 0
+Cout VOUT 0 1u
+
+* EN tied to VIN (enabled; tracks the supply).
+Xtop VIN VOUT 0 VREF IBIAS VIN ldo_core_cmos5l

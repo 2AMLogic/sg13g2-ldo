@@ -742,6 +742,19 @@ jobs:
         run: |
           python3 sim/ldo-cmos5l-pvt-sweep/row4_envelope.py check
 
+      - name: Row-7 graded klt sim envelope reproduces and self-verifies (#317)
+        # Offline, stdlib-only: no simulator and no PDK. Same anti-rot gate as
+        # the row-4 one above, for the row-7 Iq envelope: every committed
+        # row7-envelope/<record-id>/ request and summary file reproduces from
+        # the template plus the record's own provenance, the report's hash pins
+        # match the committed tb.spice / corners.lib, the request still
+        # declares the DR-0007 row-7 limit (max 30 uA) on exactly the six
+        # graded derived measurements with spec_row dr0007-row7-iq, and no
+        # ungraded measurement claims a row. The row stays Open; the record
+        # characterization cites is pinned in sim/characterization/selection.json.
+        run: |
+          python3 sim/ldo-cmos5l-pvt-sweep/row7_envelope.py check
+
       - name: E1 record byte-check (e1_oppoints.py check, issue #158)
         # Offline, stdlib-only: no simulator and no PDK. Regenerates the E1
         # reduction CSV/JSON and record md from the committed raw exports and

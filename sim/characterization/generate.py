@@ -94,6 +94,29 @@ DC_COND_LOAD = ("load regulation (V(0 mA) - V(50 mA)) / V(0 mA) at the labelled 
                 "ideal 0.90 V reference; 45-point corner grid")
 DC_COND_IQ = "50 mA load, Vin = 3.30 V, |i(Vin)| - Iload; ideal 0.90 V reference and 2 uA Ibias sink; 45-point corner grid"
 
+# Row 7's graded envelope (issue #317): a `klt sim` request whose limits live
+# inside the request, so the per-corner and whole-matrix verdict is the tool's
+# own. Six operating points per corner (Vin x Iload), graded as derived expr
+# measurements over each step's raw supply current -- never an offline
+# subtraction of printed ~50 mA currents.
+ROW7_SPEC_ROW_ID = "dr0007-row7-iq"
+ROW7_VINS = (("v2v97", 2.97), ("v3v30", 3.30), ("v3v63", 3.63))
+ROW7_LOADS = (("i0", 0.0), ("i50m", 0.050))
+ROW7_GRADED = tuple(f"iq_{ln}_{vn}_a" for vn, _ in ROW7_VINS for ln, _ in ROW7_LOADS)
+ROW7_TARGET_A = 30e-6
+ROW7_ENV_COND = ("Vin {2.97, 3.30, 3.63} V x Iload {0, 50 mA} per corner (six analysis_steps "
+                 "operating points), Iq = |i(VIN)| - Iload graded by `klt sim` as derived-expr "
+                 "measurements with limits in the request (spec_row dr0007-row7-iq); solver "
+                 "tolerances pinned reltol=1e-9 abstol=1e-15, noise bound ~5.1e-11 A; ideal "
+                 "0.90 V reference and ideal 2 uA IBIAS sink, no #190 limiter; 45-point corner "
+                 "grid")
+# The envelope is a DIFFERENT bench from the legacy PVT sweep (direct OP solves
+# on the fleet's ngspice at pinned tolerances vs a nested-sweep row harvest at
+# ngspice-46 defaults), so agreement with the legacy columns is a consistency
+# cross-check with a loose band, not a reproduction claim. Observed worst
+# delta at Vin = 3.30 V: 0.37 uA no-load, 0.26 uA full-load.
+ROW7_CROSS_BAND_UA = 1.0
+
 PVT_NUMERIC = [
     "iq_a", "vout_no_load_v", "line_reg_mv_per_v", "dropout_v_50ma",
     "dropout_v_50ma_floor", "vout_at_vinmax_50ma_v", "load_reg_pct",
@@ -780,6 +803,196 @@ def load_row10(root: Path, sel: dict, rec: dict, pvt_rows: list[dict], sources: 
             "dr": blk["decision_record"], "ceiling_hz": next(iter(ceilings))}
 
 
+def _r7_corner_id(row: dict) -> str:
+    res = row["res_section"]
+    res = res[len("res_"):] if res.startswith("res_") else res
+    return f"mos_{row['corner']}__res_{res}__cap_typ/novdd/{row['temp_c']}C"
+
+
+def load_row7_envelope(root: Path, sel: dict, pvt_rows: list[dict],
+                       dcev: dict, sources: list) -> dict:
+    """Validate and return the pinned row-7 graded `klt sim` envelope (issue #317).
+
+    Fail-closed on every tamper (hard GenError): files missing or different
+    from their pins, the report's own hash pins disagreeing with the committed
+    tb.spice / corners.lib, a request that does not declare the row target as
+    limits on exactly the six graded measurements with the right spec_row
+    tags, a matrix that is not a whole, clean, fully-resolved 45-corner pass
+    with every (Vin, Iload) step ok, a summary whose worst-case figures
+    disagree with the report, or envelope values that disagree with the
+    legacy PVT / DC-informational columns beyond the stated cross-check band.
+    Design drift (the tree's netlists moved since the record) is NOT a
+    GenError: it is reported as stale_components, which fails the artifact's
+    completeness check the same way the circuit record's own staleness does.
+    """
+    blk = sel.get("row7_envelope_evidence")
+    if not isinstance(blk, dict):
+        raise GenError("selection.json has no row7_envelope_evidence block")
+    rid = blk["id"]
+    paths = {}
+    for key in ("report_json", "summary_json", "request_json", "tb_spice",
+                "corners_lib", "provenance_json"):
+        entry = blk["files"][key]
+        if f"/{rid}/" not in entry["path"]:
+            raise GenError(f"row-7 envelope file {entry['path']} is not under the selected id {rid}")
+        paths[key] = pinned(root, entry, f"row7_envelope_{key}", sources)
+    report = json.loads(paths["report_json"].read_text(encoding="utf-8"))
+    request = json.loads(paths["request_json"].read_text(encoding="utf-8"))
+    prov = json.loads(paths["provenance_json"].read_text(encoding="utf-8"))
+    summary = json.loads(paths["summary_json"].read_text(encoding="utf-8"))
+
+    # --- the report's own pins on what ran ---------------------------------
+    tb_hash = "sha256:" + sha256_file(paths["tb_spice"])
+    got_in = ((report.get("provenance") or {}).get("input") or {}).get("content_hash")
+    if got_in != tb_hash:
+        raise GenError(f"row-7 envelope report pins input {got_in}, committed tb.spice is {tb_hash}")
+    nl = report.get("netlist")
+    nl_path = nl.get("path") if isinstance(nl, dict) else nl
+    if nl_path != "tb.spice" and not str(nl_path).endswith(f"row7-envelope/{rid}/tb.spice"):
+        raise GenError(f"row-7 envelope report netlist is {nl_path!r}, not this record's tb.spice")
+    lib_hash = sha256_file(paths["corners_lib"])
+    env_lib = (report.get("environment") or {}).get("models_lib_sha256")
+    if env_lib != lib_hash:
+        raise GenError(f"row-7 envelope report pins models_lib {env_lib}, "
+                       f"committed corners.lib is {lib_hash}")
+    if prov.get("record_id") != rid:
+        raise GenError(f"row-7 envelope provenance names record {prov.get('record_id')!r}, "
+                       f"selected {rid!r}")
+
+    # --- the request grades the row target, with the tool's own verdict -----
+    meas = {m["name"]: m for m in request.get("measurements", [])}
+    if tuple(meas) != ROW7_GRADED:
+        raise GenError(f"row-7 envelope request measurements {tuple(meas)} differ from "
+                       f"the six graded figures {ROW7_GRADED}")
+    for name, m in meas.items():
+        if m.get("limits") != {"max": ROW7_TARGET_A}:
+            raise GenError(f"row-7 envelope measurement {name} declares limits "
+                           f"{m.get('limits')}, not the DR-0007 row-7 target "
+                           f"{{'max': {ROW7_TARGET_A}}}")
+        if m.get("spec_row") != ROW7_SPEC_ROW_ID:
+            raise GenError(f"row-7 envelope measurement {name} carries spec_row "
+                           f"{m.get('spec_row')!r}, not {ROW7_SPEC_ROW_ID!r}")
+    steps = request.get("analysis_steps")
+    if not isinstance(steps, list) or len(steps) != len(ROW7_VINS) * len(ROW7_LOADS):
+        raise GenError(f"row-7 envelope declares {len(steps) if isinstance(steps, list) else steps!r}"
+                       " analysis_steps, not six (Vin x Iload) operating points")
+    vin_by_name, load_by_name = dict(ROW7_VINS), dict(ROW7_LOADS)
+    if {s.get("name") for s in steps} != {f"{vn}_{ln}" for vn in vin_by_name for ln in load_by_name}:
+        raise GenError("row-7 envelope step names are not the six (Vin, Iload) points")
+    for s in steps:
+        vn, ln = s["name"].rsplit("_", 1)
+        alter = s.get("alter") or {}
+        if (alter.get("Vin"), alter.get("Iload")) != (vin_by_name[vn], load_by_name[ln]):
+            raise GenError(f"row-7 envelope step {s['name']!r} alters {alter}, "
+                           "not its own (Vin, Iload) bias")
+        sm = s.get("measurements") or []
+        if len(sm) != 1 or sm[0].get("name") != "isup_a" or sm[0].get("limits") \
+                or sm[0].get("spec_row"):
+            raise GenError(f"row-7 envelope step {s['name']!r} must report exactly the "
+                           "ungraded, untagged raw supply current isup_a")
+    ngs = (request.get("options") or {}).get("ngspice_options") or {}
+    if ngs.get("reltol") is None or ngs.get("abstol") is None:
+        raise GenError("row-7 envelope request does not pin solver tolerances "
+                       "(options.ngspice_options reltol/abstol); the stated "
+                       "numerical-noise bound would be unbacked")
+
+    # --- a whole, clean, fully-resolved matrix ------------------------------
+    want_ids = {_r7_corner_id(r) for r in pvt_rows}
+    by_cid: dict = {}
+    for c in report.get("corners", []):
+        cid = c.get("corner_id")
+        if cid in by_cid:
+            raise GenError(f"row-7 envelope reports corner {cid} twice")
+        by_cid[cid] = c
+    if set(by_cid) != want_ids or len(by_cid) != 45:
+        missing = sorted(want_ids - set(by_cid))[:3]
+        raise GenError(f"row-7 envelope corner set incomplete or malformed "
+                       f"({len(by_cid)} corners, missing {missing}...)")
+    for field, want in (("status", "pass"), ("passed", 45), ("failed", 0),
+                        ("errored", 0), ("inconclusive", 0)):
+        if report.get(field) != want:
+            raise GenError(f"row-7 envelope {field} is {report.get(field)!r}, not {want!r}")
+    values: dict = {}
+    for cid, c in by_cid.items():
+        errs = [d for d in c.get("diagnostics", []) if d.get("severity") == "error"]
+        if errs or c.get("status") != "pass":
+            raise GenError(f"row-7 envelope corner {cid} is not clean: "
+                           f"status {c.get('status')!r}, {len(errs)} error diagnostics")
+        st = c.get("steps", [])
+        if len(st) != len(ROW7_VINS) * len(ROW7_LOADS) or any(s.get("status") != "ok" for s in st):
+            raise GenError(f"row-7 envelope corner {cid} steps are not six clean "
+                           "operating points")
+        m = {x["name"]: x for x in c.get("measurements", [])}
+        for n in ROW7_GRADED:
+            v = m.get(n, {}).get("value")
+            if v is None or not math.isfinite(v) or m[n].get("status") != "pass":
+                raise GenError(f"row-7 envelope corner {cid} measurement {n} is "
+                               f"{m.get(n)}: not a resolved, passing value")
+            values[(cid, n)] = v
+    cov = (report.get("coverage") or {}).get("measurements_with_limits")
+    if cov != len(ROW7_GRADED):
+        raise GenError(f"row-7 envelope measurements_with_limits is {cov!r}, "
+                       f"not {len(ROW7_GRADED)}")
+
+    # --- the summary tells the truth about the report ----------------------
+    summ = summary.get("summary") or {}
+    for family, names in (("worst_noload", [n for n in ROW7_GRADED if "_i0_" in n]),
+                          ("worst_fullload", [n for n in ROW7_GRADED if "_i50m_" in n])):
+        want_v = max(values[(cid, n)] for cid in by_cid for n in names)
+        if not math.isclose(summ.get(family, {}).get("iq_a", float("nan")), want_v,
+                            rel_tol=1e-12, abs_tol=1e-15):
+            raise GenError(f"row-7 envelope summary {family} "
+                           f"{summ.get(family)} disagrees with the report's worst "
+                           f"value {want_v}")
+    if not summ.get("definitive"):
+        raise GenError("row-7 envelope summary is not definitive; an incomplete "
+                       "or failing matrix must never be cited")
+    if float(summ.get("numerical_noise_bound_a", 1)) > 1e-9:
+        raise GenError("row-7 envelope summary lost its numerical-noise bound")
+    exclusions = " ".join(summ.get("exclusions", []))
+    for needle in ("0.90 V reference", "IBIAS", "#190"):
+        if needle not in exclusions:
+            raise GenError(f"row-7 envelope summary exclusions dropped: {needle!r}")
+
+    # --- design freshness: the tree vs the record's own pins ---------------
+    fresh = {}
+    for pin in blk["design_freshness_pins"]:
+        p = root / pin["path"]
+        if not p.is_file():
+            raise GenError(f"row-7 envelope design pin target missing: {pin['path']}")
+        actual = sha256_file(p)
+        recorded = (prov.get("input_sha256") or {}).get(pin["path"])
+        if recorded != pin["sha256"]:
+            raise GenError(f"row-7 envelope provenance recorded {pin['path']} as "
+                           f"{recorded}, selection pins {pin['sha256']}")
+        fresh[pin["path"]] = {"pinned_sha256": pin["sha256"], "actual_sha256": actual,
+                              "matches": actual == pin["sha256"]}
+        sources.append({"role": "row7_envelope_design_freshness", "path": pin["path"],
+                        "sha256": actual, "pinned": True})
+    stale_components = sorted(k for k, v in fresh.items() if not v["matches"])
+
+    # --- cross-check against the legacy benches (consistency, not identity) -
+    dc_by_key = dcev["by_key"]
+    for i, r in enumerate(pvt_rows):
+        cid = _r7_corner_id(r)
+        nl33 = abs(values[(cid, "iq_i0_v3v30_a")] - num(r, "iq_a", "pvt")) * 1e6
+        if nl33 > ROW7_CROSS_BAND_UA:
+            raise GenError(f"row-7 envelope no-load Iq at Vin 3.30 V disagrees with the "
+                           f"legacy iq_a at {cid}: {values[(cid, 'iq_i0_v3v30_a')] * 1e6:.4f} uA "
+                           f"vs {float(r['iq_a']) * 1e6:.4f} uA (band {ROW7_CROSS_BAND_UA} uA)")
+        dcv = dc_by_key[(r["corner"], r["temp_c"], r["res_section"])][0]
+        fl33 = abs(values[(cid, "iq_i50m_v3v30_a")] - dcv["iq_fullload_excl_load_a"]) * 1e6
+        if fl33 > ROW7_CROSS_BAND_UA:
+            raise GenError(f"row-7 envelope full-load Iq at Vin 3.30 V disagrees with the "
+                           f"offline DC figure at {cid}: {values[(cid, 'iq_i50m_v3v30_a')] * 1e6:.4f} uA "
+                           f"vs {dcv['iq_fullload_excl_load_a'] * 1e6:.4f} uA "
+                           f"(band {ROW7_CROSS_BAND_UA} uA)")
+    return {"cfg": blk, "rid": rid, "values": values, "summary": summ,
+            "fresh": fresh, "stale_components": stale_components,
+            "report_rel": blk["files"]["report_json"]["path"],
+            "summary_rel": blk["files"]["summary_json"]["path"]}
+
+
 # --------------------------------------------------------------------------- #
 # per-row grading: shared context, one module-level function per spec row
 # --------------------------------------------------------------------------- #
@@ -814,6 +1027,7 @@ class RowContext:
     dcev: dict
     su: dict
     r10: dict
+    r7: dict
     ccw: dict
     cc_tol_rel: str
     col: Callable[[str], list]
@@ -887,6 +1101,7 @@ def _row_context(root: Path) -> RowContext:
     dc_rel = dcev["summary_path"]
     su = load_startup(root, sel, sources)
     r10 = load_row10(root, sel, rec, prow, sources)
+    r7 = load_row7_envelope(root, sel, prow, dcev, sources)
 
     def dc_col(name, scale=1.0, valid=None):
         """(values, ambiguous-index-set) over the pvt row order. Invalid points
@@ -922,7 +1137,7 @@ def _row_context(root: Path) -> RowContext:
                       bc=bc, ac_cond=ac_cond, R=R, dr_rel=dr_rel, pvt_rel=pvt_rel,
                       dc_rel=dc_rel, dev_path=dev_path, evidence_state=evidence_state,
                       stale=stale, fresh_checks=fresh_checks, sources=sources,
-                      dcev=dcev, su=su, r10=r10, ccw=ccw, cc_tol_rel=cc_tol_rel,
+                      dcev=dcev, su=su, r10=r10, r7=r7, ccw=ccw, cc_tol_rel=cc_tol_rel,
                       col=col, dc_col=dc_col)
 
 
@@ -1102,36 +1317,66 @@ def row_6_psrr(ctx: RowContext) -> dict:
 
 
 def row_7_iq(ctx: RowContext) -> dict:
-    """Row 7, Iq: no-load record column plus the full-load figure derived
-    offline from the committed raw DC grid."""
+    """Row 7, Iq: the legacy no-load column plus the graded `klt sim` envelope
+    (issue #317), whose six limits-bearing derived measurements make the
+    per-corner and whole-matrix verdict the tool's own at both load states
+    over the full supply window."""
     iq = ctx.col("iq_a")
     iq_uA = [(v * 1e6, p) for v, p in iq]
-    m7 = metric("Iq, no load", "uA", "lt", 30.0, "iq_a", ctx.pvt_rel, iq_uA, ctx.bc["dc_iq_and_vout"],
-                note="column iq_a is in A; converted to uA (x1e6) for the row's unit")
+    m7 = metric("Iq, no load (legacy record column, Vin = 3.30 V)", "uA", "lt", 30.0,
+                "iq_a", ctx.pvt_rel, iq_uA, ctx.bc["dc_iq_and_vout"],
+                note="column iq_a is in A; converted to uA (x1e6) for the row's unit. "
+                     "Superseded by the graded envelope metrics below at the other "
+                     "supplies; kept for continuity with the DR-0007 evidence base.")
     sup = ctx.sel["superseded_evidence"][0]
-    fl_pts, fl_bad = ctx.dc_col("iq_fullload_excl_load_a", 1e6, valid="iq_fullload_valid")
-    proxy = [v for v, _ in ctx.dc_col("iq_fullload_noise_proxy_a", 1e6)[0]]
-    mfl = metric("Iq at full load (50 mA), load current excluded", "uA", "lt", 30.0,
-                 "iq_fullload_excl_load_a", ctx.dc_rel, fl_pts, DC_COND_IQ, ambiguous=fl_bad,
-                 note="Derived offline as |i(Vin)| - Iload from the committed raw DC grid (column in A, "
-                      "converted to uA). Precision caveat: the grid is printed to 9 significant digits, "
-                      "so a ~22 uA difference of two ~50 mA currents is quantized at 1e-10 A (0.0001 uA); "
-                      "solver noise beyond that floor is not bounded by this data. Invalid points are "
-                      "counted as ambiguous, never dropped. An older record's full-load figure "
-                      f"({sup['quoted_substring']}) is on a superseded design and is NOT used.")
-    mfl["n_invalid"] = len(fl_bad)
-    mfl["precision_floor_uA"] = rnd(max(proxy))
+
+    # The graded envelope: 45 corners x 3 Vin x 2 load states, values in A.
+    r7 = ctx.r7
+    vin_labels = {vn: f"{vv:.2f}" for vn, vv in ROW7_VINS}
+    by_point: dict = {}
+    for (cid, n), v in r7["values"].items():
+        by_point.setdefault(cid, {})[n] = v
+    env_metrics = []
+    for family, label, cond_extra in (
+            ("i0", "Iq, no load (graded `klt sim` envelope, Vin 2.97-3.63 V)",
+             "the verdict cited here is `klt sim`'s own (limits inside the request)"),
+            ("i50m", "Iq at full load (50 mA), load current excluded (graded `klt sim` "
+             "envelope, Vin 2.97-3.63 V)",
+             "the difference is a derived-expr measurement inside ngspice, never an "
+             "offline subtraction")):
+        pts = []
+        for i, prow_row in enumerate(ctx.prow):
+            cid = _r7_corner_id(prow_row)
+            for vn, _vv in ROW7_VINS:
+                n = f"iq_{family}_{vn}_a"
+                at = dict(ctx.pid[i])
+                at["vin_v"] = vin_labels[vn]
+                pts.append((by_point[cid][n] * 1e6, at))
+        cond = ROW7_ENV_COND + "; " + cond_extra
+        m = metric(label, "uA", "lt", 30.0, ", ".join(n for n in ROW7_GRADED
+                                                      if f"_{family}_" in n),
+                   r7["report_rel"], pts, cond,
+                   note="values in A in the envelope, converted to uA (x1e6). "
+                        "Numerical-noise bound for the full-load difference: "
+                        f"{r7['summary']['numerical_noise_bound_note']}. "
+                        "An older record's full-load figure "
+                        f"({sup['quoted_substring']}) is on a superseded design and is NOT used.")
+        env_metrics.append(m)
+    mnl, mfl = env_metrics
     mfl["superseded_statement"] = {"source": sup["statement_source"], "describes": sup["describes"]}
-    row = _make_row(ctx.R[7], [m7, mfl], "partial", [
-        "Iq at full load is measured at Vin = 3.30 V only (no other supplies)",
-        "full-load Iq is a difference of two ~50 mA currents; quantized at 1e-10 A, solver noise not bounded beyond that",
-        "ideal 0.90 V reference and ideal Ibias sink: reference/bias-generator current excluded; corner grid only",
-    ], ctx.evidence_state, ctx.dr_rel,
-        stretch_note=f"stretch < 10 uA not met: max observed no-load Iq {m7['worst_case']['value']:.4g} uA"
-                     + (f", max full-load Iq {mfl['worst_case']['value']:.4g} uA." if mfl["worst_case"] else "."))
-    row["verdict"] = ("fail" if "fail" in (m7["verdict"], mfl["verdict"])
-                      else "ambiguous" if mfl["verdict"] == "ambiguous"
-                      else "pass_partial_coverage")
+    row = _make_row(ctx.R[7], [m7, mnl, mfl], "full", [], ctx.evidence_state, ctx.dr_rel,
+                    stretch_note=f"stretch < 10 uA not met: max observed no-load Iq "
+                                 f"{m7['worst_case']['value']:.4g} uA, max graded no-load "
+                                 f"{mnl['worst_case']['value']:.4g} uA, max graded full-load "
+                                 f"{mfl['worst_case']['value']:.4g} uA.",
+                    notes=list(r7["summary"]["exclusions"]) + [
+                        "graded by `klt sim` with limits inside the request; the row "
+                        "stays Open under DR-0007 -- this is a measurement against the "
+                        "draft target, not a ratification",
+                    ])
+    row["verdict"] = ("fail" if "fail" in (m7["verdict"], mnl["verdict"], mfl["verdict"])
+                      else "ambiguous" if "ambiguous" in (mnl["verdict"], mfl["verdict"])
+                      else "pass_full_coverage")
     return row
 
 
@@ -1383,6 +1628,12 @@ def _assemble_outputs(ctx: RowContext, rows: list) -> tuple[dict, dict]:
     chk("PVT grid complete (5 process x 3 temperature x 3 resistor corner = 45 points, all numeric fields finite)", True)
     chk("DC informational summary: pinned, same record, 45 corners once each, finite, validity fields True/False, "
         "raw grids match inventory hashes", True)
+    chk("row-7 graded envelope: pinned, whole clean 45-corner matrix, six limits-bearing "
+        "measurements tagged dr0007-row7-iq, every (Vin, Iload) step ok, summary agrees "
+        "with the report, agrees with the legacy columns at Vin 3.30 V", True)
+    chk("row-7 envelope is current against the design netlists", not ctx.r7["stale_components"],
+        "the envelope's recorded design-netlist hashes match the tree" if not ctx.r7["stale_components"]
+        else "stale against the design: " + ", ".join(ctx.r7["stale_components"]))
     chk("every target row appears exactly once", sorted(r["id"] for r in rows) == list(range(1, 11)),
         f"rows: {[r['id'] for r in rows]}")
     chk("every row carries an allowed verdict", all(r["verdict"] in ROW_VERDICTS for r in rows))
@@ -1515,9 +1766,12 @@ def _fmt_at(at):
     if not at:
         return "-"
     base = f"{at['corner']}/{at['temp_c']}C/{at['res_section']}"
-    if "vin_v" in at:
+    if "vin_v" in at and "load_ma" in at:
         base += (f"/Vin {at['vin_v']:g}V/{at['load_ma']:g}mA/{at['cout_nf']:g}nF/"
                  f"ESR {at['esr_mohm']:g}mohm")
+    elif "vin_v" in at:
+        # row-7 envelope points: corner + supply, load state is in the metric
+        base += f"/Vin {at['vin_v']}V"
     return base
 
 
