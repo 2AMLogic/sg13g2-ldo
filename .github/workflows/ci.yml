@@ -669,6 +669,14 @@ jobs:
       - name: Preflight output-validation tests (--check-env gate, stub simulator, no PDK)
         run: python3 -m unittest discover -s sim/tools -p 'test_preflight.py' -v
 
+      - name: OSDI libLLVM21 helper tests (dpkg-deb diagnostic fixtures; no PDK / no network)
+        # Issue #325: drives ensure_libllvm21 from build-osdi.sh in a stub
+        # environment (PATH holding only cat, empty LLVM cache, decoy
+        # LD_LIBRARY_PATH) so the missing-dpkg-deb diagnostic stays one
+        # actionable install instruction and a populated cache still short-
+        # circuits without the extractor.
+        run: python3 -m unittest discover -s sim/tools -p 'test_build_osdi.py' -v
+
       - name: Shared @@TOKEN@@ renderer tests (byte-identity vs the old sed chains; no PDK / no simulator)
         # Issue #236: sim/tools/render_deck.py is the one template renderer
         # every sweep/campaign driver calls. Its tests freeze each pre-#236
