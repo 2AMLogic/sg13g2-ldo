@@ -434,7 +434,7 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:61676e9de0f7cdcfe488b7678a982e9b61aa40f3954aa376f6cab8068ded1e87",
+        "content_hash": "sha256:9802043baa5ba3545a485cc05ab399fb0a96f38d5d3cb590ed1c11723a154d30",
         "input_verified": null,
         "exit_status": 0,
         "attestation": {
@@ -457,7 +457,7 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:92d16ad81138fb21c142234a1b26fd41abc189022b9a8c92ed457ff3f18b8389",
+        "content_hash": "sha256:a22b4fad231b37d84a59601b83ed9a999fe7b60aa89b3377f71ef8dcc9168764",
         "input_verified": true,
         "exit_status": 0,
         "artifact_binding": {
@@ -466,15 +466,15 @@
             "path": "signoff/evidence/item9-testbenches.inventory.json",
             "scope": "repo"
           },
-          "content_hash": "sha256:92d16ad81138fb21c142234a1b26fd41abc189022b9a8c92ed457ff3f18b8389",
+          "content_hash": "sha256:a22b4fad231b37d84a59601b83ed9a999fe7b60aa89b3377f71ef8dcc9168764",
           "input_verified": true,
-          "summary": "T1 item 9 (Testbenches shipped): 123/123 attestation checks passed (klt signoff --attest)",
+          "summary": "T1 item 9 (Testbenches shipped): 128/128 attestation checks passed (klt signoff --attest)",
           "source": "signoff/evidence/item9-testbenches.inventory.json",
           "attestation": {
             "producer": "klt signoff --attest",
             "inventory_schema_version": 1,
-            "check_count": 123,
-            "passed_count": 123
+            "check_count": 128,
+            "passed_count": 128
           }
         }
       }

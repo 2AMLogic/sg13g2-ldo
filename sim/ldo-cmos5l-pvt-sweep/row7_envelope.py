@@ -1,0 +1,511 @@
+#!/usr/bin/env python3
+"""Graded `klt sim` corner-matrix envelope for DR-0007 row 7, Iq (issue #317).
+
+Row 7 ("Iq (excluding load) < 30 uA at no load and at full load") is **Open**:
+it measured inside its target at every sampled corner of the legacy evidence
+base (no-load `iq_a` 21.72-24.72 uA over 45 points) but had NO `klt sim`
+envelope carrying `spec_row` tags, so even a ratified row could not be cited
+for T1 item 5, and the full-load half existed only as an OFFLINE subtraction
+of two ~50 mA currents printed to 9 significant digits -- quantized at 1e-10 A
+with solver noise unbounded beyond that floor.
+
+This bench closes both halves the only honest way:
+
+  * the six graded Iq figures are `limits`-bearing measurements **inside the
+    request** (max 30 uA, `spec_row: dr0007-row7-iq`), so the per-corner and
+    whole-matrix verdict in report.json is `klt sim`'s own, and
+  * the full-load difference is NOT computed by this repo: request.json
+    declares six `analysis_steps[]` operating points -- one per (Vin, Iload)
+    in {2.97, 3.30, 3.63} V x {0, 50 mA} (the row's whole supply window x
+    both load states, 45 corners x 6 solves) -- each measuring the raw supply
+    current `isup_a = abs(vin#branch)`; the graded
+    `iq_fullload_<vin>_a = <vin>_i50m.isup_a - 0.05` is a DERIVED `expr`
+    measurement klayout-tools #2482 builds for `klt sim` from the step's own
+    vector, at full double precision inside ngspice.  (Row 4's `.meas WHEN`
+    literal-threshold gap does not apply here: no `.meas` card references
+    another measurement's result; the derived-expr form is the documented,
+    supported expression of a combination-of-solves quantity.)
+
+Numerical-noise bound for the full-load difference (stated in every record's
+summary, per the issue): the request pins the solver tolerances
+`.options reltol=1e-9 abstol=1e-15` (`options.ngspice_options`, echoed as
+`environment.ngspice_options`), and the 50 mA load current is an ideal
+source's exact literal, so the only error channel in the difference is the
+i(VIN) operating-point solve itself:
+
+    |delta Iq| <= reltol * |i(VIN)| + abstol
+               <= 1e-9 * 0.0503 + 1e-15  ~=  5.1e-11 A  (~0.000051 uA)
+
+about 0.0002 % of the 30 uA limit (verified before the fleet run by re-solving
+the nominal and both worst legacy corners with reltol=1e-12/abstol=1e-17 and
+comparing: agreement within 1e-12 A).  `ngspice_init` pins `numdgt=12` so the
+printed values carry 12 digits, ~1e-17 A quantization.
+
+Iq definition (the same quantity the legacy evidence base measured as
+`iq_a`): |i(VIN)| minus the load current -- the core's quiescent current
+including the 2 uA mirror-reference leg sunk through the ideal IBIAS source
+and the feedback divider's standing current, excluding the load.  Disclosure
+this evidence must be read with (stated in every summary, and re-verified by
+`sim/characterization/generate.py`): the ideal 0.90 V reference and the ideal
+2 uA IBIAS sink mean NO on-chip reference- or bias-generator current is
+included -- their blocks do not exist in this bench -- and the evidence is
+for the core WITHOUT the #190 current limiter.  Schematic level, corner grid
+only, no Monte Carlo (DR-0007 classifies the row deterministic).
+
+The row stays Open: ratification is `spec/` + `ratification/` work (#318),
+never a `signoff/` edit.  `klt signoff` item 5 derives coverage from
+`spec_row` tags, so this envelope CANNOT turn the row covered while the
+manifest declares `ratified: false` -- the tags exist so ratification, when
+it happens, has an envelope to cite.
+
+The row-agnostic half of this bench lives in `row_envelope.py` (shared with
+`row4_envelope.py`, issue #317).  This driver owns the measurements,
+thresholds, summary text and the characterization-side selection rules.
+
+    row7_envelope.py submit                 # mint a new record, run it on the
+                                            # EDA batch fleet, write the envelope
+    row7_envelope.py submit --probe         # the same, 2 corners (never cited)
+    row7_envelope.py submit --dry-run       # build the request dir and validate it
+    row7_envelope.py check                  # offline, stdlib-only (CI): every
+                                            # committed record reproduces and
+                                            # self-verifies
+    row7_envelope.py summarise <record-id>  # rewrite that record's summary files
+
+Append-only: `submit` mints a NEW timestamped record id and refuses to touch
+an existing one.  SPICE never runs locally here -- this is a 270-solve grid
+and dispatch hosts submit grids to the fleet (CLAUDE.md host rules).
+"""
+import argparse
+import json
+import os
+import sys
+
+import row_envelope as re_
+
+HERE = re_.HERE
+REPO = re_.REPO
+TEMPLATE = "sim/ldo-cmos5l-pvt-sweep/testbench/tb_row7_envelope_cmos5l.spice.tmpl"
+DESIGN_NETLIST = "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice"
+ROOT = os.path.join(HERE, "row7-envelope")
+
+# DR-0007 row 7, verbatim: "Iq (excluding load)  < 30 uA at no load and at
+# full load".  Graded at the full Input row supply window, both load states.
+VINS = [("v2v97", 2.97), ("v3v30", 3.30), ("v3v63", 3.63)]
+LOADS = [("i0", 0.0), ("i50m", 0.050)]
+TARGET_IQ_A = 30e-6
+LOAD_A = 0.050
+
+# The spec-row id this envelope's graded measurements are tagged with.  Must
+# match the manifest's spec_rows["5"] entry for row 7 (ratified: false).
+ROW7_ID = "dr0007-row7-iq"
+
+# The numerical-noise bound machinery (see this module's header): tolerances
+# pinned in the request, and the analytic bound they give for the difference.
+NGSPICE_OPTIONS = {"reltol": 1e-9, "abstol": 1e-15}
+NGSPICE_INIT = ["set numdgt=12"]
+NOISE_BOUND_A = NGSPICE_OPTIONS["reltol"] * (LOAD_A + TARGET_IQ_A) \
+    + NGSPICE_OPTIONS["abstol"]          # ~5.1e-11 A, stated per record
+
+# Re-exported grid constants: one 45-point PVT grid, one spelling.
+MOS = re_.MOS
+RES = re_.RES
+CAP = re_.CAP
+TEMPS = re_.TEMPS
+N_EXPECTED = re_.N_EXPECTED
+PROBE_COORDS = re_.PROBE_COORDS
+PDK = re_.PDK
+PDK_PIN = re_.PDK_PIN
+Error = re_.Error
+
+INPUTS = [TEMPLATE, DESIGN_NETLIST,
+          "design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice",
+          "sim/tools/render_deck.py"]
+
+# The corners.lib header. Byte-critical: the first line names THIS driver and
+# the fleet report pins those bytes (row_envelope.py's header explains why).
+HEADER_LINES = [
+    "* generated by sim/ldo-cmos5l-pvt-sweep/row7_envelope.py:",
+]
+
+# The six graded measurement names (no-load and full-load at each Vin). The
+# step-supply measurement they are derived from (`isup_a`, reported ungraded,
+# inspectable per corner in report.json) is named inside analysis_steps().
+GRADED = [f"iq_{ln}_{vn}_a" for vn, _ in VINS for ln, _ in LOADS]
+
+coords = re_.coords
+section_of = re_.section_of
+corner_id = re_.corner_id
+sha256_file = re_.sha256_file
+resolve_env = re_.resolve_env
+write_or_check = re_.write_or_check
+f9 = re_.f9
+
+
+def pdk_pin_projection_sha256(path=None):
+    return re_.pdk_pin_projection_sha256(path or os.path.join(REPO, PDK_PIN))
+
+
+def records(root=None):
+    return re_.records(root or ROOT)
+
+
+def analysis_steps():
+    """One operating point per (Vin, Iload); each step ALTERs both sources, so
+    the cumulative-alter semantics of `analysis_steps[]` land every step at
+    exactly its own bias independent of the steps before it."""
+    steps = []
+    for vn, vv in VINS:
+        for ln, lv in LOADS:
+            steps.append({
+                "name": f"{vn}_{ln}",
+                "analysis": {"kind": "op", "args": ""},
+                "alter": {"Vin": vv, "Iload": lv},
+                "measurements": [
+                    # Reported, deliberately ungraded and untagged: the raw
+                    # supply current each solve measured, kept inspectable so
+                    # the graded differences can be re-derived by hand.
+                    {"name": "isup_a", "expr": "abs(vin#branch)", "unit": "A"},
+                ],
+            })
+    return steps
+
+
+def measurements():
+    """The six graded Iq figures: derived exprs over the step results, each
+    carrying the row target as `limits` and the row id as its `spec_row`
+    tag.  The full-load subtraction is inside the expression -- klt sim
+    grades the difference itself; no repo Python computes a verdict."""
+    out = []
+    for vn, vv in VINS:
+        out.append({"name": f"iq_i0_{vn}_a",
+                    "expr": f"{vn}_i0.isup_a",
+                    "unit": "A",
+                    "limits": {"max": TARGET_IQ_A},
+                    "spec_row": ROW7_ID})
+        out.append({"name": f"iq_i50m_{vn}_a",
+                    "expr": f"{vn}_i50m.isup_a - {LOAD_A}",
+                    "unit": "A",
+                    "limits": {"max": TARGET_IQ_A},
+                    "spec_row": ROW7_ID})
+    return out
+
+
+def request_obj(osdi_dir, cs):
+    return re_.request_skeleton(
+        cs, "analysis_steps", analysis_steps(), measurements(), osdi_dir,
+        extra_options={"ngspice_options": dict(NGSPICE_OPTIONS),
+                       "ngspice_init": list(NGSPICE_INIT)},
+        timeout_s=600)
+
+
+def request_files(subs, cs, template_text):
+    """The three request-dir files, as {name: text}. Deterministic."""
+    return re_.request_files(subs, cs, template_text, HEADER_LINES, request_obj)
+
+
+def design_netlist_include(depth):
+    return re_.design_netlist_include(depth, DESIGN_NETLIST)
+
+
+# --------------------------------------------------------------------------- #
+# summary (pure: report.json + provenance.json -> bytes)
+# --------------------------------------------------------------------------- #
+
+def summarise_report(report, prov):
+    cs = coords(prov.get("probe", False))
+    want = {corner_id(*c): c for c in cs}
+    seen = {}
+    points = []
+    for c in report.get("corners", []):
+        cid = c.get("corner_id")
+        seen[cid] = seen.get(cid, 0) + 1
+        meas = {m["name"]: m for m in c.get("measurements", [])}
+        errs = [d for d in c.get("diagnostics", []) if d.get("severity") == "error"]
+        steps = c.get("steps", [])
+        coord = want.get(cid)
+        p = {
+            "corner_id": cid,
+            "mos": coord[0] if coord else None,
+            "temp_c": coord[1] if coord else None,
+            "res_section": f"res_{coord[2]}" if coord else None,
+            "corner_status": c.get("status"),
+            "error_diagnostics": len(errs),
+            "n_steps_reported": len(steps),
+            "steps_all_ok": (len(steps) == len(analysis_steps())
+                             and all(s.get("status") == "ok" for s in steps)),
+        }
+        for n in GRADED:
+            p[n] = meas.get(n, {}).get("value")
+            p[n + "_status"] = meas.get(n, {}).get("status")
+        points.append(p)
+    points.sort(key=lambda p: p["corner_id"])
+
+    status_counts = {}
+    for p in points:
+        status_counts[p["corner_status"]] = status_counts.get(p["corner_status"], 0) + 1
+    graded_ok = all(p[n + "_status"] == "pass" for p in points for n in GRADED)
+    resolved = {n: [p for p in points if p[n] is not None] for n in GRADED}
+
+    def worst(names):
+        pool = [(p[n], n, p) for p in points for n in names if p[n] is not None]
+        if not pool:
+            return None
+        v, n, p = max(pool, key=lambda t: (t[0], t[2]["corner_id"]))
+        return {"corner_id": p["corner_id"], "mos": p["mos"], "temp_c": p["temp_c"],
+                "res_section": p["res_section"], "measurement": n,
+                "iq_ua": v * 1e6, "iq_a": v}
+
+    noload_names = [n for n in GRADED if "_i0_" in n]
+    fullload_names = [n for n in GRADED if "_i50m_" in n]
+    w_nl, w_fl = worst(noload_names), worst(fullload_names)
+    summ = {
+        "record_id": prov["record_id"],
+        "probe": bool(prov.get("probe", False)),
+        "n_expected": len(cs),
+        "n_corners_reported": len(points),
+        "coordinates_exactly_once": sorted(seen) == sorted(want) and set(seen.values()) <= {1},
+        "envelope_status": report.get("status"),
+        "passed": report.get("passed"),
+        "failed": report.get("failed"),
+        "errored": report.get("errored"),
+        "inconclusive": report.get("inconclusive"),
+        "corner_status_counts": dict(sorted(status_counts.items())),
+        "error_diagnostics_total": sum(p["error_diagnostics"] for p in points),
+        "measurements_with_limits": (report.get("coverage") or {}).get("measurements_with_limits"),
+        "graded_measurements": list(GRADED),
+        "all_graded_measurements_pass": graded_ok,
+        "target_iq_ua": TARGET_IQ_A * 1e6,
+        "iq_definition": "|i(VIN)| - Iload per (Vin, Iload) operating point; the "
+                         "same quantity the legacy evidence base recorded as iq_a "
+                         "(includes the 2 uA mirror-reference leg and the divider "
+                         "standing current, excludes the load)",
+        "exclusions": [
+            "ideal 0.90 V reference: no on-chip reference-generator current is included",
+            "ideal 2 uA IBIAS sink: no on-chip bias-generator current is included "
+            "(the sunk 2 uA itself flows through the core and IS included)",
+            "evidence is for the core WITHOUT the #190 current limiter",
+            "schematic level, corner grid only, no Monte Carlo (DR-0007 classifies "
+            "the row deterministic)",
+        ],
+        "numerical_noise_bound_a": NOISE_BOUND_A,
+        "numerical_noise_bound_note": "full-load Iq is graded as a derived expr "
+                                      "inside ngspice (klt sim analysis_steps, "
+                                      "klayout-tools #2482), never as an offline "
+                                      "subtraction; with .options reltol=1e-9 "
+                                      "abstol=1e-15 pinned in the request and the "
+                                      "50 mA load an exact ideal-source literal, "
+                                      "|delta Iq| <= reltol*|i(VIN)| + abstol "
+                                      f"~= {NOISE_BOUND_A:.3g} A "
+                                      f"(~{NOISE_BOUND_A*1e6:.5f} uA, "
+                                      f"{NOISE_BOUND_A/TARGET_IQ_A*100:.4f} % of "
+                                      "the 30 uA limit)",
+        "definitive": False,
+    }
+    if w_nl:
+        summ["worst_noload"] = w_nl
+        summ["margin_noload_ua"] = TARGET_IQ_A * 1e6 - w_nl["iq_ua"]
+    if w_fl:
+        summ["worst_fullload"] = w_fl
+        summ["margin_fullload_ua"] = TARGET_IQ_A * 1e6 - w_fl["iq_ua"]
+    summ["definitive"] = bool(
+        not summ["probe"]
+        and summ["n_corners_reported"] == len(cs) == N_EXPECTED
+        and summ["coordinates_exactly_once"]
+        and summ["envelope_status"] == "pass"
+        and summ["passed"] == N_EXPECTED
+        and not summ["failed"] and not summ["errored"] and not summ["inconclusive"]
+        and summ["error_diagnostics_total"] == 0
+        and all(p["steps_all_ok"] for p in points)
+        and graded_ok
+        and summ["measurements_with_limits"] == len(GRADED)
+        and all(len(resolved[n]) == N_EXPECTED for n in GRADED)
+    )
+    return summ, points
+
+
+def summary_md(summ, points, prov):
+    rid = summ["record_id"]
+    L = [f"# Row-7 graded `klt sim` corner-matrix envelope `{rid}`", "",
+         "DR-0007 row 7, **Iq (excluding load) < 30 uA at no load and at full "
+         "load** -- an Open row of the target spec. The verdict below is `klt "
+         "sim`'s own: all six graded measurements carry `limits` in "
+         "`request.json`, so each corner's pass/fail and the matrix verdict "
+         "(`status`) are computed by the tool, not by this repo.", "",
+         "Measurement definition: " + summ["iq_definition"] + ". Graded over the "
+         "full Input-row supply window at both load states -- six "
+         "`analysis_steps[]` operating points per corner (Vin 2.97 / 3.30 / "
+         "3.63 V x Iload 0 / 50 mA), the graded figures derived `expr` "
+         "measurements over each step's raw supply current.", ""]
+    if summ["probe"]:
+        L += ["> **PROBE RECORD.** A capacity / toolchain probe over "
+              f"{summ['n_expected']} coordinates, never cited as row evidence.", ""]
+    L += [f"- Corners: {summ['n_corners_reported']}/{summ['n_expected']} reported, "
+          f"every coordinate exactly once: {summ['coordinates_exactly_once']}; "
+          f"all six steps ok at every reported corner: "
+          f"{all(p['steps_all_ok'] for p in points)}.",
+          f"- Envelope `status`: **{summ['envelope_status']}** "
+          f"(passed {summ['passed']}, failed {summ['failed']}, errored "
+          f"{summ['errored']}, inconclusive {summ['inconclusive']}).",
+          f"- Corner status counts: {summ['corner_status_counts']}; "
+          f"error-severity diagnostics: {summ['error_diagnostics_total']}.",
+          f"- Graded measurements (`coverage.measurements_with_limits` = "
+          f"{summ['measurements_with_limits']}): {len(GRADED)} Iq figures, all "
+          f"tagged `{ROW7_ID}`; all pass: {summ['all_graded_measurements_pass']}."]
+    if "worst_noload" in summ:
+        w = summ["worst_noload"]
+        L += ["",
+              f"- Worst no-load Iq: {w['iq_ua']:.4f} uA (`{w['measurement']}`, "
+              f"`{w['mos']}` / {w['temp_c']} C / `{w['res_section']}`); margin to "
+              f"the 30 uA target: {summ['margin_noload_ua']:.4f} uA."]
+    if "worst_fullload" in summ:
+        w = summ["worst_fullload"]
+        L += [f"- Worst full-load Iq: {w['iq_ua']:.4f} uA (`{w['measurement']}`, "
+              f"`{w['mos']}` / {w['temp_c']} C / `{w['res_section']}`); margin to "
+              f"the 30 uA target: {summ['margin_fullload_ua']:.4f} uA."]
+    L += [f"- Definitive matrix claim permitted: **{summ['definitive']}** (requires "
+          f"the whole {N_EXPECTED}-coordinate matrix reported, every step ok, "
+          "resolved, graded and clean).",
+          "",
+          "## Numerical-noise bound (the full-load difference)", "",
+          summ["numerical_noise_bound_note"] + ". The step supply currents are "
+          "reported ungraded per corner in `report.json`, so every graded "
+          "difference can be re-derived by hand.", "",
+          "## Exclusions this evidence must be read with", ""]
+    for e in summ["exclusions"]:
+        L.append(f"- {e}")
+    L += ["", "The row stays Open under DR-0007; ratification is `spec/` + "
+          "`ratification/` work (#318), never a `signoff/` edit. This envelope "
+          "exists so a ratified row has a tagged, limited, tool-graded matrix "
+          "to cite.", "",
+          "## Per-corner", "",
+          "| corner | status | " + " | ".join(f"{n} (uA)" for n in GRADED) + " |",
+          "|---|---|" + "---|" * len(GRADED)]
+    for p in points:
+        cells = [f"`{p['corner_id']}`", str(p['corner_status'])]
+        for n in GRADED:
+            v = p[n]
+            cells.append(" " if v is None else f"{v*1e6:.4f}")
+        L.append("| " + " | ".join(cells) + " |")
+    L += ["", "## Provenance", ""]
+    for k, v in sorted(prov.items()):
+        if k == "input_sha256":
+            continue
+        L.append(f"- {k}: `{json.dumps(v, sort_keys=True)}`" if isinstance(v, (dict, list))
+                 else f"- {k}: {v}")
+    L += ["", "Input sha256:", ""]
+    for k, v in sorted(prov.get("input_sha256", {}).items()):
+        L.append(f"- `{k}`: `{v}`")
+    L += ["", f"Machine summary: `row7-envelope.json`; the graded envelope itself: "
+          f"`report.json`; the request that produced it: `request.json`, `tb.spice`, "
+          f"`corners.lib`.", ""]
+    return "\n".join(L)
+
+
+def summary_files(record_dir):
+    report = json.load(open(os.path.join(record_dir, "report.json")))
+    prov = json.load(open(os.path.join(record_dir, "provenance.json")))
+    summ, points = summarise_report(report, prov)
+    return {
+        "row7-envelope.json": json.dumps({"summary": summ, "points": points},
+                                         indent=1, sort_keys=True) + "\n",
+        "row7-envelope.md": summary_md(summ, points, prov),
+    }, summ
+
+
+# --------------------------------------------------------------------------- #
+# submit / summarise / check
+# --------------------------------------------------------------------------- #
+
+def cmd_submit(a):
+    def prov_extra(rid, probe):
+        return {
+            "spec_row": "DR-0007 row 7 (Iq excluding load < 30 uA at no load and "
+                        "at full load) -- Open; this envelope does not ratify it",
+            "measurement_definition": "Iq = |i(VIN)| - Iload per (Vin, Iload) "
+                                      "operating point; graded as klt sim derived "
+                                      "expr measurements over analysis_steps "
+                                      "(klayout-tools #2482), never computed by "
+                                      "repo Python",
+            "numerical_noise_bound_a": NOISE_BOUND_A,
+            "input_sha256": {p: sha256_file(os.path.join(REPO, p)) for p in INPUTS},
+        }
+    return re_.submit_record(
+        a, slug="row7", root=ROOT, template_rel=TEMPLATE,
+        design_netlist_rel=DESIGN_NETLIST, header_lines=HEADER_LINES,
+        request_files_fn=request_files, summary_files_fn=summary_files,
+        invocation_fmt="python3 sim/ldo-cmos5l-pvt-sweep/row7_envelope.py submit{probe}",
+        prov_extra=prov_extra)
+
+
+def cmd_summarise(a):
+    record_dir = os.path.join(ROOT, a.record_id)
+    if not os.path.isdir(record_dir):
+        raise Error(f"no such record: {record_dir}")
+    files, summ = summary_files(record_dir)
+    bad = write_or_check(record_dir, files, check=a.check)
+    if bad:
+        raise Error("summary files stale or missing: " + ", ".join(bad))
+    print(json.dumps(summ, indent=1, sort_keys=True))
+    return 0
+
+
+def check_record(rid, problems):
+    record_dir = os.path.join(ROOT, rid)
+    if not os.path.exists(os.path.join(record_dir, "provenance.json")):
+        problems.append(f"{rid}: no provenance.json")
+        return None
+    summ, prov = re_.check_request_and_summary(
+        record_dir, rid, problems, slug="row7",
+        request_files_fn=request_files, template_rel=TEMPLATE,
+        summary_files_fn=summary_files)
+    re_.check_hash_pins(record_dir, rid, problems, slug="row7",
+                        tail=f"row7-envelope/{rid}/tb.spice")
+    re_.check_declared_gates(record_dir, rid, problems,
+                             measurements_fn=measurements, graded=GRADED,
+                             row_id=ROW7_ID, slug="row7")
+    return summ
+
+
+def cmd_check(a):
+    problems = []
+    rids = records(ROOT)
+    if not rids:
+        problems.append("no record under sim/ldo-cmos5l-pvt-sweep/row7-envelope/")
+    summaries = {rid: check_record(rid, problems) for rid in rids}
+    for p in problems:
+        print("row7_envelope: " + p, file=sys.stderr)
+    if problems:
+        return 1
+    n_def = sum(1 for s in summaries.values() if s and s["definitive"])
+    print(f"row7_envelope: OK -- {len(rids)} record(s) reproduce and self-verify "
+          f"({n_def} definitive). The row stays Open; the selected record for "
+          "characterization is pinned in sim/characterization/selection.json")
+    return 0
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+    sp = ap.add_subparsers(dest="cmd", required=True)
+    s = sp.add_parser("submit", help="mint a new record on the EDA batch fleet")
+    s.add_argument("--probe", action="store_true",
+                   help=f"{len(PROBE_COORDS)} coordinates only, for a capacity / "
+                        "toolchain probe; never citable")
+    s.add_argument("--dry-run", action="store_true",
+                   help="build and validate the request without submitting")
+    s.set_defaults(fn=cmd_submit)
+    c = sp.add_parser("check", help="offline: every committed record reproduces (CI)")
+    c.set_defaults(fn=cmd_check)
+    m = sp.add_parser("summarise", help="rewrite one record's summary files")
+    m.add_argument("record_id")
+    m.add_argument("--check", action="store_true")
+    m.set_defaults(fn=cmd_summarise)
+    a = ap.parse_args()
+    try:
+        return a.fn(a)
+    except Error as exc:
+        print(f"row7_envelope: {exc}", file=sys.stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

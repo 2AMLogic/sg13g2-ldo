@@ -1385,6 +1385,90 @@ host-independent and reproduce on any checkout. `corners.lib` and
 the template plus the record's own recorded substitutions, so they reproduce
 byte-for-byte too, and the record states the paths it used.
 
+## Row-7 graded `klt sim` corner-matrix envelope (`row7_envelope.py`, issue #317)
+
+DR-0007 row 7 (*Iq excluding load < 30 uA at no load and at full load*) is
+**Open**. Its no-load half measured inside target at every sampled corner of
+the legacy evidence base (`iq_a` 21.72-24.72 uA over 45 points), but the
+full-load half existed only as an *offline* subtraction of two ~50 mA
+currents printed to 9 significant digits -- quantized at 1e-10 A with solver
+noise unbounded beyond that -- and no `klt sim` envelope carried
+`spec_row: dr0007-row7-iq`, so even a ratified row could not have been cited
+for T1 item 5. `row7_envelope.py` closes both halves, on the same
+limits-inside-the-request principle as the row-4 bench above, and shares its
+row-agnostic machinery with it through `row_envelope.py` (issue #317): one
+45-point grid, one request skeleton, one corners.lib renderer (whose header
+still names the driver that generated it -- those bytes are pinned by the
+fleet report), one submit flow, one offline check.
+
+```bash
+python3 sim/ldo-cmos5l-pvt-sweep/row7_envelope.py submit --probe   # 2-corner probe
+python3 sim/ldo-cmos5l-pvt-sweep/row7_envelope.py submit           # 45 corners x 6 solves
+python3 sim/ldo-cmos5l-pvt-sweep/row7_envelope.py check            # offline (CI)
+```
+
+**What is graded.** Six Iq figures per corner -- `iq_{i0,i50m}_{v2v97,v3v30,
+v3v63}_a`, all `limits {max: 30e-6}`, all tagged `spec_row: dr0007-row7-iq` --
+over Vin {2.97, 3.30, 3.63} V x Iload {0, 50 mA}, the row's whole supply
+window at both load states. The request declares six `analysis_steps[]`
+operating points (klayout-tools #2482); each `alter`s the deck's own
+`Vin`/`Iload` sources and reports the raw supply current
+`isup_a = abs(vin#branch)` (ungraded, untagged, inspectable per corner), and
+the graded figures are **derived `expr` measurements** over those step
+results -- `iq_i50m_v3v30_a = v3v30_i50m.isup_a - 0.05` -- so the
+full-load difference is computed *inside ngspice at full double precision
+from the step's own vector* and graded by `klt sim` itself. The row-4 `.meas
+WHEN` literal-threshold gap does not apply here: no `.meas` card references
+another measurement's result, and the derived-expr form is the documented
+expression of a combination-of-solves quantity.
+
+**Numerical-noise bound** (the issue's item 3). The request pins
+`.options reltol=1e-9 abstol=1e-15` (`options.ngspice_options`, echoed by the
+report as `environment.ngspice_options`) and `set numdgt=12`. The 50 mA load
+current is an ideal source's exact literal, so the only error channel in the
+difference is the i(VIN) operating-point solve:
+`|delta Iq| <= reltol*|i(VIN)| + abstol ~= 5.1e-11 A` (~0.00005 uA, ~0.0002 %
+of the 30 uA limit) -- stated in every record's summary, and the bound is
+re-stated per record rather than asserted once, because it is only honest
+while the request's own tolerances back it (the loader in
+`sim/characterization/generate.py` refuses a request that does not pin them).
+Before the fleet run, the bound was verified empirically by re-solving the
+nominal and both worst legacy corners with reltol=1e-12/abstol=1e-17 and
+comparing: agreement within 1e-12 A. This replaces the legacy full-load
+figure's caveat ("solver noise not bounded beyond the 1e-10 A print
+quantization").
+
+**What the measurement is, and is not.** Iq = |i(VIN)| - Iload, the same
+quantity the legacy base recorded as `iq_a`: the core's quiescent current
+including the 2 uA mirror-reference leg sunk through the ideal IBIAS source
+and the feedback divider's standing current, excluding the load. Disclosures
+carried in every record summary and re-verified by the characterization
+loader: the ideal 0.90 V reference and the ideal 2 uA IBIAS sink mean **no
+on-chip reference- or bias-generator current is included** (their blocks do
+not exist in this bench; the sunk 2 uA itself flows through the core and
+*is* included, conservatively), and the evidence is for the core **without
+the #190 current limiter**. Schematic level, corner grid only, no Monte
+Carlo (DR-0007 classifies the row deterministic). The row stays Open: this
+envelope does not ratify anything -- it exists so ratification (#318), when
+it happens, has a tagged, limited, tool-graded matrix to cite, and so
+`sim/characterization/generate.py`'s row 7 reads tool-graded evidence
+instead of an offline subtraction.
+
+**Result** (record `20261121-001957-ed6b0587`, runner klt 0.9.0 /
+ngspice-47, 14 s): envelope `pass`, 45/45 corners clean, every step ok, all
+270 graded values under the limit. Worst no-load Iq 24.4980 uA
+(`iq_i0_v3v63_a`, ss/125 C/res_bcs); worst full-load Iq 24.6675 uA
+(`iq_i50m_v3v63_a`, ff/125 C/res_bcs); margins 5.50 / 5.33 uA to the 30 uA
+target. The envelope agrees with the legacy benches at Vin = 3.30 V to within
+0.37 uA (no-load, vs `iq_a`) and 0.26 uA (full-load, vs the offline DC
+figure) -- a consistency cross-check with a 1.0 uA band, not a reproduction
+claim: the two benches differ in solve path, engine build and tolerances.
+
+**No `.control` block, `--wait-for-capacity 600`, append-only records, the
+job-bound warning and host-independent `tb.spice` bytes**: exactly as the
+row-4 section above states them; the same machinery and the same fleet
+discipline apply unchanged.
+
 ## CI
 
 **No CI job runs `run_sweep.sh --check-env` for this experiment yet**, unlike
