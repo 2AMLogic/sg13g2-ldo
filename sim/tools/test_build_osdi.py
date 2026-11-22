@@ -62,7 +62,6 @@ class Harness(unittest.TestCase):
             + extract_ensure()
             + "declare -F ensure_libllvm21 >/dev/null 2>&1 "
             "|| { echo 'fixture: ensure_libllvm21 not extracted' >&2; exit 99; }\n"
-            + f"CACHE_DIR='{cache}'\n"
             + f"OPENVAF_TAG='{TAG}'\n"
             + f"LIBLLVM21_DEB_ASSET='{ASSET}'\n"
             + "LIBLLVM21_DEB_URL='https://fixture.invalid/libllvm21.deb'\n"
@@ -73,6 +72,7 @@ class Harness(unittest.TestCase):
         env = {
             "PATH": str(self.bin),
             "LD_LIBRARY_PATH": str(self.decoy),
+            "CACHE_DIR": str(cache),
         }
         return subprocess.run(
             [BASH, str(runner)], env=env, capture_output=True, text=True)
