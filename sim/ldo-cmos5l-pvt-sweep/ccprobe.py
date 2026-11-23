@@ -365,7 +365,10 @@ def reduce_point(label, trace_path):
     return row
 
 
-CSV_FIELDS = ["point_id", "cc_label", "cc_w", "cc_factor", "trace_path",
+# `trace_path` is deliberately NOT a record column: it is a host-absolute path,
+# so a committed record carrying it would only byte-reproduce in one checkout
+# (same shape as E1's record, which has no path column).
+CSV_FIELDS = ["point_id", "cc_label", "cc_w", "cc_factor",
               "dc_gain_db"] + list(METRIC_KEYS) + [
     "dr0014_pm_verdict", "dr0014_pm_reasons", "dr0014_pm_value_deg",
     "dr0014_gm_verdict", "dr0014_gm_reasons", "dr0014_gm_value_db",

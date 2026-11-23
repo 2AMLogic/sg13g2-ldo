@@ -374,8 +374,11 @@ class MetricsWiring(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             p = _trace_fixture(os.path.join(tmp, "t_ac.csv"))
             row = _row_for(p, "1x")
-        self.assertTrue(set(row) <= set(c.CSV_FIELDS),
-                        f"undeclared row keys: {set(row) - set(c.CSV_FIELDS)}")
+        # trace_path is host-absolute and intentionally not a record column
+        # (it would make the committed record checkout-path-bound).
+        self.assertNotIn("trace_path", c.CSV_FIELDS)
+        undeclared = set(row) - set(c.CSV_FIELDS) - {"trace_path"}
+        self.assertFalse(undeclared, f"undeclared row keys: {undeclared}")
 
     def test_cmd_reduce_adds_the_comparison_columns(self):
         """cmd_reduce's added columns (the AC 4 comparisons) are declared
@@ -393,9 +396,10 @@ class DeckContract(unittest.TestCase):
     campaign's decks)."""
 
     def test_placeholders_present(self):
-        tmpl = open(os.path.join(HERE, "testbench",
-                                 "tb_loopgain_cmos5l.spice.tmpl"),
-                    encoding="utf-8").read()
+        with open(os.path.join(HERE, "testbench",
+                               "tb_loopgain_cmos5l.spice.tmpl"),
+                  encoding="utf-8") as fh:
+            tmpl = fh.read()
         for ph in ("@@CC_W@@", "@@DESIGN_NETLIST@@", "@@LG_AC_MAX@@",
                    "@@AC_CSV@@", "@@LOAD_A@@", "@@COUT_F@@",
                    "@@COUT_BOTTOM@@", "@@ESR_LINE@@", "@@MOS_SECTION@@",
