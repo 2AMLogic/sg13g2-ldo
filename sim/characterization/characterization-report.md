@@ -18,7 +18,7 @@
 - Circuit record (explicitly selected, hash-pinned): `ldo-cmos5l-pvt-sweep` / `20261011-070111-5391c68`
 - Bare-device context record: `20260909-220347-ed18110` (never used as a closed-loop measurement)
 - Startup campaign (explicitly selected, hash-pinned, proposed methodology): `20261011-070146-0c95530` stage `grid`
-- Selection file: `sim/characterization/selection.json` sha256 `4ca582cd0b5a9036e07abf5d8907155a5445c83ba4e483779d81321f1923180f`
+- Selection file: `sim/characterization/selection.json` sha256 `effa0873954b941ec1e29f9bdbbbc308d5921f0c8c0d0de91ce0f0c213ed0ac4`
 - Design freshness: **current**
 
 | Role | Path | sha256 | Pinned |
@@ -38,6 +38,14 @@
 | row10_classifier_source | `sim/ldo-cmos5l-pvt-sweep/dc_metrics.py` | `782319eb4ef619b040f3a4001af67a10def775c9cf17e37fe15b4dd8f3340c81` | yes |
 | row10_classifier_source | `sim/ldo-cmos5l-pvt-sweep/row10_margins.py` | `a6f6d1129095b2fcb73c8c9462eb54b7588259d4118aa932d86c5b01f2a227f7` | yes |
 | row10_classifier_source | `sim/ldo-cmos5l-pvt-sweep/row10_record.py` | `3632a86707f7cf793715667581407b5547511ea2b734dd24503a001df371dcab` | yes |
+| row5_envelope_corners_lib | `sim/ldo-cmos5l-pvt-sweep/row5-envelope/20261123-213711-06bd6576/corners.lib` | `4a652fe90bd0b9a96f3c7364b8400b4614347369f89d37cba2fc630cc625545a` | yes |
+| row5_envelope_design_freshness | `design/sg13cmos5l/netlist/ldo_core_cmos5l.spice` | `08a7b857e1fad43dd7af1f575de97853a058e85541601ecc47567fbc28dbae57` | yes |
+| row5_envelope_design_freshness | `design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice` | `75ee39ce0c48b54cab6c8a31acd1f199c37c1ccd1ac074a3515dee81cc656fb4` | yes |
+| row5_envelope_provenance_json | `sim/ldo-cmos5l-pvt-sweep/row5-envelope/20261123-213711-06bd6576/provenance.json` | `8fa1d9ae5da037276db3d8c026e645fb96aa2ecfdff50a59263def85ca6c2d66` | yes |
+| row5_envelope_report_json | `sim/ldo-cmos5l-pvt-sweep/row5-envelope/20261123-213711-06bd6576/report.json` | `a517f1baed1174587bc27345448405be0d4e6b533cedc1d82bc1e94e6723ae59` | yes |
+| row5_envelope_request_json | `sim/ldo-cmos5l-pvt-sweep/row5-envelope/20261123-213711-06bd6576/request.json` | `25abf4d965212c1ef41526e3ce3797008638fc035884643f396afb539b19a85c` | yes |
+| row5_envelope_summary_json | `sim/ldo-cmos5l-pvt-sweep/row5-envelope/20261123-213711-06bd6576/row5-envelope.json` | `e011b6bdb10c92f7c0212b28a52d77d65c0b6bcba93ef50b66982c6f208eb78f` | yes |
+| row5_envelope_tb_spice | `sim/ldo-cmos5l-pvt-sweep/row5-envelope/20261123-213711-06bd6576/tb.spice` | `c3cfe8aa41210aae5dff484ee35a3f53bb0e46747e6ff54399301cef3f0b802b` | yes |
 | row7_envelope_corners_lib | `sim/ldo-cmos5l-pvt-sweep/row7-envelope/20261121-001957-ed6b0587/corners.lib` | `e93a2124f2acf919bbd40df2e7c2fa4d52134fec30ad384fd0da99d5418b9094` | yes |
 | row7_envelope_design_freshness | `design/sg13cmos5l/netlist/ldo_core_cmos5l.spice` | `08a7b857e1fad43dd7af1f575de97853a058e85541601ecc47567fbc28dbae57` | yes |
 | row7_envelope_design_freshness | `design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice` | `75ee39ce0c48b54cab6c8a31acd1f199c37c1ccd1ac074a3515dee81cc656fb4` | yes |
@@ -52,7 +60,7 @@
 | startup_grid_csv | `sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.csv` | `bc4ea61162a51f3b7ecbefad4c82663f6928139d64f3ba09875c22fe7d2df3d1` | yes |
 | startup_manifest_json | `sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.manifest.json` | `3ec537f955f03dbd081870a068d01825106a886cd0f5ac0698289932cf5a7c95` | yes |
 | startup_record_md | `sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.md` | `908c108fd44b729846b51c0d9a75b35daf3dee4d7bc4c9fab3f091d8a06b307c` | yes |
-| superseded_evidence_statement | `sim/ldo-cmos5l-pvt-sweep/README.md` | `36b273ee61944a680a0882f327ae205c217df276ef3705b2edc82961f777a454` | recorded |
+| superseded_evidence_statement | `sim/ldo-cmos5l-pvt-sweep/README.md` | `4934a5a381052f2fa17959c9cf06ce1eb519ba3a00fcdd206c8c8d393cd62909` | recorded |
 | target_table | `README.md` | `8c3f388fe415a54e8ef38d5641d04cc3e845d0c8bf039b828ab817cfb5a77fd3` | recorded |
 
 ## Per-row summary
@@ -202,6 +210,16 @@ Verdict key: `pass_*` = measured metrics meet the bound at the stated conditions
   - source: `sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/dc-informational-summary.csv` column `load_reg_pct_vin3p63`
   - validity: 45 valid, 0 invalid (invalid points are counted, not dropped)
   - note: Informational DC summary (derived offline from the committed raw DC grids, no new simulation). A point is valid only if both end points are within 1 % of 1.8 V; invalid points are counted as ambiguous and never dropped. Discrete sampled loads/supplies only: not a continuous-window claim.
+- **graded `klt sim` envelope: line regulation at 0 / 25 / 50 mA (Vin 2.97-3.63 V)** (mV/V): pass; bound lt 5.0 mV/V; 135/135 pass, 0 fail, 0 ambiguous, 0 censored upper bound
+  - worst case 0.243765884 at ff/125C/res_wcs
+  - conditions: eight analysis_steps operating points per corner (Vin 2.97 / 3.63 V x Iload 0 / 25 / 50 mA, plus Vin 3.30 V at 0 / 50 mA); line = 1000*|Vout(3.63 V) - Vout(2.97 V)|/0.66 at three loads, load regulation = 100*|Vout(0) - Vout(50 mA)|/Vout(0) at three supplies, graded by `klt sim` as derived-expr measurements with limits in the request (spec_row dr0007-row5-line-load-regulation); solver tolerances pinned reltol=1e-9 abstol=1e-15 (a convergence setting, not an error bound); ideal 0.90 V reference; discrete sampling only; 45-point corner grid
+  - source: `sim/ldo-cmos5l-pvt-sweep/row5-envelope/20261123-213711-06bd6576/report.json` column `line_i0_mvpv, line_i25m_mvpv, line_i50m_mvpv`
+  - note: graded by `klt sim` (derived-expr measurement, limit inside the request; the verdict is the tool's own, strictness enforced here because the tool's `max` is inclusive). Solver convergence setting (NOT an error bound): NOT an error bound. The request pins .options reltol=1e-09 abstol=1e-15; ngspice's stopping test compares each iterate with the previous one and bounds nothing about the distance to the exact operating point. No paired tight-tolerance record exists for row 5: observed solver sensitivity is not claimed. Qualifications: ideal 0.90 V reference: reference error is excluded; discrete sampling only: three line loads (0, 25, 50 mA) and three load-regulation supplies (2.97, 3.30, 3.63 V), not a continuous-window claim; the row's 'inside the accuracy window' coupling to row 2 is NOT demonstrated by this envelope; schematic level, corner grid only, no Monte Carlo; core WITHOUT the #190 limiter.
+- **graded `klt sim` envelope: load regulation 0-50 mA at Vin = 2.97 / 3.30 / 3.63 V** (%): pass; bound lt 1.0 %; 135/135 pass, 0 fail, 0 ambiguous, 0 censored upper bound
+  - worst case 0.0241451658 at ff/125C/res_wcs/Vin 3.63V
+  - conditions: eight analysis_steps operating points per corner (Vin 2.97 / 3.63 V x Iload 0 / 25 / 50 mA, plus Vin 3.30 V at 0 / 50 mA); line = 1000*|Vout(3.63 V) - Vout(2.97 V)|/0.66 at three loads, load regulation = 100*|Vout(0) - Vout(50 mA)|/Vout(0) at three supplies, graded by `klt sim` as derived-expr measurements with limits in the request (spec_row dr0007-row5-line-load-regulation); solver tolerances pinned reltol=1e-9 abstol=1e-15 (a convergence setting, not an error bound); ideal 0.90 V reference; discrete sampling only; 45-point corner grid
+  - source: `sim/ldo-cmos5l-pvt-sweep/row5-envelope/20261123-213711-06bd6576/report.json` column `load_v2v97_pct, load_v3v30_pct, load_v3v63_pct`
+  - note: graded by `klt sim` (derived-expr measurement, limit inside the request; the verdict is the tool's own, strictness enforced here because the tool's `max` is inclusive). Solver convergence setting (NOT an error bound): NOT an error bound. The request pins .options reltol=1e-09 abstol=1e-15; ngspice's stopping test compares each iterate with the previous one and bounds nothing about the distance to the exact operating point. No paired tight-tolerance record exists for row 5: observed solver sensitivity is not claimed. Qualifications: ideal 0.90 V reference: reference error is excluded; discrete sampling only: three line loads (0, 25, 50 mA) and three load-regulation supplies (2.97, 3.30, 3.63 V), not a continuous-window claim; the row's 'inside the accuracy window' coupling to row 2 is NOT demonstrated by this envelope; schematic level, corner grid only, no Monte Carlo; core WITHOUT the #190 limiter.
 
 ### 6. PSRR -- pass_partial_coverage
 
@@ -337,13 +355,15 @@ Verdict key: `pass_*` = measured metrics meet the bound at the stated conditions
 
 ## Completeness checks
 
-- [x] all selected records exist and match their sha256 pins -- 28 pinned sources verified
+- [x] all selected records exist and match their sha256 pins -- 36 pinned sources verified
 - [x] README target table: 10 rows, expected names and target text
 - [x] DR-0007 ratification table covers rows 1-10 exactly once and agrees with README
 - [x] PVT grid complete (5 process x 3 temperature x 3 resistor corner = 45 points, all numeric fields finite)
 - [x] DC informational summary: pinned, same record, 45 corners once each, finite, validity fields True/False, raw grids match inventory hashes
 - [x] row-7 graded envelope: pinned, whole clean 45-corner matrix, six limits-bearing measurements tagged dr0007-row7-iq, every (Vin, Iload) step ok, summary agrees with the report, agrees with the legacy columns at Vin 3.30 V
 - [x] row-7 envelope is current against the design netlists and the PDK pin -- the envelope's recorded design-netlist hashes and PDK pin projection match the tree
+- [x] row-5 graded envelope: pinned, whole clean 45-corner matrix, six limits-bearing measurements tagged dr0007-row5-line-load-regulation, every named (Vin, Iload) step ok, strictly below target, summary agrees with the report, agrees with the offline DC columns
+- [x] row-5 envelope is current against the design netlists and the PDK pin -- the envelope's recorded design-netlist hashes and PDK pin projection match the tree
 - [x] every target row appears exactly once -- rows: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 - [x] every row carries an allowed verdict
 - [x] every row cites a source or an explicit unavailability reason

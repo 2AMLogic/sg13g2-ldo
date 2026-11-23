@@ -149,7 +149,7 @@ This is mechanically enforced on pull requests by
 PR head against its merge base and rejects any path that already existed at
 the merge base and was modified, deleted, type-changed, renamed away, or
 overwritten. New files and new record IDs always pass. The protected set is
-exactly these eight classes:
+exactly these nine classes:
 
 - `sim/*/records/**`
 - `sim/*/corners/**`
@@ -159,6 +159,7 @@ exactly these eight classes:
 - `sim/*/startup/**`
 - `sim/*/row4-envelope/**`
 - `sim/*/row7-envelope/**`
+- `sim/*/row5-envelope/**`
 
 `evidence/` is protected, not freely mutable derived output. The checker
 fails closed (exit 2) when the base or head cannot be resolved or diffed, or

@@ -234,5 +234,54 @@
         }
       }
     }
+  },
+  "row5_envelope_evidence": {
+    "experiment": "ldo-cmos5l-pvt-sweep",
+    "id": "20261123-213711-06bd6576",
+    "policy": "Explicit selection only (same rule as every other block): the graded row-5 `klt sim` envelope (line and load regulation, issue #319) this report cites is named here and every file is pinned by sha256. The generator re-validates the whole matrix offline -- pinned bytes, the report's own hash pins on tb.spice/corners.lib, the request's declared limits (5 mV/V line, 1 % load) and spec_row tags on exactly the six graded derived measurements, a whole clean 45-corner pass with every named (Vin, Iload) step resolved once, every value strictly below its target (the tool's inclusive `max` is not credited at equality), the summary's worst-case agreement, and consistency with the offline DC-informational columns. The per-corner and whole-matrix verdict is `klt sim`'s own; this generator never computes one. Without this block the row reports the gap and earns no envelope credit. Moving to a newer record is a deliberate edit to this file in the same change that regenerates the report.",
+    "files": {
+      "report_json": {
+        "path": "sim/ldo-cmos5l-pvt-sweep/row5-envelope/20261123-213711-06bd6576/report.json",
+        "sha256": "a517f1baed1174587bc27345448405be0d4e6b533cedc1d82bc1e94e6723ae59"
+      },
+      "summary_json": {
+        "path": "sim/ldo-cmos5l-pvt-sweep/row5-envelope/20261123-213711-06bd6576/row5-envelope.json",
+        "sha256": "e011b6bdb10c92f7c0212b28a52d77d65c0b6bcba93ef50b66982c6f208eb78f"
+      },
+      "request_json": {
+        "path": "sim/ldo-cmos5l-pvt-sweep/row5-envelope/20261123-213711-06bd6576/request.json",
+        "sha256": "25abf4d965212c1ef41526e3ce3797008638fc035884643f396afb539b19a85c"
+      },
+      "tb_spice": {
+        "path": "sim/ldo-cmos5l-pvt-sweep/row5-envelope/20261123-213711-06bd6576/tb.spice",
+        "sha256": "c3cfe8aa41210aae5dff484ee35a3f53bb0e46747e6ff54399301cef3f0b802b"
+      },
+      "corners_lib": {
+        "path": "sim/ldo-cmos5l-pvt-sweep/row5-envelope/20261123-213711-06bd6576/corners.lib",
+        "sha256": "4a652fe90bd0b9a96f3c7364b8400b4614347369f89d37cba2fc630cc625545a"
+      },
+      "provenance_json": {
+        "path": "sim/ldo-cmos5l-pvt-sweep/row5-envelope/20261123-213711-06bd6576/provenance.json",
+        "sha256": "8fa1d9ae5da037276db3d8c026e645fb96aa2ecfdff50a59263def85ca6c2d66"
+      }
+    },
+    "design_freshness_pins": [
+      {
+        "path": "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice",
+        "sha256": "08a7b857e1fad43dd7af1f575de97853a058e85541601ecc47567fbc28dbae57"
+      },
+      {
+        "path": "design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice",
+        "sha256": "75ee39ce0c48b54cab6c8a31acd1f199c37c1ccd1ac074a3515dee81cc656fb4"
+      }
+    ],
+    "cross_check": {
+      "against": [
+        "dc_informational_evidence line_reg_mv_per_v_{0mA,25mA,50mA} and load_reg_pct_vin{2p97,3p30,3p63} (absolute values)"
+      ],
+      "band_line_mv_per_v": 0.01,
+      "band_load_pct": 0.005,
+      "basis": "the envelope is a different bench (direct OP solves at pinned tolerances on the fleet's ngspice vs offline derivation from nested-sweep raw grids), so agreement is a consistency cross-check with a loose band, not a reproduction claim; observed worst delta 0.0020 mV/V line (0 mA), 0.0012 % load"
+    }
   }
 }

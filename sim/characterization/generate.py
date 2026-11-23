@@ -118,6 +118,38 @@ ROW7_ENV_COND = ("Vin {2.97, 3.30, 3.63} V x Iload {0, 50 mA} per corner (six an
 # delta at Vin = 3.30 V: 0.37 uA no-load, 0.26 uA full-load.
 ROW7_CROSS_BAND_UA = 1.0
 
+# Row 5's graded envelope (issue #319): eight (Vin, Iload) operating points per
+# corner; six derived-expr figures (line at three loads, load regulation at three
+# supplies) with the row's limits inside the request, so the verdict is `klt sim`'s
+# own. DR-0007 row 5 is a STRICT "<"; klt's inclusive `max` means equality is
+# refused here, not credited.
+ROW5_SPEC_ROW_ID = "dr0007-row5-line-load-regulation"
+ROW5_LINE_LOADS = ("i0", "i25m", "i50m")
+ROW5_LOAD_VINS = ("v2v97", "v3v30", "v3v63")
+ROW5_LINE_GRADED = tuple(f"line_{ln}_mvpv" for ln in ROW5_LINE_LOADS)
+ROW5_LOAD_GRADED = tuple(f"load_{vn}_pct" for vn in ROW5_LOAD_VINS)
+ROW5_GRADED = ROW5_LINE_GRADED + ROW5_LOAD_GRADED
+ROW5_LIMITS = {**{n: {"max": 5.0} for n in ROW5_LINE_GRADED},
+               **{n: {"max": 1.0} for n in ROW5_LOAD_GRADED}}
+ROW5_STEPS = {  # step name -> (Vin, Iload)
+    "v2v97_i0": (2.97, 0.0), "v2v97_i25m": (2.97, 0.025), "v2v97_i50m": (2.97, 0.050),
+    "v3v30_i0": (3.30, 0.0), "v3v30_i50m": (3.30, 0.050),
+    "v3v63_i0": (3.63, 0.0), "v3v63_i25m": (3.63, 0.025), "v3v63_i50m": (3.63, 0.050),
+}
+# The legacy offline DC columns are signed and printed to 9 digits; the envelope
+# grades |.| from direct OP solves, so the cross-check is loose. Observed worst
+# delta: 0.0020 mV/V (line, 0 mA), 0.0012 % (load).
+ROW5_CROSS_BAND_LINE_MV_PER_V = 0.01
+ROW5_CROSS_BAND_LOAD_PCT = 0.005
+ROW5_ENV_COND = ("eight analysis_steps operating points per corner (Vin 2.97 / 3.63 V x Iload "
+                 "0 / 25 / 50 mA, plus Vin 3.30 V at 0 / 50 mA); line = 1000*|Vout(3.63 V) - "
+                 "Vout(2.97 V)|/0.66 at three loads, load regulation = 100*|Vout(0) - "
+                 "Vout(50 mA)|/Vout(0) at three supplies, graded by `klt sim` as derived-expr "
+                 "measurements with limits in the request (spec_row "
+                 "dr0007-row5-line-load-regulation); solver tolerances pinned reltol=1e-9 "
+                 "abstol=1e-15 (a convergence setting, not an error bound); ideal 0.90 V "
+                 "reference; discrete sampling only; 45-point corner grid")
+
 PVT_NUMERIC = [
     "iq_a", "vout_no_load_v", "line_reg_mv_per_v", "dropout_v_50ma",
     "dropout_v_50ma_floor", "vout_at_vinmax_50ma_v", "load_reg_pct",
@@ -1080,6 +1112,208 @@ def load_row7_envelope(root: Path, sel: dict, pvt_rows: list[dict],
             "summary_rel": blk["files"]["summary_json"]["path"]}
 
 
+def load_row5_envelope(root: Path, sel: dict, pvt_rows: list[dict],
+                       dcev: dict, sources: list):
+    """Validate and return the pinned row-5 graded `klt sim` envelope (issue #319),
+    or None when selection.json cites none (the report then states the gap and
+    gives the row no envelope credit).
+
+    Fail-closed on every tamper (hard GenError), exactly as the row-7 loader:
+    pin mismatches, report hash pins, a request that does not declare the row
+    limits and spec_row tag on exactly the six graded measurements, a matrix
+    that is not a whole clean 45-corner pass with every named step ok once, a
+    value at or beyond the strict target, a summary that disagrees with the
+    report, or a disagreement with the offline DC columns beyond the stated
+    cross-check band. Design/PDK drift is reported as stale_components.
+    """
+    blk = sel.get("row5_envelope_evidence")
+    if blk is None:
+        return None
+    if not isinstance(blk, dict):
+        raise GenError("selection.json row5_envelope_evidence is not an object")
+    rid = blk["id"]
+    paths = {}
+    for key in ("report_json", "summary_json", "request_json", "tb_spice",
+                "corners_lib", "provenance_json"):
+        entry = blk["files"][key]
+        if f"/{rid}/" not in entry["path"]:
+            raise GenError(f"row-5 envelope file {entry['path']} is not under the selected id {rid}")
+        paths[key] = pinned(root, entry, f"row5_envelope_{key}", sources)
+    report = json.loads(paths["report_json"].read_text(encoding="utf-8"))
+    request = json.loads(paths["request_json"].read_text(encoding="utf-8"))
+    prov = json.loads(paths["provenance_json"].read_text(encoding="utf-8"))
+    summary = json.loads(paths["summary_json"].read_text(encoding="utf-8"))
+
+    tb_hash = "sha256:" + sha256_file(paths["tb_spice"])
+    got_in = ((report.get("provenance") or {}).get("input") or {}).get("content_hash")
+    if got_in != tb_hash:
+        raise GenError(f"row-5 envelope report pins input {got_in}, committed tb.spice is {tb_hash}")
+    nl = report.get("netlist")
+    nl_path = nl.get("path") if isinstance(nl, dict) else nl
+    if nl_path != "tb.spice" and not str(nl_path).endswith(f"row5-envelope/{rid}/tb.spice"):
+        raise GenError(f"row-5 envelope report netlist is {nl_path!r}, not this record's tb.spice")
+    lib_hash = sha256_file(paths["corners_lib"])
+    env_lib = (report.get("environment") or {}).get("models_lib_sha256")
+    if env_lib != lib_hash:
+        raise GenError(f"row-5 envelope report pins models_lib {env_lib}, "
+                       f"committed corners.lib is {lib_hash}")
+    if prov.get("record_id") != rid or prov.get("probe"):
+        raise GenError(f"row-5 envelope provenance names record {prov.get('record_id')!r} "
+                       f"(probe={prov.get('probe')!r}), selected {rid!r}; a probe is never citable")
+
+    req_names = [m.get("name") for m in request.get("measurements", [])]
+    if sorted(req_names) != sorted(ROW5_GRADED):
+        raise GenError(f"row-5 envelope request measurements {req_names} differ from the six "
+                       f"graded figures {list(ROW5_GRADED)} (each exactly once)")
+    for m in request["measurements"]:
+        if m.get("limits") != ROW5_LIMITS[m["name"]] or m.get("spec_row") != ROW5_SPEC_ROW_ID:
+            raise GenError(f"row-5 envelope request measurement {m['name']} declares limits "
+                           f"{m.get('limits')} / spec_row {m.get('spec_row')!r}, not the DR-0007 row-5 "
+                           f"target {ROW5_LIMITS[m['name']]} / {ROW5_SPEC_ROW_ID!r}")
+        if "expr" not in m:
+            raise GenError(f"row-5 envelope measurement {m['name']} is not a derived expr")
+    rep_graded = [m for m in report.get("measurements", []) if m.get("name") in ROW5_GRADED]
+    if sorted(m["name"] for m in rep_graded) != sorted(ROW5_GRADED):
+        raise GenError("row-5 envelope report does not declare each of the six graded "
+                       f"figures exactly once (got {sorted(m['name'] for m in rep_graded)})")
+    for m in rep_graded:
+        if m.get("limits") != ROW5_LIMITS[m["name"]] or m.get("spec_row") != ROW5_SPEC_ROW_ID:
+            raise GenError(f"row-5 envelope report graded {m['name']} against "
+                           f"{m.get('limits')} / spec_row {m.get('spec_row')!r}, not "
+                           f"{ROW5_LIMITS[m['name']]} / {ROW5_SPEC_ROW_ID!r}")
+    steps = request.get("analysis_steps")
+    if not isinstance(steps, list) or sorted(s.get("name") for s in steps) != sorted(ROW5_STEPS):
+        raise GenError("row-5 envelope request step names are not the eight named "
+                       "(Vin, Iload) operating points")
+    for s in steps:
+        alter = s.get("alter") or {}
+        if (alter.get("Vin"), alter.get("Iload")) != ROW5_STEPS[s["name"]]:
+            raise GenError(f"row-5 envelope step {s['name']!r} alters {alter}, not its own "
+                           "(Vin, Iload) bias")
+        sm = s.get("measurements") or []
+        if len(sm) != 1 or sm[0].get("name") != "vout_v" or sm[0].get("limits") \
+                or sm[0].get("spec_row"):
+            raise GenError(f"row-5 envelope step {s['name']!r} must report exactly the "
+                           "ungraded, untagged output voltage vout_v")
+    ngs = (request.get("options") or {}).get("ngspice_options") or {}
+    if ngs.get("reltol") is None or ngs.get("abstol") is None \
+            or (report.get("environment") or {}).get("ngspice_options") != ngs:
+        raise GenError("row-5 envelope request does not pin solver tolerances, or the "
+                       "report does not echo them (options.ngspice_options)")
+
+    want_ids = {_r7_corner_id(r) for r in pvt_rows}
+    by_cid: dict = {}
+    for c in report.get("corners", []):
+        cid = c.get("corner_id")
+        if cid in by_cid:
+            raise GenError(f"row-5 envelope reports corner {cid} twice")
+        by_cid[cid] = c
+    if set(by_cid) != want_ids or len(by_cid) != 45:
+        raise GenError(f"row-5 envelope corner set incomplete or malformed "
+                       f"({len(by_cid)} corners, missing {sorted(want_ids - set(by_cid))[:3]}...)")
+    for field, want in (("status", "pass"), ("passed", 45), ("failed", 0),
+                        ("errored", 0), ("inconclusive", 0)):
+        if report.get(field) != want:
+            raise GenError(f"row-5 envelope {field} is {report.get(field)!r}, not {want!r}")
+    values: dict = {}
+    for cid, c in by_cid.items():
+        errs = [d for d in c.get("diagnostics", []) if d.get("severity") == "error"]
+        if errs or c.get("status") != "pass":
+            raise GenError(f"row-5 envelope corner {cid} is not clean: status "
+                           f"{c.get('status')!r}, {len(errs)} error diagnostics")
+        st = c.get("steps", [])
+        if sorted(s.get("name") for s in st) != sorted(ROW5_STEPS) \
+                or any(s.get("status") != "ok" for s in st):
+            raise GenError(f"row-5 envelope corner {cid} does not run each of the eight "
+                           f"named steps exactly once, all ok (got {[s.get('name') for s in st]})")
+        mnames = [x.get("name") for x in c.get("measurements", [])]
+        if any(mnames.count(n) != 1 for n in ROW5_GRADED):
+            raise GenError(f"row-5 envelope corner {cid} does not report each graded "
+                           "figure exactly once")
+        m = {x["name"]: x for x in c.get("measurements", [])}
+        for n in ROW5_GRADED:
+            v = m.get(n, {}).get("value")
+            if v is None or not math.isfinite(v) or m[n].get("status") != "pass":
+                raise GenError(f"row-5 envelope corner {cid} measurement {n} is "
+                               f"{m.get(n)}: not a resolved, passing value")
+            if v >= ROW5_LIMITS[n]["max"]:
+                raise GenError(f"row-5 envelope corner {cid} measurement {n} is {v!r}, "
+                               f"not strictly below the {ROW5_LIMITS[n]['max']} target")
+            values[(cid, n)] = v
+    cov = (report.get("coverage") or {}).get("measurements_with_limits")
+    if cov != len(ROW5_GRADED):
+        raise GenError(f"row-5 envelope measurements_with_limits is {cov!r}, "
+                       f"not {len(ROW5_GRADED)}")
+
+    summ = summary.get("summary") or {}
+    for family, names in (("worst_line", ROW5_LINE_GRADED), ("worst_load", ROW5_LOAD_GRADED)):
+        want_v = max(values[(cid, n)] / ROW5_LIMITS[n]["max"] for cid in by_cid for n in names)
+        got = summ.get(family, {})
+        if not isinstance(got.get("value"), (int, float)) or not math.isclose(
+                got["value"] / got.get("target", float("nan")), want_v,
+                rel_tol=1e-12, abs_tol=1e-15):
+            raise GenError(f"row-5 envelope summary {family} {got} disagrees with the "
+                           f"report's worst normalised value {want_v}")
+    if not summ.get("definitive"):
+        raise GenError("row-5 envelope summary is not definitive; an incomplete or "
+                       "failing matrix must never be cited")
+    if "NOT an error bound" not in (summ.get("solver_convergence_setting_note") or ""):
+        raise GenError("row-5 envelope summary lost its convergence-setting statement")
+    if summ.get("all_graded_strictly_below_target") is not True \
+            or summ.get("graded_declarations_exactly_once") is not True:
+        raise GenError("row-5 envelope summary does not attest strict-below-target and "
+                       "exactly-once graded declarations")
+    quals = " ".join(summ.get("qualifications", []))
+    for needle in ("0.90 V reference", "discrete sampling", "accuracy window", "row 2"):
+        if needle not in quals:
+            raise GenError(f"row-5 envelope summary qualifications dropped: {needle!r}")
+
+    fresh = {}
+    for pin in blk["design_freshness_pins"]:
+        p = root / pin["path"]
+        if not p.is_file():
+            raise GenError(f"row-5 envelope design pin target missing: {pin['path']}")
+        actual = sha256_file(p)
+        recorded = (prov.get("input_sha256") or {}).get(pin["path"])
+        if recorded != pin["sha256"]:
+            raise GenError(f"row-5 envelope provenance recorded {pin['path']} as "
+                           f"{recorded}, selection pins {pin['sha256']}")
+        fresh[pin["path"]] = {"pinned_sha256": pin["sha256"], "actual_sha256": actual,
+                              "matches": actual == pin["sha256"]}
+        sources.append({"role": "row5_envelope_design_freshness", "path": pin["path"],
+                        "sha256": actual, "pinned": True})
+    recorded_pdk = prov.get("pdk_pin_projection_sha256")
+    actual_pdk = _pdk_pin_projection_sha256(root / "sim" / "pdk-cmos5l.json")
+    if not recorded_pdk:
+        raise GenError("row-5 envelope provenance has no pdk_pin_projection_sha256")
+    fresh["sim/pdk-cmos5l.json (pin projection)"] = {
+        "pinned_sha256": recorded_pdk, "actual_sha256": actual_pdk,
+        "matches": recorded_pdk == actual_pdk}
+    stale_components = sorted(k for k, v in fresh.items() if not v["matches"])
+
+    # Cross-check against the offline DC columns (signed there; |.| here).
+    dc_by_key = dcev["by_key"]
+    for r in pvt_rows:
+        cid = _r7_corner_id(r)
+        dcv = dc_by_key[(r["corner"], r["temp_c"], r["res_section"])][0]
+        for ln, key in zip(ROW5_LINE_LOADS, ("0mA", "25mA", "50mA")):
+            d = abs(values[(cid, f"line_{ln}_mvpv")] - abs(dcv[f"line_reg_mv_per_v_{key}"]))
+            if d > ROW5_CROSS_BAND_LINE_MV_PER_V:
+                raise GenError(f"row-5 envelope line regulation at {ln} disagrees with the "
+                               f"offline DC figure at {cid} by {d:.4g} mV/V "
+                               f"(band {ROW5_CROSS_BAND_LINE_MV_PER_V})")
+        for vn, key in zip(ROW5_LOAD_VINS, ("2p97", "3p30", "3p63")):
+            d = abs(values[(cid, f"load_{vn}_pct")] - abs(dcv[f"load_reg_pct_vin{key}"]))
+            if d > ROW5_CROSS_BAND_LOAD_PCT:
+                raise GenError(f"row-5 envelope load regulation at {vn} disagrees with the "
+                               f"offline DC figure at {cid} by {d:.4g} % "
+                               f"(band {ROW5_CROSS_BAND_LOAD_PCT})")
+    return {"cfg": blk, "rid": rid, "values": values, "summary": summ,
+            "fresh": fresh, "stale_components": stale_components,
+            "report_rel": blk["files"]["report_json"]["path"],
+            "summary_rel": blk["files"]["summary_json"]["path"]}
+
+
 # --------------------------------------------------------------------------- #
 # per-row grading: shared context, one module-level function per spec row
 # --------------------------------------------------------------------------- #
@@ -1115,6 +1349,7 @@ class RowContext:
     su: dict
     r10: dict
     r7: dict
+    r5: dict | None
     ccw: dict
     cc_tol_rel: str
     col: Callable[[str], list]
@@ -1189,6 +1424,7 @@ def _row_context(root: Path) -> RowContext:
     su = load_startup(root, sel, sources)
     r10 = load_row10(root, sel, rec, prow, sources)
     r7 = load_row7_envelope(root, sel, prow, dcev, sources)
+    r5 = load_row5_envelope(root, sel, prow, dcev, sources)
 
     def dc_col(name, scale=1.0, valid=None):
         """(values, ambiguous-index-set) over the pvt row order. Invalid points
@@ -1224,7 +1460,7 @@ def _row_context(root: Path) -> RowContext:
                       bc=bc, ac_cond=ac_cond, R=R, dr_rel=dr_rel, pvt_rel=pvt_rel,
                       dc_rel=dc_rel, dev_path=dev_path, evidence_state=evidence_state,
                       stale=stale, fresh_checks=fresh_checks, sources=sources,
-                      dcev=dcev, su=su, r10=r10, r7=r7, ccw=ccw, cc_tol_rel=cc_tol_rel,
+                      dcev=dcev, su=su, r10=r10, r7=r7, r5=r5, ccw=ccw, cc_tol_rel=cc_tol_rel,
                       col=col, dc_col=dc_col)
 
 
@@ -1379,7 +1615,45 @@ def row_5_regulation(ctx: RowContext) -> dict:
                    f"load_reg_pct_vin{key}", ctx.dc_rel, pts, DC_COND_LOAD, ambiguous=bad, note=dc_note)
         m["n_invalid"] = len(bad)
         m5.append(m)
-    return _make_row(ctx.R[5], m5, "partial", [
+    r5 = ctx.r5
+    gaps5 = []
+    if r5 is None:
+        # No graded record is selected: say so, give the row no envelope credit.
+        m5.append(unavailable(
+            "line and load regulation, graded `klt sim` envelope", "mV/V, %", "not_measured",
+            "No row-5 graded `klt sim` envelope is selected in selection.json; the legacy and "
+            "offline DC figures above stay informational and earn no envelope credit.",
+            source={"selection": "sim/characterization/selection.json"}))
+        gaps5.append("no graded `klt sim` envelope record selected for row 5 (line and load regulation)")
+    else:
+        by_point5: dict = {}
+        for (cid, n), v in r5["values"].items():
+            by_point5.setdefault(cid, {})[n] = v
+        load_lbl = {"i0": "0 mA", "i25m": "25 mA", "i50m": "50 mA"}
+        vin_lbl = {"v2v97": "2.97", "v3v30": "3.30", "v3v63": "3.63"}
+        note5 = ("graded by `klt sim` (derived-expr measurement, limit inside the request; the "
+                 "verdict is the tool's own, strictness enforced here because the tool's `max` "
+                 "is inclusive). Solver convergence setting (NOT an error bound): "
+                 f"{r5['summary']['solver_convergence_setting_note']}. "
+                 "Qualifications: " + "; ".join(r5["summary"]["qualifications"]) + ".")
+        pts_line, pts_load = [], []
+        for i, prow_row in enumerate(ctx.prow):
+            cid = _r7_corner_id(prow_row)
+            for ln in ROW5_LINE_LOADS:
+                at = dict(ctx.pid[i])
+                at["load"] = load_lbl[ln]
+                pts_line.append((by_point5[cid][f"line_{ln}_mvpv"], at))
+            for vn in ROW5_LOAD_VINS:
+                at = dict(ctx.pid[i])
+                at["vin_v"] = vin_lbl[vn]
+                pts_load.append((by_point5[cid][f"load_{vn}_pct"], at))
+        m5.append(metric("graded `klt sim` envelope: line regulation at 0 / 25 / 50 mA "
+                         "(Vin 2.97-3.63 V)", "mV/V", "lt", 5.0, ", ".join(ROW5_LINE_GRADED),
+                         r5["report_rel"], pts_line, ROW5_ENV_COND, note=note5))
+        m5.append(metric("graded `klt sim` envelope: load regulation 0-50 mA at Vin = "
+                         "2.97 / 3.30 / 3.63 V", "%", "lt", 1.0, ", ".join(ROW5_LOAD_GRADED),
+                         r5["report_rel"], pts_load, ROW5_ENV_COND, note=note5))
+    return _make_row(ctx.R[5], m5, "partial", gaps5 + [
         "line regulation sampled at 5 discrete loads (0, 12.5, 25, 37.5, 50 mA) over Vin 2.97-3.63 V; "
         "load regulation sampled at 3 discrete supplies (2.97, 3.30, 3.63 V) -- not continuous coverage of the window",
         "'inside the accuracy window' (coupling with the statistical VOUT row, #56) not covered for either metric",
@@ -1729,6 +2003,19 @@ def _assemble_outputs(ctx: RowContext, rows: list) -> tuple[dict, dict]:
     chk("row-7 envelope is current against the design netlists and the PDK pin", not ctx.r7["stale_components"],
         "the envelope's recorded design-netlist hashes and PDK pin projection match the tree" if not ctx.r7["stale_components"]
         else "stale against the design / PDK pin: " + ", ".join(ctx.r7["stale_components"]))
+    if ctx.r5 is None:
+        chk("row-5 graded envelope: no record selected; the gap is stated in the row and "
+            "earns no envelope credit", True, "selection.json has no row5_envelope_evidence")
+    else:
+        chk("row-5 graded envelope: pinned, whole clean 45-corner matrix, six limits-bearing "
+            "measurements tagged dr0007-row5-line-load-regulation, every named (Vin, Iload) step "
+            "ok, strictly below target, summary agrees with the report, agrees with the offline "
+            "DC columns", True)
+        chk("row-5 envelope is current against the design netlists and the PDK pin",
+            not ctx.r5["stale_components"],
+            "the envelope's recorded design-netlist hashes and PDK pin projection match the tree"
+            if not ctx.r5["stale_components"]
+            else "stale against the design / PDK pin: " + ", ".join(ctx.r5["stale_components"]))
     chk("every target row appears exactly once", sorted(r["id"] for r in rows) == list(range(1, 11)),
         f"rows: {[r['id'] for r in rows]}")
     chk("every row carries an allowed verdict", all(r["verdict"] in ROW_VERDICTS for r in rows))
