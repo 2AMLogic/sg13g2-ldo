@@ -17,7 +17,7 @@
   ],
   "selection": {
     "file": "sim/characterization/selection.json",
-    "sha256": "3ab3f96f338794aa71cda933bb265baf70b0beeb3e0b9961051bbba1cf774f09",
+    "sha256": "4ca582cd0b5a9036e07abf5d8907155a5445c83ba4e483779d81321f1923180f",
     "circuit_record_id": "20261011-070111-5391c68",
     "experiment": "ldo-cmos5l-pvt-sweep",
     "device_context_record_id": "20260909-220347-ed18110",
@@ -155,13 +155,19 @@
     {
       "role": "row7_envelope_summary_json",
       "path": "sim/ldo-cmos5l-pvt-sweep/row7-envelope/20261121-001957-ed6b0587/row7-envelope.json",
-      "sha256": "ed5ec9e5f6c5036d3e24fffcbc777c6aca5f803060ee1055a30c8b00187bbabc",
+      "sha256": "b2ecfb9be28d9aaf42cb86c162bfad41a67233ee00f7a4d08b78b44eda7bcb6f",
       "pinned": true
     },
     {
       "role": "row7_envelope_tb_spice",
       "path": "sim/ldo-cmos5l-pvt-sweep/row7-envelope/20261121-001957-ed6b0587/tb.spice",
       "sha256": "d1101e8225423b91b6f462df3aedfc2b68ec1e2995c7de101662214451baa279",
+      "pinned": true
+    },
+    {
+      "role": "row7_pair_json",
+      "path": "sim/ldo-cmos5l-pvt-sweep/row7-envelope/20261123-120423-ca4c931d/row7-pair.json",
+      "sha256": "65f054a9a8a30fae976c104fc4b7695e6cdf87897084670b98fa6821287c0992",
       "pinned": true
     },
     {
@@ -197,7 +203,7 @@
     {
       "role": "superseded_evidence_statement",
       "path": "sim/ldo-cmos5l-pvt-sweep/README.md",
-      "sha256": "124ef33a203e87a6545ebf2f783b1417ab098d65a77d60ddad1e4a973f2d9d86",
+      "sha256": "103dca5feb6637bf2f3ed78ef30f09c8ebfc014309950247dab28f7e8373fee2",
       "pinned": false
     },
     {
@@ -1032,12 +1038,12 @@
             "n_points_at_this_value": 1
           },
           "verdict": "pass",
-          "conditions": "Vin {2.97, 3.30, 3.63} V x Iload {0, 50 mA} per corner (six analysis_steps operating points), Iq = |i(VIN)| - Iload graded by `klt sim` as derived-expr measurements with limits in the request (spec_row dr0007-row7-iq); solver tolerances pinned reltol=1e-9 abstol=1e-15, noise bound ~5.1e-11 A; ideal 0.90 V reference and ideal 2 uA IBIAS sink, no #190 limiter; 45-point corner grid; the verdict cited here is `klt sim`'s own (limits inside the request)",
+          "conditions": "Vin {2.97, 3.30, 3.63} V x Iload {0, 50 mA} per corner (six analysis_steps operating points), Iq = |i(VIN)| - Iload graded by `klt sim` as derived-expr measurements with limits in the request (spec_row dr0007-row7-iq); solver tolerances pinned reltol=1e-9 abstol=1e-15 (a convergence setting, not an error bound; observed sensitivity is the paired tight-tolerance record); ideal 0.90 V reference and ideal 2 uA IBIAS sink, no #190 limiter; 45-point corner grid; the verdict cited here is `klt sim`'s own (limits inside the request)",
           "source": {
             "record": "sim/ldo-cmos5l-pvt-sweep/row7-envelope/20261121-001957-ed6b0587/report.json",
             "column": "iq_i0_v2v97_a, iq_i0_v3v30_a, iq_i0_v3v63_a"
           },
-          "note": "values in A in the envelope, converted to uA (x1e6). Numerical-noise bound for the full-load difference: full-load Iq is graded as a derived expr inside ngspice (klt sim analysis_steps, klayout-tools #2482), never as an offline subtraction; with .options reltol=1e-9 abstol=1e-15 pinned in the request and the 50 mA load an exact ideal-source literal, |delta Iq| <= reltol*|i(VIN)| + abstol ~= 5e-11 A (~0.00005 uA, 0.0002 % of the 30 uA limit). An older record's full-load figure (23.05uA-23.08uA) is on a superseded design and is NOT used."
+          "note": "values in A in the envelope, converted to uA (x1e6). Solver convergence setting (NOT an error bound): NOT an error bound. The request pins .options reltol/abstol of the 'standard' profile; ngspice's stopping test compares each iterate with the previous one and bounds nothing about the distance to the exact operating point. For the standard profile (reltol=1e-9 abstol=1e-15) the threshold at the largest current is ~5e-11 A (0.0002 % of the 30 uA limit). Full-load Iq is graded as a derived expr inside ngspice (klt sim analysis_steps, klayout-tools #2482), never as an offline subtraction. The observed change under tighter tolerances is a separate, measured quantity: see the paired record's row7-pair.json. Observed solver sensitivity, a measurement over its stated coverage and not a bound: re-solving all 270 (corner, graded figure) pairs at reltol=1e-10 abstol=1e-15 changed the largest figure by 8.4e-15 A (8.4e-09 uA; 270 of 270 (corner, graded measurement) pairs over 45 of 45 corners). An older record's full-load figure (23.05uA-23.08uA) is on a superseded design and is NOT used."
         },
         {
           "name": "Iq at full load (50 mA), load current excluded (graded `klt sim` envelope, Vin 2.97-3.63 V)",
@@ -1063,12 +1069,12 @@
             "n_points_at_this_value": 1
           },
           "verdict": "pass",
-          "conditions": "Vin {2.97, 3.30, 3.63} V x Iload {0, 50 mA} per corner (six analysis_steps operating points), Iq = |i(VIN)| - Iload graded by `klt sim` as derived-expr measurements with limits in the request (spec_row dr0007-row7-iq); solver tolerances pinned reltol=1e-9 abstol=1e-15, noise bound ~5.1e-11 A; ideal 0.90 V reference and ideal 2 uA IBIAS sink, no #190 limiter; 45-point corner grid; the difference is a derived-expr measurement inside ngspice, never an offline subtraction",
+          "conditions": "Vin {2.97, 3.30, 3.63} V x Iload {0, 50 mA} per corner (six analysis_steps operating points), Iq = |i(VIN)| - Iload graded by `klt sim` as derived-expr measurements with limits in the request (spec_row dr0007-row7-iq); solver tolerances pinned reltol=1e-9 abstol=1e-15 (a convergence setting, not an error bound; observed sensitivity is the paired tight-tolerance record); ideal 0.90 V reference and ideal 2 uA IBIAS sink, no #190 limiter; 45-point corner grid; the difference is a derived-expr measurement inside ngspice, never an offline subtraction",
           "source": {
             "record": "sim/ldo-cmos5l-pvt-sweep/row7-envelope/20261121-001957-ed6b0587/report.json",
             "column": "iq_i50m_v2v97_a, iq_i50m_v3v30_a, iq_i50m_v3v63_a"
           },
-          "note": "values in A in the envelope, converted to uA (x1e6). Numerical-noise bound for the full-load difference: full-load Iq is graded as a derived expr inside ngspice (klt sim analysis_steps, klayout-tools #2482), never as an offline subtraction; with .options reltol=1e-9 abstol=1e-15 pinned in the request and the 50 mA load an exact ideal-source literal, |delta Iq| <= reltol*|i(VIN)| + abstol ~= 5e-11 A (~0.00005 uA, 0.0002 % of the 30 uA limit). An older record's full-load figure (23.05uA-23.08uA) is on a superseded design and is NOT used.",
+          "note": "values in A in the envelope, converted to uA (x1e6). Solver convergence setting (NOT an error bound): NOT an error bound. The request pins .options reltol/abstol of the 'standard' profile; ngspice's stopping test compares each iterate with the previous one and bounds nothing about the distance to the exact operating point. For the standard profile (reltol=1e-9 abstol=1e-15) the threshold at the largest current is ~5e-11 A (0.0002 % of the 30 uA limit). Full-load Iq is graded as a derived expr inside ngspice (klt sim analysis_steps, klayout-tools #2482), never as an offline subtraction. The observed change under tighter tolerances is a separate, measured quantity: see the paired record's row7-pair.json. Observed solver sensitivity, a measurement over its stated coverage and not a bound: re-solving all 270 (corner, graded figure) pairs at reltol=1e-10 abstol=1e-15 changed the largest figure by 8.4e-15 A (8.4e-09 uA; 270 of 270 (corner, graded measurement) pairs over 45 of 45 corners). An older record's full-load figure (23.05uA-23.08uA) is on a superseded design and is NOT used.",
           "superseded_statement": {
             "source": "sim/ldo-cmos5l-pvt-sweep/README.md",
             "describes": "Iq at full load, from the #25 record, which was run against a superseded netlist (pre-#28 behavioural divider, pre-#35 Cc). Quoted only to show a full-load number once existed; it is NOT evidence about the current design."
@@ -2184,7 +2190,7 @@
       {
         "check": "all selected records exist and match their sha256 pins",
         "ok": true,
-        "detail": "27 pinned sources verified"
+        "detail": "28 pinned sources verified"
       },
       {
         "check": "README target table: 10 rows, expected names and target text",
@@ -2212,9 +2218,9 @@
         "detail": ""
       },
       {
-        "check": "row-7 envelope is current against the design netlists",
+        "check": "row-7 envelope is current against the design netlists and the PDK pin",
         "ok": true,
-        "detail": "the envelope's recorded design-netlist hashes match the tree"
+        "detail": "the envelope's recorded design-netlist hashes and PDK pin projection match the tree"
       },
       {
         "check": "every target row appears exactly once",

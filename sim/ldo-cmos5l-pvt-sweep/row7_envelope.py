@@ -26,20 +26,26 @@ This bench closes both halves the only honest way:
     another measurement's result; the derived-expr form is the documented,
     supported expression of a combination-of-solves quantity.)
 
-Numerical-noise bound for the full-load difference (stated in every record's
-summary, per the issue): the request pins the solver tolerances
-`.options reltol=1e-9 abstol=1e-15` (`options.ngspice_options`, echoed as
-`environment.ngspice_options`), and the 50 mA load current is an ideal
-source's exact literal, so the only error channel in the difference is the
-i(VIN) operating-point solve itself:
+Solver convergence setting vs. observed solver sensitivity (stated in every
+record's summary; the two are different things and are never conflated):
 
-    |delta Iq| <= reltol * |i(VIN)| + abstol
-               <= 1e-9 * 0.0503 + 1e-15  ~=  5.1e-11 A  (~0.000051 uA)
+  * CONVERGENCE SETTING.  The request pins `.options reltol=1e-9
+    abstol=1e-15` (`options.ngspice_options`, echoed as
+    `environment.ngspice_options`).  ngspice's stopping test compares each new
+    branch-current iterate with the PREVIOUS iterate
+    (`reltol * max(|new|, |old|) + abstol`); it supplies NO bound on the
+    distance from the exact operating point.  The figure
+    `reltol*(Iload + target) + abstol ~= 5.1e-11 A` is therefore only the
+    stopping threshold of that test -- a setting, not an error bound.
+  * OBSERVED SENSITIVITY.  What the evidence can honestly say is measured: a
+    second, paired record (`--profile tight-... --pair-of <base>`) re-runs
+    the whole 45-corner x 6-measurement grid at tighter tolerances, and
+    `row7-pair.json` in that record reports the largest observed change
+    between the two solves, where it occurred and its coverage.  That is an
+    observation over those 270 pairs, not a guarantee.
 
-about 0.0002 % of the 30 uA limit (verified before the fleet run by re-solving
-the nominal and both worst legacy corners with reltol=1e-12/abstol=1e-17 and
-comparing: agreement within 1e-12 A).  `ngspice_init` pins `numdgt=12` so the
-printed values carry 12 digits, ~1e-17 A quantization.
+`ngspice_init` pins `numdgt=12` so the printed values carry 12 digits, ~1e-17 A
+quantization.
 
 Iq definition (the same quantity the legacy evidence base measured as
 `iq_a`): |i(VIN)| minus the load current -- the core's quiescent current
@@ -102,9 +108,27 @@ ROW7_ID = "dr0007-row7-iq"
 # The numerical-noise bound machinery (see this module's header): tolerances
 # pinned in the request, and the analytic bound they give for the difference.
 NGSPICE_OPTIONS = {"reltol": 1e-9, "abstol": 1e-15}
+# Tighter-tolerance profiles of paired records (`submit --profile NAME
+# --pair-of BASE`). Names are part of the record: a profile's options never
+# change under its name. `tight-1e-12` was tried first and does NOT converge
+# on the grid (the committed history record shows 43 of 45 corners erroring in
+# dynamic gmin stepping); `tight-1e-11` converged on 40 of 45 corners. Both
+# stay committed as history. The cited pair is the tightest profile that
+# resolves the whole grid.
+PROFILES = {
+    "standard": NGSPICE_OPTIONS,
+    "tight-1e-12": {"reltol": 1e-12, "abstol": 1e-17},
+    "tight-1e-11": {"reltol": 1e-11, "abstol": 1e-16},
+    "tight-1e-10": {"reltol": 1e-10, "abstol": 1e-15},
+}
+TIGHT_PROFILES = sorted(k for k in PROFILES if k != "standard")
 NGSPICE_INIT = ["set numdgt=12"]
-NOISE_BOUND_A = NGSPICE_OPTIONS["reltol"] * (LOAD_A + TARGET_IQ_A) \
+# ngspice's stopping threshold for the supply-current iterate at the row's
+# largest current: a CONVERGENCE SETTING, explicitly NOT an error bound (the
+# test compares successive iterates, not the distance to the exact solution).
+CONVERGENCE_SETTING_A = NGSPICE_OPTIONS["reltol"] * (LOAD_A + TARGET_IQ_A) \
     + NGSPICE_OPTIONS["abstol"]          # ~5.1e-11 A, stated per record
+PAIR_FILE = "row7-pair.json"
 
 # Re-exported grid constants: one 45-point PVT grid, one spelling.
 MOS = re_.MOS
@@ -190,17 +214,18 @@ def measurements():
     return out
 
 
-def request_obj(osdi_dir, cs):
+def request_obj(osdi_dir, cs, profile="standard"):
     return re_.request_skeleton(
         cs, "analysis_steps", analysis_steps(), measurements(), osdi_dir,
-        extra_options={"ngspice_options": dict(NGSPICE_OPTIONS),
+        extra_options={"ngspice_options": dict(PROFILES[profile]),
                        "ngspice_init": list(NGSPICE_INIT)},
         timeout_s=600)
 
 
-def request_files(subs, cs, template_text):
+def request_files(subs, cs, template_text, profile="standard"):
     """The three request-dir files, as {name: text}. Deterministic."""
-    return re_.request_files(subs, cs, template_text, HEADER_LINES, request_obj)
+    return re_.request_files(subs, cs, template_text, HEADER_LINES,
+                             lambda osdi, c: request_obj(osdi, c, profile))
 
 
 def design_netlist_include(depth):
@@ -223,6 +248,7 @@ def summarise_report(report, prov):
         errs = [d for d in c.get("diagnostics", []) if d.get("severity") == "error"]
         steps = c.get("steps", [])
         coord = want.get(cid)
+        step_names = [s["name"] for s in analysis_steps()]
         p = {
             "corner_id": cid,
             "mos": coord[0] if coord else None,
@@ -231,8 +257,9 @@ def summarise_report(report, prov):
             "corner_status": c.get("status"),
             "error_diagnostics": len(errs),
             "n_steps_reported": len(steps),
-            "steps_all_ok": (len(steps) == len(analysis_steps())
-                             and all(s.get("status") == "ok" for s in steps)),
+            # Each expected named step exactly once and ok, each graded
+            # figure exactly once (six repeats of one step must not pass).
+            "steps_all_ok": re_.corner_shape_ok(c, step_names, GRADED),
         }
         for n in GRADED:
             p[n] = meas.get(n, {}).get("value")
@@ -244,6 +271,14 @@ def summarise_report(report, prov):
     for p in points:
         status_counts[p["corner_status"]] = status_counts.get(p["corner_status"], 0) + 1
     graded_ok = all(p[n + "_status"] == "pass" for p in points for n in GRADED)
+    # DR-0007 row 7 is a STRICT "< 30 uA"; klt sim's `max` limit is inclusive
+    # (a value of exactly 30 uA grades `pass`), so strictness is enforced here:
+    # a graded figure AT the target is not a definitive pass.
+    strictly_below = all(p[n] is not None and p[n] < TARGET_IQ_A
+                         for p in points for n in GRADED)
+    rep_names = [m.get("name") for m in report.get("measurements", [])
+                 if m.get("name") in set(GRADED)]
+    declared_once = sorted(rep_names) == sorted(GRADED)
     resolved = {n: [p for p in points if p[n] is not None] for n in GRADED}
 
     def worst(names):
@@ -274,6 +309,9 @@ def summarise_report(report, prov):
         "measurements_with_limits": (report.get("coverage") or {}).get("measurements_with_limits"),
         "graded_measurements": list(GRADED),
         "all_graded_measurements_pass": graded_ok,
+        "all_graded_strictly_below_target": strictly_below,
+        "graded_declarations_exactly_once": declared_once,
+        "solver_profile": prov.get("solver_profile", "standard"),
         "target_iq_ua": TARGET_IQ_A * 1e6,
         "iq_definition": "|i(VIN)| - Iload per (Vin, Iload) operating point; the "
                          "same quantity the legacy evidence base recorded as iq_a "
@@ -287,18 +325,19 @@ def summarise_report(report, prov):
             "schematic level, corner grid only, no Monte Carlo (DR-0007 classifies "
             "the row deterministic)",
         ],
-        "numerical_noise_bound_a": NOISE_BOUND_A,
-        "numerical_noise_bound_note": "full-load Iq is graded as a derived expr "
-                                      "inside ngspice (klt sim analysis_steps, "
-                                      "klayout-tools #2482), never as an offline "
-                                      "subtraction; with .options reltol=1e-9 "
-                                      "abstol=1e-15 pinned in the request and the "
-                                      "50 mA load an exact ideal-source literal, "
-                                      "|delta Iq| <= reltol*|i(VIN)| + abstol "
-                                      f"~= {NOISE_BOUND_A:.3g} A "
-                                      f"(~{NOISE_BOUND_A*1e6:.5f} uA, "
-                                      f"{NOISE_BOUND_A/TARGET_IQ_A*100:.4f} % of "
-                                      "the 30 uA limit)",
+        "solver_convergence_setting_a": CONVERGENCE_SETTING_A,
+        "solver_convergence_setting_note": "NOT an error bound. The request pins "
+            f".options reltol/abstol of the '{prov.get('solver_profile', 'standard')}' "
+            "profile; ngspice's stopping test compares each iterate with the "
+            "previous one and bounds nothing about the distance to the exact "
+            "operating point. For the standard profile (reltol=1e-9 "
+            f"abstol=1e-15) the threshold at the largest current is "
+            f"~{CONVERGENCE_SETTING_A:.3g} A "
+            f"({CONVERGENCE_SETTING_A/TARGET_IQ_A*100:.4f} % of the 30 uA limit). "
+            "Full-load Iq is graded as a derived expr inside ngspice "
+            "(klt sim analysis_steps, klayout-tools #2482), never as an offline "
+            "subtraction. The observed change under tighter tolerances is a "
+            "separate, measured quantity: see the paired record's row7-pair.json",
         "definitive": False,
     }
     if w_nl:
@@ -317,6 +356,8 @@ def summarise_report(report, prov):
         and summ["error_diagnostics_total"] == 0
         and all(p["steps_all_ok"] for p in points)
         and graded_ok
+        and strictly_below
+        and declared_once
         and summ["measurements_with_limits"] == len(GRADED)
         and all(len(resolved[n]) == N_EXPECTED for n in GRADED)
     )
@@ -366,8 +407,8 @@ def summary_md(summ, points, prov):
           f"the whole {N_EXPECTED}-coordinate matrix reported, every step ok, "
           "resolved, graded and clean).",
           "",
-          "## Numerical-noise bound (the full-load difference)", "",
-          summ["numerical_noise_bound_note"] + ". The step supply currents are "
+          "## Solver convergence setting (not an error bound)", "",
+          summ["solver_convergence_setting_note"] + ". The step supply currents are "
           "reported ungraded per corner in `report.json`, so every graded "
           "difference can be re-derived by hand.", "",
           "## Exclusions this evidence must be read with", ""]
@@ -416,9 +457,112 @@ def summary_files(record_dir):
 # submit / summarise / check
 # --------------------------------------------------------------------------- #
 
+def pair_summary(base_dir, tight_dir):
+    """Observed change between the standard- and tight-tolerance solves of the
+    SAME grid: for every (corner, graded measurement) pair, |tight - base|.
+
+    An observation over exactly the pairs it counts -- never a bound.  The two
+    records must differ in `ngspice_options` and nothing else (same request
+    otherwise, same recorded input hashes, same PDK pin projection)."""
+    def load(d, name):
+        with open(os.path.join(d, name)) as f:
+            return json.load(f)
+    rb, rt = load(base_dir, "report.json"), load(tight_dir, "report.json")
+    pb, pt = load(base_dir, "provenance.json"), load(tight_dir, "provenance.json")
+    qb, qt = load(base_dir, "request.json"), load(tight_dir, "request.json")
+    opts_b = (qb.get("options") or {}).get("ngspice_options")
+    opts_t = (qt.get("options") or {}).get("ngspice_options")
+    for q in (qb, qt):
+        q["options"].pop("ngspice_options", None)
+    identical = (qb == qt
+                 and pb.get("input_sha256") == pt.get("input_sha256")
+                 and pb.get("pdk_pin_projection_sha256") == pt.get("pdk_pin_projection_sha256"))
+
+    def values(report):
+        out, dup = {}, 0
+        for c in report.get("corners", []):
+            for m in c.get("measurements", []):
+                if m.get("name") in GRADED and isinstance(m.get("value"), (int, float)):
+                    k = (c.get("corner_id"), m["name"])
+                    dup += k in out
+                    out[k] = m["value"]
+        return out, dup
+    vb, dup_b = values(rb)
+    vt, dup_t = values(rt)
+    keys = sorted(set(vb) & set(vt))
+    deltas = [(abs(vt[k] - vb[k]), k) for k in keys]
+    by_meas = {}
+    for d, (cid, n) in deltas:
+        by_meas[n] = max(by_meas.get(n, 0.0), d)
+    worst = max(deltas, default=(None, None))
+    expected = N_EXPECTED * len(GRADED)
+    out = {
+        "base_record": pb.get("record_id"),
+        "tight_record": pt.get("record_id"),
+        "base_options": opts_b,
+        "tight_options": opts_t,
+        "requests_and_inputs_identical_except_options": bool(identical),
+        "pairs_expected": expected,
+        "pairs_compared": len(keys),
+        "duplicate_values_seen": dup_b + dup_t,
+        "coverage": f"{len(keys)} of {expected} (corner, graded measurement) pairs "
+                    f"over {len({k[0] for k in keys})} of {N_EXPECTED} corners",
+        "max_abs_delta_a": worst[0],
+        "max_abs_delta_ua": None if worst[0] is None else worst[0] * 1e6,
+        "max_abs_delta_fraction_of_limit": None if worst[0] is None
+                                          else worst[0] / TARGET_IQ_A,
+        "worst_pair": None if worst[1] is None else
+                      {"corner_id": worst[1][0], "measurement": worst[1][1],
+                       "base_a": vb[worst[1]], "tight_a": vt[worst[1]]},
+        "max_abs_delta_a_by_measurement": dict(sorted(by_meas.items())),
+        "interpretation": "Observed change between two solves of the same "
+                          "request at the stated tolerances, over the pairs "
+                          "counted above. It is an observation, not a bound on "
+                          "the distance to the exact operating point, and it is "
+                          "NOT the convergence setting recorded in the summary.",
+    }
+    prof = pt.get("solver_profile")
+    out["tight_profile"] = prof
+    out["complete"] = bool(identical and len(keys) == expected
+                           and not out["duplicate_values_seen"]
+                           and prof in TIGHT_PROFILES
+                           and opts_b == NGSPICE_OPTIONS and opts_t == PROFILES[prof])
+    return out
+
+
+def pair_files(tight_dir, base_id):
+    base_dir = os.path.join(ROOT, base_id)
+    if not os.path.isdir(base_dir):
+        raise Error(f"no such base record: {base_dir}")
+    return {PAIR_FILE: json.dumps(pair_summary(base_dir, tight_dir),
+                                  indent=1, sort_keys=True) + "\n"}
+
+
+def cmd_pair(a):
+    record_dir = os.path.join(ROOT, a.record_id)
+    prov = json.load(open(os.path.join(record_dir, "provenance.json")))
+    if prov.get("solver_profile") not in TIGHT_PROFILES or not prov.get("pair_of"):
+        raise Error(f"{a.record_id} is not a tight-profile record with pair_of")
+    files = pair_files(record_dir, prov["pair_of"])
+    bad = re_.write_or_check(record_dir, files, check=a.check)
+    if bad:
+        raise Error("pair file stale or missing: " + ", ".join(bad))
+    print(files[PAIR_FILE], end="")
+    return 0
+
+
 def cmd_submit(a):
+    profile = a.profile
+    tight = profile != "standard"
+    if tight and (a.probe or not a.pair_of
+                  or not os.path.isdir(os.path.join(ROOT, a.pair_of))):
+        raise Error("a tight --profile needs --pair-of <existing full-matrix "
+                    "standard record id> and is never a probe")
+    if a.pair_of and not tight:
+        raise Error("--pair-of only applies to a tight --profile")
+
     def prov_extra(rid, probe):
-        return {
+        extra = {
             "spec_row": "DR-0007 row 7 (Iq excluding load < 30 uA at no load and "
                         "at full load) -- Open; this envelope does not ratify it",
             "measurement_definition": "Iq = |i(VIN)| - Iload per (Vin, Iload) "
@@ -426,15 +570,29 @@ def cmd_submit(a):
                                       "expr measurements over analysis_steps "
                                       "(klayout-tools #2482), never computed by "
                                       "repo Python",
-            "numerical_noise_bound_a": NOISE_BOUND_A,
+            "solver_profile": profile,
+            "solver_options": dict(PROFILES[profile]),
+            "solver_convergence_setting_a": CONVERGENCE_SETTING_A,
             "input_sha256": {p: sha256_file(os.path.join(REPO, p)) for p in INPUTS},
         }
-    return re_.submit_record(
+        if tight:
+            extra["pair_of"] = a.pair_of
+        return extra
+    inv = "python3 sim/ldo-cmos5l-pvt-sweep/row7_envelope.py submit{probe}" \
+        + (f" --profile {profile} --pair-of {a.pair_of}" if tight else "")
+    rc = re_.submit_record(
         a, slug="row7", root=ROOT, template_rel=TEMPLATE,
         design_netlist_rel=DESIGN_NETLIST, header_lines=HEADER_LINES,
-        request_files_fn=request_files, summary_files_fn=summary_files,
-        invocation_fmt="python3 sim/ldo-cmos5l-pvt-sweep/row7_envelope.py submit{probe}",
-        prov_extra=prov_extra)
+        request_files_fn=lambda subs, cs, t: request_files(subs, cs, t, profile),
+        summary_files_fn=summary_files,
+        invocation_fmt=inv, prov_extra=prov_extra)
+    if tight and not a.dry_run:
+        newest = records(ROOT)[-1]
+        prov = json.load(open(os.path.join(ROOT, newest, "provenance.json")))
+        if prov.get("pair_of") == a.pair_of:
+            files = pair_files(os.path.join(ROOT, newest), a.pair_of)
+            re_.write_or_check(os.path.join(ROOT, newest), files, check=False)
+    return rc
 
 
 def cmd_summarise(a):
@@ -454,16 +612,53 @@ def check_record(rid, problems):
     if not os.path.exists(os.path.join(record_dir, "provenance.json")):
         problems.append(f"{rid}: no provenance.json")
         return None
+    prov = json.load(open(os.path.join(record_dir, "provenance.json")))
+    profile = prov.get("solver_profile", "standard")
+    if profile not in PROFILES:
+        problems.append(f"{rid}: unknown solver_profile {profile!r}")
+        return None
     summ, prov = re_.check_request_and_summary(
         record_dir, rid, problems, slug="row7",
-        request_files_fn=request_files, template_rel=TEMPLATE,
-        summary_files_fn=summary_files)
+        request_files_fn=lambda subs, cs, t: request_files(subs, cs, t, profile),
+        template_rel=TEMPLATE, summary_files_fn=summary_files)
     re_.check_hash_pins(record_dir, rid, problems, slug="row7",
                         tail=f"row7-envelope/{rid}/tb.spice")
     re_.check_declared_gates(record_dir, rid, problems,
                              measurements_fn=measurements, graded=GRADED,
                              row_id=ROW7_ID, slug="row7")
+    if profile in TIGHT_PROFILES:
+        base = prov.get("pair_of")
+        if not base or not os.path.isdir(os.path.join(ROOT, base)):
+            problems.append(f"{rid}: tight record's pair_of {base!r} is not a "
+                            "committed record")
+        else:
+            try:
+                want = pair_files(record_dir, base)
+            except (OSError, ValueError, KeyError) as exc:
+                problems.append(f"{rid}: cannot build the paired comparison: {exc}")
+            else:
+                problems += [f"{rid}: pair {b}" for b in
+                             re_.write_or_check(record_dir, want, check=True)]
+                # An incomplete pair is legitimate HISTORY (a profile that did
+                # not converge stays committed); it is only an error for the
+                # pair that selection.json cites (see cmd_check).
     return summ
+
+
+def cited_record():
+    """The record id sim/characterization/selection.json cites for row 7."""
+    sel = json.load(open(os.path.join(REPO, "sim", "characterization", "selection.json")))
+    return (sel.get("row7_envelope_evidence") or {}).get("id")
+
+
+def cited_pair_record():
+    sel = json.load(open(os.path.join(REPO, "sim", "characterization", "selection.json")))
+    pe = (sel.get("row7_envelope_evidence") or {}).get("pair_evidence") or {}
+    return pe.get("tight_record_id")
+
+
+def stale_inputs(rid):
+    return re_.stale_inputs(REPO, ROOT, rid, INPUTS)
 
 
 def cmd_check(a):
@@ -472,6 +667,28 @@ def cmd_check(a):
     if not rids:
         problems.append("no record under sim/ldo-cmos5l-pvt-sweep/row7-envelope/")
     summaries = {rid: check_record(rid, problems) for rid in rids}
+    cited_pair = cited_pair_record()
+    if cited_pair is not None:
+        pf = os.path.join(ROOT, cited_pair, PAIR_FILE)
+        if not os.path.exists(pf):
+            problems.append(f"selection.json cites pair record {cited_pair} without "
+                            f"a {PAIR_FILE}")
+        else:
+            with open(pf) as f:
+                pdoc = json.load(f)
+            if not pdoc.get("complete") or pdoc.get("base_record") != cited_record():
+                problems.append(f"the cited pair {cited_pair} is incomplete or pairs "
+                                f"{pdoc.get('base_record')}, not the cited record "
+                                f"{cited_record()}")
+            if not (summaries.get(cited_pair) or {}).get("definitive"):
+                problems.append(f"the cited pair record {cited_pair} is not a "
+                                "definitive matrix")
+    cited = cited_record()
+    if cited not in summaries:
+        problems.append(f"selection.json cites row-7 record {cited}, which is not committed")
+    else:
+        # The cited record must describe the design and PDK as they are now.
+        problems += stale_inputs(cited)
     for p in problems:
         print("row7_envelope: " + p, file=sys.stderr)
     if problems:
@@ -492,7 +709,17 @@ def main():
                         "toolchain probe; never citable")
     s.add_argument("--dry-run", action="store_true",
                    help="build and validate the request without submitting")
+    s.add_argument("--profile", choices=sorted(PROFILES), default="standard",
+                   help="solver-tolerance profile; a tight one makes the paired "
+                        "record that measures solver sensitivity")
+    s.add_argument("--pair-of", metavar="RECORD_ID",
+                   help="with a tight --profile: the standard record this one "
+                        "is paired with")
     s.set_defaults(fn=cmd_submit)
+    pr = sp.add_parser("pair", help="rewrite a tight record's row7-pair.json")
+    pr.add_argument("record_id")
+    pr.add_argument("--check", action="store_true")
+    pr.set_defaults(fn=cmd_pair)
     c = sp.add_parser("check", help="offline: every committed record reproduces (CI)")
     c.set_defaults(fn=cmd_check)
     m = sp.add_parser("summarise", help="rewrite one record's summary files")

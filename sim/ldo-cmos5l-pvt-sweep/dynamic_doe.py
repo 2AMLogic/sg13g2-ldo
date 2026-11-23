@@ -24,7 +24,6 @@ import json
 import math
 import os
 import sys
-from decimal import Decimal, InvalidOperation
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -35,8 +34,6 @@ LOAD_LEVELS_UA = (0, 1000, 25000, 50000)      # 0, 1, 25, 50 mA
 COUT_LEVELS_NF = (330, 1000, 2200, 4700)      # 0.33, 1.0, 2.2, 4.7 uF
 ESR_LEVELS_MOHM = (0, 250, 500)               # 0, 250, 500 mohm
 AXES = ("load_ua", "cout_nf", "esr_mohm")
-AXIS_LEVELS = {"load_ua": LOAD_LEVELS_UA, "cout_nf": COUT_LEVELS_NF,
-               "esr_mohm": ESR_LEVELS_MOHM}
 
 # (mos corner, temp C, resistor label, why it was selected). Snapshot of the
 # DR-0007 evidence at 4d45f5d / 2026-10-10; re-derive before relying on it.
@@ -65,36 +62,6 @@ TIE_EPS = 1e-6
 # ---- validation + canonical formatting ---------------------------------
 class InvalidOperatingPoint(ValueError):
     pass
-
-
-def to_base_int(value, scale, name):
-    """Exact conversion of a user value (str/number, in the axis' natural
-    unit) to an integer in base units. `scale` = base units per natural
-    unit. Rejects negatives, non-numbers and non-integral base values."""
-    try:
-        d = Decimal(str(value))
-    except InvalidOperation:
-        raise InvalidOperatingPoint(f"{name}: not a number: {value!r}")
-    if not d.is_finite():
-        raise InvalidOperatingPoint(f"{name}: not finite: {value!r}")
-    if d < 0:
-        raise InvalidOperatingPoint(f"{name}: negative value {value!r}")
-    base = d * scale
-    if base != base.to_integral_value():
-        raise InvalidOperatingPoint(
-            f"{name}: {value!r} is not an integer number of base units")
-    return int(base)
-
-
-def make_op(load_ma, cout_uf, esr_ohm):
-    """Operating point from natural units (mA, uF, ohm)."""
-    op = {
-        "load_ua": to_base_int(load_ma, 1000, "load_ma"),
-        "cout_nf": to_base_int(cout_uf, 1000, "cout_uf"),
-        "esr_mohm": to_base_int(esr_ohm, 1000, "esr_ohm"),
-    }
-    validate_op(op)
-    return op
 
 
 def validate_op(op):
@@ -128,17 +95,6 @@ def netlist_values(op):
     cout = f"{op['cout_nf']}n"
     esr = "0" if op["esr_mohm"] == 0 else f"{op['esr_mohm']}e-3"
     return {"load_a": load, "cout_f": cout, "esr_ohm": esr}
-
-
-def render_cout_esr(op):
-    """The lines run_sweep.sh's gen_netlist emits for this op (mirrors
-    esr_netlist_parts; kept in Python so the contract is unit-tested)."""
-    v = netlist_values(op)
-    if v["esr_ohm"] == "0":
-        return [f"Iload VOUT 0 dc {v['load_a']}", f"Cout VOUT 0 {v['cout_f']}"]
-    return [f"Iload VOUT 0 dc {v['load_a']}",
-            f"Cout VOUT COUT_ESR {v['cout_f']}",
-            f"Resr COUT_ESR 0 {v['esr_ohm']}"]
 
 
 # ---- matrix ------------------------------------------------------------

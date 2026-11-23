@@ -58,6 +58,8 @@ def copy_inputs(dst: Path) -> None:
     r7e = sel["row7_envelope_evidence"]
     rels |= {f["path"] for f in r7e["files"].values()}
     rels |= {p["path"] for p in r7e["design_freshness_pins"]}
+    rels |= {f["path"] for f in r7e["pair_evidence"]["files"].values()}
+    rels.add("sim/pdk-cmos5l.json")
     r10doc = json.loads((REPO / r10["files"]["classification_json"]["path"]).read_text())
     rels |= set(r10doc["classifier"])
     import csv as _csv
@@ -230,7 +232,9 @@ class GeneratedReportTests(unittest.TestCase):
             self.assertAlmostEqual(mm["worst_case"]["value"], worst_v, places=6)
             self.assertEqual(mm["worst_case"]["at"], worst_at)
         self.assertIn("dr0007-row7-iq", fl["conditions"])
-        self.assertIn("noise bound", fl["note"].lower())
+        self.assertIn("convergence setting (not an error bound)", fl["note"].lower())
+        self.assertIn("observed solver sensitivity", fl["note"].lower())
+        self.assertNotIn("noise bound", fl["note"].lower())
         self.assertIn("NOT used", fl["note"])
         self.assertEqual(self.rows[7]["ratification"]["state"], "open_unratified")
         self.assertEqual(self.rows[7]["coverage"]["state"], "full")
@@ -784,6 +788,77 @@ class NegativeControls(unittest.TestCase):
         self.assertFalse(chk["ok"])
         self.assertIn("stale against the design", chk["detail"])
         self.assertEqual(self.env_status(), "fail")
+
+
+    # --- review of #322: strictness, exactly-once, PDK revision, the pair --
+
+    def test_r7_value_at_the_target_is_rejected(self):
+        # klt sim's inclusive `max` grades 30 uA as pass; DR-0007 says < 30 uA.
+        def at_limit(doc):
+            for c in doc["corners"]:
+                for m in c["measurements"]:
+                    if m["name"] == "iq_i0_v3v30_a":
+                        m["value"] = G.ROW7_TARGET_A
+                        m["status"] = "pass"
+                        return
+        self.rewrite_r7_report(at_limit)
+        rc, _, err = run_main("--root", str(self.tmp))
+        self.assertEqual(rc, 1)
+        self.assertIn("not strictly below", err)
+
+    def test_r7_step_repeated_six_times_is_rejected(self):
+        def repeat(doc):
+            c = doc["corners"][0]
+            c["steps"] = [dict(c["steps"][0]) for _ in range(6)]
+        self.rewrite_r7_report(repeat)
+        rc, _, err = run_main("--root", str(self.tmp))
+        self.assertEqual(rc, 1)
+        self.assertIn("exactly once", err)
+
+    def test_r7_graded_declarations_removed_from_the_report_are_rejected(self):
+        self.rewrite_r7_report(lambda doc: doc.update(
+            measurements=[m for m in doc["measurements"]
+                          if not m["name"].startswith("iq_")]))
+        rc, _, err = run_main("--root", str(self.tmp))
+        self.assertEqual(rc, 1)
+        self.assertIn("exactly once", err)
+
+    def test_r7_pdk_pin_change_fails_completeness_independently(self):
+        pin = self.tmp / "sim/pdk-cmos5l.json"
+        doc = json.loads(pin.read_text())
+        doc["pinned_commit"] = "0" * 40
+        pin.write_text(json.dumps(doc))
+        rc, _, err = run_main("--root", str(self.tmp))
+        self.assertEqual(rc, 1)
+        rep = json.loads((self.out / G.REPORT_JSON).read_text())
+        chk = next(c for c in rep["completeness"]["checks"]
+                   if c["check"].startswith("row-7 envelope is current"))
+        self.assertFalse(chk["ok"])
+        self.assertIn("pdk-cmos5l.json", chk["detail"])
+        self.assertEqual(self.env_status(), "fail")
+
+    def test_r7_pdk_projection_agrees_with_the_driver_module(self):
+        sys.path.insert(0, str(REPO / "sim/ldo-cmos5l-pvt-sweep"))
+        try:
+            import row_envelope as re_
+        finally:
+            sys.path.pop(0)
+        self.assertEqual(G._pdk_pin_projection_sha256(REPO / "sim/pdk-cmos5l.json"),
+                         re_.pdk_pin_projection_sha256(str(REPO / "sim/pdk-cmos5l.json")))
+
+    def test_r7_incomplete_pair_is_rejected(self):
+        selp = self.tmp / "sim/characterization/selection.json"
+        sel = json.loads(selp.read_text())
+        entry = sel["row7_envelope_evidence"]["pair_evidence"]["files"]["pair_json"]
+        path = self.tmp / entry["path"]
+        doc = json.loads(path.read_text())
+        doc["pairs_compared"], doc["complete"] = 264, False
+        path.write_text(json.dumps(doc))
+        entry["sha256"] = G.sha256_file(path)
+        selp.write_text(json.dumps(sel))
+        rc, _, err = run_main("--root", str(self.tmp))
+        self.assertEqual(rc, 1)
+        self.assertIn("pair comparison is incomplete", err)
 
 
 class SweepCeilingTests(unittest.TestCase):

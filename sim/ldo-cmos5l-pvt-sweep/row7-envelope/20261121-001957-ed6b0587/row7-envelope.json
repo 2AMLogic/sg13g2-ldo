@@ -993,6 +993,7 @@
  ],
  "summary": {
   "all_graded_measurements_pass": true,
+  "all_graded_strictly_below_target": true,
   "coordinates_exactly_once": true,
   "corner_status_counts": {
    "pass": 45
@@ -1008,6 +1009,7 @@
    "schematic level, corner grid only, no Monte Carlo (DR-0007 classifies the row deterministic)"
   ],
   "failed": 0,
+  "graded_declarations_exactly_once": true,
   "graded_measurements": [
    "iq_i0_v2v97_a",
    "iq_i50m_v2v97_a",
@@ -1023,11 +1025,12 @@
   "measurements_with_limits": 6,
   "n_corners_reported": 45,
   "n_expected": 45,
-  "numerical_noise_bound_a": 5.003100000000001e-11,
-  "numerical_noise_bound_note": "full-load Iq is graded as a derived expr inside ngspice (klt sim analysis_steps, klayout-tools #2482), never as an offline subtraction; with .options reltol=1e-9 abstol=1e-15 pinned in the request and the 50 mA load an exact ideal-source literal, |delta Iq| <= reltol*|i(VIN)| + abstol ~= 5e-11 A (~0.00005 uA, 0.0002 % of the 30 uA limit)",
   "passed": 45,
   "probe": false,
   "record_id": "20261121-001957-ed6b0587",
+  "solver_convergence_setting_a": 5.003100000000001e-11,
+  "solver_convergence_setting_note": "NOT an error bound. The request pins .options reltol/abstol of the 'standard' profile; ngspice's stopping test compares each iterate with the previous one and bounds nothing about the distance to the exact operating point. For the standard profile (reltol=1e-9 abstol=1e-15) the threshold at the largest current is ~5e-11 A (0.0002 % of the 30 uA limit). Full-load Iq is graded as a derived expr inside ngspice (klt sim analysis_steps, klayout-tools #2482), never as an offline subtraction. The observed change under tighter tolerances is a separate, measured quantity: see the paired record's row7-pair.json",
+  "solver_profile": "standard",
   "target_iq_ua": 30.0,
   "worst_fullload": {
    "corner_id": "mos_ff__res_bcs__cap_typ/novdd/125C",

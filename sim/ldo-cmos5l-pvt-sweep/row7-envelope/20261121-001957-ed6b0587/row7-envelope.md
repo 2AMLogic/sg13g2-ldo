@@ -13,9 +13,9 @@ Measurement definition: |i(VIN)| - Iload per (Vin, Iload) operating point; the s
 - Worst full-load Iq: 24.6675 uA (`iq_i50m_v3v63_a`, `ff` / 125 C / `res_bcs`); margin to the 30 uA target: 5.3325 uA.
 - Definitive matrix claim permitted: **True** (requires the whole 45-coordinate matrix reported, every step ok, resolved, graded and clean).
 
-## Numerical-noise bound (the full-load difference)
+## Solver convergence setting (not an error bound)
 
-full-load Iq is graded as a derived expr inside ngspice (klt sim analysis_steps, klayout-tools #2482), never as an offline subtraction; with .options reltol=1e-9 abstol=1e-15 pinned in the request and the 50 mA load an exact ideal-source literal, |delta Iq| <= reltol*|i(VIN)| + abstol ~= 5e-11 A (~0.00005 uA, 0.0002 % of the 30 uA limit). The step supply currents are reported ungraded per corner in `report.json`, so every graded difference can be re-derived by hand.
+NOT an error bound. The request pins .options reltol/abstol of the 'standard' profile; ngspice's stopping test compares each iterate with the previous one and bounds nothing about the distance to the exact operating point. For the standard profile (reltol=1e-9 abstol=1e-15) the threshold at the largest current is ~5e-11 A (0.0002 % of the 30 uA limit). Full-load Iq is graded as a derived expr inside ngspice (klt sim analysis_steps, klayout-tools #2482), never as an offline subtraction. The observed change under tighter tolerances is a separate, measured quantity: see the paired record's row7-pair.json. The step supply currents are reported ungraded per corner in `report.json`, so every graded difference can be re-derived by hand.
 
 ## Exclusions this evidence must be read with
 

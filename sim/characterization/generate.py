@@ -107,7 +107,8 @@ ROW7_TARGET_A = 30e-6
 ROW7_ENV_COND = ("Vin {2.97, 3.30, 3.63} V x Iload {0, 50 mA} per corner (six analysis_steps "
                  "operating points), Iq = |i(VIN)| - Iload graded by `klt sim` as derived-expr "
                  "measurements with limits in the request (spec_row dr0007-row7-iq); solver "
-                 "tolerances pinned reltol=1e-9 abstol=1e-15, noise bound ~5.1e-11 A; ideal "
+                 "tolerances pinned reltol=1e-9 abstol=1e-15 (a convergence setting, not an error "
+                 "bound; observed sensitivity is the paired tight-tolerance record); ideal "
                  "0.90 V reference and ideal 2 uA IBIAS sink, no #190 limiter; 45-point corner "
                  "grid")
 # The envelope is a DIFFERENT bench from the legacy PVT sweep (direct OP solves
@@ -809,6 +810,49 @@ def _r7_corner_id(row: dict) -> str:
     return f"mos_{row['corner']}__res_{res}__cap_typ/novdd/{row['temp_c']}C"
 
 
+_PDK_PIN_KEYS = ("pinned_commit", "pinned_tarball_sha256", "pinned_tarball_url", "subtree")
+
+
+def _pdk_pin_projection_sha256(path: Path) -> str:
+    """Same canonical projection as row_envelope.pdk_pin_projection_sha256 (a
+    test asserts they agree): sort_keys + fixed separators over the keys that
+    decide which PDK tree was fetched; a missing key is an error, never a skip."""
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    bad = [k for k in _PDK_PIN_KEYS if not isinstance(doc.get(k), str) or not doc[k]]
+    if bad:
+        raise GenError(f"{path}: projected PDK pin key(s) {bad} missing or not strings")
+    canon = json.dumps({k: doc[k] for k in _PDK_PIN_KEYS}, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(canon.encode()).hexdigest()
+
+
+def _load_row7_pair(root: Path, blk: dict, rid: str, sources: list) -> dict:
+    """The pinned paired tight-tolerance comparison (observed solver sensitivity)."""
+    pb = blk.get("pair_evidence")
+    if not isinstance(pb, dict):
+        raise GenError("selection.json row7_envelope_evidence has no pair_evidence block; "
+                       "the solver-sensitivity claim needs its paired measurements")
+    path = pinned(root, pb["files"]["pair_json"], "row7_pair_json", sources)
+    if f"/{pb['tight_record_id']}/" not in pb["files"]["pair_json"]["path"]:
+        raise GenError("row-7 pair file is not under the tight record's directory")
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    if doc.get("base_record") != rid or doc.get("tight_record") != pb["tight_record_id"]:
+        raise GenError(f"row-7 pair names {doc.get('base_record')}/{doc.get('tight_record')}, "
+                       f"selection pairs {rid}/{pb['tight_record_id']}")
+    if doc.get("complete") is not True or doc.get("pairs_compared") != 270 \
+            or doc.get("pairs_expected") != 270:
+        raise GenError("row-7 pair comparison is incomplete (needs all 270 pairs, identical "
+                       "inputs except solver options)")
+    bo, to = doc.get("base_options") or {}, doc.get("tight_options") or {}
+    if bo != {"reltol": 1e-9, "abstol": 1e-15} or not (
+            isinstance(to.get("reltol"), (int, float)) and isinstance(to.get("abstol"), (int, float))
+            and to["reltol"] <= bo["reltol"] / 10 and to["abstol"] <= bo["abstol"]):
+        raise GenError("row-7 pair comparison must compare the pinned reltol=1e-9/abstol=1e-15 "
+                       f"request against a tolerance profile at least 10x tighter in reltol (got {to})")
+    if not isinstance(doc.get("max_abs_delta_a"), (int, float)) or not math.isfinite(doc["max_abs_delta_a"]):
+        raise GenError("row-7 pair comparison has no finite max_abs_delta_a")
+    return doc
+
+
 def load_row7_envelope(root: Path, sel: dict, pvt_rows: list[dict],
                        dcev: dict, sources: list) -> dict:
     """Validate and return the pinned row-7 graded `klt sim` envelope (issue #317).
@@ -860,10 +904,23 @@ def load_row7_envelope(root: Path, sel: dict, pvt_rows: list[dict],
                        f"selected {rid!r}")
 
     # --- the request grades the row target, with the tool's own verdict -----
+    req_names = [m.get("name") for m in request.get("measurements", [])]
     meas = {m["name"]: m for m in request.get("measurements", [])}
-    if tuple(meas) != ROW7_GRADED:
-        raise GenError(f"row-7 envelope request measurements {tuple(meas)} differ from "
-                       f"the six graded figures {ROW7_GRADED}")
+    if tuple(req_names) != ROW7_GRADED:
+        raise GenError(f"row-7 envelope request measurements {tuple(req_names)} differ from "
+                       f"the six graded figures {ROW7_GRADED} (each exactly once)")
+    # The REPORT is what the fleet graded: it must declare each graded figure
+    # exactly once, with the row's own limit and tag -- a request that says so
+    # proves nothing about a report with a declaration removed or repeated.
+    rep_graded = [m for m in report.get("measurements", []) if m.get("name") in ROW7_GRADED]
+    if sorted(m["name"] for m in rep_graded) != sorted(ROW7_GRADED):
+        raise GenError("row-7 envelope report does not declare each of the six graded "
+                       f"figures exactly once (got {sorted(m['name'] for m in rep_graded)})")
+    for m in rep_graded:
+        if m.get("limits") != {"max": ROW7_TARGET_A} or m.get("spec_row") != ROW7_SPEC_ROW_ID:
+            raise GenError(f"row-7 envelope report graded {m['name']} against "
+                           f"{m.get('limits')} / tag {m.get('spec_row')!r}, not the row-7 "
+                           f"target {{'max': {ROW7_TARGET_A}}} / {ROW7_SPEC_ROW_ID!r}")
     for name, m in meas.items():
         if m.get("limits") != {"max": ROW7_TARGET_A}:
             raise GenError(f"row-7 envelope measurement {name} declares limits "
@@ -877,7 +934,8 @@ def load_row7_envelope(root: Path, sel: dict, pvt_rows: list[dict],
         raise GenError(f"row-7 envelope declares {len(steps) if isinstance(steps, list) else steps!r}"
                        " analysis_steps, not six (Vin x Iload) operating points")
     vin_by_name, load_by_name = dict(ROW7_VINS), dict(ROW7_LOADS)
-    if {s.get("name") for s in steps} != {f"{vn}_{ln}" for vn in vin_by_name for ln in load_by_name}:
+    want_steps = sorted(f"{vn}_{ln}" for vn in vin_by_name for ln in load_by_name)
+    if sorted(s.get("name") for s in steps) != want_steps:
         raise GenError("row-7 envelope step names are not the six (Vin, Iload) points")
     for s in steps:
         vn, ln = s["name"].rsplit("_", 1)
@@ -894,7 +952,7 @@ def load_row7_envelope(root: Path, sel: dict, pvt_rows: list[dict],
     if ngs.get("reltol") is None or ngs.get("abstol") is None:
         raise GenError("row-7 envelope request does not pin solver tolerances "
                        "(options.ngspice_options reltol/abstol); the stated "
-                       "numerical-noise bound would be unbacked")
+                       "convergence setting would be unbacked")
 
     # --- a whole, clean, fully-resolved matrix ------------------------------
     want_ids = {_r7_corner_id(r) for r in pvt_rows}
@@ -919,15 +977,26 @@ def load_row7_envelope(root: Path, sel: dict, pvt_rows: list[dict],
             raise GenError(f"row-7 envelope corner {cid} is not clean: "
                            f"status {c.get('status')!r}, {len(errs)} error diagnostics")
         st = c.get("steps", [])
-        if len(st) != len(ROW7_VINS) * len(ROW7_LOADS) or any(s.get("status") != "ok" for s in st):
-            raise GenError(f"row-7 envelope corner {cid} steps are not six clean "
-                           "operating points")
+        if sorted(s.get("name") for s in st) != want_steps \
+                or any(s.get("status") != "ok" for s in st):
+            raise GenError(f"row-7 envelope corner {cid} does not run each of the six "
+                           f"named (Vin, Iload) steps exactly once, all ok "
+                           f"(got {[s.get('name') for s in st]})")
+        mnames = [x.get("name") for x in c.get("measurements", [])]
+        if any(mnames.count(n) != 1 for n in ROW7_GRADED):
+            raise GenError(f"row-7 envelope corner {cid} does not report each graded "
+                           "figure exactly once")
         m = {x["name"]: x for x in c.get("measurements", [])}
         for n in ROW7_GRADED:
             v = m.get(n, {}).get("value")
             if v is None or not math.isfinite(v) or m[n].get("status") != "pass":
                 raise GenError(f"row-7 envelope corner {cid} measurement {n} is "
                                f"{m.get(n)}: not a resolved, passing value")
+            # DR-0007 row 7 is a strict "< 30 uA"; klt sim's inclusive `max`
+            # grades a value AT the limit as pass, so strictness is enforced here.
+            if v >= ROW7_TARGET_A:
+                raise GenError(f"row-7 envelope corner {cid} measurement {n} is {v!r}, "
+                               f"not strictly below the {ROW7_TARGET_A} A target")
             values[(cid, n)] = v
     cov = (report.get("coverage") or {}).get("measurements_with_limits")
     if cov != len(ROW7_GRADED):
@@ -947,8 +1016,14 @@ def load_row7_envelope(root: Path, sel: dict, pvt_rows: list[dict],
     if not summ.get("definitive"):
         raise GenError("row-7 envelope summary is not definitive; an incomplete "
                        "or failing matrix must never be cited")
-    if float(summ.get("numerical_noise_bound_a", 1)) > 1e-9:
-        raise GenError("row-7 envelope summary lost its numerical-noise bound")
+    if not summ.get("solver_convergence_setting_note") \
+            or "NOT an error bound" not in summ["solver_convergence_setting_note"]:
+        raise GenError("row-7 envelope summary lost its convergence-setting statement "
+                       "(it must say the setting is not an error bound)")
+    if summ.get("all_graded_strictly_below_target") is not True \
+            or summ.get("graded_declarations_exactly_once") is not True:
+        raise GenError("row-7 envelope summary does not attest strict-below-target and "
+                       "exactly-once graded declarations")
     exclusions = " ".join(summ.get("exclusions", []))
     for needle in ("0.90 V reference", "IBIAS", "#190"):
         if needle not in exclusions:
@@ -969,7 +1044,19 @@ def load_row7_envelope(root: Path, sel: dict, pvt_rows: list[dict],
                               "matches": actual == pin["sha256"]}
         sources.append({"role": "row7_envelope_design_freshness", "path": pin["path"],
                         "sha256": actual, "pinned": True})
+    # The PDK revision the record ran on: the record's projection of the pin
+    # (fetch-determining keys) vs the tree's current pin. A PDK revision change
+    # invalidates the citation independently of the design netlists.
+    recorded_pdk = prov.get("pdk_pin_projection_sha256")
+    actual_pdk = _pdk_pin_projection_sha256(root / "sim" / "pdk-cmos5l.json")
+    if not recorded_pdk:
+        raise GenError("row-7 envelope provenance has no pdk_pin_projection_sha256; the "
+                       "citation cannot be checked against the PDK revision")
+    fresh["sim/pdk-cmos5l.json (pin projection)"] = {
+        "pinned_sha256": recorded_pdk, "actual_sha256": actual_pdk,
+        "matches": recorded_pdk == actual_pdk}
     stale_components = sorted(k for k, v in fresh.items() if not v["matches"])
+    pair = _load_row7_pair(root, blk, rid, sources)
 
     # --- cross-check against the legacy benches (consistency, not identity) -
     dc_by_key = dcev["by_key"]
@@ -987,7 +1074,7 @@ def load_row7_envelope(root: Path, sel: dict, pvt_rows: list[dict],
                            f"offline DC figure at {cid}: {values[(cid, 'iq_i50m_v3v30_a')] * 1e6:.4f} uA "
                            f"vs {dcv['iq_fullload_excl_load_a'] * 1e6:.4f} uA "
                            f"(band {ROW7_CROSS_BAND_UA} uA)")
-    return {"cfg": blk, "rid": rid, "values": values, "summary": summ,
+    return {"cfg": blk, "rid": rid, "values": values, "summary": summ, "pair": pair,
             "fresh": fresh, "stale_components": stale_components,
             "report_rel": blk["files"]["report_json"]["path"],
             "summary_rel": blk["files"]["summary_json"]["path"]}
@@ -1357,8 +1444,16 @@ def row_7_iq(ctx: RowContext) -> dict:
                                                       if f"_{family}_" in n),
                    r7["report_rel"], pts, cond,
                    note="values in A in the envelope, converted to uA (x1e6). "
-                        "Numerical-noise bound for the full-load difference: "
-                        f"{r7['summary']['numerical_noise_bound_note']}. "
+                        "Solver convergence setting (NOT an error bound): "
+                        f"{r7['summary']['solver_convergence_setting_note']}. "
+                        "Observed solver sensitivity, a measurement over its stated "
+                        f"coverage and not a bound: re-solving all {r7['pair']['pairs_compared']} "
+                        "(corner, graded figure) pairs at "
+                        f"reltol={r7['pair']['tight_options']['reltol']:g} "
+                        f"abstol={r7['pair']['tight_options']['abstol']:g} changed "
+                        f"the largest figure by {r7['pair']['max_abs_delta_a']:.3g} A "
+                        f"({r7['pair']['max_abs_delta_ua']:.3g} uA; "
+                        f"{r7['pair']['coverage']}). "
                         "An older record's full-load figure "
                         f"({sup['quoted_substring']}) is on a superseded design and is NOT used.")
         env_metrics.append(m)
@@ -1631,9 +1726,9 @@ def _assemble_outputs(ctx: RowContext, rows: list) -> tuple[dict, dict]:
     chk("row-7 graded envelope: pinned, whole clean 45-corner matrix, six limits-bearing "
         "measurements tagged dr0007-row7-iq, every (Vin, Iload) step ok, summary agrees "
         "with the report, agrees with the legacy columns at Vin 3.30 V", True)
-    chk("row-7 envelope is current against the design netlists", not ctx.r7["stale_components"],
-        "the envelope's recorded design-netlist hashes match the tree" if not ctx.r7["stale_components"]
-        else "stale against the design: " + ", ".join(ctx.r7["stale_components"]))
+    chk("row-7 envelope is current against the design netlists and the PDK pin", not ctx.r7["stale_components"],
+        "the envelope's recorded design-netlist hashes and PDK pin projection match the tree" if not ctx.r7["stale_components"]
+        else "stale against the design / PDK pin: " + ", ".join(ctx.r7["stale_components"]))
     chk("every target row appears exactly once", sorted(r["id"] for r in rows) == list(range(1, 11)),
         f"rows: {[r['id'] for r in rows]}")
     chk("every row carries an allowed verdict", all(r["verdict"] in ROW_VERDICTS for r in rows))

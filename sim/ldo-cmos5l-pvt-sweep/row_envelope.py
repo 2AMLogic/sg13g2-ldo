@@ -393,6 +393,25 @@ def check_hash_pins(record_dir, rid, problems, *, slug, tail):
                         f"sha256 of the committed corners.lib ({lib})")
 
 
+def corner_shape_ok(corner, step_names, graded):
+    """True iff this reported corner ran each expected named step exactly once
+    (all `ok`) and carries each graded measurement exactly once.
+
+    Counting steps (`len(steps) == 6`) is not enough: six repeats of one step
+    satisfy it while five of the six operating points never ran, and a graded
+    figure resolved from a dict of measurements silently hides a repeat.
+    """
+    steps = corner.get("steps", [])
+    names = [s.get("name") for s in steps]
+    if sorted(n for n in names if isinstance(n, str)) != sorted(step_names) \
+            or len(names) != len(step_names):
+        return False
+    if any(s.get("status") != "ok" for s in steps):
+        return False
+    mnames = [m.get("name") for m in corner.get("measurements", [])]
+    return all(mnames.count(n) == 1 for n in graded)
+
+
 def check_declared_gates(record_dir, rid, problems, *, measurements_fn,
                          graded, row_id, slug):
     """Step 4: the request the envelope was graded against still declares the
@@ -400,6 +419,20 @@ def check_declared_gates(record_dir, rid, problems, *, measurements_fn,
     dropped tag cannot hide in the record."""
     req = json.load(open(os.path.join(record_dir, "request.json")))
     report = json.load(open(os.path.join(record_dir, "report.json")))
+    # Exactly once (review of #322): a dict comprehension below would collapse
+    # a repeated declaration, and a report with a graded declaration removed
+    # would simply never reach the per-measurement loop. Compare NAME LISTS.
+    want_names = [m["name"] for m in measurements_fn()]
+    req_names = [m["name"] for m in req["measurements"]]
+    if sorted(req_names) != sorted(want_names):
+        problems.append(f"{rid}: request declares measurements {sorted(req_names)}, "
+                        f"expected each of {sorted(want_names)} exactly once")
+    rep_names = [m.get("name") for m in report.get("measurements", [])
+                 if m.get("name") in set(graded)]
+    if sorted(rep_names) != sorted(graded):
+        problems.append(f"{rid}: envelope declares graded measurements "
+                        f"{sorted(rep_names)}, expected each of {sorted(graded)} "
+                        "exactly once -- the fleet graded something else")
     declared = {m["name"]: m.get("limits") for m in req["measurements"]}
     expect = {m["name"]: m.get("limits") for m in measurements_fn()}
     if declared != expect:

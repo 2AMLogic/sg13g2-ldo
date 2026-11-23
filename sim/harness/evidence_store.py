@@ -277,7 +277,8 @@ def _klt_error(stderr: str) -> str:
 
 def _entry_problem(entry) -> str | None:
     """The writer's entry check, as strict as the CI checker's schema
-    (:data:`ENTRY_REQUIRED_FIELDS`/``OPTIONAL``/``PRODUCER_FIELDS``)."""
+    (:data:`ENTRY_REQUIRED_FIELDS`/``OPTIONAL``/``PRODUCER_FIELDS``,
+    including the producer-value rules; issue #326)."""
     if not isinstance(entry, dict):
         return "entry is not an object"
     missing = [f for f in ENTRY_REQUIRED_FIELDS if f not in entry]
@@ -301,6 +302,11 @@ def _entry_problem(entry) -> str | None:
         return "no producer"
     if set(producer) != set(ENTRY_PRODUCER_FIELDS):
         return f"producer must carry exactly {', '.join(ENTRY_PRODUCER_FIELDS)}"
+    for f in ("tool", "version", "loom.repo"):
+        if not isinstance(producer.get(f), str) or not producer[f]:
+            return f"producer.{f} must be a non-empty string"
+    if producer.get("commit") is not None and not isinstance(producer["commit"], str):
+        return "producer.commit must be a string or null"
     return None
 
 
@@ -362,7 +368,12 @@ def put_files(files: list[tuple[Path, str]], repo_root: Path, *,
         problem = _entry_problem(e)
         if problem:
             raise StoreError(f"klt manifest entry invalid: {problem}")
-        by_name[e.get("name")] = e
+        name = e.get("name")
+        if name in by_name:
+            # Issue #326: a duplicate would otherwise overwrite the first
+            # copy in by_name and let both entries through.
+            raise StoreError(f"klt manifest has two entries named {name!r}")
+        by_name[name] = e
     if set(by_name) != set(expected):
         raise StoreError("klt manifest entries do not match the staged files")
     for name, (sha, size) in expected.items():

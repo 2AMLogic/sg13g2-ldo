@@ -187,7 +187,7 @@
       },
       "summary_json": {
         "path": "sim/ldo-cmos5l-pvt-sweep/row7-envelope/20261121-001957-ed6b0587/row7-envelope.json",
-        "sha256": "ed5ec9e5f6c5036d3e24fffcbc777c6aca5f803060ee1055a30c8b00187bbabc"
+        "sha256": "b2ecfb9be28d9aaf42cb86c162bfad41a67233ee00f7a4d08b78b44eda7bcb6f"
       },
       "request_json": {
         "path": "sim/ldo-cmos5l-pvt-sweep/row7-envelope/20261121-001957-ed6b0587/request.json",
@@ -223,6 +223,16 @@
       ],
       "band_ua": 1.0,
       "basis": "the envelope is a different bench (direct OP solves at pinned tolerances on the fleet's ngspice vs a nested-sweep row harvest at ngspice-46 defaults), so agreement is a consistency cross-check with a loose band, not a reproduction claim; observed worst delta 0.37 uA no-load, 0.26 uA full-load"
+    },
+    "pair_evidence": {
+      "tight_record_id": "20261123-120423-ca4c931d",
+      "policy": "Observed solver sensitivity, cited separately from the convergence setting. The paired record re-runs the SAME request at a tighter reltol (1e-10, abstol unchanged at 1e-15) on the same inputs; row7-pair.json is the largest observed change over all 270 (corner, graded figure) pairs and its coverage -- an observation, not an error bound. Tighter profiles were tried and stay committed as history: reltol=1e-12/abstol=1e-17 resolved 2 of 45 corners and reltol=1e-11/abstol=1e-16 resolved 40 of 45 (ngspice dynamic gmin stepping fails at 125 C and one 27 C corner), so no tolerance below 1e-10 is claimed.",
+      "files": {
+        "pair_json": {
+          "path": "sim/ldo-cmos5l-pvt-sweep/row7-envelope/20261123-120423-ca4c931d/row7-pair.json",
+          "sha256": "65f054a9a8a30fae976c104fc4b7695e6cdf87897084670b98fa6821287c0992"
+        }
+      }
     }
   }
 }

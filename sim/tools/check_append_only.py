@@ -2,7 +2,7 @@
 """PR-time guard: sim/ evidence is append-only (issue #102).
 
 Compares HEAD with its merge base against BASE and fails when a path that
-already existed at the merge base, under one of the six protected classes
+already existed at the merge base, under one of the eight protected classes
 below, was modified, deleted, renamed away, type-changed or overwritten.
 New paths (new record IDs, new files) are always fine.
 
@@ -45,6 +45,10 @@ PROTECTED_CLASSES = (
     "evidence",
     "backend-validation",
     "startup",
+    # Graded klt-sim envelope records (issues #164/#317): one append-only
+    # directory per submitted run, kept as history (a failed run stays).
+    "row4-envelope",
+    "row7-envelope",
 )
 PROTECTED_GLOBS = tuple(f"sim/*/{c}/**" for c in PROTECTED_CLASSES)
 DEFAULT_ALLOWLIST = "sim/tools/append_only_allowlist.json"

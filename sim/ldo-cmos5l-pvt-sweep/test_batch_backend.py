@@ -4,6 +4,7 @@ stdlib only; nothing is submitted.
     python3 -m unittest discover -s sim/ldo-cmos5l-pvt-sweep -p 'test_*.py' -v
 """
 import json
+import hashlib
 import os
 import shutil
 import sys
@@ -60,7 +61,7 @@ class Grouping(unittest.TestCase):
         g = bb.plan_groups(pts)[0]
         tmp = tempfile.mkdtemp()
         try:
-            gdir = bb.write_group(g, tmp, "/osdi", "/pre.cir")
+            gdir = bb.write_group(g, tmp, "/osdi")
             req = json.load(open(os.path.join(gdir, "request.json")))
             self.assertEqual(req["corners"]["temperature_c"], [-40, 27, 125])
             self.assertEqual(len(req["exclude"]), 8)
@@ -144,7 +145,7 @@ class VariantLines(unittest.TestCase):
             self.assertNotIn("Iload", p["body"])
             self.assertNotIn("Cout", p["body"])
             self.assertIn("Xtop", p["body"])
-        gdir = bb.write_group(g, self.tmp, "/osdi", "/pre.cir")
+        gdir = bb.write_group(g, self.tmp, "/osdi")
         lib = open(os.path.join(gdir, "corners.lib")).read()
         # each section: its model cards, then exactly its own variant lines
         for _, p in pts:
@@ -240,7 +241,6 @@ class CapRetry(unittest.TestCase):
 class ReuseReport(unittest.TestCase):
     """--reuse-work (issue #89): only a byte-identical request with a complete
     earlier report is reused; anything else is submitted again."""
-
     def setUp(self):
         self.root = tempfile.mkdtemp()
         self.old, self.new = os.path.join(self.root, "old"), os.path.join(self.root, "new")
@@ -256,20 +256,17 @@ class ReuseReport(unittest.TestCase):
         open(self.osdi, "wb").write(b"osdi-binary")
         for w in (self.old, self.new):
             os.makedirs(os.path.join(w, "g00"))
-            pre = os.path.join(w, "osdi-preamble.cir")
-            open(pre, "w").write("* preamble\n")
             open(os.path.join(w, "g00", "request.json"), "w").write('{"netlist": "tb.spice"}\n')
             open(os.path.join(w, "g00", "corners.lib"), "w").write(f'.lib a\n.lib "{self.model}" tt\n.endl a\n')
             open(os.path.join(w, "g00", "tb.spice"), "w").write(
-                f'.include "{pre}"\n.include "{self.design}"\nR1 a 0 1k\n')
+                f'.include "{self.design}"\nR1 a 0 1k\n')
             self.inventory(w)
         self.raw = os.path.join(self.old, "g00", "c.raw")
         open(self.raw, "w").write("raw")
         self.write_report([{"artifacts": {"raw": self.raw}}, {"artifacts": {"raw": self.raw}}])
 
     def inventory(self, w):
-        bb.write_inventory(os.path.join(w, "g00"), {"options": {"osdi_preload": [self.osdi]}},
-                           skip={os.path.normpath(os.path.join(w, "osdi-preamble.cir"))})
+        bb.write_inventory(os.path.join(w, "g00"), {"options": {"osdi_preload": [self.osdi]}})
 
     def tearDown(self):
         shutil.rmtree(self.root)
@@ -278,8 +275,7 @@ class ReuseReport(unittest.TestCase):
         open(os.path.join(self.old, "g00", "report.json"), "w").write(json.dumps({"corners": corners}))
 
     def reuse(self, n=2):
-        return bb.reusable_report(os.path.join(self.old, "g00"), os.path.join(self.new, "g00"),
-                                  self.old, self.new, n)
+        return bb.reusable_report(os.path.join(self.old, "g00"), os.path.join(self.new, "g00"), n)
 
     def test_identical_complete_request_is_reused(self):
         self.assertEqual(self.reuse(), os.path.join(self.old, "g00", "report.json"))
@@ -334,6 +330,151 @@ class ReuseReport(unittest.TestCase):
     def test_missing_rawfile_is_not_reused(self):
         os.remove(self.raw)
         self.assertIsNone(self.reuse())
+
+
+class CollectOsdiProvenance(unittest.TestCase):
+    """issue #313: the runner applies options.osdi_preload itself, so the
+    request carries no deck-side preamble. collect() must then (a) verify
+    from the report that the six staged binaries are what the worker
+    received and preloaded, (b) never accept a corner that reports values
+    but carries an error-severity osdi_load_failed diagnostic, and (c)
+    require the returned corner deck to name the six preloads. The fixtures
+    mirror the live failure of job klt-sim-38b16c3f8b00 (2026-11-20)."""
+
+    PID = "psrr_probe_ff_-40c"
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp()
+        self.gdir = os.path.join(self.tmp, "g00")
+        os.makedirs(self.gdir)
+        deck = os.path.join(self.tmp, "deck.spice")
+        with open(deck, "w") as f:
+            f.write(DECK.format(pid=self.PID, mos="ff", res="wcs", temp=-40,
+                                load="50000e-6", cout="330n", bottom="0",
+                                esr="* ESR=0"))
+        pts = [(self.PID, bb.parse_deck(deck))]
+        self.g = bb.plan_groups(pts)[0]
+        self.p = pts[0][1]
+        self.staged = {f"{n}.osdi": hashlib.sha256(n.encode()).hexdigest()
+                        for n in bb.OSDI_ORDER}
+        art = os.path.join(self.gdir, "art")
+        os.makedirs(art)
+        self.log = os.path.join(art, "ngspice.log")
+        open(self.log, "w").write("ngspice-47 done\n")
+        self.raw = os.path.join(art, "waveform.raw")
+        probes = [("v(vout)", [complex(1.8, 0.01), complex(1.7, -0.02)]),
+                  ("v(vin)", [complex(3.3, 0.0), complex(3.3, 0.0)])]
+        points = [[complex(1.0, 0.0), probes[0][1][0], probes[1][1][0]],
+                  [complex(10.0, 0.0), probes[0][1][1], probes[1][1][1]]]
+        open(self.raw, "w").write(complex_rawfile(probes, points))
+        self.deck = os.path.join(art, "corner.cir")
+        self.write_deck()
+        self.corners_out = os.path.join(self.tmp, "corners")
+        os.makedirs(self.corners_out)
+
+    def write_deck(self, preload=True):
+        lines = ["* klt sim -- generated corner deck, do not edit",
+                 f".lib {self.gdir}/corners.lib {bb.corner_name(self.p)}",
+                 ".temp -40", ".control"]
+        if preload:
+            for n in bb.OSDI_ORDER:
+                lines.append(f"pre_osdi /var/tmp/eda-job-test/inputs/{n}.osdi")
+        lines += ["save all", "ac dec 20 1 100meg", "quit", ".endc", ".end"]
+        open(self.deck, "w").write("\n".join(lines) + "\n")
+
+    def report(self, diagnostics=(), osdi=None, worker_osdi="staged"):
+        if osdi is None:
+            osdi = [{"name": name, "sha256": self.staged[name],
+                     "scope": "external", "path": None}
+                    for name in sorted(self.staged)]
+        mi = [{"name": "corners.lib", "sha256": "0" * 64}]
+        if worker_osdi == "staged":
+            mi += [{"name": name, "sha256": self.staged[name]}
+                    for name in sorted(self.staged)]
+        elif worker_osdi == "wrong":
+            mi += [{"name": f"{n}.osdi", "sha256": "f" * 64} for n in bb.OSDI_ORDER]
+        # worker_osdi == "missing": the worker never materialised them
+        return {
+            "environment": {
+                "remote": {"job_id": "klt-sim-testjob", "runner_klt_version": "0.9.0",
+                           "instance_type": "m7i.4xlarge", "lifecycle": "spot",
+                           "worker_environment": {"model_inputs": mi}},
+                "osdi_preload": osdi,
+            },
+            "corners": [{
+                "process": bb.corner_name(self.p), "temperature_c": -40,
+                "status": "pass" if not diagnostics else "error",
+                "measurements": [{"name": "liveness_vout", "value": 2.0,
+                                  "unit": "V", "status": "pass"}],
+                "diagnostics": list(diagnostics),
+                "artifacts": {"log": self.log, "raw": self.raw, "deck": self.deck},
+            }],
+        }
+
+    def collect(self, **kw):
+        with open(os.path.join(self.gdir, "report.json"), "w") as f:
+            json.dump(self.report(**kw), f)
+        meta = {"jobs": [], "engines": set()}
+        problems = bb.collect(self.g, self.gdir, self.corners_out, meta, self.staged)
+        return problems, meta
+
+    def csv(self):
+        return os.path.join(self.corners_out, f"{self.PID}_ac.csv")
+
+    def test_clean_corner_yields_the_csv_and_records_provenance(self):
+        problems, meta = self.collect()
+        self.assertEqual(problems, [])
+        self.assertTrue(os.path.isfile(self.csv()))
+        self.assertTrue(os.path.isfile(
+            os.path.join(self.gdir, f"{self.PID}.corner.cir")))
+        job = meta["jobs"][0]
+        self.assertEqual(job["job_id"], "klt-sim-testjob")
+        self.assertEqual(job["osdi_preload_verified"], self.staged)
+
+    def test_errored_corner_with_values_is_never_accepted(self):
+        # The exact live shape of job klt-sim-38b16c3f8b00: a rawfile, a
+        # plausible liveness_vout = 2.0, AND an error-severity
+        # osdi_load_failed diagnostic. No CSV may be written for it.
+        diag = {"severity": "error", "code": "osdi_load_failed",
+                "message": "Error: Library inputs/psp103.osdi couldn't be loaded!"}
+        problems, _ = self.collect(diagnostics=[diag])
+        self.assertEqual(len(problems), 1)
+        self.assertIn("osdi_load_failed", problems[0])
+        self.assertFalse(os.path.isfile(self.csv()))
+        # the log still lands, so the failure is auditable
+        self.assertTrue(os.path.isfile(os.path.join(self.corners_out, f"{self.PID}.log")))
+
+    def test_deck_without_the_runners_preload_lines_is_refused(self):
+        self.write_deck(preload=False)
+        problems, _ = self.collect()
+        self.assertTrue(any("pre_osdi" in p for p in problems))
+        self.assertFalse(os.path.isfile(self.csv()))
+
+    def test_staged_digest_mismatch_is_refused(self):
+        problems, _ = self.collect(worker_osdi="wrong")
+        self.assertTrue(any("OSDI provenance" in p for p in problems))
+        self.assertFalse(os.path.isfile(self.csv()))
+
+    def test_worker_never_materialised_the_binaries_is_refused(self):
+        problems, _ = self.collect(worker_osdi="missing")
+        self.assertTrue(any("not reported by worker_environment.model_inputs"
+                            in p for p in problems))
+        self.assertFalse(os.path.isfile(self.csv()))
+
+    def test_extra_preload_entry_is_refused(self):
+        osdi = [{"name": name, "sha256": self.staged[name]}
+                    for name in sorted(self.staged)]
+        osdi.append({"name": "rogue.osdi", "sha256": "0" * 64})
+        problems, _ = self.collect(osdi=osdi)
+        self.assertTrue(any("rogue.osdi" in p for p in problems))
+        self.assertFalse(os.path.isfile(self.csv()))
+
+    def test_missing_osdi_entry_is_refused(self):
+        osdi = [{"name": name, "sha256": self.staged[name]}
+                    for name in sorted(self.staged) if name != "mosvar.osdi"]
+        problems, _ = self.collect(osdi=osdi)
+        self.assertTrue(any("mosvar.osdi" in p for p in problems))
+        self.assertFalse(os.path.isfile(self.csv()))
 
 
 LG2V_LETS = ["let vfb_re = real(v(fb))",

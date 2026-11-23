@@ -4,14 +4,17 @@ simulator.
     python3 -m unittest discover -s sim/ldo-cmos5l-pvt-sweep -p 'test_*.py' -v
 """
 import cmath
+import json
 import math
 import os
 import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+SIM = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
 import dynamic_doe as d  # noqa: E402
 
@@ -49,27 +52,129 @@ def point(bench, o=None, corner=("ss", 125, "bcs")):
             "op": o, "origin": "base"}
 
 
-class Validation(unittest.TestCase):
-    def test_rejects_negative_and_zero_cout(self):
-        for args in [(-1, 1, 0), (0, -1, 0), (0, 1, -0.1), (0, 0, 0)]:
-            with self.assertRaises(d.InvalidOperatingPoint, msg=args):
-                d.make_op(*args)
+def shell_function(name):
+    """A top-level function of run_sweep.sh, verbatim. The script cannot be
+    sourced (it runs the sweep), so the function text is run on its own."""
+    with open(os.path.join(HERE, "run_sweep.sh")) as f:
+        src = f.read()
+    start = src.index(f"\n{name}() {{\n") + 1
+    return src[start:src.index("\n}\n", start) + len("\n}\n")]
 
-    def test_rejects_garbage_and_fractional_base_units(self):
-        for args in [("x", 1, 0), (0, "nan", 0), (0, 1, "inf"),
-                     (0.0005, 1, 0), (0, 1.0004, 0), (0, 1, 0.0005)]:
-            with self.assertRaises(d.InvalidOperatingPoint, msg=args):
-                d.make_op(*args)
+
+def in_bash(script, *args, **shell_vars):
+    """Run `script` under run_sweep.sh's own `set -euo pipefail`; `shell_vars`
+    are the script-level variables the extracted functions read."""
+    r = subprocess.run(
+        ["bash", "-c", "set -euo pipefail\n" + script, "run_sweep.sh", *args],
+        capture_output=True, text=True, check=False,
+        env=dict(os.environ, **shell_vars))
+    if r.returncode != 0:
+        raise AssertionError(f"bash exited {r.returncode}:\n{r.stderr}")
+    return r.stdout
+
+
+def esr_netlist_parts(esr):
+    """run_sweep.sh's own esr_netlist_parts: (cout_bottom, esr_line)."""
+    out = in_bash(shell_function("esr_netlist_parts")
+                  + '\nesr_netlist_parts "$1"\n', esr)
+    return tuple(out.rstrip("\n").split(" ", 1))
+
+
+def gen_netlist(p, out_dir):
+    """One planned DoE point rendered by run_sweep.sh's own gen_netlist,
+    called as --doe-generate calls it: the real esr_netlist_parts, token
+    list and sim/tools/render_deck.py on the real template. The PDK and
+    design-netlist tokens are dummies nothing opens. Returns the deck."""
+    v = d.netlist_values(p["op"])
+    path = in_bash(
+        shell_function("esr_netlist_parts") + shell_function("gen_netlist")
+        + 'gen_netlist "$1" "$2" "$3" "$4" cap_typ "$5" fixture.sch '
+          '"170u (nominal)" "$6" "$7" "$8"\n',
+        p["bench"], p["point_id"], f"mos_{p['corner']}", f"res_{p['res']}",
+        str(p["temp_c"]), v["load_a"], v["cout_f"], v["esr_ohm"],
+        PDK_ROOT="fixture-pdk", PDK="fixture", OSDI_DIR="fixture-osdi",
+        LG_AC_MAX="100meg", EXPERIMENT_DIR=HERE, SIM_DIR=SIM,
+        SNAPSHOTS_OUT=out_dir, CORNERS_OUT=out_dir).strip()
+    with open(path) as f:
+        return f.read()
+
+
+class Validation(unittest.TestCase):
+    def assert_rejected(self, o, *fragments):
+        with self.assertRaises(d.InvalidOperatingPoint, msg=o) as cm:
+            d.validate_op(o)
+        for fragment in fragments:
+            self.assertIn(fragment, str(cm.exception))
+
+    def test_rejects_negative_and_zero_cout(self):
+        self.assert_rejected(op(-1, 1, 0), "load_ua", "negative")
+        self.assert_rejected(op(0, -1, 0), "cout_nf", "negative")
+        self.assert_rejected(op(0, 1, -1), "esr_mohm", "negative")
+        self.assert_rejected(op(0, 0, 0), "cout_nf", "zero Cout")
+
+    def test_rejects_non_integer_values(self):
+        # Base units are integers: a float (however exact), a numeric string
+        # or a missing value is refused on every axis.
+        for axis in d.AXES:
+            for v in (0.5, 1000.0, float("nan"), float("inf"), "1000", None):
+                o = op()
+                o[axis] = v
+                with self.subTest(axis=axis, value=v):
+                    self.assert_rejected(o, axis, "not an integer")
+
+    def test_rejects_booleans(self):
+        # bool is an int subclass: True must not pass as 1 uA / 1 nF / 1 mohm.
+        for axis in d.AXES:
+            for v in (True, False):
+                o = op()
+                o[axis] = v
+                with self.subTest(axis=axis, value=v):
+                    self.assert_rejected(o, axis, "not an integer")
 
     def test_zero_load_and_zero_esr_explicit(self):
-        o = d.make_op(0, 1, 0)
-        self.assertEqual(o, op(0, 1000, 0))
-        self.assertEqual(d.netlist_values(o),
+        self.assertEqual(d.netlist_values(op(0, 1000, 0)),
                          {"load_a": "0", "cout_f": "1000n", "esr_ohm": "0"})
 
-    def test_canonical_values_exact(self):
-        self.assertEqual(d.make_op("0.5", "0.33", "0.25"), op(500, 330, 250))
-        self.assertEqual(d.make_op(50, 4.7, 0.5), op(50000, 4700, 500))
+    def test_min_nominal_max_values_exact(self):
+        self.assertEqual(d.netlist_values(op(0, 330, 0)),
+                         {"load_a": "0", "cout_f": "330n", "esr_ohm": "0"})
+        self.assertEqual(d.netlist_values(d.LEGACY_POINT),
+                         {"load_a": "1000e-6", "cout_f": "1000n",
+                          "esr_ohm": "0"})
+        self.assertEqual(d.netlist_values(op(50000, 4700, 500)),
+                         {"load_a": "50000e-6", "cout_f": "4700n",
+                          "esr_ohm": "500e-3"})
+
+    def read_extra(self, entries):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "extra.json")
+            with open(path, "w") as f:
+                json.dump(entries, f)
+            return d.load_extra(path)
+
+    def test_load_extra_no_file_is_no_points(self):
+        self.assertEqual(d.load_extra(None), [])
+        self.assertEqual(d.load_extra(""), [])
+
+    def test_load_extra_keeps_corner_and_optional_reason(self):
+        self.assertEqual(self.read_extra([
+            {"corner": "ff", "temp_c": "-40", "res": "wcs", **op(500, 4700, 125)},
+            {"corner": "ss", "temp_c": 125, "res": "bcs", **op(),
+             "reason": "midpoint"}]), [
+            {"corner": "ff", "temp_c": -40, "res": "wcs",
+             "op": op(500, 4700, 125), "reason": ""},
+            {"corner": "ss", "temp_c": 125, "res": "bcs",
+             "op": op(), "reason": "midpoint"}])
+
+    def test_load_extra_rejects_invalid_operating_points(self):
+        for bad in ({"load_ua": -1}, {"cout_nf": 0}, {"cout_nf": 1000.5},
+                    {"esr_mohm": True}, {"load_ua": "1000"}):
+            axis = next(iter(bad))
+            with self.subTest(bad=bad):
+                with self.assertRaises(d.InvalidOperatingPoint) as cm:
+                    self.read_extra([{"corner": "ss", "temp_c": 125, "res": "bcs",
+                                      **op(), **bad}])
+                self.assertIn(f"{axis}: ", str(cm.exception))
 
 
 class Matrix(unittest.TestCase):
@@ -101,14 +206,45 @@ class Matrix(unittest.TestCase):
 
 
 class Netlist(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, self.tmp)
+
+    def planned(self, o):
+        """The loopgain and psrr plan rows at operating point o."""
+        rows = [p for p in d.plan() if p["op"] == o]
+        return [next(p for p in rows if p["bench"] == b) for b in d.BENCHES]
+
+    def test_esr_netlist_parts_zero_and_series(self):
+        # ESR = 0 wires Cout to ground and emits a comment: no zero-valued
+        # resistor is ever written. Any other ESR is a series resistor behind
+        # the private COUT_ESR node.
+        self.assertEqual(
+            esr_netlist_parts(d.netlist_values(op(0, 330, 0))["esr_ohm"]),
+            ("0", "* ESR=0: Cout wired directly to ground, no series resistor"))
+        self.assertEqual(
+            esr_netlist_parts(d.netlist_values(op(50000, 4700, 500))["esr_ohm"]),
+            ("COUT_ESR", "Resr COUT_ESR 0 500e-3"))
+
     def test_min_nominal_max_render(self):
-        self.assertEqual(d.render_cout_esr(op(0, 330, 0)),
-                         ["Iload VOUT 0 dc 0", "Cout VOUT 0 330n"])
-        self.assertEqual(d.render_cout_esr(op(25000, 2200, 250)),
-                         ["Iload VOUT 0 dc 25000e-6",
-                          "Cout VOUT COUT_ESR 2200n", "Resr COUT_ESR 0 250e-3"])
-        self.assertEqual(d.render_cout_esr(op(50000, 4700, 500))[2],
-                         "Resr COUT_ESR 0 500e-3")
+        # The Iload / Cout / ESR lines of each rendered deck, in order.
+        esr0 = "* ESR=0: Cout wired directly to ground, no series resistor"
+        cases = [
+            (op(0, 330, 0),
+             ["Iload VOUT 0 dc 0", "Cout VOUT 0 330n", esr0]),
+            (d.LEGACY_POINT,
+             ["Iload VOUT 0 dc 1000e-6", "Cout VOUT 0 1000n", esr0]),
+            (op(50000, 4700, 500),
+             ["Iload VOUT 0 dc 50000e-6", "Cout VOUT COUT_ESR 4700n",
+              "Resr COUT_ESR 0 500e-3"]),
+        ]
+        for o, expected in cases:
+            for p in self.planned(o):
+                with self.subTest(op=o, bench=p["bench"]):
+                    lines = gen_netlist(p, self.tmp).splitlines()
+                    i = next(k for k, ln in enumerate(lines)
+                             if ln.startswith("Iload "))
+                    self.assertEqual(lines[i:i + 3], expected)
 
     def test_templates_use_placeholders(self):
         for b in d.BENCHES:
@@ -120,8 +256,10 @@ class Netlist(unittest.TestCase):
                                      if ph in ln and not ln.startswith("*")), 1)
 
     def test_generator_renders_corner_temp_resistor(self):
-        """run_sweep.sh --doe-generate path is exercised by the PDK-bearing
-        --check-env; here assert the plan carries the corner identity."""
+        """The decks are rendered by run_sweep.sh's gen_netlist in
+        test_min_nominal_max_render; the PDK-bearing --check-env is what
+        runs them under ngspice. Here assert the plan carries the corner
+        identity."""
         p = next(x for x in d.plan() if x["corner"] == "ff"
                  and x["temp_c"] == -40 and x["op"] == op(50000, 4700, 500))
         self.assertIn("ff_-40c_rwcs", p["point_id"])

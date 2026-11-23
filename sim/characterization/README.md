@@ -65,8 +65,15 @@ reports full-load Iq with the load current excluded. The legacy record-column
 metrics stay beside them, labelled `legacy`. Points the summary marks invalid
 are counted as ambiguous and never dropped, so a bad point blocks a clean
 verdict instead of disappearing. The measurements are discrete samples on a
-45-corner grid with an ideal reference; full-load Iq keeps its published
-precision caveat (a difference of two ~50 mA currents, quantized at 1e-10 A).
+45-corner grid with an ideal reference. Row 7's graded envelope derives the
+full-load figure inside ngspice (no offline subtraction); its pinned
+`reltol=1e-9 abstol=1e-15` is a convergence *setting*, not an error bound, and
+the solver sensitivity is reported separately as an observation: the largest
+change over all 270 (corner, figure) pairs when the same grid is re-solved at
+`reltol=1e-12 abstol=1e-17` (the pinned paired record). The legacy full-load
+column keeps its published precision caveat (a difference of two ~50 mA
+currents, quantized at 1e-10 A). Row 7's `< 30 uA` is strict: a graded figure
+equal to the target is refused (klt sim's inclusive `max` would grade it pass).
 Rows 5 and 7 stay Open/unratified and this is not T1 item-5 grading evidence.
 
 ## Startup evidence for row 9 (issue #112)

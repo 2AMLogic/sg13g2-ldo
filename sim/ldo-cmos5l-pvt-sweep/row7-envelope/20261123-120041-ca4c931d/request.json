@@ -1,0 +1,222 @@
+{
+ "netlist": "tb.spice",
+ "backend": "batch",
+ "batch": {
+  "runner_version_check": "warn",
+  "capacity_wait_s": 600
+ },
+ "models": {
+  "lib": "corners.lib"
+ },
+ "analysis_steps": [
+  {
+   "name": "v2v97_i0",
+   "analysis": {
+    "kind": "op",
+    "args": ""
+   },
+   "alter": {
+    "Vin": 2.97,
+    "Iload": 0.0
+   },
+   "measurements": [
+    {
+     "name": "isup_a",
+     "expr": "abs(vin#branch)",
+     "unit": "A"
+    }
+   ]
+  },
+  {
+   "name": "v2v97_i50m",
+   "analysis": {
+    "kind": "op",
+    "args": ""
+   },
+   "alter": {
+    "Vin": 2.97,
+    "Iload": 0.05
+   },
+   "measurements": [
+    {
+     "name": "isup_a",
+     "expr": "abs(vin#branch)",
+     "unit": "A"
+    }
+   ]
+  },
+  {
+   "name": "v3v30_i0",
+   "analysis": {
+    "kind": "op",
+    "args": ""
+   },
+   "alter": {
+    "Vin": 3.3,
+    "Iload": 0.0
+   },
+   "measurements": [
+    {
+     "name": "isup_a",
+     "expr": "abs(vin#branch)",
+     "unit": "A"
+    }
+   ]
+  },
+  {
+   "name": "v3v30_i50m",
+   "analysis": {
+    "kind": "op",
+    "args": ""
+   },
+   "alter": {
+    "Vin": 3.3,
+    "Iload": 0.05
+   },
+   "measurements": [
+    {
+     "name": "isup_a",
+     "expr": "abs(vin#branch)",
+     "unit": "A"
+    }
+   ]
+  },
+  {
+   "name": "v3v63_i0",
+   "analysis": {
+    "kind": "op",
+    "args": ""
+   },
+   "alter": {
+    "Vin": 3.63,
+    "Iload": 0.0
+   },
+   "measurements": [
+    {
+     "name": "isup_a",
+     "expr": "abs(vin#branch)",
+     "unit": "A"
+    }
+   ]
+  },
+  {
+   "name": "v3v63_i50m",
+   "analysis": {
+    "kind": "op",
+    "args": ""
+   },
+   "alter": {
+    "Vin": 3.63,
+    "Iload": 0.05
+   },
+   "measurements": [
+    {
+     "name": "isup_a",
+     "expr": "abs(vin#branch)",
+     "unit": "A"
+    }
+   ]
+  }
+ ],
+ "measurements": [
+  {
+   "name": "iq_i0_v2v97_a",
+   "expr": "v2v97_i0.isup_a",
+   "unit": "A",
+   "limits": {
+    "max": 3e-05
+   },
+   "spec_row": "dr0007-row7-iq"
+  },
+  {
+   "name": "iq_i50m_v2v97_a",
+   "expr": "v2v97_i50m.isup_a - 0.05",
+   "unit": "A",
+   "limits": {
+    "max": 3e-05
+   },
+   "spec_row": "dr0007-row7-iq"
+  },
+  {
+   "name": "iq_i0_v3v30_a",
+   "expr": "v3v30_i0.isup_a",
+   "unit": "A",
+   "limits": {
+    "max": 3e-05
+   },
+   "spec_row": "dr0007-row7-iq"
+  },
+  {
+   "name": "iq_i50m_v3v30_a",
+   "expr": "v3v30_i50m.isup_a - 0.05",
+   "unit": "A",
+   "limits": {
+    "max": 3e-05
+   },
+   "spec_row": "dr0007-row7-iq"
+  },
+  {
+   "name": "iq_i0_v3v63_a",
+   "expr": "v3v63_i0.isup_a",
+   "unit": "A",
+   "limits": {
+    "max": 3e-05
+   },
+   "spec_row": "dr0007-row7-iq"
+  },
+  {
+   "name": "iq_i50m_v3v63_a",
+   "expr": "v3v63_i50m.isup_a - 0.05",
+   "unit": "A",
+   "limits": {
+    "max": 3e-05
+   },
+   "spec_row": "dr0007-row7-iq"
+  }
+ ],
+ "corners": {
+  "process": [
+   "mos_ff__res_bcs__cap_typ",
+   "mos_ff__res_typ__cap_typ",
+   "mos_ff__res_wcs__cap_typ",
+   "mos_fs__res_bcs__cap_typ",
+   "mos_fs__res_typ__cap_typ",
+   "mos_fs__res_wcs__cap_typ",
+   "mos_sf__res_bcs__cap_typ",
+   "mos_sf__res_typ__cap_typ",
+   "mos_sf__res_wcs__cap_typ",
+   "mos_ss__res_bcs__cap_typ",
+   "mos_ss__res_typ__cap_typ",
+   "mos_ss__res_wcs__cap_typ",
+   "mos_tt__res_bcs__cap_typ",
+   "mos_tt__res_typ__cap_typ",
+   "mos_tt__res_wcs__cap_typ"
+  ],
+  "temperature_c": [
+   -40,
+   27,
+   125
+  ]
+ },
+ "options": {
+  "timeout_s": 600,
+  "keep_artifacts": true,
+  "waveforms": false,
+  "stage_model_inputs": true,
+  "osdi_preload": [
+   "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/psp103.osdi",
+   "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/psp103_nqs.osdi",
+   "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/mosvar.osdi",
+   "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/r3_cmc.osdi",
+   "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/cap_cmomi.osdi",
+   "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi/cap_cmomf.osdi"
+  ],
+  "ngspice_options": {
+   "reltol": 1e-12,
+   "abstol": 1e-17
+  },
+  "ngspice_init": [
+   "set numdgt=12"
+  ]
+ }
+}

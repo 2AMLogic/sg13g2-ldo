@@ -14,6 +14,7 @@ noise must be pinned in the request too.
 """
 import copy
 import json
+import math
 import os
 import shutil
 import sys
@@ -25,6 +26,11 @@ if HERE not in sys.path:
     sys.path.insert(0, HERE)
 import row7_envelope as ev  # noqa: E402
 import row_envelope as re_  # noqa: E402
+
+try:                                    # the pinned klt's own grader, when installed
+    import klayout_tools.sim as real_grader
+except Exception:                       # noqa: BLE001 -- optional in stdlib-only runs
+    real_grader = None
 
 
 def full_report(n=ev.N_EXPECTED, worst=("ff", 125, "bcs"),
@@ -130,10 +136,22 @@ class RequestShape(unittest.TestCase):
         self.assertEqual(req["analysis_steps"], ev.analysis_steps())
         self.assertEqual(req["options"]["timeout_s"], 600)
 
-    def test_noise_bound_is_stated_and_small_vs_the_limit(self):
-        self.assertAlmostEqual(ev.NOISE_BOUND_A,
+    def test_convergence_setting_is_stated_and_never_called_a_bound(self):
+        self.assertAlmostEqual(ev.CONVERGENCE_SETTING_A,
                                1e-9 * 0.050 + 30e-6 * 1e-9 + 1e-15, places=30)
-        self.assertLess(ev.NOISE_BOUND_A / ev.TARGET_IQ_A, 1e-5)
+        self.assertFalse(hasattr(ev, "NOISE_BOUND_A"))
+        s = ev.summarise_report(full_report(), PROV)[0]
+        self.assertIn("NOT an error bound", s["solver_convergence_setting_note"])
+        self.assertNotIn("numerical_noise_bound_a", s)
+
+    def test_tight_profile_differs_from_standard_only_in_tolerances(self):
+        std = ev.request_obj("/osdi", ev.coords())
+        tight = ev.request_obj("/osdi", ev.coords(), "tight-1e-10")
+        self.assertEqual(tight["options"]["ngspice_options"],
+                         {"reltol": 1e-10, "abstol": 1e-15})
+        std["options"].pop("ngspice_options")
+        tight["options"].pop("ngspice_options")
+        self.assertEqual(std, tight)
 
     def test_full_matrix_excludes_nothing_probe_excludes_the_gaps(self):
         self.assertNotIn("exclude", ev.request_obj("/osdi", ev.coords()))
@@ -232,6 +250,55 @@ class SummaryVerdict(unittest.TestCase):
         r["coverage"]["measurements_with_limits"] = 0
         self.assertFalse(self.summ(r)["definitive"])
 
+    def set_graded(self, r, value, name="iq_i50m_v3v30_a", idx=5):
+        for m in r["corners"][idx]["measurements"]:
+            if m["name"] == name:
+                m["value"] = value
+                m["status"] = "pass"      # klt sim's inclusive `max` grades it so
+
+    def test_a_value_exactly_at_the_target_is_not_definitive(self):
+        # DR-0007 row 7 is a strict "< 30 uA"; klt sim's `max` is inclusive.
+        r = full_report()
+        self.set_graded(r, ev.TARGET_IQ_A)
+        s = self.summ(r)
+        self.assertTrue(s["all_graded_measurements_pass"])
+        self.assertFalse(s["all_graded_strictly_below_target"])
+        self.assertFalse(s["definitive"])
+        # the next representable value below the target IS a pass
+        r = full_report()
+        self.set_graded(r, math.nextafter(ev.TARGET_IQ_A, 0.0))
+        self.assertTrue(self.summ(r)["definitive"])
+
+    def test_one_step_repeated_six_times_is_not_definitive(self):
+        r = full_report()
+        r["corners"][2]["steps"] = [copy.deepcopy(r["corners"][2]["steps"][0])
+                                    for _ in range(6)]
+        self.assertFalse(self.summ(r)["definitive"])
+
+    def test_a_missing_named_step_is_not_definitive(self):
+        r = full_report()
+        r["corners"][2]["steps"][3]["name"] = "v3v30_i0"        # a duplicate name
+        self.assertFalse(self.summ(r)["definitive"])
+
+    def test_a_graded_measurement_repeated_in_a_corner_is_not_definitive(self):
+        r = full_report()
+        c = r["corners"][4]
+        c["measurements"].append(copy.deepcopy(c["measurements"][-1]))
+        self.assertFalse(self.summ(r)["definitive"])
+
+    def test_a_graded_declaration_missing_from_the_report_is_not_definitive(self):
+        r = full_report()
+        r["measurements"] = [m for m in r["measurements"]
+                             if m["name"] != "iq_i50m_v3v63_a"]
+        s = self.summ(r)
+        self.assertFalse(s["graded_declarations_exactly_once"])
+        self.assertFalse(s["definitive"])
+
+    def test_a_graded_declaration_repeated_in_the_report_is_not_definitive(self):
+        r = full_report()
+        r["measurements"].append(copy.deepcopy(r["measurements"][0]))
+        self.assertFalse(self.summ(r)["definitive"])
+
     def test_probe_record_is_never_definitive(self):
         prov = {"record_id": "p", "probe": True, "substitutions": {}}
         r = full_report()
@@ -243,17 +310,16 @@ class SummaryVerdict(unittest.TestCase):
         self.assertTrue(s["probe"])
         self.assertFalse(s["definitive"])
 
-    def test_summary_carries_the_noise_bound_and_exclusions(self):
+    def test_summary_carries_the_convergence_setting_and_exclusions(self):
         s = self.summ(full_report())
-        self.assertIn("numerical_noise_bound_a", s)
-        self.assertLess(s["numerical_noise_bound_a"], 1e-10)
-        self.assertIn("reltol", s["numerical_noise_bound_note"])
+        self.assertLess(s["solver_convergence_setting_a"], 1e-10)
+        self.assertIn("reltol", s["solver_convergence_setting_note"])
         joined = " ".join(s["exclusions"])
         self.assertIn("0.90 V reference", joined)
         self.assertIn("IBIAS", joined)
         self.assertIn("#190", joined)
         md = ev.summary_md(s, ev.summarise_report(full_report(), PROV)[1], PROV)
-        self.assertIn("Numerical-noise bound", md)
+        self.assertIn("Solver convergence setting (not an error bound)", md)
         self.assertIn("Exclusions this evidence must be read with", md)
         self.assertEqual(md, ev.summary_md(s, ev.summarise_report(full_report(), PROV)[1], PROV))
 
@@ -304,27 +370,112 @@ class CommittedRecords(unittest.TestCase):
         ev.check_record(rid, problems)
         self.assertTrue(any("limits" in p for p in problems), problems)
 
-    def test_perturbed_limit_makes_the_envelope_fail(self):
-        # The issue's negative control: a perturbed limit (tightened, not
-        # relaxed -- the direction a gate must still catch) makes the recorded
-        # envelope's own summary report failing measurements: rebuild the
-        # summary against a limit the measured values cannot meet.
+    @unittest.skipUnless(real_grader is not None,
+                         "klayout_tools.sim not importable (pinned klt not installed)")
+    def test_perturbed_limit_through_the_real_grader_makes_the_envelope_fail(self):
+        # Tighten ONLY the six declared limits to 10 uA (below every measured
+        # value) and push each recorded value through klt's own grading
+        # function -- `_grade_measurement_value`, the one `klt sim` itself
+        # calls per measurement. The statuses it RETURNS (not statuses this
+        # test sets) are written back into a scratch copy of the report, and
+        # the tool's summary must then refuse the record.
         rid = self.records()[0]
         path = os.path.join(self.root, rid, "report.json")
         rep = json.load(open(path))
+        specs = {m["name"]: dict(m, limits={"max": 10e-6})
+                 for m in ev.measurements()}
+        n = 0
         for m in rep.get("measurements", []):
             if m["name"] in ev.GRADED:
-                m["limits"] = {"max": 10e-6}   # below every measured value
+                m["limits"] = {"max": 10e-6}
+        failed = 0
         for c in rep["corners"]:
             for m in c["measurements"]:
-                if m["name"] in ev.GRADED:
-                    m["status"] = "fail"
-        rep["status"], rep["passed"], rep["failed"] = "fail", 0, rep["corner_count"]
-        json.dump(rep, open(path, "w"), indent=1)
-        summ, _ = ev.summarise_report(rep, json.load(
-            open(os.path.join(self.root, rid, "provenance.json"))))
+                if m["name"] in specs:
+                    status, _margin, _diag = real_grader._grade_measurement_value(
+                        specs[m["name"]], m["value"])
+                    m["status"] = status
+                    n += 1
+                    failed += status == "fail"
+        self.assertEqual(n, 6 * ev.N_EXPECTED)
+        self.assertEqual(failed, n, "the real grader must fail every value > 10 uA")
+        prov = json.load(open(os.path.join(self.root, rid, "provenance.json")))
+        summ, _ = ev.summarise_report(rep, prov)
         self.assertFalse(summ["all_graded_measurements_pass"])
         self.assertFalse(summ["definitive"])
+
+    @unittest.skipUnless(real_grader is not None,
+                         "klayout_tools.sim not importable (pinned klt not installed)")
+    def test_equality_with_the_target_passes_klt_but_fails_the_tool(self):
+        # klt's `max` limit is inclusive ...
+        status, _m, _d = real_grader._grade_measurement_value(
+            {"name": "x", "limits": {"max": ev.TARGET_IQ_A}}, ev.TARGET_IQ_A)
+        self.assertEqual(status, "pass")
+        # ... DR-0007's "< 30 uA" is strict, so the tool's verdict refuses a
+        # record whose figure sits AT the target, through the real code path.
+        rid = self.records()[0]
+        rep = json.load(open(os.path.join(self.root, rid, "report.json")))
+        prov = json.load(open(os.path.join(self.root, rid, "provenance.json")))
+        spec = {"name": "iq_i0_v2v97_a", "limits": {"max": ev.TARGET_IQ_A}}
+        for m in rep["corners"][0]["measurements"]:
+            if m["name"] == "iq_i0_v2v97_a":
+                m["value"] = ev.TARGET_IQ_A
+                m["status"] = real_grader._grade_measurement_value(spec, m["value"])[0]
+        self.assertEqual(ev.summarise_report(rep, prov)[0]["definitive"], False)
+
+    def tamper_report(self, rid, mutate):
+        path = os.path.join(self.root, rid, "report.json")
+        rep = json.load(open(path))
+        mutate(rep)
+        json.dump(rep, open(path, "w"), indent=1)
+
+    def test_a_graded_declaration_removed_from_the_report_is_caught(self):
+        rid = self.records()[0]
+        self.tamper_report(rid, lambda r: r.update(measurements=[
+            m for m in r["measurements"] if m["name"] not in ev.GRADED]))
+        problems = []
+        ev.check_record(rid, problems)
+        self.assertTrue(any("exactly once" in p for p in problems), problems)
+
+    def test_a_graded_declaration_repeated_in_the_report_is_caught(self):
+        rid = self.records()[0]
+        self.tamper_report(rid, lambda r: r["measurements"].append(
+            copy.deepcopy(next(m for m in r["measurements"] if m["name"] in ev.GRADED))))
+        problems = []
+        ev.check_record(rid, problems)
+        self.assertTrue(any("exactly once" in p for p in problems), problems)
+
+    def test_a_repeated_step_in_a_corner_makes_the_record_not_definitive(self):
+        rid = self.records()[0]
+
+        def rep6(r):
+            c = r["corners"][0]
+            c["steps"] = [copy.deepcopy(c["steps"][0]) for _ in range(6)]
+        self.tamper_report(rid, rep6)
+        prov = json.load(open(os.path.join(self.root, rid, "provenance.json")))
+        rep = json.load(open(os.path.join(self.root, rid, "report.json")))
+        self.assertFalse(ev.summarise_report(rep, prov)[0]["definitive"])
+
+    def test_a_changed_pdk_pin_makes_the_cited_record_stale(self):
+        # Scratch repo holding only the pin and the record's hashed inputs; the
+        # record pins the projection of the REAL pin, the scratch pin differs.
+        rid = self.records()[0]
+        repo = os.path.join(self.tmp, "repo")
+        for rel in [ev.PDK_PIN] + list(ev.INPUTS):
+            os.makedirs(os.path.dirname(os.path.join(repo, rel)), exist_ok=True)
+            shutil.copy2(os.path.join(ev.REPO, rel), os.path.join(repo, rel))
+        self.assertEqual(re_.stale_inputs(repo, self.root, rid, ev.INPUTS), [])
+        pin = os.path.join(repo, ev.PDK_PIN)
+        doc = json.load(open(pin))
+        doc["pinned_commit"] = "0" * 40
+        json.dump(doc, open(pin, "w"))
+        out = re_.stale_inputs(repo, self.root, rid, ev.INPUTS)
+        self.assertTrue(any("PDK pin" in p for p in out), out)
+
+    def test_row7_check_flags_a_stale_cited_record(self):
+        self.assertTrue(callable(ev.stale_inputs))
+        self.assertEqual(ev.stale_inputs(ev.cited_record()), [],
+                         "the committed cited record must be current")
 
     def test_corners_lib_tampering_is_caught(self):
         rid = self.records()[0]
@@ -335,17 +486,95 @@ class CommittedRecords(unittest.TestCase):
         self.assertTrue(any("corners.lib" in p or "models_lib_sha256" in p
                             for p in problems), problems)
 
+    def selected_id(self):
+        return ev.cited_record()
+
     def test_selected_record_is_definitive(self):
-        # Whichever record characterization pins must be a whole, clean,
-        # graded matrix; an incomplete or failing record must never be cited.
-        rid = self.records()[-1]
+        # The record characterization CITES (selection.json -- never "the
+        # newest directory") must be a whole, clean, graded matrix. A newer
+        # failed run is history and must not break this.
+        rid = self.selected_id()
+        self.assertIn(rid, self.records())
         prov = json.load(open(os.path.join(self.root, rid, "provenance.json")))
-        if prov.get("probe"):
-            self.skipTest("latest record is a probe")
+        self.assertFalse(prov.get("probe"))
+        self.assertEqual(prov.get("solver_profile", "standard"), "standard")
         summ, _ = ev.summarise_report(
             json.load(open(os.path.join(self.root, rid, "report.json"))), prov)
-        self.assertTrue(summ["definitive"], "the newest non-probe record must "
-                        "be definitive before characterization can pin it")
+        self.assertTrue(summ["definitive"], "the cited record must be definitive")
+
+    def test_a_newer_failed_run_is_kept_as_history_and_does_not_block_the_cited_one(self):
+        rid = self.selected_id()
+        newer = "99991231-235959-failrun"
+        shutil.copytree(os.path.join(self.root, rid), os.path.join(self.root, newer))
+        path = os.path.join(self.root, newer, "report.json")
+        rep = json.load(open(path))
+        rep["status"], rep["passed"], rep["failed"] = "fail", 0, rep["corner_count"]
+        for c in rep["corners"]:
+            c["status"] = "fail"
+            for m in c["measurements"]:
+                if m["name"] in ev.GRADED:
+                    m["status"], m["value"] = "fail", 31e-6
+        json.dump(rep, open(path, "w"), indent=1)
+        prov_path = os.path.join(self.root, newer, "provenance.json")
+        prov = json.load(open(prov_path))
+        prov["record_id"] = newer
+        json.dump(prov, open(prov_path, "w"), indent=1, sort_keys=True)
+        # the newer record is not definitive ...
+        summ, _ = ev.summarise_report(rep, prov)
+        self.assertFalse(summ["definitive"])
+        self.assertGreater(ev.records()[-1], rid)
+        # ... and the selected-record test still reads selection.json.
+        self.test_selected_record_is_definitive()
+        self.assertEqual(self.selected_id(), rid)
+
+
+class PairComparison(unittest.TestCase):
+    """The tight-tolerance pair: an observation with stated coverage."""
+
+    def pair(self, delta=2e-12, drop=0, same_inputs=True, opts_ok=True):
+        tmp = tempfile.mkdtemp(prefix="row7-pair-test.")
+        self.addCleanup(shutil.rmtree, tmp, True)
+        dirs = {}
+        for tag in ("base", "tight"):
+            d = os.path.join(tmp, tag)
+            os.makedirs(d)
+            rep = full_report()
+            if tag == "tight":
+                for c in rep["corners"]:
+                    for m in c["measurements"]:
+                        if m["name"] in ev.GRADED:
+                            m["value"] += delta
+                if drop:
+                    rep["corners"] = rep["corners"][:-drop]
+            prof = "tight-1e-10" if tag == "tight" and opts_ok else "standard"
+            req = ev.request_obj("/osdi", ev.coords(), prof)
+            prov = {"record_id": tag, "solver_profile": prof, "input_sha256": {"a": "1" if same_inputs
+                                                       or tag == "base" else "2"},
+                    "pdk_pin_projection_sha256": "p"}
+            for name, doc in (("report.json", rep), ("request.json", req),
+                              ("provenance.json", prov)):
+                json.dump(doc, open(os.path.join(d, name), "w"))
+            dirs[tag] = d
+        return ev.pair_summary(dirs["base"], dirs["tight"])
+
+    def test_largest_observed_change_and_coverage_are_reported(self):
+        p = self.pair(delta=2e-12)
+        self.assertTrue(p["complete"])
+        self.assertEqual(p["pairs_compared"], 270)
+        self.assertAlmostEqual(p["max_abs_delta_a"], 2e-12, places=18)
+        self.assertEqual(len(p["max_abs_delta_a_by_measurement"]), 6)
+        self.assertIn("not a bound", p["interpretation"])
+
+    def test_missing_corners_make_the_pair_incomplete(self):
+        p = self.pair(drop=1)
+        self.assertFalse(p["complete"])
+        self.assertEqual(p["pairs_compared"], 264)
+
+    def test_different_inputs_make_the_pair_incomplete(self):
+        self.assertFalse(self.pair(same_inputs=False)["complete"])
+
+    def test_same_tolerances_are_not_a_pair(self):
+        self.assertFalse(self.pair(opts_ok=False)["complete"])
 
 
 if __name__ == "__main__":
