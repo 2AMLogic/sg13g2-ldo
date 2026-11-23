@@ -1,0 +1,261 @@
+{
+ "backend": "batch",
+ "client_klt": "klt 0.9.3.dev3808+g1ad4a837f657",
+ "runner_klt": [
+  "0.9.0"
+ ],
+ "engines": [
+  "ngspice-47"
+ ],
+ "staged_osdi_sha256": {
+  "psp103.osdi": "dba873bcef3f1978b30d66a4dcb661f79c6f6386c29da8841712d84399e13f1a",
+  "psp103_nqs.osdi": "ad99ea641e0b88b29125a786e77f3dcb3b206b5e116e23c2a265783658e69754",
+  "mosvar.osdi": "cded61b14fbe50f74453e995a00f4876664328fd477badf672e5b2405cae5973",
+  "r3_cmc.osdi": "746f86fd1b89c309cbec7b23e661a66ee80b2d897ea229bc8e3fcc3757a673c3",
+  "cap_cmomi.osdi": "972ff31c1dd8658f7399f2ec9212d0220344c356a77570b5b3ee925155119a83",
+  "cap_cmomf.osdi": "d44927b3dbcc9a0906125da35fbb9cb23d9abdf20f6dddda0394e81fb165ac18"
+ },
+ "reused_reports": {},
+ "jobs": [
+  {
+   "group": "g00_loopgain_e4_ss_125c_rwcs_i0ua_c3450nf_e0mohm_rdiv1x_cc1x",
+   "job_id": "klt-sim-6c0f531e6b09",
+   "runner_klt_version": "0.9.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 1,
+   "requested": 1,
+   "osdi_preload_verified": {
+    "psp103.osdi": "dba873bcef3f1978b30d66a4dcb661f79c6f6386c29da8841712d84399e13f1a",
+    "psp103_nqs.osdi": "ad99ea641e0b88b29125a786e77f3dcb3b206b5e116e23c2a265783658e69754",
+    "mosvar.osdi": "cded61b14fbe50f74453e995a00f4876664328fd477badf672e5b2405cae5973",
+    "r3_cmc.osdi": "746f86fd1b89c309cbec7b23e661a66ee80b2d897ea229bc8e3fcc3757a673c3",
+    "cap_cmomi.osdi": "972ff31c1dd8658f7399f2ec9212d0220344c356a77570b5b3ee925155119a83",
+    "cap_cmomf.osdi": "d44927b3dbcc9a0906125da35fbb9cb23d9abdf20f6dddda0394e81fb165ac18"
+   },
+   "points": [
+    "loopgain_e4_ss_125c_rwcs_i0ua_c3450nf_e0mohm_rdiv1x_cc1x"
+   ]
+  },
+  {
+   "group": "g01_psrr_e4_ss_125c_rwcs_i0ua_c3450nf_e0mohm_rdiv1x_cc1x",
+   "job_id": "klt-sim-333c6981bd69",
+   "runner_klt_version": "0.9.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 1,
+   "requested": 1,
+   "osdi_preload_verified": {
+    "psp103.osdi": "dba873bcef3f1978b30d66a4dcb661f79c6f6386c29da8841712d84399e13f1a",
+    "psp103_nqs.osdi": "ad99ea641e0b88b29125a786e77f3dcb3b206b5e116e23c2a265783658e69754",
+    "mosvar.osdi": "cded61b14fbe50f74453e995a00f4876664328fd477badf672e5b2405cae5973",
+    "r3_cmc.osdi": "746f86fd1b89c309cbec7b23e661a66ee80b2d897ea229bc8e3fcc3757a673c3",
+    "cap_cmomi.osdi": "972ff31c1dd8658f7399f2ec9212d0220344c356a77570b5b3ee925155119a83",
+    "cap_cmomf.osdi": "d44927b3dbcc9a0906125da35fbb9cb23d9abdf20f6dddda0394e81fb165ac18"
+   },
+   "points": [
+    "psrr_e4_ss_125c_rwcs_i0ua_c3450nf_e0mohm_rdiv1x_cc1x"
+   ]
+  },
+  {
+   "group": "g02_e1op_e4_ss_125c_rwcs_i0ua_c3450nf_e0mohm_rdiv1x_cc1x",
+   "job_id": "klt-sim-a87026e9b536",
+   "runner_klt_version": "0.9.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 1,
+   "requested": 1,
+   "osdi_preload_verified": {
+    "psp103.osdi": "dba873bcef3f1978b30d66a4dcb661f79c6f6386c29da8841712d84399e13f1a",
+    "psp103_nqs.osdi": "ad99ea641e0b88b29125a786e77f3dcb3b206b5e116e23c2a265783658e69754",
+    "mosvar.osdi": "cded61b14fbe50f74453e995a00f4876664328fd477badf672e5b2405cae5973",
+    "r3_cmc.osdi": "746f86fd1b89c309cbec7b23e661a66ee80b2d897ea229bc8e3fcc3757a673c3",
+    "cap_cmomi.osdi": "972ff31c1dd8658f7399f2ec9212d0220344c356a77570b5b3ee925155119a83",
+    "cap_cmomf.osdi": "d44927b3dbcc9a0906125da35fbb9cb23d9abdf20f6dddda0394e81fb165ac18"
+   },
+   "points": [
+    "e1op_e4_ss_125c_rwcs_i0ua_c3450nf_e0mohm_rdiv1x_cc1x"
+   ]
+  },
+  {
+   "group": "g03_loopgain_e4_ss_125c_rwcs_i0ua_c3450nf_e0mohm_rdiv1x_cc0p65x",
+   "job_id": "klt-sim-0db202bb6418",
+   "runner_klt_version": "0.9.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 1,
+   "requested": 1,
+   "osdi_preload_verified": {
+    "psp103.osdi": "dba873bcef3f1978b30d66a4dcb661f79c6f6386c29da8841712d84399e13f1a",
+    "psp103_nqs.osdi": "ad99ea641e0b88b29125a786e77f3dcb3b206b5e116e23c2a265783658e69754",
+    "mosvar.osdi": "cded61b14fbe50f74453e995a00f4876664328fd477badf672e5b2405cae5973",
+    "r3_cmc.osdi": "746f86fd1b89c309cbec7b23e661a66ee80b2d897ea229bc8e3fcc3757a673c3",
+    "cap_cmomi.osdi": "972ff31c1dd8658f7399f2ec9212d0220344c356a77570b5b3ee925155119a83",
+    "cap_cmomf.osdi": "d44927b3dbcc9a0906125da35fbb9cb23d9abdf20f6dddda0394e81fb165ac18"
+   },
+   "points": [
+    "loopgain_e4_ss_125c_rwcs_i0ua_c3450nf_e0mohm_rdiv1x_cc0p65x"
+   ]
+  },
+  {
+   "group": "g04_psrr_e4_ss_125c_rwcs_i0ua_c3450nf_e0mohm_rdiv1x_cc0p65x",
+   "job_id": "klt-sim-a13858e6147f",
+   "runner_klt_version": "0.9.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 1,
+   "requested": 1,
+   "osdi_preload_verified": {
+    "psp103.osdi": "dba873bcef3f1978b30d66a4dcb661f79c6f6386c29da8841712d84399e13f1a",
+    "psp103_nqs.osdi": "ad99ea641e0b88b29125a786e77f3dcb3b206b5e116e23c2a265783658e69754",
+    "mosvar.osdi": "cded61b14fbe50f74453e995a00f4876664328fd477badf672e5b2405cae5973",
+    "r3_cmc.osdi": "746f86fd1b89c309cbec7b23e661a66ee80b2d897ea229bc8e3fcc3757a673c3",
+    "cap_cmomi.osdi": "972ff31c1dd8658f7399f2ec9212d0220344c356a77570b5b3ee925155119a83",
+    "cap_cmomf.osdi": "d44927b3dbcc9a0906125da35fbb9cb23d9abdf20f6dddda0394e81fb165ac18"
+   },
+   "points": [
+    "psrr_e4_ss_125c_rwcs_i0ua_c3450nf_e0mohm_rdiv1x_cc0p65x"
+   ]
+  },
+  {
+   "group": "g05_e1op_e4_ss_125c_rwcs_i0ua_c3450nf_e0mohm_rdiv1x_cc0p65x",
+   "job_id": "klt-sim-311da17aeb41",
+   "runner_klt_version": "0.9.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 1,
+   "requested": 1,
+   "osdi_preload_verified": {
+    "psp103.osdi": "dba873bcef3f1978b30d66a4dcb661f79c6f6386c29da8841712d84399e13f1a",
+    "psp103_nqs.osdi": "ad99ea641e0b88b29125a786e77f3dcb3b206b5e116e23c2a265783658e69754",
+    "mosvar.osdi": "cded61b14fbe50f74453e995a00f4876664328fd477badf672e5b2405cae5973",
+    "r3_cmc.osdi": "746f86fd1b89c309cbec7b23e661a66ee80b2d897ea229bc8e3fcc3757a673c3",
+    "cap_cmomi.osdi": "972ff31c1dd8658f7399f2ec9212d0220344c356a77570b5b3ee925155119a83",
+    "cap_cmomf.osdi": "d44927b3dbcc9a0906125da35fbb9cb23d9abdf20f6dddda0394e81fb165ac18"
+   },
+   "points": [
+    "e1op_e4_ss_125c_rwcs_i0ua_c3450nf_e0mohm_rdiv1x_cc0p65x"
+   ]
+  },
+  {
+   "group": "g06_loopgain_e4_ss_125c_rwcs_i0ua_c3450nf_e0mohm_rdiv0p5x_cc1x",
+   "job_id": "klt-sim-0d644d378443",
+   "runner_klt_version": "0.9.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 1,
+   "requested": 1,
+   "osdi_preload_verified": {
+    "psp103.osdi": "dba873bcef3f1978b30d66a4dcb661f79c6f6386c29da8841712d84399e13f1a",
+    "psp103_nqs.osdi": "ad99ea641e0b88b29125a786e77f3dcb3b206b5e116e23c2a265783658e69754",
+    "mosvar.osdi": "cded61b14fbe50f74453e995a00f4876664328fd477badf672e5b2405cae5973",
+    "r3_cmc.osdi": "746f86fd1b89c309cbec7b23e661a66ee80b2d897ea229bc8e3fcc3757a673c3",
+    "cap_cmomi.osdi": "972ff31c1dd8658f7399f2ec9212d0220344c356a77570b5b3ee925155119a83",
+    "cap_cmomf.osdi": "d44927b3dbcc9a0906125da35fbb9cb23d9abdf20f6dddda0394e81fb165ac18"
+   },
+   "points": [
+    "loopgain_e4_ss_125c_rwcs_i0ua_c3450nf_e0mohm_rdiv0p5x_cc1x"
+   ]
+  },
+  {
+   "group": "g07_psrr_e4_ss_125c_rwcs_i0ua_c3450nf_e0mohm_rdiv0p5x_cc1x",
+   "job_id": "klt-sim-c0bf0d944b7c",
+   "runner_klt_version": "0.9.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 1,
+   "requested": 1,
+   "osdi_preload_verified": {
+    "psp103.osdi": "dba873bcef3f1978b30d66a4dcb661f79c6f6386c29da8841712d84399e13f1a",
+    "psp103_nqs.osdi": "ad99ea641e0b88b29125a786e77f3dcb3b206b5e116e23c2a265783658e69754",
+    "mosvar.osdi": "cded61b14fbe50f74453e995a00f4876664328fd477badf672e5b2405cae5973",
+    "r3_cmc.osdi": "746f86fd1b89c309cbec7b23e661a66ee80b2d897ea229bc8e3fcc3757a673c3",
+    "cap_cmomi.osdi": "972ff31c1dd8658f7399f2ec9212d0220344c356a77570b5b3ee925155119a83",
+    "cap_cmomf.osdi": "d44927b3dbcc9a0906125da35fbb9cb23d9abdf20f6dddda0394e81fb165ac18"
+   },
+   "points": [
+    "psrr_e4_ss_125c_rwcs_i0ua_c3450nf_e0mohm_rdiv0p5x_cc1x"
+   ]
+  },
+  {
+   "group": "g08_e1op_e4_ss_125c_rwcs_i0ua_c3450nf_e0mohm_rdiv0p5x_cc1x",
+   "job_id": "klt-sim-bf2bc6c63274",
+   "runner_klt_version": "0.9.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 1,
+   "requested": 1,
+   "osdi_preload_verified": {
+    "psp103.osdi": "dba873bcef3f1978b30d66a4dcb661f79c6f6386c29da8841712d84399e13f1a",
+    "psp103_nqs.osdi": "ad99ea641e0b88b29125a786e77f3dcb3b206b5e116e23c2a265783658e69754",
+    "mosvar.osdi": "cded61b14fbe50f74453e995a00f4876664328fd477badf672e5b2405cae5973",
+    "r3_cmc.osdi": "746f86fd1b89c309cbec7b23e661a66ee80b2d897ea229bc8e3fcc3757a673c3",
+    "cap_cmomi.osdi": "972ff31c1dd8658f7399f2ec9212d0220344c356a77570b5b3ee925155119a83",
+    "cap_cmomf.osdi": "d44927b3dbcc9a0906125da35fbb9cb23d9abdf20f6dddda0394e81fb165ac18"
+   },
+   "points": [
+    "e1op_e4_ss_125c_rwcs_i0ua_c3450nf_e0mohm_rdiv0p5x_cc1x"
+   ]
+  },
+  {
+   "group": "g09_loopgain_e4_ss_125c_rwcs_i0ua_c3450nf_e0mohm_rdiv0p5x_cc0p65x",
+   "job_id": "klt-sim-6f8b55ac6bf5",
+   "runner_klt_version": "0.9.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 1,
+   "requested": 1,
+   "osdi_preload_verified": {
+    "psp103.osdi": "dba873bcef3f1978b30d66a4dcb661f79c6f6386c29da8841712d84399e13f1a",
+    "psp103_nqs.osdi": "ad99ea641e0b88b29125a786e77f3dcb3b206b5e116e23c2a265783658e69754",
+    "mosvar.osdi": "cded61b14fbe50f74453e995a00f4876664328fd477badf672e5b2405cae5973",
+    "r3_cmc.osdi": "746f86fd1b89c309cbec7b23e661a66ee80b2d897ea229bc8e3fcc3757a673c3",
+    "cap_cmomi.osdi": "972ff31c1dd8658f7399f2ec9212d0220344c356a77570b5b3ee925155119a83",
+    "cap_cmomf.osdi": "d44927b3dbcc9a0906125da35fbb9cb23d9abdf20f6dddda0394e81fb165ac18"
+   },
+   "points": [
+    "loopgain_e4_ss_125c_rwcs_i0ua_c3450nf_e0mohm_rdiv0p5x_cc0p65x"
+   ]
+  },
+  {
+   "group": "g10_psrr_e4_ss_125c_rwcs_i0ua_c3450nf_e0mohm_rdiv0p5x_cc0p65x",
+   "job_id": "klt-sim-fb9fb5d7e59c",
+   "runner_klt_version": "0.9.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 1,
+   "requested": 1,
+   "osdi_preload_verified": {
+    "psp103.osdi": "dba873bcef3f1978b30d66a4dcb661f79c6f6386c29da8841712d84399e13f1a",
+    "psp103_nqs.osdi": "ad99ea641e0b88b29125a786e77f3dcb3b206b5e116e23c2a265783658e69754",
+    "mosvar.osdi": "cded61b14fbe50f74453e995a00f4876664328fd477badf672e5b2405cae5973",
+    "r3_cmc.osdi": "746f86fd1b89c309cbec7b23e661a66ee80b2d897ea229bc8e3fcc3757a673c3",
+    "cap_cmomi.osdi": "972ff31c1dd8658f7399f2ec9212d0220344c356a77570b5b3ee925155119a83",
+    "cap_cmomf.osdi": "d44927b3dbcc9a0906125da35fbb9cb23d9abdf20f6dddda0394e81fb165ac18"
+   },
+   "points": [
+    "psrr_e4_ss_125c_rwcs_i0ua_c3450nf_e0mohm_rdiv0p5x_cc0p65x"
+   ]
+  },
+  {
+   "group": "g11_e1op_e4_ss_125c_rwcs_i0ua_c3450nf_e0mohm_rdiv0p5x_cc0p65x",
+   "job_id": "klt-sim-e50ca9482291",
+   "runner_klt_version": "0.9.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 1,
+   "requested": 1,
+   "osdi_preload_verified": {
+    "psp103.osdi": "dba873bcef3f1978b30d66a4dcb661f79c6f6386c29da8841712d84399e13f1a",
+    "psp103_nqs.osdi": "ad99ea641e0b88b29125a786e77f3dcb3b206b5e116e23c2a265783658e69754",
+    "mosvar.osdi": "cded61b14fbe50f74453e995a00f4876664328fd477badf672e5b2405cae5973",
+    "r3_cmc.osdi": "746f86fd1b89c309cbec7b23e661a66ee80b2d897ea229bc8e3fcc3757a673c3",
+    "cap_cmomi.osdi": "972ff31c1dd8658f7399f2ec9212d0220344c356a77570b5b3ee925155119a83",
+    "cap_cmomf.osdi": "d44927b3dbcc9a0906125da35fbb9cb23d9abdf20f6dddda0394e81fb165ac18"
+   },
+   "points": [
+    "e1op_e4_ss_125c_rwcs_i0ua_c3450nf_e0mohm_rdiv0p5x_cc0p65x"
+   ]
+  }
+ ]
+}

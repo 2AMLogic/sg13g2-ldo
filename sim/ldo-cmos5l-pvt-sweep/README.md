@@ -2174,3 +2174,88 @@ cross-vintage and labelled as such in the addendum. The same-vintage AC
 reference is the #155 re-run `20261012-080951-142dac4a`. Tests:
 `test_e1_oppoints.py`; the record's `check` subcommand byte-compares the
 committed reduction and record markdown against the raw exports.
+
+## E4 divider/Cc probe at DR-0015 point P5 (issue #315, DR-0015 experiment E4)
+
+[`DR-0015`](../../spec/decision-records/DR-0015-sg13cmos5l-dynamic-window-stability-diagnosis.md)
+(stays **Proposed**) derives a tension between ratified rows 3+6+7+10 at
+0 mA and `Cout` >= 1.6 uF and defers it to "probe E4": at point P5
+(ss/125C/res_wcs, 0 mA, 3.45 uF, 0 mohm) cross the feedback divider's
+length (`R_div` in {1x, 0.5x}) with the Miller cap's width (`Cc` in
+{1x, 0.65x}) and read the loop gain, the PSRR curve and the DC operating
+point at each of the four points. This campaign is exactly that, and
+nothing more: no spec row, threshold or verdict changes, and no
+compensation change is made or proposed.
+
+**Override contract** (`e4_divider_cc.py`): both knobs are testbench-local
+substitutions on a COPY of `design/sg13cmos5l/netlist/ldo_core_cmos5l.spice`
+(the committed netlists are never written). `Cc` is the `w=` token of the
+`XCc OUT MZ cap_cmomi` line with `l` held at `30e-6` -- the token
+`run_sweep.sh`'s `subst_cc_width()` sed replaces; `R_div` is the `l=` token
+of BOTH `XRtop` and `XRbot`, scaled by the same factor so the divider ratio
+is unchanged. Each substitution fails unless it changes exactly the lines it
+owns (a drifted line is caught at 1x too). One site is not enough: the PSRR
+bench instantiates `ldo_core_cmos5l` whole and reads the copy through its
+`.include`, but the loop-gain and E1 benches FLATTEN the core and carry
+their own verbatim `XRtop`/`XRbot` lines (the E1 bench also a divider
+replica), so `patch-deck` applies the same substitution to the rendered
+deck's own lines and then asserts -- per deck, before anything is submitted
+-- that the `.include` target holds the overridden lines, that the bench's
+own legs are at the point's `l=`, and that no nominal-valued line survives.
+Negative controls in `test_e4_divider_cc.py`: an override that does not
+reach the deck (a loop-gain deck whose flattened legs stayed nominal; an E1
+deck whose replica stayed nominal), an `R_div` override that would move
+only one of `XRtop`/`XRbot`, a deck whose `.include` names the committed
+netlist, and a stale nominal line are each refused.
+
+**Campaign** (`run_e4.sh`): twelve batch-fleet requests, one per deck --
+three benches (the `loopgain` and `psrr` benches DR-0015 names, plus the
+E1 operating-point bench because the brief asks for the MEASURED divider
+current, DC `VOUT` and `Iq`, and the fleet path drops the AC templates'
+informational `op` echo) at the four points. No local grid: `--validate`
+runs ONE deck locally (the E1 bench at P5 with `R_div` 0.5x -- its KCL check
+ties the real divider to the replica ammeter, so a deck whose legs and
+replica were not both scaled cannot pass it); `--plan-only` prints the
+requests. `--probe` submits exactly ONE deck to the fleet into a scratch
+dir (the 1x/1x loop-gain deck) to confirm, before the campaign, that the
+batch path loads its models -- the gate issue #315 carries over from the
+2026-11-20 OSDI replay (#313). Its results are not a record. Environment
+conventions are `run_e1op.sh`'s.
+
+**Reduction** (`e4_divider_cc.py`): offline, stdlib-only; per point
+`f_ug`, PM and GM with the DR-0014 classification (`ac_metrics.py`,
+unchanged bounds), PSRR at 1 kHz / 100 kHz and the notch bottom, the DC
+operating point through `e1_oppoints.reduce_point` (E1's checks
+unchanged), the divider current two ways, and two provenance gates:
+`deck_provenance` (each group's `report.json` lists the design-netlist
+copy in its `netlist_closure` with the sha256 of a fresh re-derivation of
+the override; the submitted `tb.spice` carries the bench's own legs) and
+`models_loaded` (the job's verified preload names all six staged OSDI
+binaries with the staged sha256, and the log carries no model-load
+failure) -- a run against unloaded models is a failure, never a result.
+
+    python3 sim/ldo-cmos5l-pvt-sweep/e4_divider_cc.py reduce  --record <id> ...
+    python3 sim/ldo-cmos5l-pvt-sweep/e4_divider_cc.py record-md --record <id>
+    python3 sim/ldo-cmos5l-pvt-sweep/e4_divider_cc.py check   --record <id>   # byte-compare
+
+**Result** (record `20261123-104938-7e756eb7`, PDK pin `f7bca326...`,
+runner klt 0.9.0 / ngspice-47, 12/12 decks with models verified loaded,
+all checks pass): at P5 `f_ug` scales as `1/sqrt(R_div*Cc)` to within 2%
+(0.5x `R_div` -> x1.41, 0.65x `Cc` -> x1.23, both -> x1.75). The divider
+lever costs +2.95 uA of `Iq`, LOWERS the PSRR notch bottom by 6 dB and
+still misses row 6 (49.21 dB at 1 559 Hz -- the committed row DR-0015
+cites, reproduced to 0.2 dB); the `Cc` lever at x0.65 raises the notch
+bottom 3 dB and clears row 6 at P5 (51.80 dB with `Iq` 23.02 uA, `VOUT`
+unchanged); PM fails at all four points as at the committed design. DC
+`VOUT` moved -15 uV between the 1x and 0.5x `R_div` points (`V(FB)/VOUT`
+0.4999993 everywhere). The reading against DR-0015's own falsifier, and
+the candidate it points to, are in the DR-0015 addendum.
+
+Vintage note: the 1x/1x point reads `f_ug` 1 104 Hz / PM 16.04 deg /
+PSRR@1 kHz 43.72 dB against the committed P5 1 052 Hz / 17.61 deg /
+43.55 dB -- a model-input vintage effect (5 of 21 model inputs the worker
+loaded differ from the submitting host's staged copies, identified in the
+record from the run's own provenance), not a circuit difference; the four
+points share one fleet vintage. Tests: `test_e4_divider_cc.py`; the
+record's `check` subcommand byte-compares the committed reduction and
+record markdown against the raw exports.

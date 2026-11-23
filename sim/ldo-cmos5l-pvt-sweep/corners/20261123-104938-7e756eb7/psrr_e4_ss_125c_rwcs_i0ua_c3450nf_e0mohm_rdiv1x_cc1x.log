@@ -1,0 +1,20 @@
+
+Note: No compatibility mode selected!
+
+
+Circuit: * klt sim -- generated corner deck, do not edit
+
+Doing analysis at TEMP = 125.000000 and TNOM = 27.000000
+
+Using SPARSE 1.3 as Direct Linear Solver
+Note: Starting dynamic gmin stepping
+Note: Dynamic gmin stepping completed
+
+No. of Data Rows : 161
+
+  Measurements for AC Analysis
+
+liveness_vout       =  2.03922e-04
+
+ASCII raw file "/var/tmp/eda-job-klt-sim-333c6981bd69/outputs/artifacts/mos_ss__res_wcs__cap_typ_novdd_125C/waveform.raw"
+ngspice-47 done
