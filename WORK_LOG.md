@@ -8,6 +8,8 @@ Chronological record of recently merged pull requests and closed issues, maintai
 
 ### 2026-11-23
 
+- **PR #340**: refactor: drop test-only dynamic_doe helpers; test the live paths
+- **Issue #337** (closed): sim/ldo-cmos5l-pvt-sweep/dynamic_doe.py: remove test-only render_cout_esr, make_op, and to_base_int; test run_sweep.sh and validate_op directly
 - **PR #336**: sim: remove unused AXIS_LEVELS constant from dynamic_doe
 - **PR #335**: fix: enforce producer values and duplicate names in the evidence writer
 - **PR #333**: docs: reword stale ci.yml lint/check:ci comment to the fail-loudly behavior
