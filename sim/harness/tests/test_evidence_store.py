@@ -81,6 +81,27 @@ class Base(unittest.TestCase):
                               summary_text="# record\n", summary_path=self.summary,
                               put=self.put(**kw))
 
+    def put_returning_mutated_manifest(self, mutate):
+        """A ``put`` through ``fake_klt`` whose written manifest is
+        rewritten by ``mutate`` once every entry is in it (issue #326: the
+        bad manifest comes from klt, not from the writer), so the refusal
+        is exercised through the writer's own read-back path."""
+        real = fake_klt(self.store)
+        last = str(next(p for p, _ in reversed(self.files) if p.stat().st_size))
+        done = []
+
+        def run(cmd, **kw):
+            p = real(cmd, **kw)
+            if p.returncode == 0 and not done and cmd[3] == last:
+                done.append(True)
+                mpath = Path(cmd[cmd.index("--manifest") + 1])
+                m = json.loads(mpath.read_text())
+                mutate(m)
+                mpath.write_text(json.dumps(m))
+            return p
+
+        return lambda files, root: es.put_files(files, root, run=run)
+
     def assert_nothing_committed(self):
         self.assertFalse(self.mpath.exists())
         self.assertFalse(self.summary.exists())
@@ -150,6 +171,37 @@ class Writer(Base):
         self.files.append((self.stage / "r1.json", "sim/b/records/r1.json"))
         with self.assertRaises(es.StoreError):
             self.store_files()
+        self.assert_nothing_committed()
+
+    def test_klt_manifest_with_bad_producer_values_is_refused(self):
+        # Issue #326: a klt that writes "" into a producer field (or a
+        # non-string commit) used to pass the writer's field-set check and
+        # fail only in CI; the writer must refuse it and commit nothing.
+        for field, bad in (("tool", ""), ("version", ""), ("loom.repo", ""),
+                           ("commit", 5)):
+            with self.subTest(producer=field):
+                put = self.put_returning_mutated_manifest(
+                    lambda m, f=field, b=bad: m["entries"][-1]["producer"].__setitem__(f, b))
+                with self.assertRaisesRegex(es.StoreError, f"producer.{field} must be"):
+                    es.store_files(self.files, repo_root=self.root, bench="b", rid="r1",
+                                   summary_text="# record\n", summary_path=self.summary,
+                                   put=put)
+                self.assert_nothing_committed()
+
+    def test_klt_manifest_with_duplicate_entry_names_is_refused(self):
+        # Issue #326: two returned entries with the same name used to fold
+        # into one in by_name and pass; put_files must refuse them —
+        # adjacent or not — before anything is installed.
+        for where, mutate in (
+                ("adjacent", lambda m: m["entries"].insert(1, dict(m["entries"][0]))),
+                ("apart", lambda m: m["entries"].append(dict(m["entries"][0])))):
+            with self.subTest(copies=where):
+                put = self.put_returning_mutated_manifest(mutate)
+                with self.assertRaisesRegex(es.StoreError, "two entries named"):
+                    es.store_files(self.files, repo_root=self.root, bench="b", rid="r1",
+                                   summary_text="# record\n", summary_path=self.summary,
+                                   put=put)
+                self.assert_nothing_committed()
 
     def test_symlink_in_stage_refused(self):
         (self.stage / "corners/r1/link.log").symlink_to(self.stage / "r1.json")
@@ -338,6 +390,25 @@ class EntrySchema(unittest.TestCase):
         e["producer"] = "klt"
         self.assertIn("no producer", es._entry_problem(e))
 
+    def test_producer_values_enforced_like_ci(self):
+        # Issue #326: the field *set* alone let "" through; the checker's
+        # value rules apply here too, on the same fields.
+        for field in ("tool", "version", "loom.repo"):
+            for bad in ("", 5, None):
+                e = self.entry()
+                e["producer"][field] = bad
+                with self.subTest(field=field, bad=bad):
+                    self.assertIn(f"producer.{field} must be a non-empty string",
+                                  es._entry_problem(e))
+        e = self.entry()
+        e["producer"]["commit"] = 5
+        self.assertIn("producer.commit must be a string or null", es._entry_problem(e))
+
+    def test_string_commit_still_accepted(self):
+        e = self.entry()
+        e["producer"]["commit"] = "0" * 40
+        self.assertIsNone(es._entry_problem(e))
+
 
 class SchemaAgreement(unittest.TestCase):
     """Issue #251 item 3: the writer's field tuples are pinned to the CI
@@ -360,6 +431,66 @@ class SchemaAgreement(unittest.TestCase):
         self.assertEqual(es.ENTRY_REQUIRED_FIELDS, self.chk.REQUIRED)
         self.assertEqual(es.ENTRY_OPTIONAL_FIELDS, self.chk.OPTIONAL)
         self.assertEqual(es.ENTRY_PRODUCER_FIELDS, self.chk.PRODUCER_FIELDS)
+
+    def test_refusals_agree(self):
+        """Issue #326 (operator ruling, option a): the implementations stay
+        independent, and a manifest the CI checker refuses is refused by
+        the writer too -- producer values by ``_entry_problem``, duplicate
+        names by ``put_files`` through ``fake_klt`` -- while the valid
+        manifest is accepted by both."""
+        data = b"x"
+        sha = hashlib.sha256(data).hexdigest()
+        entry = {"sha256": sha, "size": len(data), "kind": "evidence",
+                 "producer": {"tool": "klt", "version": "t", "loom.repo": REPO,
+                              "commit": None},
+                 "uri": f"artifact:evidence/owner__repo/{sha[:2]}/{sha}",
+                 "name": "sim/b/records/r1.json"}
+
+        def manifest():
+            return {"schema_version": 1,
+                    "entries": [dict(entry, producer=dict(entry["producer"]))]}
+
+        td = tempfile.TemporaryDirectory()
+        self.addCleanup(td.cleanup)
+        staged = Path(td.name) / "r1.json"
+        staged.write_bytes(data)
+
+        def writer_refuses(m):
+            # The writer's whole path: _entry_problem per entry, then the
+            # duplicate-name check in put_files (fake_klt's manifest
+            # replaced by m).
+            if any(es._entry_problem(e) for e in m["entries"]):
+                return True
+            store = {}
+
+            def run(cmd, **kw):
+                p = fake_klt(store)(cmd, **kw)
+                Path(cmd[cmd.index("--manifest") + 1]).write_text(json.dumps(m))
+                return p
+
+            try:
+                es.put_files([(staged, "sim/b/records/r1.json")], Path(td.name),
+                             run=run)
+            except es.StoreError:
+                return True
+            return False
+
+        mutations = [
+            ("none (valid)", lambda m: None),
+            ("empty producer.version",
+             lambda m: m["entries"][0]["producer"].update(version="")),
+            ("non-string producer.commit",
+             lambda m: m["entries"][0]["producer"].update(commit=7)),
+            ("duplicate entry name",
+             lambda m: m["entries"].append(dict(m["entries"][0]))),
+        ]
+        for label, mutate in mutations:
+            with self.subTest(mutation=label):
+                m = manifest()
+                mutate(m)
+                self.assertEqual(self.chk.manifest_problems(m) == [],
+                                 not writer_refuses(m),
+                                 f"checker and writer disagree on {label}")
 
 
 def klt_probe_answer(cmd, *, current=True):
