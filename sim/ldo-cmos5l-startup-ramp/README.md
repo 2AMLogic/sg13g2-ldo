@@ -45,6 +45,8 @@ invocation (`--backend batch --wait-for-capacity 600`). No local run.
 `T_ramp` (10-90 % of `VREF` on `v(xtop.vrefr)`, divided by 0.8) inside
 **180-450 us** in both windows. Any failed clause = **reject**.
 
+Caveat: The committed reduced traces carry no `vrefr` column: `startup_campaign.py` hard-codes the reduced column set (`reduce_trace`/`write_trace`) and was kept unchanged by scope, so DR-0020's "Metrics per point" expectation that the column list gains `vrefr` was **not met** (a deviation). `T_ramp`, the clause-(b) bound (computed from `T_ramp`) and `VREFR max V` were read from the uncommitted rawfiles (sha256 in the `raw_sha256` column) and cannot be re-derived from the committed traces.
+
 ## Reproduce
 
 ```bash
@@ -61,6 +63,11 @@ python3 sim/ldo-cmos5l-startup-ramp/ramp_campaign.py clauses --rid <RID>
 7 of 7 points evaluated on the batch fleet (runner klt 0.9.0, ngspice 47). `Vsg(Mpass)` max 0.80-1.51 V
 (clause c holds), start peaks 1.834-1.839 V, but clauses (a), (b) and (d) fail; see
 `records/20261123-212501-9e332bb0-startup-ramp.clauses.md` and the DR-0020 addendum. First attempt
-`20261123-212200-433395a5` (all corners `osdi_load_failed`: the deck-side OSDI preamble conflicts with
-the runner's `osdi_preload`, see closed klayout-tools#5766) is kept as evidence under
-`startup/20261123-212200-433395a5/ramp/{plan,envelope}.json`; the driver now writes an empty preamble.
+`20261123-212200-433395a5` failed all 7 jobs (`status: error`, `exit_code: 4`); it is kept under
+`startup/20261123-212200-433395a5/ramp/{plan,envelope}.json` plus `klt-sim.stderr`. The committed attempt-1
+artifacts do not contain the string `osdi_load_failed` (per-job `report.json` was not committed), so the
+diagnosis is an **inference, not re-derivable from them**: the deck-side OSDI preamble conflicts with the
+runner's `osdi_preload` (per `batch_backend.py`, #313; closed klayout-tools#5766). Its direct support is that
+dropping the preamble made the identical 7-request set pass. The driver now writes an empty preamble (and
+therefore also drops `set num_threads=1`, harmless here as every request is a single corner). The same
+preamble remains in `startup_campaign.py` and will affect the next batch startup campaign: tracked in #330.

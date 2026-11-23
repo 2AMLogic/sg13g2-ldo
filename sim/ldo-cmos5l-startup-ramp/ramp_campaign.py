@@ -63,6 +63,8 @@ def cmd_plan(a):
     # corner with osdi_load_failed (run 20261123-212200-433395a5, jobs listed in
     # README.md; diagnosis: closed 2AMLogic/klayout-tools#5766). Replace the
     # preamble with a comment; the bench template and evaluator are untouched.
+    # This also drops `set num_threads=1` (startup_campaign.py:188-193); harmless
+    # here because every request is a single corner (one ngspice per worker).
     with open(os.path.join(sc.stage_dir(a.rid, STAGE), "..", "osdi-preamble.cir"), "w") as f:
         f.write("* intentionally empty: OSDI binaries are loaded by the runner from\n"
                 "* options.osdi_preload (a deck-side pre_osdi preamble conflicts, #5766).\n")

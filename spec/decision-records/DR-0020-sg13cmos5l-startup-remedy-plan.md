@@ -854,10 +854,22 @@ and `startup_eval.py`, the testbench-local netlist
 (per-point clause table in `….clauses.md`). Clauses (b) and (d) were fixed
 before the run: (b) bound `(Cout*2*VREF/T_ramp + I_load)*1.25 + 1 mA`, (d) claimed
 range 180-450 us (the DR's candidate pairings). A first attempt
-(`20261123-212200-433395a5`) failed every corner with `osdi_load_failed`
-because the campaign's deck-side OSDI preamble conflicts with the runner's own
-`osdi_preload` (diagnosis: closed 2AMLogic/klayout-tools#5766); the driver now
-omits the preamble and the experiment's decks are otherwise identical.
+(`20261123-212200-433395a5`) failed all 7 jobs (`exit_code: 4`). The committed
+attempt-1 artifacts do not show `osdi_load_failed`, so the diagnosis is inferred,
+not re-derivable from them: the campaign's deck-side OSDI preamble conflicts with
+the runner's own `osdi_preload` (per `batch_backend.py`, #313; closed
+2AMLogic/klayout-tools#5766). Its direct support is that omitting the preamble
+made the same 7-request set pass. The driver now omits the preamble (and with it
+`set num_threads=1`, harmless for single-corner requests); the decks are otherwise
+identical. The preamble remains in `startup_campaign.py`: tracked in #330.
+
+**Deviation from "Metrics per point".** "The reduced trace column list gains
+`vrefr`" was not done: the committed reduced traces carry no `vrefr`
+(`startup_campaign.py` hard-codes the column set and was kept unchanged by scope).
+`T_ramp`, the clause-(b) bound and `VREFR max V` below were read from uncommitted
+rawfiles (sha256 in the record's `raw_sha256` column) and are not re-derivable
+from committed traces. REJECT does not depend on them: clause (a) fails at 5 of
+7 points from the committed CSV.
 
 **What the ramp did.** Mechanism item 1 is negated: minimum `EAOUT` over the
 transient is 2.1-2.8 V (it was 0.003-0.009 V), so `Vsg(Mpass)` is **0.80-1.51 V
