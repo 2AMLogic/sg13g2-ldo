@@ -122,8 +122,8 @@ name: CI
 # grader cannot make on our behalf).
 #
 # Explicitly excluded from CI (not "checks" yet, so nothing to wire up):
-#   - No linter/formatter is configured for this repo yet (package.json's
-#     `lint`/`check:ci` scripts are honest "not configured" placeholders);
+#   - No linter/formatter is configured for this repo (package.json's
+#     `lint`/`check:ci` scripts exit 1 with a pointer to this workflow);
 #     add a CI job for either if/when one is adopted.
 #
 # xschem is built from source (pinned to 3.4.7), not apt-installed: Ubuntu
