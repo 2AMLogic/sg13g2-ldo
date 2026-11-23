@@ -1,0 +1,41 @@
+{
+ "backend": "batch",
+ "client_klt": "klt 0.9.3.dev2575+g6bd18bbc8637",
+ "runner_klt": [
+  "0.9.0"
+ ],
+ "engines": [
+  "ngspice-47"
+ ],
+ "staged_osdi_sha256": {
+  "psp103.osdi": "dba873bcef3f1978b30d66a4dcb661f79c6f6386c29da8841712d84399e13f1a",
+  "psp103_nqs.osdi": "ad99ea641e0b88b29125a786e77f3dcb3b206b5e116e23c2a265783658e69754",
+  "mosvar.osdi": "cded61b14fbe50f74453e995a00f4876664328fd477badf672e5b2405cae5973",
+  "r3_cmc.osdi": "746f86fd1b89c309cbec7b23e661a66ee80b2d897ea229bc8e3fcc3757a673c3",
+  "cap_cmomi.osdi": "972ff31c1dd8658f7399f2ec9212d0220344c356a77570b5b3ee925155119a83",
+  "cap_cmomf.osdi": "d44927b3dbcc9a0906125da35fbb9cb23d9abdf20f6dddda0394e81fb165ac18"
+ },
+ "reused_reports": {},
+ "jobs": [
+  {
+   "group": "g00_loopgain_dyn_ff_-40c_rwcs_i50000ua_c330nf_e0mohm",
+   "job_id": "klt-sim-d50438f1fe64",
+   "runner_klt_version": "0.9.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot",
+   "corners": 1,
+   "requested": 1,
+   "osdi_preload_verified": {
+    "psp103.osdi": "dba873bcef3f1978b30d66a4dcb661f79c6f6386c29da8841712d84399e13f1a",
+    "psp103_nqs.osdi": "ad99ea641e0b88b29125a786e77f3dcb3b206b5e116e23c2a265783658e69754",
+    "mosvar.osdi": "cded61b14fbe50f74453e995a00f4876664328fd477badf672e5b2405cae5973",
+    "r3_cmc.osdi": "746f86fd1b89c309cbec7b23e661a66ee80b2d897ea229bc8e3fcc3757a673c3",
+    "cap_cmomi.osdi": "972ff31c1dd8658f7399f2ec9212d0220344c356a77570b5b3ee925155119a83",
+    "cap_cmomf.osdi": "d44927b3dbcc9a0906125da35fbb9cb23d9abdf20f6dddda0394e81fb165ac18"
+   },
+   "points": [
+    "loopgain_dyn_ff_-40c_rwcs_i50000ua_c330nf_e0mohm"
+   ]
+  }
+ ]
+}

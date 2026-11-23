@@ -776,13 +776,19 @@ request (214 points in 22 requests).
 - `.lib` cards go into a generated `corners.lib` section, staged with
   `options.stage_model_inputs` from the local PDK install. The
   `.options temp=` line becomes klt's temperature axis.
-- **OSDI.** The runner image lacks `cap_cmomi`, and the runner's klt 0.5.0
-  ignores `options.osdi_preload` (klayout-tools#2901). The six local OSDI
-  binaries are therefore staged with every job through `osdi_preload`, and a
-  body-level preamble loads them with `pre_osdi inputs/<name>.osdi`. Every
-  per-point log prints their sha256, and `corners/<id>/_batch/backend.json`
-  lists them. The backend refuses to run if a runner ever applies
-  `osdi_preload` itself, which would load each binary twice.
+- **OSDI.** The six local OSDI binaries are staged with every job through
+  `options.osdi_preload`, and the current runner image (klt 0.9.0) applies
+  that option itself: it materialises the staged binaries on the worker and
+  writes its own (absolute-path) `pre_osdi` lines into the per-corner deck
+  it runs. The deck-side `.control pre_osdi` preamble this backend carried
+  for the klt 0.5.0 image (which ignored the option, klayout-tools#2901)
+  was removed in issue #313: on the current image it fails every corner
+  with an error-severity `osdi_load_failed` diagnostic beside
+  plausible-looking values (job `klt-sim-38b16c3f8b00`). `collect()`
+  verifies from the report that the six staged binaries (sha256) are what
+  the worker received and preloaded, refuses any corner carrying an
+  error-severity diagnostic, and records the verified digests per job in
+  `corners/<id>/_batch/backend.json`.
 - **Data.** The deck's `wrdata` vectors are rebuilt from the corner's ASCII
   rawfile (`options.waveforms`). Loop gain and PSRR are recomputed from the
   complex node voltages with the templates' own `let` expressions, which must
@@ -1360,14 +1366,15 @@ of 45 exceed 200 mV -- the same nine hot-corner points DR-0007 recorded -- so
 the stretch target stays not ratified and is not proposed here.
 
 **No `.control` block.** The fleet runner applies `options.osdi_preload`
-itself, so the deck-side `.control pre_osdi` preamble the other benches here
-carry (`batch_backend.py`'s `osdi-preamble.cir`) loads every binary a **second**
-time and every corner comes back `osdi_load_failed` with plausible-looking
-measurement values beside it. That exact failure was observed on this host
-(job `klt-sim-b7598358f812`) and is a negative control in
-`test_row4_envelope.py`: a corner that reported values but errored is never
-`definitive`. `batch_backend.py`'s preamble is left alone — it belongs to the
-other benches' requests, which this one does not share.
+itself, so a deck-side `.control pre_osdi` preamble loads every binary a
+**second** time and every corner comes back `osdi_load_failed` with
+plausible-looking measurement values beside it. That exact failure was
+observed on this host (job `klt-sim-b7598358f812`) and is a negative control
+in `test_row4_envelope.py`: a corner that reported values but errored is
+never `definitive`. Since issue #313 (replayed again as job
+`klt-sim-38b16c3f8b00`) `batch_backend.py` carries no preamble either -- it
+now relies on the runner's preload and verifies it from the report, so all
+of this sweep's benches share the same OSDI loading path this bench uses.
 
 **Runtime and the job-bound warning.** The 45-corner job ran in 8 s of worker
 time on one `m7i.4xlarge` spot instance (8 physical cores; runner `klt` 0.9.0,
