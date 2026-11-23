@@ -623,7 +623,8 @@ def record_md(rid, sim_dir=HERE):
         f" whole axis {_fmt(one_x['lfl_max_abs_db_diff'], ' dB')} (bound "
         f"{bounds['trace_max_db']:g} dB); scalar deltas df_ug "
         f"{_fmt(one_x['vs_samev_f_ug_delta_hz'], ' Hz')} "
-        f"({_pct(_safe_rel(one_x['vs_samev_f_ug_delta_hz'], one_x['unity_gain_freq_hz']))}), "
+        f"({_pct(_samev_rel(one_x))} of the same-vintage baseline f_ug, the "
+        "gate's own denominator), "
         f"dPM {_fmt(one_x['vs_samev_pm_delta_deg'], ' deg')}, dGM "
         f"{_fmt(one_x['vs_samev_gm_delta_db'], ' dB')} (bounds dPM <= "
         f"{bounds['pm_max_deg']:g} deg, dGM <= {bounds['gm_max_db']:g} dB, "
@@ -782,6 +783,17 @@ def _safe_rel(delta, ref):
     if delta is None or not ref:
         return None
     return delta / ref
+
+
+def _samev_rel(one_x):
+    """Signed f_ug delta against the same-vintage baseline, relative to that
+    baseline's f_ug -- the gate's own denominator (like_for_like_check's
+    f_ug_rel_delta, which divides by the baseline, not the measured value).
+    The baseline is recovered as measured - delta."""
+    fu, d = one_x.get("unity_gain_freq_hz"), one_x.get("vs_samev_f_ug_delta_hz")
+    if fu is None or d is None:
+        return None
+    return _safe_rel(d, fu - d)
 
 
 def cmd_record_md(a):
