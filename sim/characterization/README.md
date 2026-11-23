@@ -70,7 +70,7 @@ full-load figure inside ngspice (no offline subtraction); its pinned
 `reltol=1e-9 abstol=1e-15` is a convergence *setting*, not an error bound, and
 the solver sensitivity is reported separately as an observation: the largest
 change over all 270 (corner, figure) pairs when the same grid is re-solved at
-`reltol=1e-12 abstol=1e-17` (the pinned paired record). The legacy full-load
+`reltol=1e-10 abstol=1e-15` (the pinned paired record, `submit --profile tight-1e-10 --pair-of <base>`; the 1e-12/1e-17 and 1e-11/1e-16 runs are history that did not resolve the whole grid). The legacy full-load
 column keeps its published precision caveat (a difference of two ~50 mA
 currents, quantized at 1e-10 A). Row 7's `< 30 uA` is strict: a graded figure
 equal to the target is refused (klt sim's inclusive `max` would grade it pass).

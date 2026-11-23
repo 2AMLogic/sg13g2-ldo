@@ -1439,12 +1439,16 @@ distance to the exact operating point. (`reltol*|i| + abstol ~= 5.1e-11 A` is
 only that stopping threshold at the row's largest current; an earlier draft of
 this record called it a guaranteed bound, which is withdrawn.) What the
 evidence can say is measured instead: a paired record
-(`row7_envelope.py submit --tight --pair-of <base>`) re-runs the identical
-45-corner grid at `reltol=1e-12 abstol=1e-17`, and its `row7-pair.json`
-reports, over all 270 (corner, graded figure) pairs, the largest observed
-change, where it occurred and the coverage. That figure is an observation over
-those pairs -- not a bound -- and is cited separately from the convergence
-setting in the record summary and in the characterization report. It replaces
+(`row7_envelope.py submit --profile tight-1e-10 --pair-of <base>`) re-runs the
+identical 45-corner grid at `reltol=1e-10 abstol=1e-15`, and its
+`row7-pair.json` reports, over all 270 (corner, graded figure) pairs, the
+largest observed change (8.4e-15 A), where it occurred and the coverage. The
+tighter `tight-1e-12` / `tight-1e-11` runs stay committed as history only: they
+did not resolve the whole grid (160/270 and 265/270 pairs compared, `complete`
+false). That figure is an observation over those pairs -- not a bound -- and is
+cited separately from the convergence setting in the record summary and in the
+characterization report. A pair is `complete` only when each report echoes, as
+`environment.ngspice_options`, the tolerances its own request asked for. It replaces
 the legacy full-load figure's caveat ("solver noise not bounded beyond the
 1e-10 A print quantization").
 

@@ -457,6 +457,15 @@ def summary_files(record_dir):
 # submit / summarise / check
 # --------------------------------------------------------------------------- #
 
+def echoed_options_match(report, request):
+    """True iff the fleet report echoes, as `environment.ngspice_options`,
+    exactly the tolerances the request asked for.  The request is only an
+    ask; the report is what the engine says it ran."""
+    asked = (request.get("options") or {}).get("ngspice_options")
+    echoed = (report.get("environment") or {}).get("ngspice_options")
+    return asked is not None and echoed == asked
+
+
 def pair_summary(base_dir, tight_dir):
     """Observed change between the standard- and tight-tolerance solves of the
     SAME grid: for every (corner, graded measurement) pair, |tight - base|.
@@ -472,6 +481,7 @@ def pair_summary(base_dir, tight_dir):
     qb, qt = load(base_dir, "request.json"), load(tight_dir, "request.json")
     opts_b = (qb.get("options") or {}).get("ngspice_options")
     opts_t = (qt.get("options") or {}).get("ngspice_options")
+    echo_ok = (echoed_options_match(rb, qb) and echoed_options_match(rt, qt))
     for q in (qb, qt):
         q["options"].pop("ngspice_options", None)
     identical = (qb == qt
@@ -523,7 +533,7 @@ def pair_summary(base_dir, tight_dir):
     }
     prof = pt.get("solver_profile")
     out["tight_profile"] = prof
-    out["complete"] = bool(identical and len(keys) == expected
+    out["complete"] = bool(identical and echo_ok and len(keys) == expected
                            and not out["duplicate_values_seen"]
                            and prof in TIGHT_PROFILES
                            and opts_b == NGSPICE_OPTIONS and opts_t == PROFILES[prof])
@@ -580,18 +590,19 @@ def cmd_submit(a):
         return extra
     inv = "python3 sim/ldo-cmos5l-pvt-sweep/row7_envelope.py submit{probe}" \
         + (f" --profile {profile} --pair-of {a.pair_of}" if tight else "")
+    def write_pair(record_dir):
+        # This invocation's own record (post_fn gets the dir submit_record
+        # minted), not records(ROOT)[-1]: a later/overlapping run must not
+        # steal the comparison.
+        if tight:
+            re_.write_or_check(record_dir, pair_files(record_dir, a.pair_of),
+                               check=False)
     rc = re_.submit_record(
         a, slug="row7", root=ROOT, template_rel=TEMPLATE,
         design_netlist_rel=DESIGN_NETLIST, header_lines=HEADER_LINES,
         request_files_fn=lambda subs, cs, t: request_files(subs, cs, t, profile),
         summary_files_fn=summary_files,
-        invocation_fmt=inv, prov_extra=prov_extra)
-    if tight and not a.dry_run:
-        newest = records(ROOT)[-1]
-        prov = json.load(open(os.path.join(ROOT, newest, "provenance.json")))
-        if prov.get("pair_of") == a.pair_of:
-            files = pair_files(os.path.join(ROOT, newest), a.pair_of)
-            re_.write_or_check(os.path.join(ROOT, newest), files, check=False)
+        invocation_fmt=inv, prov_extra=prov_extra, post_fn=write_pair)
     return rc
 
 
@@ -621,6 +632,20 @@ def check_record(rid, problems):
         record_dir, rid, problems, slug="row7",
         request_files_fn=lambda subs, cs, t: request_files(subs, cs, t, profile),
         template_rel=TEMPLATE, summary_files_fn=summary_files)
+    try:
+        with open(os.path.join(record_dir, "report.json")) as f:
+            rep = json.load(f)
+        with open(os.path.join(record_dir, "request.json")) as f:
+            req = json.load(f)
+    except (OSError, ValueError) as exc:
+        problems.append(f"{rid}: cannot compare echoed solver options: {exc}")
+    else:
+        if not echoed_options_match(rep, req):
+            problems.append(
+                f"{rid}: report.json environment.ngspice_options "
+                f"{(rep.get('environment') or {}).get('ngspice_options')!r} != "
+                f"request.json options.ngspice_options "
+                f"{(req.get('options') or {}).get('ngspice_options')!r}")
     re_.check_hash_pins(record_dir, rid, problems, slug="row7",
                         tail=f"row7-envelope/{rid}/tb.spice")
     re_.check_declared_gates(record_dir, rid, problems,

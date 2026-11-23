@@ -528,10 +528,38 @@ class CommittedRecords(unittest.TestCase):
         self.assertEqual(self.selected_id(), rid)
 
 
+class SubmitPairTarget(unittest.TestCase):
+    """The paired comparison lands in the record THIS invocation minted."""
+
+    def test_pair_written_to_minted_record_not_newest(self):
+        import types
+        from unittest import mock
+        base = ev.records()[0]
+        minted = "/scratch/minted-record"
+        written = []
+
+        def fake_submit(a, **kw):
+            kw["post_fn"](minted)
+            return 0
+
+        args = types.SimpleNamespace(profile="tight-1e-10", pair_of=base,
+                                     probe=False, dry_run=False)
+        # a LATER record exists in ROOT; it must not be touched
+        with mock.patch.object(ev.re_, "submit_record", fake_submit), \
+                mock.patch.object(ev, "pair_files",
+                                  lambda rd, b: {"row7-pair.json": rd}), \
+                mock.patch.object(ev.re_, "write_or_check",
+                                  lambda d, files, check: written.append((d, files))
+                                  or []):
+            self.assertEqual(ev.cmd_submit(args), 0)
+        self.assertEqual(written, [(minted, {"row7-pair.json": minted})])
+
+
 class PairComparison(unittest.TestCase):
     """The tight-tolerance pair: an observation with stated coverage."""
 
-    def pair(self, delta=2e-12, drop=0, same_inputs=True, opts_ok=True):
+    def pair(self, delta=2e-12, drop=0, same_inputs=True, opts_ok=True,
+             echo_override=None):
         tmp = tempfile.mkdtemp(prefix="row7-pair-test.")
         self.addCleanup(shutil.rmtree, tmp, True)
         dirs = {}
@@ -548,6 +576,11 @@ class PairComparison(unittest.TestCase):
                     rep["corners"] = rep["corners"][:-drop]
             prof = "tight-1e-10" if tag == "tight" and opts_ok else "standard"
             req = ev.request_obj("/osdi", ev.coords(), prof)
+            # the report echoes what the engine ran; by default what was asked
+            echo = dict(req["options"]["ngspice_options"])
+            if echo_override and tag in echo_override:
+                echo = echo_override[tag]
+            rep["environment"] = {"ngspice_options": echo}
             prov = {"record_id": tag, "solver_profile": prof, "input_sha256": {"a": "1" if same_inputs
                                                        or tag == "base" else "2"},
                     "pdk_pin_projection_sha256": "p"}
@@ -564,6 +597,23 @@ class PairComparison(unittest.TestCase):
         self.assertAlmostEqual(p["max_abs_delta_a"], 2e-12, places=18)
         self.assertEqual(len(p["max_abs_delta_a_by_measurement"]), 6)
         self.assertIn("not a bound", p["interpretation"])
+
+    def test_echoed_tolerances_must_match_each_request(self):
+        # The tight report echoing the BASE tolerances (request says 1e-10)
+        # must not complete the pair, nor must a mismatched base echo.
+        base_opts = dict(ev.NGSPICE_OPTIONS)
+        self.assertFalse(self.pair(echo_override={"tight": base_opts})["complete"])
+        self.assertFalse(self.pair(
+            echo_override={"base": {"reltol": 1e-10, "abstol": 1e-15}})["complete"])
+        self.assertFalse(self.pair(echo_override={"tight": {}})["complete"])
+
+    def test_echoed_options_match_helper(self):
+        req = ev.request_obj("/osdi", ev.coords(), "tight-1e-10")
+        good = {"environment": {"ngspice_options": dict(ev.PROFILES["tight-1e-10"])}}
+        self.assertTrue(ev.echoed_options_match(good, req))
+        self.assertFalse(ev.echoed_options_match({}, req))
+        self.assertFalse(ev.echoed_options_match(
+            {"environment": {"ngspice_options": dict(ev.NGSPICE_OPTIONS)}}, req))
 
     def test_missing_corners_make_the_pair_incomplete(self):
         p = self.pair(drop=1)

@@ -434,7 +434,7 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:3f21aa77c348d8fcbb236a217a3fcc99ea576656f5dbd666b3dc3cf881da61d6",
+        "content_hash": "sha256:f653418d0bec61100fdcf7a6d29715410176e8505bff021443625778c8f79372",
         "input_verified": null,
         "exit_status": 0,
         "attestation": {

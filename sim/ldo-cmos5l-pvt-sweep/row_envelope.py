@@ -266,12 +266,14 @@ def f9(v):
 
 def submit_record(a, *, slug, root, template_rel, design_netlist_rel,
                   header_lines, request_files_fn, summary_files_fn,
-                  invocation_fmt, prov_extra):
+                  invocation_fmt, prov_extra, post_fn=None):
     """Mint a new record on the EDA batch fleet. Never runs SPICE locally.
 
     `request_files_fn(subs, cs, template_text)` and
     `summary_files(record_dir) -> (files, summ)` are the driver's row-specific
-    halves; `invocation_fmt` is a `.format(probe=...)` template for
+    halves; `post_fn(record_dir)`, if given, runs on THIS invocation's own
+    freshly minted record once its summary is written (never a lookup of
+    "the newest record", which a concurrent run can change); `invocation_fmt` is a `.format(probe=...)` template for
     provenance, `prov_extra(rid, probe)` adds the row's own provenance keys.
     """
     cs = coords(a.probe)
@@ -332,6 +334,8 @@ def submit_record(a, *, slug, root, template_rel, design_netlist_rel,
 
     files, summ = summary_files_fn(record_dir)
     write_or_check(record_dir, files, check=False)
+    if post_fn is not None:
+        post_fn(record_dir)
     print(json.dumps(summ, indent=1, sort_keys=True))
     if not summ["definitive"] and not a.probe:
         print(f"{slug}_envelope: NOT definitive -- this record must not be cited "
