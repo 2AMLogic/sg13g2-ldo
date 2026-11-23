@@ -1,0 +1,37 @@
+{
+ "base_options": {
+  "abstol": 1e-15,
+  "reltol": 1e-09
+ },
+ "base_record": "20261121-001957-ed6b0587",
+ "complete": false,
+ "coverage": "265 of 270 (corner, graded measurement) pairs over 45 of 45 corners",
+ "duplicate_values_seen": 0,
+ "interpretation": "Observed change between two solves of the same request at the stated tolerances, over the pairs counted above. It is an observation, not a bound on the distance to the exact operating point, and it is NOT the convergence setting recorded in the summary.",
+ "max_abs_delta_a": 7.269999082988934e-15,
+ "max_abs_delta_a_by_measurement": {
+  "iq_i0_v2v97_a": 6.980002106903374e-15,
+  "iq_i0_v3v30_a": 6.250002007905306e-15,
+  "iq_i0_v3v63_a": 6.889999774059921e-15,
+  "iq_i50m_v2v97_a": 5.409999434113216e-15,
+  "iq_i50m_v3v30_a": 7.269999082988934e-15,
+  "iq_i50m_v3v63_a": 6.650001458784888e-15
+ },
+ "max_abs_delta_fraction_of_limit": 2.4233330276629783e-10,
+ "max_abs_delta_ua": 7.269999082988934e-09,
+ "pairs_compared": 265,
+ "pairs_expected": 270,
+ "requests_and_inputs_identical_except_options": true,
+ "tight_options": {
+  "abstol": 1e-16,
+  "reltol": 1e-11
+ },
+ "tight_profile": "tight-1e-11",
+ "tight_record": "20261123-120302-ca4c931d",
+ "worst_pair": {
+  "base_a": 2.262224392503e-05,
+  "corner_id": "mos_sf__res_typ__cap_typ/novdd/-40C",
+  "measurement": "iq_i50m_v3v30_a",
+  "tight_a": 2.262224391776e-05
+ }
+}

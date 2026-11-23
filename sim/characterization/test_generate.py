@@ -55,6 +55,11 @@ def copy_inputs(dst: Path) -> None:
     rels |= set(inv["inputs"]["raw_dc_grids"])
     r10 = sel["row10_margin_evidence"]
     rels |= {f["path"] for f in r10["files"].values()}
+    r7e = sel["row7_envelope_evidence"]
+    rels |= {f["path"] for f in r7e["files"].values()}
+    rels |= {p["path"] for p in r7e["design_freshness_pins"]}
+    rels |= {f["path"] for f in r7e["pair_evidence"]["files"].values()}
+    rels.add("sim/pdk-cmos5l.json")
     r10doc = json.loads((REPO / r10["files"]["classification_json"]["path"]).read_text())
     rels |= set(r10doc["classifier"])
     import csv as _csv
@@ -206,7 +211,7 @@ class GeneratedReportTests(unittest.TestCase):
         self.assertEqual(m["worst_case"]["value"], 0.24)
         self.assertFalse(m["worst_case_is_censored"])
 
-    def test_iq_unit_conversion_and_missing_full_load(self):
+    def test_iq_unit_conversion_and_the_graded_envelope(self):
         m = self.rows[7]["metrics"][0]
         self.assertEqual(m["unit"], "uA")
         # Selected record 20261011-051956-eda9285 (G1 pull-down design, #89):
@@ -214,15 +219,29 @@ class GeneratedReportTests(unittest.TestCase):
         # 20261010-025634-60a3e81 had 2.47221613e-05 A and the pre-EN record
         # 20260917-023832-7061e8f 2.47222854e-05 A at the same point.
         self.assertAlmostEqual(m["worst_case"]["value"], 24.7221724, places=6)
-        fl = self.rows[7]["metrics"][1]
-        self.assertEqual((fl["unit"], fl["verdict"], fl["n_points"], fl["n_invalid"]), ("uA", "pass", 45, 0))
-        # #89 record; the #67 record had 24.8873 (one 1e-10 A quantization step).
-        self.assertAlmostEqual(fl["worst_case"]["value"], 24.8874, places=6)
-        self.assertEqual(fl["worst_case"]["at"], {"corner": "ff", "temp_c": 125, "res_section": "res_bcs"})
-        self.assertIn("quantized at 1e-10 A", fl["note"])
+        # The graded envelope (issue #317): the tool's own verdict at both load
+        # states over the full supply window, worst cases straight off the
+        # fleet record 20261121-001957-ed6b0587.
+        nl = self.rows[7]["metrics"][1]
+        fl = self.rows[7]["metrics"][2]
+        for mm, worst_at, worst_v in (
+                (nl, {"corner": "ss", "temp_c": 125, "res_section": "res_bcs", "vin_v": "3.63"}, 24.49800637241),
+                (fl, {"corner": "ff", "temp_c": 125, "res_section": "res_bcs", "vin_v": "3.63"}, 24.66747352808)):
+            self.assertEqual((mm["unit"], mm["verdict"], mm["n_points"], mm["n_pass"],
+                              mm["n_fail"], mm["n_ambiguous"]), ("uA", "pass", 135, 135, 0, 0))
+            self.assertAlmostEqual(mm["worst_case"]["value"], worst_v, places=6)
+            self.assertEqual(mm["worst_case"]["at"], worst_at)
+        self.assertIn("dr0007-row7-iq", fl["conditions"])
+        self.assertIn("convergence setting (not an error bound)", fl["note"].lower())
+        self.assertIn("observed solver sensitivity", fl["note"].lower())
+        self.assertNotIn("noise bound", fl["note"].lower())
         self.assertIn("NOT used", fl["note"])
         self.assertEqual(self.rows[7]["ratification"]["state"], "open_unratified")
-        self.assertEqual(self.rows[7]["verdict"], "pass_partial_coverage")
+        self.assertEqual(self.rows[7]["coverage"]["state"], "full")
+        self.assertEqual(self.rows[7]["verdict"], "pass_full_coverage")
+        notes = " ".join(self.rows[7]["notes"])
+        for needle in ("0.90 V reference", "IBIAS", "#190", "not a ratification"):
+            self.assertIn(needle, notes)
 
     def test_row5_loaded_line_and_multi_vin_load_regulation(self):
         ms = {m["name"]: m for m in self.rows[5]["metrics"]}
@@ -641,32 +660,205 @@ class NegativeControls(unittest.TestCase):
         self.assert_rejected("disagrees with the pinned PVT csv")
 
     def test_dc_invalid_point_is_counted_never_dropped(self):
-        # Flip the first row's full-load validity flag: still a complete grid, so the
+        # Flip the first row's 12.5 mA line-regulation validity flag (row 5's
+        # consumer; row 7 no longer reads the DC informational columns since
+        # its evidence is the graded envelope): still a complete grid, so the
         # run succeeds, but the point is ambiguous and blocks a clean pass.
         def flip(ls):
             cells = ls[1].rstrip("\n").split(",")
-            cells[6] = "False"
+            cells[14] = "False"
             return [ls[0], ",".join(cells) + "\n"] + ls[2:]
         self.edit_summary(flip)
         rc, _, err = run_main("--root", str(self.tmp))
         self.assertEqual(rc, 0, err)
         rep = json.loads((self.out / G.REPORT_JSON).read_text())
-        r7 = next(r for r in rep["rows"] if r["id"] == 7)
-        fl = r7["metrics"][1]
-        self.assertEqual((fl["n_points"], fl["n_invalid"], fl["n_ambiguous"], fl["n_pass"]), (45, 1, 1, 44))
-        self.assertEqual(fl["verdict"], "ambiguous")
-        self.assertEqual(r7["verdict"], "ambiguous")
+        r5 = next(r for r in rep["rows"] if r["id"] == 5)
+        m = next(m for m in r5["metrics"] if "12.5 mA" in m["name"])
+        self.assertEqual((m["n_points"], m["n_invalid"], m["n_ambiguous"], m["n_pass"]),
+                         (45, 1, 1, 44))
+        self.assertEqual(m["verdict"], "ambiguous")
+        self.assertEqual(r5["verdict"], "ambiguous")
 
     def test_dc_over_bound_value_is_a_fail_not_dropped(self):
-        self.edit_summary(lambda ls: [ls[0], ls[1].replace("2.25169e-05", "3.25169e-05", 1)] + ls[2:])
+        # A 12.5 mA line-regulation value past the 5 mV/V bound (row 5's
+        # consumer; not one of the PVT-cross-checked columns, so this is a
+        # valid but failing point).
+        self.edit_summary(lambda ls: [ls[0], ls[1].replace("0.156272727", "6.56272727", 1)] + ls[2:])
         rc, _, err = run_main("--root", str(self.tmp))
-        # pvt agreement does not cover full-load Iq, so this is a valid but failing point
         self.assertEqual(rc, 0, err)
         rep = json.loads((self.out / G.REPORT_JSON).read_text())
-        r7 = next(r for r in rep["rows"] if r["id"] == 7)
-        self.assertEqual(r7["metrics"][1]["verdict"], "fail")
-        self.assertEqual(r7["verdict"], "fail")
-        self.assertAlmostEqual(r7["metrics"][1]["worst_case"]["value"], 32.5169, places=6)
+        r5 = next(r for r in rep["rows"] if r["id"] == 5)
+        m = next(m for m in r5["metrics"] if "12.5 mA" in m["name"])
+        self.assertEqual(m["verdict"], "fail")
+        self.assertEqual(r5["verdict"], "fail")
+        self.assertAlmostEqual(m["worst_case"]["value"], 6.56272727, places=6)
+
+    # --- row-7 graded envelope negative controls (issue #317) --------------
+
+    def r7_report(self):
+        sel = json.loads((self.tmp / "sim/characterization/selection.json").read_text())
+        entry = sel["row7_envelope_evidence"]["files"]["report_json"]
+        return self.tmp / entry["path"], entry
+
+    def rewrite_r7_report(self, mutate):
+        path, entry = self.r7_report()
+        doc = json.loads(path.read_text())
+        mutate(doc)
+        path.write_text(json.dumps(doc, indent=1) + "\n")
+        selp = self.tmp / "sim/characterization/selection.json"
+        sel = json.loads(selp.read_text())
+        sel["row7_envelope_evidence"]["files"]["report_json"]["sha256"] = G.sha256_file(path)
+        selp.write_text(json.dumps(sel))
+
+    def test_r7_envelope_value_tamper_breaks_the_summary_agreement(self):
+        # Repin the report with one graded value bumped: the pinned summary's
+        # worst-case figures no longer agree with the report, so the loader
+        # refuses the record even though every pin matches.
+        def bump(doc):
+            doc["corners"][0]["measurements"] = [
+                {**m, "value": 29e-6} if m["name"] == "iq_i50m_v2v97_a" else m
+                for m in doc["corners"][0]["measurements"]]
+        self.rewrite_r7_report(bump)
+        rc, _, err = run_main("--root", str(self.tmp))
+        self.assertEqual(rc, 1)
+        self.assertIn("disagrees with the report's worst", err)
+
+    def test_r7_envelope_breaking_the_legacy_cross_check_is_rejected(self):
+        # Set the tt/-40/res_typ corner's iq_i0_v3v30_a to legacy iq_a + 1.1 uA:
+        # below the family worst (so the summary-agreement check still passes)
+        # but past the 1.0 uA legacy cross-check band by construction.
+        legacy = 2.24488956e-05   # the pinned PVT csv's iq_a at tt/-40C/res_typ
+        cid = "mos_tt__res_typ__cap_typ/novdd/-40C"
+
+        def bump(doc):
+            for c in doc["corners"]:
+                if c["corner_id"] != cid:
+                    continue
+                for m in c["measurements"]:
+                    if m["name"] == "iq_i0_v3v30_a":
+                        m["value"] = legacy + 1.1e-6
+        self.rewrite_r7_report(bump)
+        rc, _, err = run_main("--root", str(self.tmp))
+        self.assertEqual(rc, 1)
+        self.assertIn("disagrees with the legacy iq_a", err)
+
+    def test_r7_envelope_dropped_spec_row_tag_is_rejected(self):
+        selp = self.tmp / "sim/characterization/selection.json"
+        sel = json.loads(selp.read_text())
+        entry = sel["row7_envelope_evidence"]["files"]["request_json"]
+        path = self.tmp / entry["path"]
+        req = json.loads(path.read_text())
+        req["measurements"][0].pop("spec_row")
+        path.write_text(json.dumps(req, indent=1) + "\n")
+        entry["sha256"] = G.sha256_file(path)
+        selp.write_text(json.dumps(sel))
+        rc, _, err = run_main("--root", str(self.tmp))
+        self.assertEqual(rc, 1)
+        self.assertIn("spec_row", err)
+
+    def test_r7_envelope_design_drift_fails_completeness_not_a_crash(self):
+        # Design drift: make the envelope's recorded pin AND the selection's
+        # pin agree on a hash the tree no longer matches (editing the netlist
+        # itself would trip the DC informational inventory's older, stricter
+        # gate first). Not a pin/tamper problem, so the run completes and the
+        # artifact honestly fails its completeness check (stale against the
+        # design), like the circuit record's own staleness path.
+        # not a pin/tamper problem, so the artifact is still produced, but it
+        # honestly fails its completeness check (stale against the design) and
+        # the envelope goes to status:fail / exit 1, like the circuit record's
+        # own staleness path.
+        selp = self.tmp / "sim/characterization/selection.json"
+        sel = json.loads(selp.read_text())
+        core = "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice"
+        pentry = sel["row7_envelope_evidence"]["files"]["provenance_json"]
+        ppath = self.tmp / pentry["path"]
+        prov = json.loads(ppath.read_text())
+        prov["input_sha256"][core] = "0" * 64
+        ppath.write_text(json.dumps(prov, indent=1, sort_keys=True) + "\n")
+        pentry["sha256"] = G.sha256_file(ppath)
+        for pin in sel["row7_envelope_evidence"]["design_freshness_pins"]:
+            if pin["path"] == core:
+                pin["sha256"] = "0" * 64
+        selp.write_text(json.dumps(sel))
+        rc, _, err = run_main("--root", str(self.tmp))
+        self.assertEqual(rc, 1)
+        rep = json.loads((self.out / G.REPORT_JSON).read_text())
+        chk = next(c for c in rep["completeness"]["checks"]
+                   if c["check"].startswith("row-7 envelope is current"))
+        self.assertFalse(chk["ok"])
+        self.assertIn("stale against the design", chk["detail"])
+        self.assertEqual(self.env_status(), "fail")
+
+
+    # --- review of #322: strictness, exactly-once, PDK revision, the pair --
+
+    def test_r7_value_at_the_target_is_rejected(self):
+        # klt sim's inclusive `max` grades 30 uA as pass; DR-0007 says < 30 uA.
+        def at_limit(doc):
+            for c in doc["corners"]:
+                for m in c["measurements"]:
+                    if m["name"] == "iq_i0_v3v30_a":
+                        m["value"] = G.ROW7_TARGET_A
+                        m["status"] = "pass"
+                        return
+        self.rewrite_r7_report(at_limit)
+        rc, _, err = run_main("--root", str(self.tmp))
+        self.assertEqual(rc, 1)
+        self.assertIn("not strictly below", err)
+
+    def test_r7_step_repeated_six_times_is_rejected(self):
+        def repeat(doc):
+            c = doc["corners"][0]
+            c["steps"] = [dict(c["steps"][0]) for _ in range(6)]
+        self.rewrite_r7_report(repeat)
+        rc, _, err = run_main("--root", str(self.tmp))
+        self.assertEqual(rc, 1)
+        self.assertIn("exactly once", err)
+
+    def test_r7_graded_declarations_removed_from_the_report_are_rejected(self):
+        self.rewrite_r7_report(lambda doc: doc.update(
+            measurements=[m for m in doc["measurements"]
+                          if not m["name"].startswith("iq_")]))
+        rc, _, err = run_main("--root", str(self.tmp))
+        self.assertEqual(rc, 1)
+        self.assertIn("exactly once", err)
+
+    def test_r7_pdk_pin_change_fails_completeness_independently(self):
+        pin = self.tmp / "sim/pdk-cmos5l.json"
+        doc = json.loads(pin.read_text())
+        doc["pinned_commit"] = "0" * 40
+        pin.write_text(json.dumps(doc))
+        rc, _, err = run_main("--root", str(self.tmp))
+        self.assertEqual(rc, 1)
+        rep = json.loads((self.out / G.REPORT_JSON).read_text())
+        chk = next(c for c in rep["completeness"]["checks"]
+                   if c["check"].startswith("row-7 envelope is current"))
+        self.assertFalse(chk["ok"])
+        self.assertIn("pdk-cmos5l.json", chk["detail"])
+        self.assertEqual(self.env_status(), "fail")
+
+    def test_r7_pdk_projection_agrees_with_the_driver_module(self):
+        sys.path.insert(0, str(REPO / "sim/ldo-cmos5l-pvt-sweep"))
+        try:
+            import row_envelope as re_
+        finally:
+            sys.path.pop(0)
+        self.assertEqual(G._pdk_pin_projection_sha256(REPO / "sim/pdk-cmos5l.json"),
+                         re_.pdk_pin_projection_sha256(str(REPO / "sim/pdk-cmos5l.json")))
+
+    def test_r7_incomplete_pair_is_rejected(self):
+        selp = self.tmp / "sim/characterization/selection.json"
+        sel = json.loads(selp.read_text())
+        entry = sel["row7_envelope_evidence"]["pair_evidence"]["files"]["pair_json"]
+        path = self.tmp / entry["path"]
+        doc = json.loads(path.read_text())
+        doc["pairs_compared"], doc["complete"] = 264, False
+        path.write_text(json.dumps(doc))
+        entry["sha256"] = G.sha256_file(path)
+        selp.write_text(json.dumps(sel))
+        rc, _, err = run_main("--root", str(self.tmp))
+        self.assertEqual(rc, 1)
+        self.assertIn("pair comparison is incomplete", err)
 
 
 class SweepCeilingTests(unittest.TestCase):
