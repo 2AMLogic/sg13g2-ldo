@@ -112,7 +112,8 @@ with `actions/cache` absorbing the repeat-fetch cost instead.
   likewise: `--check-env` only in CI). If/when another `sim/`
   experiment lands, add an equivalent `--check-env`-style CI step for it too.
 - **No linter/formatter.** `package.json`'s `lint` and `check:ci` scripts
-  are honest "not configured" placeholders. Add a CI job for either if/when
-  one is adopted.
+  exit 1 with a pointer to this workflow (the repo has no single CI command
+  to mirror; see `.github/workflows/ci.yml`). Add a CI job for either
+  if/when one is adopted.
 - **No layout/DRC/LVS checks.** `layout/` has no artifacts yet; this
   workflow only covers `design/`.
