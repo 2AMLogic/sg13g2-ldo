@@ -283,11 +283,7 @@ jobs:
       # is this job, which is why those commands are NOT marked `local_only`:
       # `local_only` would make --check skip them and carry the committed
       # outcome through, and the point is for CI to fail on drift.
-      - name: Install klayout-tools at the pinned release (for the item 1 attest gate)
-        run: |
-          pip install "klayout-tools==${KLAYOUT_TOOLS_VERSION}"
-          klt --version
-
+      # It uses the pinned release installed once, at the top of this job.
       - name: klt signoff --attest 1 --check (design sources + per-cell netlist freshness)
         env:
           PDK_ROOT: ${{ github.workspace }}/klayout-tools/pdks/ihp-open-pdk
