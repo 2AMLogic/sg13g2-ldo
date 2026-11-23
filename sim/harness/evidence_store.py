@@ -278,7 +278,10 @@ def _klt_error(stderr: str) -> str:
 def _entry_problem(entry) -> str | None:
     """The writer's entry check, as strict as the CI checker's schema
     (:data:`ENTRY_REQUIRED_FIELDS`/``OPTIONAL``/``PRODUCER_FIELDS``,
-    including the producer-value rules; issue #326)."""
+    including the producer-value rules; issue #326) and its remaining
+    entry rules: a present ``media_type`` must be a string, ``size`` a
+    strict positive integer, and the uri key's repo must agree with
+    ``producer.loom.repo`` (issue #334)."""
     if not isinstance(entry, dict):
         return "entry is not an object"
     missing = [f for f in ENTRY_REQUIRED_FIELDS if f not in entry]
@@ -289,14 +292,28 @@ def _entry_problem(entry) -> str | None:
         return f"unknown field(s) {', '.join(extra)}"
     if not (isinstance(entry.get("sha256"), str) and _SHA_RE.match(entry["sha256"])):
         return "bad sha256"
+    size = entry.get("size")
+    if not isinstance(size, int) or isinstance(size, bool) or size < 1:
+        return "size must be a positive integer"
     if entry.get("kind") != "evidence":
         return "kind is not evidence"
+    if "media_type" in entry and not isinstance(entry["media_type"], str):
+        return "media_type must be a string"
     uri = entry.get("uri")
     m = _URI_RE.match(uri) if isinstance(uri, str) else None
     if m is None:
         return "uri is not artifact:<key> (klt older than klayout-tools 7e3561f?)"
-    if m.group(1).rsplit("/", 1)[-1] != entry["sha256"]:
+    key = m.group(1)
+    if key.rsplit("/", 1)[-1] != entry["sha256"]:
         return "uri key does not name the sha256"
+    # The key's repo segment: evidence/<owner>__<name>/... with exactly one
+    # __ in the second path segment (split on the first, refuse a second).
+    parts = key.split("/")
+    owner = sep = tail = ""
+    if len(parts) > 1:
+        owner, sep, tail = parts[1].partition("__")
+    if len(parts) < 3 or parts[0] != "evidence" or not sep or "__" in tail:
+        return "uri key is not evidence/<owner>__<name>/..."
     producer = entry.get("producer")
     if not isinstance(producer, dict):
         return "no producer"
@@ -307,6 +324,8 @@ def _entry_problem(entry) -> str | None:
             return f"producer.{f} must be a non-empty string"
     if producer.get("commit") is not None and not isinstance(producer["commit"], str):
         return "producer.commit must be a string or null"
+    if producer["loom.repo"] != f"{owner}/{tail}":
+        return "uri key names a different repo than producer.loom.repo"
     return None
 
 
