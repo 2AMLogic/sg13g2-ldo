@@ -58,6 +58,14 @@ def cmd_plan(a):
     use_wrapper()
     n, g = sc.write_requests(a.rid, STAGE, ramp_points())
     sd = sc.stage_dir(a.rid, STAGE)
+    # The runner applies options.osdi_preload itself; the campaign's deck-side
+    # `pre_osdi inputs/<name>.osdi` preamble conflicts with it and fails every
+    # corner with osdi_load_failed (run 20261123-212200-433395a5, jobs listed in
+    # README.md; diagnosis: closed 2AMLogic/klayout-tools#5766). Replace the
+    # preamble with a comment; the bench template and evaluator are untouched.
+    with open(os.path.join(sc.stage_dir(a.rid, STAGE), "..", "osdi-preamble.cir"), "w") as f:
+        f.write("* intentionally empty: OSDI binaries are loaded by the runner from\n"
+                "* options.osdi_preload (a deck-side pre_osdi preamble conflicts, #5766).\n")
     # --batch-set names each member after its request file stem
     plan = json.load(open(os.path.join(sd, "plan.json")))
     for grp in plan["groups"]:
