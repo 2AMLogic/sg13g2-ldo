@@ -6,6 +6,28 @@ Chronological record of recently merged pull requests and closed issues, maintai
 
 - [2026-09](work_log/WORK_LOG_2026-09.md)
 
+### 2026-11-23
+
+- **PR #336**: sim: remove unused AXIS_LEVELS constant from dynamic_doe
+- **PR #335**: fix: enforce producer values and duplicate names in the evidence writer
+- **PR #333**: docs: reword stale ci.yml lint/check:ci comment to the fail-loudly behavior
+- **PR #331**: fix: make package.json scripts fail loudly pointing at ci.yml
+- **PR #321**: batch backend: drop the deck-side pre_osdi preamble, verify runner-applied osdi_preload (#313)
+- **Issue #332** (closed): Stale comment in ci.yml:124-127 calls package.json's lint/check:ci scripts "not configured placeholders"
+- **Issue #326** (closed): Use one manifest validator for the evidence writer and CI
+- **Issue #229** (closed): Twenty-seven unused module-level constants — four of them claim behaviour they do not have (the dimension #226's scan did not cover)
+- **Issue #228** (closed): Remove the placeholder root package.json: five dead scripts that steer agent build-gate detection to a Node toolchain this repo does not have
+
+### 2026-11-22
+
+- **PR #329**: fix: pass CACHE_DIR through the subprocess env in the OSDI test harness
+- **Issue #328** (closed): Pass the OSDI fixture cache path safely when TMPDIR contains an apostrophe
+
+### 2026-11-21
+
+- **PR #327**: fix: replace the unusable dpkg-deb recovery recipe with an install instruction
+- **Issue #325** (closed): Remove the unusable dpkg-deb recovery recipe from the OSDI build diagnostic
+
 ### 2026-11-18
 
 - **PR #310**: ci: report required checks on merge_group and plumb the queue base into the append-only gate
