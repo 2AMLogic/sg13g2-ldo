@@ -35,8 +35,6 @@ LOAD_LEVELS_UA = (0, 1000, 25000, 50000)      # 0, 1, 25, 50 mA
 COUT_LEVELS_NF = (330, 1000, 2200, 4700)      # 0.33, 1.0, 2.2, 4.7 uF
 ESR_LEVELS_MOHM = (0, 250, 500)               # 0, 250, 500 mohm
 AXES = ("load_ua", "cout_nf", "esr_mohm")
-AXIS_LEVELS = {"load_ua": LOAD_LEVELS_UA, "cout_nf": COUT_LEVELS_NF,
-               "esr_mohm": ESR_LEVELS_MOHM}
 
 # (mos corner, temp C, resistor label, why it was selected). Snapshot of the
 # DR-0007 evidence at 4d45f5d / 2026-10-10; re-derive before relying on it.
