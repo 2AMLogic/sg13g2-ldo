@@ -3,10 +3,9 @@
   "description": "Loom-managed workspace with AI development orchestration",
   "private": true,
   "scripts": {
-    "worktree:return": "./.loom/scripts/worktree-return.sh",
-    "check:ci": "echo 'No CI checks configured. Customize this script for your project.' && exit 0",
-    "check:all": "echo 'No checks configured. Customize this script for your project.' && exit 0",
-    "test": "echo 'No tests configured. Customize this script for your project.' && exit 0",
-    "lint": "echo 'No linter configured. Customize this script for your project.' && exit 0"
+    "check:ci": "echo 'No check:ci entry point: CI runs many separate commands. The canonical gate is the workflow at .github/workflows/ci.yml.' >&2; exit 1",
+    "check:all": "echo 'No check:all entry point: CI runs many separate commands. The canonical gate is the workflow at .github/workflows/ci.yml.' >&2; exit 1",
+    "test": "echo 'No test entry point: CI runs many separate commands. The canonical gate is the workflow at .github/workflows/ci.yml.' >&2; exit 1",
+    "lint": "echo 'No lint entry point: no linter is configured. The canonical gate is the workflow at .github/workflows/ci.yml.' >&2; exit 1"
   }
 }
