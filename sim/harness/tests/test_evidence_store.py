@@ -555,6 +555,12 @@ class SchemaAgreement(unittest.TestCase):
             ("non-canonical name",
              lambda m: m["entries"][0].update(name="sim/b/../b/records/r1.json")),
             ("missing name", lambda m: m["entries"][0].pop("name")),
+            # Issue #345: a non-string name used to reach put_files' by_name
+            # hash (list/dict -> TypeError) instead of a StoreError.
+            ("list name", lambda m: m["entries"][0].update(name=[])),
+            ("dict name", lambda m: m["entries"][0].update(name={})),
+            ("int name", lambda m: m["entries"][0].update(name=5)),
+            ("null name", lambda m: m["entries"][0].update(name=None)),
             ("schema_version 2", lambda m: m.update(schema_version=2)),
             ("uri key with extra segments between repo and sha",
              lambda m: m["entries"][0].update(

@@ -281,7 +281,7 @@ def _entry_problem(entry) -> str | None:
     including the producer-value rules; issue #326) and its remaining
     entry rules: a present ``media_type`` must be a string, ``size`` a
     strict positive integer, and the uri key's repo must agree with
-    ``producer.loom.repo`` (issue #334)."""
+    ``producer.loom.repo`` (issue #334), and ``name`` a string (issue #345)."""
     if not isinstance(entry, dict):
         return "entry is not an object"
     missing = [f for f in ENTRY_REQUIRED_FIELDS if f not in entry]
@@ -299,6 +299,10 @@ def _entry_problem(entry) -> str | None:
         return "kind is not evidence"
     if "media_type" in entry and not isinstance(entry["media_type"], str):
         return "media_type must be a string"
+    if "name" in entry and not isinstance(entry["name"], str):
+        # put_files hashes the name (by_name); an unhashable one must be a
+        # StoreError, not a TypeError (issue #345).
+        return "name must be a string"
     uri = entry.get("uri")
     m = _URI_RE.match(uri) if isinstance(uri, str) else None
     if m is None:
