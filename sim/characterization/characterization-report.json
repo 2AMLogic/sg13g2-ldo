@@ -17,7 +17,7 @@
   ],
   "selection": {
     "file": "sim/characterization/selection.json",
-    "sha256": "71c5c2b5f12836d61b96f7bc296706273fc9cc04cf6d96615b32f8ab0e152268",
+    "sha256": "4ca582cd0b5a9036e07abf5d8907155a5445c83ba4e483779d81321f1923180f",
     "circuit_record_id": "20261011-070111-5391c68",
     "experiment": "ldo-cmos5l-pvt-sweep",
     "device_context_record_id": "20260909-220347-ed18110",
@@ -117,6 +117,60 @@
       "pinned": true
     },
     {
+      "role": "row7_envelope_corners_lib",
+      "path": "sim/ldo-cmos5l-pvt-sweep/row7-envelope/20261121-001957-ed6b0587/corners.lib",
+      "sha256": "e93a2124f2acf919bbd40df2e7c2fa4d52134fec30ad384fd0da99d5418b9094",
+      "pinned": true
+    },
+    {
+      "role": "row7_envelope_design_freshness",
+      "path": "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice",
+      "sha256": "08a7b857e1fad43dd7af1f575de97853a058e85541601ecc47567fbc28dbae57",
+      "pinned": true
+    },
+    {
+      "role": "row7_envelope_design_freshness",
+      "path": "design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice",
+      "sha256": "75ee39ce0c48b54cab6c8a31acd1f199c37c1ccd1ac074a3515dee81cc656fb4",
+      "pinned": true
+    },
+    {
+      "role": "row7_envelope_provenance_json",
+      "path": "sim/ldo-cmos5l-pvt-sweep/row7-envelope/20261121-001957-ed6b0587/provenance.json",
+      "sha256": "68fc6bdcabd8cf5fdc6373af923ea21fab57d1e6cfd74819671c6f7717c47b26",
+      "pinned": true
+    },
+    {
+      "role": "row7_envelope_report_json",
+      "path": "sim/ldo-cmos5l-pvt-sweep/row7-envelope/20261121-001957-ed6b0587/report.json",
+      "sha256": "06ad1829a873421ffe0bc512c57dfd8c8e383725c48fa30a9edbde0699485fd9",
+      "pinned": true
+    },
+    {
+      "role": "row7_envelope_request_json",
+      "path": "sim/ldo-cmos5l-pvt-sweep/row7-envelope/20261121-001957-ed6b0587/request.json",
+      "sha256": "11d77497c9582d990832321803f87471e58245a648b6849d780e3ae2f33d0a07",
+      "pinned": true
+    },
+    {
+      "role": "row7_envelope_summary_json",
+      "path": "sim/ldo-cmos5l-pvt-sweep/row7-envelope/20261121-001957-ed6b0587/row7-envelope.json",
+      "sha256": "b2ecfb9be28d9aaf42cb86c162bfad41a67233ee00f7a4d08b78b44eda7bcb6f",
+      "pinned": true
+    },
+    {
+      "role": "row7_envelope_tb_spice",
+      "path": "sim/ldo-cmos5l-pvt-sweep/row7-envelope/20261121-001957-ed6b0587/tb.spice",
+      "sha256": "d1101e8225423b91b6f462df3aedfc2b68ec1e2995c7de101662214451baa279",
+      "pinned": true
+    },
+    {
+      "role": "row7_pair_json",
+      "path": "sim/ldo-cmos5l-pvt-sweep/row7-envelope/20261123-120423-ca4c931d/row7-pair.json",
+      "sha256": "65f054a9a8a30fae976c104fc4b7695e6cdf87897084670b98fa6821287c0992",
+      "pinned": true
+    },
+    {
       "role": "startup_design_core_freshness",
       "path": "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice",
       "sha256": "08a7b857e1fad43dd7af1f575de97853a058e85541601ecc47567fbc28dbae57",
@@ -149,13 +203,13 @@
     {
       "role": "superseded_evidence_statement",
       "path": "sim/ldo-cmos5l-pvt-sweep/README.md",
-      "sha256": "ea011b89d24448826652533014fd662b343108e340cd1ccf569e1a489f2eeedc",
+      "sha256": "36b273ee61944a680a0882f327ae205c217df276ef3705b2edc82961f777a454",
       "pinned": false
     },
     {
       "role": "target_table",
       "path": "README.md",
-      "sha256": "dbb54dc9a1ff4ff8332680a80aa393528651c59fddd8821ded670e02e23adc29",
+      "sha256": "8c3f388fe415a54e8ef38d5641d04cc3e845d0c8bf039b828ab817cfb5a77fd3",
       "pinned": false
     }
   ],
@@ -918,24 +972,20 @@
       "stretch": "< 10 µA",
       "ratification": {
         "state": "open_unratified",
-        "readme_status": "OPEN — unratified (informational full-load Iq measured at Vin = 3.30 V only; not ratified)",
+        "readme_status": "OPEN — unratified (graded `klt sim` envelope at both loads over the input window, #317; not ratified)",
         "dr0007_disposition": "Open",
         "dr0007_type": "deterministic",
         "record": "spec/decision-records/DR-0007-target-spec-row-ratification.md"
       },
-      "verdict": "pass_partial_coverage",
+      "verdict": "pass_full_coverage",
       "evidence_state": "current",
       "coverage": {
-        "state": "partial",
-        "gaps": [
-          "Iq at full load is measured at Vin = 3.30 V only (no other supplies)",
-          "full-load Iq is a difference of two ~50 mA currents; quantized at 1e-10 A, solver noise not bounded beyond that",
-          "ideal 0.90 V reference and ideal Ibias sink: reference/bias-generator current excluded; corner grid only"
-        ]
+        "state": "full",
+        "gaps": []
       },
       "metrics": [
         {
-          "name": "Iq, no load",
+          "name": "Iq, no load (legacy record column, Vin = 3.30 V)",
           "unit": "uA",
           "bound": {
             "comparator": "lt",
@@ -962,47 +1012,83 @@
             "record": "sim/ldo-cmos5l-pvt-sweep/records/20261011-070111-5391c68.csv",
             "column": "iq_a"
           },
-          "note": "column iq_a is in A; converted to uA (x1e6) for the row's unit"
+          "note": "column iq_a is in A; converted to uA (x1e6) for the row's unit. Superseded by the graded envelope metrics below at the other supplies; kept for continuity with the DR-0007 evidence base."
         },
         {
-          "name": "Iq at full load (50 mA), load current excluded",
+          "name": "Iq, no load (graded `klt sim` envelope, Vin 2.97-3.63 V)",
           "unit": "uA",
           "bound": {
             "comparator": "lt",
             "value": 30.0,
             "unit": "uA"
           },
-          "n_points": 45,
-          "n_pass": 45,
+          "n_points": 135,
+          "n_pass": 135,
           "n_fail": 0,
           "n_censored_upper_bound": 0,
           "n_ambiguous": 0,
           "worst_case": {
-            "value": 24.8874,
+            "value": 24.4980064,
             "at": {
-              "corner": "ff",
+              "corner": "ss",
               "temp_c": 125,
-              "res_section": "res_bcs"
+              "res_section": "res_bcs",
+              "vin_v": "3.63"
             },
             "n_points_at_this_value": 1
           },
           "verdict": "pass",
-          "conditions": "50 mA load, Vin = 3.30 V, |i(Vin)| - Iload; ideal 0.90 V reference and 2 uA Ibias sink; 45-point corner grid",
+          "conditions": "Vin {2.97, 3.30, 3.63} V x Iload {0, 50 mA} per corner (six analysis_steps operating points), Iq = |i(VIN)| - Iload graded by `klt sim` as derived-expr measurements with limits in the request (spec_row dr0007-row7-iq); solver tolerances pinned reltol=1e-9 abstol=1e-15 (a convergence setting, not an error bound; observed sensitivity is the paired tight-tolerance record); ideal 0.90 V reference and ideal 2 uA IBIAS sink, no #190 limiter; 45-point corner grid; the verdict cited here is `klt sim`'s own (limits inside the request)",
           "source": {
-            "record": "sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/dc-informational-summary.csv",
-            "column": "iq_fullload_excl_load_a"
+            "record": "sim/ldo-cmos5l-pvt-sweep/row7-envelope/20261121-001957-ed6b0587/report.json",
+            "column": "iq_i0_v2v97_a, iq_i0_v3v30_a, iq_i0_v3v63_a"
           },
-          "note": "Derived offline as |i(Vin)| - Iload from the committed raw DC grid (column in A, converted to uA). Precision caveat: the grid is printed to 9 significant digits, so a ~22 uA difference of two ~50 mA currents is quantized at 1e-10 A (0.0001 uA); solver noise beyond that floor is not bounded by this data. Invalid points are counted as ambiguous, never dropped. An older record's full-load figure (23.05uA-23.08uA) is on a superseded design and is NOT used.",
-          "n_invalid": 0,
-          "precision_floor_uA": 0.000100000008,
+          "note": "values in A in the envelope, converted to uA (x1e6). Solver convergence setting (NOT an error bound): NOT an error bound. The request pins .options reltol/abstol of the 'standard' profile; ngspice's stopping test compares each iterate with the previous one and bounds nothing about the distance to the exact operating point. For the standard profile (reltol=1e-9 abstol=1e-15) the threshold at the largest current is ~5e-11 A (0.0002 % of the 30 uA limit). Full-load Iq is graded as a derived expr inside ngspice (klt sim analysis_steps, klayout-tools #2482), never as an offline subtraction. The observed change under tighter tolerances is a separate, measured quantity: see the paired record's row7-pair.json. Observed solver sensitivity, a measurement over its stated coverage and not a bound: re-solving all 270 (corner, graded figure) pairs at reltol=1e-10 abstol=1e-15 changed the largest figure by 8.4e-15 A (8.4e-09 uA; 270 of 270 (corner, graded measurement) pairs over 45 of 45 corners). An older record's full-load figure (23.05uA-23.08uA) is on a superseded design and is NOT used."
+        },
+        {
+          "name": "Iq at full load (50 mA), load current excluded (graded `klt sim` envelope, Vin 2.97-3.63 V)",
+          "unit": "uA",
+          "bound": {
+            "comparator": "lt",
+            "value": 30.0,
+            "unit": "uA"
+          },
+          "n_points": 135,
+          "n_pass": 135,
+          "n_fail": 0,
+          "n_censored_upper_bound": 0,
+          "n_ambiguous": 0,
+          "worst_case": {
+            "value": 24.6674735,
+            "at": {
+              "corner": "ff",
+              "temp_c": 125,
+              "res_section": "res_bcs",
+              "vin_v": "3.63"
+            },
+            "n_points_at_this_value": 1
+          },
+          "verdict": "pass",
+          "conditions": "Vin {2.97, 3.30, 3.63} V x Iload {0, 50 mA} per corner (six analysis_steps operating points), Iq = |i(VIN)| - Iload graded by `klt sim` as derived-expr measurements with limits in the request (spec_row dr0007-row7-iq); solver tolerances pinned reltol=1e-9 abstol=1e-15 (a convergence setting, not an error bound; observed sensitivity is the paired tight-tolerance record); ideal 0.90 V reference and ideal 2 uA IBIAS sink, no #190 limiter; 45-point corner grid; the difference is a derived-expr measurement inside ngspice, never an offline subtraction",
+          "source": {
+            "record": "sim/ldo-cmos5l-pvt-sweep/row7-envelope/20261121-001957-ed6b0587/report.json",
+            "column": "iq_i50m_v2v97_a, iq_i50m_v3v30_a, iq_i50m_v3v63_a"
+          },
+          "note": "values in A in the envelope, converted to uA (x1e6). Solver convergence setting (NOT an error bound): NOT an error bound. The request pins .options reltol/abstol of the 'standard' profile; ngspice's stopping test compares each iterate with the previous one and bounds nothing about the distance to the exact operating point. For the standard profile (reltol=1e-9 abstol=1e-15) the threshold at the largest current is ~5e-11 A (0.0002 % of the 30 uA limit). Full-load Iq is graded as a derived expr inside ngspice (klt sim analysis_steps, klayout-tools #2482), never as an offline subtraction. The observed change under tighter tolerances is a separate, measured quantity: see the paired record's row7-pair.json. Observed solver sensitivity, a measurement over its stated coverage and not a bound: re-solving all 270 (corner, graded figure) pairs at reltol=1e-10 abstol=1e-15 changed the largest figure by 8.4e-15 A (8.4e-09 uA; 270 of 270 (corner, graded measurement) pairs over 45 of 45 corners). An older record's full-load figure (23.05uA-23.08uA) is on a superseded design and is NOT used.",
           "superseded_statement": {
             "source": "sim/ldo-cmos5l-pvt-sweep/README.md",
             "describes": "Iq at full load, from the #25 record, which was run against a superseded netlist (pre-#28 behavioural divider, pre-#35 Cc). Quoted only to show a full-load number once existed; it is NOT evidence about the current design."
           }
         }
       ],
-      "stretch_note": "stretch < 10 uA not met: max observed no-load Iq 24.72 uA, max full-load Iq 24.89 uA.",
-      "notes": []
+      "stretch_note": "stretch < 10 uA not met: max observed no-load Iq 24.72 uA, max graded no-load 24.5 uA, max graded full-load 24.67 uA.",
+      "notes": [
+        "ideal 0.90 V reference: no on-chip reference-generator current is included",
+        "ideal 2 uA IBIAS sink: no on-chip bias-generator current is included (the sunk 2 uA itself flows through the core and IS included)",
+        "evidence is for the core WITHOUT the #190 current limiter",
+        "schematic level, corner grid only, no Monte Carlo (DR-0007 classifies the row deterministic)",
+        "graded by `klt sim` with limits inside the request; the row stays Open under DR-0007 -- this is a measurement against the draft target, not a ratification"
+      ]
     },
     {
       "id": 8,
@@ -2066,8 +2152,8 @@
       "fail": 1,
       "not_implemented": 1,
       "not_measured": 1,
-      "pass_full_coverage": 1,
-      "pass_partial_coverage": 5
+      "pass_full_coverage": 2,
+      "pass_partial_coverage": 4
     },
     "ratified_rows": [
       4
@@ -2089,13 +2175,13 @@
       3,
       5,
       6,
-      7,
       8,
       9,
       10
     ],
     "rows_with_full_coverage_of_target_as_written": [
-      4
+      4,
+      7
     ]
   },
   "completeness": {
@@ -2104,7 +2190,7 @@
       {
         "check": "all selected records exist and match their sha256 pins",
         "ok": true,
-        "detail": "19 pinned sources verified"
+        "detail": "28 pinned sources verified"
       },
       {
         "check": "README target table: 10 rows, expected names and target text",
@@ -2125,6 +2211,16 @@
         "check": "DC informational summary: pinned, same record, 45 corners once each, finite, validity fields True/False, raw grids match inventory hashes",
         "ok": true,
         "detail": ""
+      },
+      {
+        "check": "row-7 graded envelope: pinned, whole clean 45-corner matrix, six limits-bearing measurements tagged dr0007-row7-iq, every (Vin, Iload) step ok, summary agrees with the report, agrees with the legacy columns at Vin 3.30 V",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "check": "row-7 envelope is current against the design netlists and the PDK pin",
+        "ok": true,
+        "detail": "the envelope's recorded design-netlist hashes and PDK pin projection match the tree"
       },
       {
         "check": "every target row appears exactly once",

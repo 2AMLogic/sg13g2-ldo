@@ -175,5 +175,64 @@
         "sha256": "5b41ddab09eb2db87e9abe55fd5cd9757742020db35405b62a36733d0818ae9e"
       }
     }
+  },
+  "row7_envelope_evidence": {
+    "experiment": "ldo-cmos5l-pvt-sweep",
+    "id": "20261121-001957-ed6b0587",
+    "policy": "Explicit selection only (same rule as every other block): the graded row-7 `klt sim` envelope this report cites is named here, every file is pinned by sha256, and the generator re-validates the whole matrix offline -- pinned bytes, the report's own hash pins on tb.spice/corners.lib, the request's declared limits and spec_row tags, a whole clean 45-corner pass with every (Vin, Iload) step resolved, the summary's worst-case agreement, and consistency with the legacy PVT / DC-informational columns at Vin = 3.30 V. The per-corner and whole-matrix verdict is `klt sim`'s own (limits inside the request); this generator never computes one. Moving to a newer record is a deliberate edit to this file in the same change that regenerates the report.",
+    "files": {
+      "report_json": {
+        "path": "sim/ldo-cmos5l-pvt-sweep/row7-envelope/20261121-001957-ed6b0587/report.json",
+        "sha256": "06ad1829a873421ffe0bc512c57dfd8c8e383725c48fa30a9edbde0699485fd9"
+      },
+      "summary_json": {
+        "path": "sim/ldo-cmos5l-pvt-sweep/row7-envelope/20261121-001957-ed6b0587/row7-envelope.json",
+        "sha256": "b2ecfb9be28d9aaf42cb86c162bfad41a67233ee00f7a4d08b78b44eda7bcb6f"
+      },
+      "request_json": {
+        "path": "sim/ldo-cmos5l-pvt-sweep/row7-envelope/20261121-001957-ed6b0587/request.json",
+        "sha256": "11d77497c9582d990832321803f87471e58245a648b6849d780e3ae2f33d0a07"
+      },
+      "tb_spice": {
+        "path": "sim/ldo-cmos5l-pvt-sweep/row7-envelope/20261121-001957-ed6b0587/tb.spice",
+        "sha256": "d1101e8225423b91b6f462df3aedfc2b68ec1e2995c7de101662214451baa279"
+      },
+      "corners_lib": {
+        "path": "sim/ldo-cmos5l-pvt-sweep/row7-envelope/20261121-001957-ed6b0587/corners.lib",
+        "sha256": "e93a2124f2acf919bbd40df2e7c2fa4d52134fec30ad384fd0da99d5418b9094"
+      },
+      "provenance_json": {
+        "path": "sim/ldo-cmos5l-pvt-sweep/row7-envelope/20261121-001957-ed6b0587/provenance.json",
+        "sha256": "68fc6bdcabd8cf5fdc6373af923ea21fab57d1e6cfd74819671c6f7717c47b26"
+      }
+    },
+    "design_freshness_pins": [
+      {
+        "path": "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice",
+        "sha256": "08a7b857e1fad43dd7af1f575de97853a058e85541601ecc47567fbc28dbae57"
+      },
+      {
+        "path": "design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice",
+        "sha256": "75ee39ce0c48b54cab6c8a31acd1f199c37c1ccd1ac074a3515dee81cc656fb4"
+      }
+    ],
+    "cross_check": {
+      "against": [
+        "circuit_record pvt csv iq_a (no load, Vin 3.30 V)",
+        "dc_informational_evidence iq_fullload_excl_load_a (Vin 3.30 V)"
+      ],
+      "band_ua": 1.0,
+      "basis": "the envelope is a different bench (direct OP solves at pinned tolerances on the fleet's ngspice vs a nested-sweep row harvest at ngspice-46 defaults), so agreement is a consistency cross-check with a loose band, not a reproduction claim; observed worst delta 0.37 uA no-load, 0.26 uA full-load"
+    },
+    "pair_evidence": {
+      "tight_record_id": "20261123-120423-ca4c931d",
+      "policy": "Observed solver sensitivity, cited separately from the convergence setting. The paired record re-runs the SAME request at a tighter reltol (1e-10, abstol unchanged at 1e-15) on the same inputs; row7-pair.json is the largest observed change over all 270 (corner, graded figure) pairs and its coverage -- an observation, not an error bound. Tighter profiles were tried and stay committed as history: reltol=1e-12/abstol=1e-17 resolved 2 of 45 corners and reltol=1e-11/abstol=1e-16 resolved 40 of 45 (ngspice dynamic gmin stepping fails at 125 C and one 27 C corner), so no tolerance below 1e-10 is claimed.",
+      "files": {
+        "pair_json": {
+          "path": "sim/ldo-cmos5l-pvt-sweep/row7-envelope/20261123-120423-ca4c931d/row7-pair.json",
+          "sha256": "65f054a9a8a30fae976c104fc4b7695e6cdf87897084670b98fa6821287c0992"
+        }
+      }
+    }
   }
 }

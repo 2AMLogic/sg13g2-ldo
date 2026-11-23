@@ -1,0 +1,35 @@
+{
+ "batch_job_ids": [
+  "klt-sim-909851cc56ab"
+ ],
+ "git_sha": "ca4c931d",
+ "input_sha256": {
+  "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice": "08a7b857e1fad43dd7af1f575de97853a058e85541601ecc47567fbc28dbae57",
+  "design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice": "75ee39ce0c48b54cab6c8a31acd1f199c37c1ccd1ac074a3515dee81cc656fb4",
+  "sim/ldo-cmos5l-pvt-sweep/testbench/tb_row7_envelope_cmos5l.spice.tmpl": "97844d22fffc5fad6e7f2e577853eacd91481ddbd14b2af967cc63b05e4d8ba6",
+  "sim/tools/render_deck.py": "1342231eb9d396774dfb3f838ec31f58a704b3f86e047d6f0188b61c8406a833"
+ },
+ "invocation": "python3 sim/ldo-cmos5l-pvt-sweep/row7_envelope.py submit --profile tight-1e-12 --pair-of 20261121-001957-ed6b0587",
+ "klt_sim_argv": "klt sim request.json --backend batch --wait-for-capacity 600 -o /tmp/row7-envelope-artifacts.00z7nud7 --format json",
+ "klt_sim_exit": 4,
+ "measurement_definition": "Iq = |i(VIN)| - Iload per (Vin, Iload) operating point; graded as klt sim derived expr measurements over analysis_steps (klayout-tools #2482), never computed by repo Python",
+ "pair_of": "20261121-001957-ed6b0587",
+ "pdk": "ihp-sg13cmos5l",
+ "pdk_pin": "sim/pdk-cmos5l.json",
+ "pdk_pin_projection_sha256": "751c9b6a3b1911c662127288528be290e63bb2b85c38e1e43007033bb27d2f37",
+ "pdk_root": "/home/ubuntu/share/pdk",
+ "probe": false,
+ "record_id": "20261123-120041-ca4c931d",
+ "solver_convergence_setting_a": 5.003100000000001e-11,
+ "solver_options": {
+  "abstol": 1e-17,
+  "reltol": 1e-12
+ },
+ "solver_profile": "tight-1e-12",
+ "spec_row": "DR-0007 row 7 (Iq excluding load < 30 uA at no load and at full load) -- Open; this envelope does not ratify it",
+ "substitutions": {
+  "design_netlist_include": "../../../../design/sg13cmos5l/netlist/ldo_core_cmos5l.spice",
+  "osdi_dir": "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi",
+  "pdk_models_dir": "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/models"
+ }
+}
