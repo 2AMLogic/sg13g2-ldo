@@ -74,6 +74,28 @@ def nominal_width_tracks_design_netlist():
             "have drifted from the design")
 
 
+def driver_record_naming_uses_bench():
+    """run_ccprobe.sh must address its record files as
+    records/<rid>.<ccprobe.BENCH>.{csv,md,manifest.tsv} -- the names
+    ccprobe.py check / record-md / _pdk_provenance read back -- by deriving
+    the tag from this module, never by hardcoding a second copy of it (the
+    2026-11-23 first campaign run wrote .ccprobe.csv while record-md read
+    .loopgain_ccprobe.csv and crashed; this assert keeps that class of drift
+    out)."""
+    with open(os.path.join(HERE, "run_ccprobe.sh"), encoding="utf-8") as fh:
+        sh = fh.read()
+    for suffix in ("csv", "md", "manifest.tsv"):
+        if re.search(rf'RECORD_ID}}\.{suffix}"', sh) or f'"{c.BENCH}.{suffix}"' in sh:
+            raise AssertionError(
+                f"run_ccprobe.sh hardcodes a record filename for .{suffix}; "
+                "it must derive all record names from ccprobe.BENCH")
+    for needle in (f"${{RECORD_ID}}.${{BENCH}}.csv", f"${{RECORD_ID}}.${{BENCH}}.md",
+                   f"${{RECORD_ID}}.${{BENCH}}.manifest.tsv"):
+        if needle not in sh:
+            raise AssertionError(
+                f"run_ccprobe.sh lost the {needle} record-path derivation")
+
+
 # ---- fixtures -------------------------------------------------------------- #
 def _trace_fixture(path, f_ug=1.05e6, dc_db=60.0, slope_db_per_dec=-20.0,
                    phase_at_ug=-135.0, fmin=1.0, fmax=1e9, ppd=20):
@@ -106,6 +128,9 @@ class WidthTableContract(unittest.TestCase):
 
     def test_nominal_width_tracks_design_netlist(self):
         nominal_width_tracks_design_netlist()
+
+    def test_driver_record_naming_uses_bench(self):
+        driver_record_naming_uses_bench()
 
     def test_design_netlist_substitutes_cleanly_for_all_labels(self):
         with open(c.DESIGN_NETLIST, encoding="utf-8") as fh:

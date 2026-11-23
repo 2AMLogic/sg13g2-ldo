@@ -625,10 +625,37 @@ def record_md(rid, sim_dir=HERE):
         f"{_fmt(one_x['vs_samev_gm_delta_db'], ' dB')} (bounds dPM <= "
         f"{bounds['pm_max_deg']:g} deg, dGM <= {bounds['gm_max_db']:g} dB, "
         f"df_ug <= {_pct(bounds['f_ug_max_rel'])}, crossing count equal).",
+    ]
+    if one_x["lfl_ok"]:
+        lines += [
         "  This is the gate that isolates THIS campaign's bench from every",
         "  other explanation: the two runs share design bytes, PDK pin and",
         "  analysis line, so a disagreement here would mean the deck is",
         "  wrong, and the reduction exits 3 on it.",
+        ]
+    else:
+        lines += [
+        "  The gate FAILED, so the deck-vs-baseline question this gate",
+        "  isolates is NOT settled by this record; the bounds above are",
+        "  pre-registered (committed with the campaign code) and are NOT",
+        "  relaxed. The identified cause class, per the committed OSDI",
+        "  replay (`backend-validation/20261120-224044-osdi-replay/`, issue",
+        "  #313): a fleet worker resolves several corner/model `.lib` files",
+        "  (`cornerMOShv.lib`, `cornerCAP.lib`, `cornerRES.lib`,",
+        "  `sg13g2_moshv_mod*.lib`) worker-side to its own PDK vintage --",
+        "  bytes that match neither the submitting host's staged closure",
+        "  nor the October baseline's -- which shifts f_ug/PM/GM by exactly",
+        "  this size (replay job `klt-sim-d50438f1fe64` vs baseline:",
+        "  df_ug -44 kHz, dPM +6.74 deg). The digests to check against are",
+        f"  in THIS record's `corners/{rid}/_batch/*/inputs.sha256.json`",
+        "  and the workers' `report.json`",
+        "  `environment.remote.worker_environment.model_inputs`; the deck",
+        "  bytes themselves stay pinned by the manifest. The slope in the",
+        "  next section is unaffected: all three Cc runs share the same",
+        "  worker vintage, so the f_ug-vs-Cc comparison is internally",
+        "  like-for-like.",
+        ]
+    lines += [
         f"- Against DR-0015's own committed P3 row (`{base['dr0015_record']}`:",
         "  the vintage DR-0015 was written at): df_ug "
         f"{_fmt(one_x['vs_dr0015_f_ug_delta_hz'], ' Hz')} "
@@ -764,7 +791,11 @@ def cmd_record_md(a):
 
 def cmd_check(a):
     """CI: regenerate the CSV, JSON and record md from the committed exports
-    and byte-compare. Writes only into a throwaway temp dir."""
+    and byte-compare. Writes only into a throwaway temp dir. A record whose
+    own failed_checks reproduce (reduce exit 3 -- e.g. the like-for-like
+    gate's known worker-vintage failure) still CHECKS clean: the committed
+    artifacts must reproduce, not re-pass; only a structural regeneration
+    failure (exit 2) or a byte mismatch fails the check."""
     rid = a.record
     rec_csv = os.path.join(HERE, "records", f"{rid}.{BENCH}.csv")
     rec_json = os.path.join(HERE, "evidence", rid, "ccprobe-report.json")
@@ -774,17 +805,21 @@ def cmd_check(a):
         a2 = argparse.Namespace(record=rid, corners_dir=None,
                                 out_csv=os.path.join(tmp, "r.csv"),
                                 out_json=os.path.join(tmp, "r.json"))
-        rc = cmd_reduce(a2)
+        rrc = cmd_reduce(a2)
+        if rrc not in (0, 3):
+            print(f"ccprobe: check: reduce could not regenerate record "
+                  f"{rid} (exit {rrc})", file=sys.stderr)
+            rc = 1
         for got, want, what in ((os.path.join(tmp, "r.csv"), rec_csv, "csv"),
                                 (os.path.join(tmp, "r.json"), rec_json, "json")):
             if open(got).read() != open(want).read():
                 print(f"ccprobe: check: regenerated {what} differs from {want}",
                       file=sys.stderr)
-                rc = rc or 1
+                rc = 1
         if record_md(rid) != open(rec_md).read():
             print(f"ccprobe: check: regenerated record md differs from {rec_md}",
                   file=sys.stderr)
-            rc = rc or 1
+            rc = 1
     if rc == 0:
         print(f"ccprobe: check: {rid} reproduces byte-for-byte", file=sys.stderr)
     return rc

@@ -257,15 +257,25 @@ command -v klt >/dev/null 2>&1 || { echo "run_ccprobe.sh: klt not on PATH." >&2;
 
 REPO_GIT_SHA="$(cd "${REPO_ROOT}" && git rev-parse --short HEAD 2>/dev/null || echo unknown)"
 RECORD_ID="$(date -u +%Y%m%d-%H%M%S)-${REPO_GIT_SHA}"
+# The record file names come from the contract module (ccprobe.py check /
+# record-md / _pdk_provenance all address records/<rid>.<BENCH>.*), never
+# from a second copy of the tag here -- test_ccprobe.py asserts this.
+BENCH="$(python3 - "${SCRIPT_DIR}" <<'PYEOF'
+import sys
+sys.path.insert(0, sys.argv[1])
+import ccprobe
+print(ccprobe.BENCH)
+PYEOF
+)"
 EXPERIMENT_DIR="${SCRIPT_DIR}"
 SNAPSHOTS_OUT="${EXPERIMENT_DIR}/netlist-snapshots/${RECORD_ID}"
 CORNERS_OUT="${EXPERIMENT_DIR}/corners/${RECORD_ID}"
 RECORDS_DIR="${EXPERIMENT_DIR}/records"
 EVIDENCE_DIR="${EXPERIMENT_DIR}/evidence/${RECORD_ID}"
-OUT_CSV="${RECORDS_DIR}/${RECORD_ID}.ccprobe.csv"
+OUT_CSV="${RECORDS_DIR}/${RECORD_ID}.${BENCH}.csv"
 OUT_JSON="${EVIDENCE_DIR}/ccprobe-report.json"
-MD_OUT="${RECORDS_DIR}/${RECORD_ID}.ccprobe.md"
-MANIFEST="${RECORDS_DIR}/${RECORD_ID}.ccprobe.manifest.tsv"
+MD_OUT="${RECORDS_DIR}/${RECORD_ID}.${BENCH}.md"
+MANIFEST="${RECORDS_DIR}/${RECORD_ID}.${BENCH}.manifest.tsv"
 mkdir -p "${SNAPSHOTS_OUT}" "${CORNERS_OUT}" "${EVIDENCE_DIR}"
 
 BATCH_WORK="$(mktemp -d "${TMPDIR:-/tmp}/ldo-cmos5l-ccprobe.XXXXXX")"
@@ -358,7 +368,14 @@ python3 "${SCRIPT_DIR}/ccprobe.py" reduce --record "${RECORD_ID}" \
     else
       committed_unchanged="substituted_copy_only"
     fi
-    group="$(ls "${CORNERS_OUT}/_batch/" 2>/dev/null | grep '^g[0-9]' | head -1)"
+    # Each point lives in its OWN request group (the three decks differ in
+    # their .included design-netlist copy): map the point to its group by
+    # name, never assume all points share the first group's request.
+    group=""
+    for d in "${CORNERS_OUT}/_batch"/g[0-9]*_"${pid}"; do
+      [[ -d "$d" ]] && { group="$(basename "$d")"; break; }
+    done
+    [[ -n "${group}" ]] || { echo "run_ccprobe.sh: no batch group for ${pid}" >&2; exit 1; }
     invocation="klt sim --backend batch corners/${RECORD_ID}/_batch/${group}/request.json (batch_backend.py; ${P3_CORNER}__${P3_RES}__cap_typ @ ${P3_TEMP}C, Cc ${label})"
     printf 'ccprobe\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t0\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
       "${pid}" "${label}" \

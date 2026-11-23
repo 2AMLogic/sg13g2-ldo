@@ -725,3 +725,89 @@ post-change margin is predicted. The (B) family stays "recommended
 follow-up subject", now with its central premise (`r_o` collapse at 0 mA)
 measured instead of inferred. E2/E3/E4 remain open experiments of the
 brief.
+
+## Addendum: E3 Cc-width probe at P3 (issue #219)
+
+This addendum reports what experiment E3 -- the `f_ug`-vs-`Cc`
+discriminator this record names for its class-2 ambiguity ("the pass-gate
+node pole (`EAOUT`, a w=2800 µm gate) plausibly lives in the same region
+(unquantified here; E3 separates the two)") -- measured, and what it
+implies for the pole attribution. Evidence: record
+`sim/ldo-cmos5l-pvt-sweep/records/20261123-102238-0b610697.loopgain_ccprobe.md`.
+This record stays **Proposed**; nothing below changes a row, threshold,
+gate or verdict.
+
+**What ran**: three loop-gain runs at P3 (ff / −40 °C / res_wcs, 50 mA,
+0.33 µF, 0 mΩ) with the compensation capacitor `Cc` at 0.5× / 1× / 2× of
+its committed width (w = 85/170/340 µm at l = 30 µm), submitted as three
+batch-fleet jobs through the dynamic campaign's own backend. The override
+is a testbench-local substituted copy of the design netlist (only `XCc`'s
+`w=` token changes; the committed netlists are byte-unchanged and the 1×
+copy is byte-identical to them). The topology fact the probe rests on:
+`XCc`'s erramp-side node *is* `EAOUT` (`XCc OUT MZ` inside
+`ldo_erramp_cmos5l`, whose `OUT` port is the pass gate's gate node), so
+scaling `Cc` scales the compensation capacitance hanging directly on the
+candidate third-pole node.
+
+**Measured** (`f_ug` = FIRST 0 dB crossing, `ac_metrics.py`; margins
+classified by the unchanged DR-0014 rules):
+
+| `Cc` | `f_ug` [MHz] | PM first [°] | PM worst [°] | GM [dB] | 0 dB crossings | DR-0014 PM/GM |
+|---|---:|---:|---:|---:|---:|---|
+| 0.5× | 1.934020 | −45.81 | −161.88 | −8.17 | 2 | fail / fail |
+| 1× | 1.935574 | −46.04 | −161.59 | −8.05 | 2 | fail / fail |
+| 2× | 1.940839 | −47.50 | −161.23 | −8.13 | 2 | fail / fail |
+
+Least-squares log-log slope of `f_ug` against `Cc`/`Cc_nom` over the
+three levels: **x = 0.0025**. All three runs carry the SAME crossing
+count (2), so the slope is a single-branch measurement -- the premise
+this record's discriminator needs.
+
+**What it implies**: over a 4× `Cc` range, `f_ug` at P3 moves 0.36%
+in total. In this record's own framing ("`f_ug` ∝ `Cc`^−x separates a
+`Cout`-side from a fixed-gate-side pole"), that is the **fixed-gate-side
+reading**: the crossover's dynamics are set by capacitance the probe did
+not move -- the w=2800 µm pass gate's own `Cgs`, not the w=170 µm
+compensation capacitor -- and the compensation network is excluded as the
+class-2 third pole's setter. The opposite limiting reading (`f_ug`
+tracking `Cc`^−1, a compensation-limited crossover) is excluded by
+measurement. This is the outcome this record's "What would overturn"
+list anticipated for E1/E3: attributing the class-2 third pole to the
+`EAOUT` gate node rather than `VOUT` changes the (B) target `f_z` curve
+at heavy load; the family ranking does not.
+
+**Limitation, stated plainly**: a `Cc` probe separates "set by `Cc`" from
+"not set by `Cc`"; between the two `Cc`-independent candidates (the
+`VOUT` pole and the gate pole fixed by pass `Cgs`) the slope alone does
+not directly pick. The corroboration already in this record: its
+mechanism paragraph places the `VOUT` pole near 1/(2π·`r_o`·`Cout`) ~ MHz
+at P3 -- an octave below the measured 1.94 MHz `f_ug` -- and E1's
+measured `r_o` (23.79 kΩ at the 1 mA P6 point, i.e. VA ≈ 23.8 V) prices
+it at ≈ 1.0 MHz at 50 mA by the same arithmetic (an estimate on
+E1-measured terms, not a measured pole).
+
+**Cross-vintage caveat**: the campaign's pre-registered like-for-like
+gate (1× vs the same-vintage October 12 reference
+`20261012-074813-c94873ba`: same design bytes, same PDK pin, same
+analysis line) FAILED -- dPM +6.74°, dGM +1.18 dB, df_ug −2.29% against
+bounds of 1° / 1 dB / 2% -- with an identified cause outside this
+campaign's bench: the batch worker resolves several corner/model `.lib`
+files (`cornerMOShv.lib`, `cornerCAP.lib`, `cornerRES.lib`,
+`sg13g2_moshv_mod*.lib`) to its own PDK vintage, bytes matching neither
+the submitting host nor the October baseline (issue #313's committed
+replay, `sim/ldo-cmos5l-pvt-sweep/backend-validation/20261120-224044-osdi-replay/`,
+job `klt-sim-d50438f1fe64`; this campaign's 1× trace reproduces that
+replay run numerically, 3 of 161 rows differing in the 9th digit). The
+slope above is unaffected: all three `Cc` runs share the same worker
+vintage, so the `f_ug`-vs-`Cc` comparison is internally like-for-like.
+The bounds are not relaxed; the gate's failure is recorded, not
+explained away.
+
+### What this addendum does not do
+
+No spec row, threshold, gate, record or verdict is changed; DR-0007 rows
+3, 6, 7 and 10 keep their states; the P3 PM/GM fail verdicts stand as
+DR-0014 facts at all three `Cc` values (a wider `Cc` is not a remedy and
+none is proposed, screened or ratified here). No pole frequency is
+claimed as measured -- the attribution is a slope, not an extraction.
+E2 and E4 remain open experiments of the brief.

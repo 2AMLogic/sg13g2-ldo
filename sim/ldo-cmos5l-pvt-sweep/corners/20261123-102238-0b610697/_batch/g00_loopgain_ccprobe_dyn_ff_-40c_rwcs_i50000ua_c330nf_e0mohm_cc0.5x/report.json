@@ -1,0 +1,684 @@
+{
+  "schema_version": 3,
+  "netlist": {
+    "path": null,
+    "scope": "external"
+  },
+  "status": "pass",
+  "corner_count": 1,
+  "passed": 1,
+  "failed": 0,
+  "errored": 0,
+  "inconclusive": 0,
+  "diagnostic_counts": {
+    "by_code": {},
+    "by_severity": {},
+    "corners_with_diagnostics": 0
+  },
+  "metrics": {
+    "sim__corner__count": 1,
+    "sim__corner__passed_count": 1,
+    "sim__corner__failed_count": 0,
+    "sim__corner__errored_count": 0,
+    "sim__corner__inconclusive_count": 0
+  },
+  "environment": {
+    "engine": "ngspice",
+    "engine_version": "47",
+    "ngspice_binary": "/usr/local/bin/ngspice",
+    "engine_build": {
+      "version_banner": "******\n** ngspice-47 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2026, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Fri Nov 13 23:19:32 UTC 2026\n******",
+      "binary_sha256": null,
+      "probe": "ok",
+      "reason": null
+    },
+    "ngspice_init": {
+      "source": "runner",
+      "lines": null,
+      "sha256": null
+    },
+    "models_lib": {
+      "path": null,
+      "scope": "external"
+    },
+    "models_lib_sha256": "09618abffb87bc414045284c2ed1ba5d6938f658f26d37fb8110f246d76d602c",
+    "models_lib_sha256_scope": "client",
+    "netlist_sha256": "f992a15534c18c8d908a27d20c9e4f3bc9468a5bcae0b60121605174fdcf0525",
+    "netlist_sha256_scope": "staged",
+    "netlist_closure": [
+      {
+        "path": null,
+        "scope": "external",
+        "sha256": "f992a15534c18c8d908a27d20c9e4f3bc9468a5bcae0b60121605174fdcf0525"
+      },
+      {
+        "path": "sim/ldo-cmos5l-pvt-sweep/netlist-snapshots/20261123-102238-0b610697/design_cc0.5x.spice",
+        "scope": "repo",
+        "sha256": "f22143b62f25cf26aa4f4fe5728af0a61c54370538a7a0ef7629616bcf5f07ac"
+      }
+    ],
+    "netlist_identity": "sha256:ae73c3bd4d80136edd1bb86bf415c66bce40e0eb64c58b472de440d2ad97a50e",
+    "osdi_preload": [
+      {
+        "name": "psp103.osdi",
+        "path": null,
+        "scope": "external",
+        "sha256": "8234100d42604e8848c72149506b360ff39249c2d190ed4fb402f0d45e5aad48"
+      },
+      {
+        "name": "psp103_nqs.osdi",
+        "path": null,
+        "scope": "external",
+        "sha256": "7a6bff2a6449f52593fa38b12f1d3adf35e56b0440693ba5b10992b74d371f25"
+      },
+      {
+        "name": "mosvar.osdi",
+        "path": null,
+        "scope": "external",
+        "sha256": "61ccb6b6d13548367bb1d31924547d9658683bef8fb22ef92f5e6de2b26232db"
+      },
+      {
+        "name": "r3_cmc.osdi",
+        "path": null,
+        "scope": "external",
+        "sha256": "25ada2b568118b79071b2bd8ccab34e5c6ac6d7714a55200f47aa987d18b654b"
+      },
+      {
+        "name": "cap_cmomi.osdi",
+        "path": null,
+        "scope": "external",
+        "sha256": "79ee04b714bf068d0864cc077ff1934e05d2ee4a74a621e9e3095a4259326690"
+      },
+      {
+        "name": "cap_cmomf.osdi",
+        "path": null,
+        "scope": "external",
+        "sha256": "9bae4bd5112b2275cf25db1d7857d8c869a101851b2660d277739a3e4f89e56d"
+      }
+    ],
+    "staged_model_inputs": [
+      {
+        "name": "corners.lib",
+        "field": "models.lib",
+        "kind": "library",
+        "sha256": "0fb03c11c62a1ce755c21b147ebce4531c09d5f8b70b5210918a26001755d403",
+        "rewritten": true,
+        "source_sha256": "09618abffb87bc414045284c2ed1ba5d6938f658f26d37fb8110f246d76d602c",
+        "transform": "include-path-rewrite"
+      },
+      {
+        "name": "psp103.osdi",
+        "field": "options.osdi_preload[0]",
+        "kind": "osdi",
+        "sha256": "8234100d42604e8848c72149506b360ff39249c2d190ed4fb402f0d45e5aad48",
+        "rewritten": false,
+        "source_sha256": "8234100d42604e8848c72149506b360ff39249c2d190ed4fb402f0d45e5aad48"
+      },
+      {
+        "name": "psp103_nqs.osdi",
+        "field": "options.osdi_preload[1]",
+        "kind": "osdi",
+        "sha256": "7a6bff2a6449f52593fa38b12f1d3adf35e56b0440693ba5b10992b74d371f25",
+        "rewritten": false,
+        "source_sha256": "7a6bff2a6449f52593fa38b12f1d3adf35e56b0440693ba5b10992b74d371f25"
+      },
+      {
+        "name": "mosvar.osdi",
+        "field": "options.osdi_preload[2]",
+        "kind": "osdi",
+        "sha256": "61ccb6b6d13548367bb1d31924547d9658683bef8fb22ef92f5e6de2b26232db",
+        "rewritten": false,
+        "source_sha256": "61ccb6b6d13548367bb1d31924547d9658683bef8fb22ef92f5e6de2b26232db"
+      },
+      {
+        "name": "r3_cmc.osdi",
+        "field": "options.osdi_preload[3]",
+        "kind": "osdi",
+        "sha256": "25ada2b568118b79071b2bd8ccab34e5c6ac6d7714a55200f47aa987d18b654b",
+        "rewritten": false,
+        "source_sha256": "25ada2b568118b79071b2bd8ccab34e5c6ac6d7714a55200f47aa987d18b654b"
+      },
+      {
+        "name": "cap_cmomi.osdi",
+        "field": "options.osdi_preload[4]",
+        "kind": "osdi",
+        "sha256": "79ee04b714bf068d0864cc077ff1934e05d2ee4a74a621e9e3095a4259326690",
+        "rewritten": false,
+        "source_sha256": "79ee04b714bf068d0864cc077ff1934e05d2ee4a74a621e9e3095a4259326690"
+      },
+      {
+        "name": "cap_cmomf.osdi",
+        "field": "options.osdi_preload[5]",
+        "kind": "osdi",
+        "sha256": "9bae4bd5112b2275cf25db1d7857d8c869a101851b2660d277739a3e4f89e56d",
+        "rewritten": false,
+        "source_sha256": "9bae4bd5112b2275cf25db1d7857d8c869a101851b2660d277739a3e4f89e56d"
+      },
+      {
+        "name": "cornerMOShv.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "40c4140415a2a2e92d2f42fd64e026d1c04d800708b7a5b663ef083206ddfd62",
+        "rewritten": true,
+        "source_sha256": "5a1f862dc304fdfe2fb9758b15d54809a688d83c3ce981dad2e8473b3e93481a",
+        "transform": "include-path-rewrite"
+      },
+      {
+        "name": "cornerRES.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "bd2fdd7cf19ec817c23c1539c7ab013612e959b8b0698e0a482a7af5ca91d0f9",
+        "rewritten": true,
+        "source_sha256": "c6d749e72cfa2e06e4a14fac3f5662541bf6197b89265ecbedd632fd3503c425",
+        "transform": "include-path-rewrite"
+      },
+      {
+        "name": "cornerCAP.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "f7e46eb43e0b9522dd4e76058cd16f1c9a839701786ea97d36ccadeb84bd67c3",
+        "rewritten": true,
+        "source_sha256": "6813c423f6669bf03f0e7fddda5f032ba6ec7e94b6ed1c4bf117311ed0cdb1d1",
+        "transform": "include-path-rewrite"
+      },
+      {
+        "name": "sg13g2_moshv_mod.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "bf75d51ba73ab6c40bdb76306c9df74f80229db42ee63e3f4cc30a1911645af2",
+        "rewritten": true,
+        "source_sha256": "58ce3084c253f2d3753c3b95386e8f4b81dcadfed4f4503dce56862a556c3328",
+        "transform": "include-path-rewrite"
+      },
+      {
+        "name": "sg13g2_svaricaphv_mod.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "b6ae39c7334c75c222ecdee9d6b04c9be48657e91351429aebac47d1192a9abb",
+        "rewritten": false,
+        "source_sha256": "b6ae39c7334c75c222ecdee9d6b04c9be48657e91351429aebac47d1192a9abb"
+      },
+      {
+        "name": "sg13g2_moshv_mismatch.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "2e9612bdb8252c281f422511039dc9b3ea983892aec89f8ef3361592e68fed09",
+        "rewritten": false,
+        "source_sha256": "2e9612bdb8252c281f422511039dc9b3ea983892aec89f8ef3361592e68fed09"
+      },
+      {
+        "name": "sg13g2_moshv_mod_mismatch.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "97eba3d2d47596488e0e128f950dc30742d1da80cdeec1f7385a9e13cb460936",
+        "rewritten": true,
+        "source_sha256": "75c30f6975aad4cfe95af7c80fcea142ab0df6c9d7667c09120c7d0c9b814801",
+        "transform": "include-path-rewrite"
+      },
+      {
+        "name": "sg13g2_svaricaphv_mod_mismatch.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "064e1c751508149f2674914c1791c418195c55fff7d82236d20c2c79f49030fe",
+        "rewritten": false,
+        "source_sha256": "064e1c751508149f2674914c1791c418195c55fff7d82236d20c2c79f49030fe"
+      },
+      {
+        "name": "sg13g2_moshv_stat.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "cd30f22637e41fdbbaba506ebe0f17746b8438027e4651a7a87b241a39d68903",
+        "rewritten": false,
+        "source_sha256": "cd30f22637e41fdbbaba506ebe0f17746b8438027e4651a7a87b241a39d68903"
+      },
+      {
+        "name": "resistors_mod.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "7c77da0c0419c8a332550da3f934f530262bd452734090db827b68ff88d09c43",
+        "rewritten": false,
+        "source_sha256": "7c77da0c0419c8a332550da3f934f530262bd452734090db827b68ff88d09c43"
+      },
+      {
+        "name": "resistors_mod_mismatch.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "ce5ea8559df174fbdad8192e45e5d65772ae3af90af61ba295419b2cb5154b29",
+        "rewritten": false,
+        "source_sha256": "ce5ea8559df174fbdad8192e45e5d65772ae3af90af61ba295419b2cb5154b29"
+      },
+      {
+        "name": "resistors_stat.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "9e34411ed09a569323adec8181e4bdd6832af279c9e05b181f00cb2e5d696db6",
+        "rewritten": false,
+        "source_sha256": "9e34411ed09a569323adec8181e4bdd6832af279c9e05b181f00cb2e5d696db6"
+      },
+      {
+        "name": "cap_cmomi.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "ea8e1e2b2efcb072c0b516138f4ef1900691d217b7f1d8a7e810efe2de5d5e9a",
+        "rewritten": false,
+        "source_sha256": "ea8e1e2b2efcb072c0b516138f4ef1900691d217b7f1d8a7e810efe2de5d5e9a"
+      },
+      {
+        "name": "cap_cmomf.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "4704625f619ad55a0728ccd0b7c902155a974805833d1874901bd2262c642a5e",
+        "rewritten": false,
+        "source_sha256": "4704625f619ad55a0728ccd0b7c902155a974805833d1874901bd2262c642a5e"
+      },
+      {
+        "name": "sg13g2_moshv_parm.lib",
+        "field": "models.lib",
+        "kind": "dependency",
+        "sha256": "eea5bbed39184cb1e2654ae29425a9ed6ee2f2341d6cb76c472591c75237bd35",
+        "rewritten": false,
+        "source_sha256": "eea5bbed39184cb1e2654ae29425a9ed6ee2f2341d6cb76c472591c75237bd35"
+      }
+    ],
+    "remote": {
+      "provider": "aws-batch-fleet",
+      "job_id": "klt-sim-a383bdc0bd1d",
+      "region": "us-east-1",
+      "instance_id": "i-0a61eeb54f6867f66",
+      "instance_type": "c7i.4xlarge",
+      "availability_zone": "us-east-1f",
+      "ami_id": "ami-09c14f55df4958cbd",
+      "lifecycle": "spot",
+      "spot": true,
+      "state": "done",
+      "exit_code": "0",
+      "concurrency": "1",
+      "physical_cores": "8",
+      "elapsed_seconds": 8,
+      "client_submitted_at": "2026-11-23T10:22:41.789225Z",
+      "client_launched_at": "2026-11-23T10:23:03.348756Z",
+      "client_status_terminal_at": "2026-11-23T10:23:35.164340Z",
+      "client_collected_at": "2026-11-23T10:23:36.173004Z",
+      "runner_klt_version": "0.9.0",
+      "client_klt_version": "0.9.3.dev3808+g1ad4a837f657",
+      "runner_compatibility": "match",
+      "runner_request_features": {
+        "required": [
+          "options.osdi_preload",
+          "options.stage_model_inputs"
+        ],
+        "missing": [],
+        "status": "supported"
+      },
+      "worker_environment": {
+        "capture": "ok",
+        "simulator": {
+          "requested_binary": "ngspice",
+          "binary_source": "PATH",
+          "selected_path": "/usr/local/bin/ngspice",
+          "version_banner": "******\n** ngspice-47 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2026, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Fri Nov 13 23:19:32 UTC 2026\n******\n",
+          "version_probe": "ok"
+        },
+        "pdk": {
+          "variant": null,
+          "root": "/opt/pdk",
+          "stamp_scheme": null,
+          "stamp_sha256": null,
+          "stamp_text": null,
+          "models_staged": true,
+          "stamp_scope": "image"
+        },
+        "cpu_model": "Intel(R) Xeon(R) Platinum 8488C",
+        "omp_num_threads": null,
+        "image_manifest": null,
+        "model_inputs": [
+          {
+            "name": "corners.lib",
+            "sha256": "0fb03c11c62a1ce755c21b147ebce4531c09d5f8b70b5210918a26001755d403"
+          },
+          {
+            "name": "psp103.osdi",
+            "sha256": "8234100d42604e8848c72149506b360ff39249c2d190ed4fb402f0d45e5aad48"
+          },
+          {
+            "name": "psp103_nqs.osdi",
+            "sha256": "7a6bff2a6449f52593fa38b12f1d3adf35e56b0440693ba5b10992b74d371f25"
+          },
+          {
+            "name": "mosvar.osdi",
+            "sha256": "61ccb6b6d13548367bb1d31924547d9658683bef8fb22ef92f5e6de2b26232db"
+          },
+          {
+            "name": "r3_cmc.osdi",
+            "sha256": "25ada2b568118b79071b2bd8ccab34e5c6ac6d7714a55200f47aa987d18b654b"
+          },
+          {
+            "name": "cap_cmomi.osdi",
+            "sha256": "79ee04b714bf068d0864cc077ff1934e05d2ee4a74a621e9e3095a4259326690"
+          },
+          {
+            "name": "cap_cmomf.osdi",
+            "sha256": "9bae4bd5112b2275cf25db1d7857d8c869a101851b2660d277739a3e4f89e56d"
+          },
+          {
+            "name": "cornerMOShv.lib",
+            "sha256": "40c4140415a2a2e92d2f42fd64e026d1c04d800708b7a5b663ef083206ddfd62"
+          },
+          {
+            "name": "cornerRES.lib",
+            "sha256": "bd2fdd7cf19ec817c23c1539c7ab013612e959b8b0698e0a482a7af5ca91d0f9"
+          },
+          {
+            "name": "cornerCAP.lib",
+            "sha256": "f7e46eb43e0b9522dd4e76058cd16f1c9a839701786ea97d36ccadeb84bd67c3"
+          },
+          {
+            "name": "sg13g2_moshv_mod.lib",
+            "sha256": "bf75d51ba73ab6c40bdb76306c9df74f80229db42ee63e3f4cc30a1911645af2"
+          },
+          {
+            "name": "sg13g2_svaricaphv_mod.lib",
+            "sha256": "b6ae39c7334c75c222ecdee9d6b04c9be48657e91351429aebac47d1192a9abb"
+          },
+          {
+            "name": "sg13g2_moshv_mismatch.lib",
+            "sha256": "2e9612bdb8252c281f422511039dc9b3ea983892aec89f8ef3361592e68fed09"
+          },
+          {
+            "name": "sg13g2_moshv_mod_mismatch.lib",
+            "sha256": "97eba3d2d47596488e0e128f950dc30742d1da80cdeec1f7385a9e13cb460936"
+          },
+          {
+            "name": "sg13g2_svaricaphv_mod_mismatch.lib",
+            "sha256": "064e1c751508149f2674914c1791c418195c55fff7d82236d20c2c79f49030fe"
+          },
+          {
+            "name": "sg13g2_moshv_stat.lib",
+            "sha256": "cd30f22637e41fdbbaba506ebe0f17746b8438027e4651a7a87b241a39d68903"
+          },
+          {
+            "name": "resistors_mod.lib",
+            "sha256": "7c77da0c0419c8a332550da3f934f530262bd452734090db827b68ff88d09c43"
+          },
+          {
+            "name": "resistors_mod_mismatch.lib",
+            "sha256": "ce5ea8559df174fbdad8192e45e5d65772ae3af90af61ba295419b2cb5154b29"
+          },
+          {
+            "name": "resistors_stat.lib",
+            "sha256": "9e34411ed09a569323adec8181e4bdd6832af279c9e05b181f00cb2e5d696db6"
+          },
+          {
+            "name": "cap_cmomi.lib",
+            "sha256": "ea8e1e2b2efcb072c0b516138f4ef1900691d217b7f1d8a7e810efe2de5d5e9a"
+          },
+          {
+            "name": "cap_cmomf.lib",
+            "sha256": "4704625f619ad55a0728ccd0b7c902155a974805833d1874901bd2262c642a5e"
+          },
+          {
+            "name": "sg13g2_moshv_parm.lib",
+            "sha256": "eea5bbed39184cb1e2654ae29425a9ed6ee2f2341d6cb76c472591c75237bd35"
+          }
+        ],
+        "diagnostics": [],
+        "pdk_stamp_comparison": {
+          "basis": "staged_model_inputs",
+          "status": "match"
+        },
+        "ngspice_init": null,
+        "threads_per_worker": null,
+        "engine_build_comparison": {
+          "status": "match"
+        }
+      },
+      "runner_model_inputs": [
+        {
+          "name": "corners.lib",
+          "sha256": "0fb03c11c62a1ce755c21b147ebce4531c09d5f8b70b5210918a26001755d403"
+        },
+        {
+          "name": "psp103.osdi",
+          "sha256": "8234100d42604e8848c72149506b360ff39249c2d190ed4fb402f0d45e5aad48"
+        },
+        {
+          "name": "psp103_nqs.osdi",
+          "sha256": "7a6bff2a6449f52593fa38b12f1d3adf35e56b0440693ba5b10992b74d371f25"
+        },
+        {
+          "name": "mosvar.osdi",
+          "sha256": "61ccb6b6d13548367bb1d31924547d9658683bef8fb22ef92f5e6de2b26232db"
+        },
+        {
+          "name": "r3_cmc.osdi",
+          "sha256": "25ada2b568118b79071b2bd8ccab34e5c6ac6d7714a55200f47aa987d18b654b"
+        },
+        {
+          "name": "cap_cmomi.osdi",
+          "sha256": "79ee04b714bf068d0864cc077ff1934e05d2ee4a74a621e9e3095a4259326690"
+        },
+        {
+          "name": "cap_cmomf.osdi",
+          "sha256": "9bae4bd5112b2275cf25db1d7857d8c869a101851b2660d277739a3e4f89e56d"
+        },
+        {
+          "name": "cornerMOShv.lib",
+          "sha256": "40c4140415a2a2e92d2f42fd64e026d1c04d800708b7a5b663ef083206ddfd62"
+        },
+        {
+          "name": "cornerRES.lib",
+          "sha256": "bd2fdd7cf19ec817c23c1539c7ab013612e959b8b0698e0a482a7af5ca91d0f9"
+        },
+        {
+          "name": "cornerCAP.lib",
+          "sha256": "f7e46eb43e0b9522dd4e76058cd16f1c9a839701786ea97d36ccadeb84bd67c3"
+        },
+        {
+          "name": "sg13g2_moshv_mod.lib",
+          "sha256": "bf75d51ba73ab6c40bdb76306c9df74f80229db42ee63e3f4cc30a1911645af2"
+        },
+        {
+          "name": "sg13g2_svaricaphv_mod.lib",
+          "sha256": "b6ae39c7334c75c222ecdee9d6b04c9be48657e91351429aebac47d1192a9abb"
+        },
+        {
+          "name": "sg13g2_moshv_mismatch.lib",
+          "sha256": "2e9612bdb8252c281f422511039dc9b3ea983892aec89f8ef3361592e68fed09"
+        },
+        {
+          "name": "sg13g2_moshv_mod_mismatch.lib",
+          "sha256": "97eba3d2d47596488e0e128f950dc30742d1da80cdeec1f7385a9e13cb460936"
+        },
+        {
+          "name": "sg13g2_svaricaphv_mod_mismatch.lib",
+          "sha256": "064e1c751508149f2674914c1791c418195c55fff7d82236d20c2c79f49030fe"
+        },
+        {
+          "name": "sg13g2_moshv_stat.lib",
+          "sha256": "cd30f22637e41fdbbaba506ebe0f17746b8438027e4651a7a87b241a39d68903"
+        },
+        {
+          "name": "resistors_mod.lib",
+          "sha256": "7c77da0c0419c8a332550da3f934f530262bd452734090db827b68ff88d09c43"
+        },
+        {
+          "name": "resistors_mod_mismatch.lib",
+          "sha256": "ce5ea8559df174fbdad8192e45e5d65772ae3af90af61ba295419b2cb5154b29"
+        },
+        {
+          "name": "resistors_stat.lib",
+          "sha256": "9e34411ed09a569323adec8181e4bdd6832af279c9e05b181f00cb2e5d696db6"
+        },
+        {
+          "name": "cap_cmomi.lib",
+          "sha256": "ea8e1e2b2efcb072c0b516138f4ef1900691d217b7f1d8a7e810efe2de5d5e9a"
+        },
+        {
+          "name": "cap_cmomf.lib",
+          "sha256": "4704625f619ad55a0728ccd0b7c902155a974805833d1874901bd2262c642a5e"
+        },
+        {
+          "name": "sg13g2_moshv_parm.lib",
+          "sha256": "eea5bbed39184cb1e2654ae29425a9ed6ee2f2341d6cb76c472591c75237bd35"
+        }
+      ],
+      "runner_models_lib_sha256": "0fb03c11c62a1ce755c21b147ebce4531c09d5f8b70b5210918a26001755d403",
+      "runner_corner_section_libs": null,
+      "runner_osdi_preload": [
+        {
+          "name": "psp103.osdi",
+          "sha256": "8234100d42604e8848c72149506b360ff39249c2d190ed4fb402f0d45e5aad48"
+        },
+        {
+          "name": "psp103_nqs.osdi",
+          "sha256": "7a6bff2a6449f52593fa38b12f1d3adf35e56b0440693ba5b10992b74d371f25"
+        },
+        {
+          "name": "mosvar.osdi",
+          "sha256": "61ccb6b6d13548367bb1d31924547d9658683bef8fb22ef92f5e6de2b26232db"
+        },
+        {
+          "name": "r3_cmc.osdi",
+          "sha256": "25ada2b568118b79071b2bd8ccab34e5c6ac6d7714a55200f47aa987d18b654b"
+        },
+        {
+          "name": "cap_cmomi.osdi",
+          "sha256": "79ee04b714bf068d0864cc077ff1934e05d2ee4a74a621e9e3095a4259326690"
+        },
+        {
+          "name": "cap_cmomf.osdi",
+          "sha256": "9bae4bd5112b2275cf25db1d7857d8c869a101851b2660d277739a3e4f89e56d"
+        }
+      ],
+      "job_ceiling": {
+        "basis": "conservative_serial_bound",
+        "unit_count": 1,
+        "per_unit_timeout_s": 1800,
+        "overhead_s": 120.0,
+        "job_bound_s": 1920.0,
+        "max_job_seconds": 3600.0,
+        "max_job_seconds_source": "fleet_config",
+        "exceeds_ceiling": false,
+        "check": "warn",
+        "max_units_per_job": 1,
+        "recommended_hosts": 1
+      },
+      "models_lib_comparison": {
+        "status": "not_comparable",
+        "reason": "models_staged"
+      }
+    },
+    "engine_host": "worker",
+    "client_ngspice_binary": "/home/ubuntu/.local/bin/ngspice",
+    "client_engine_build": {
+      "version_banner": "******\n** ngspice-47 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2026, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Fri Nov 13 23:19:32 UTC 2026\n******",
+      "binary_sha256": "39ca1adb826660324c3626f72bd946ec40704f0f3fc8e243c623f76e24b3eee2",
+      "probe": "ok",
+      "reason": null
+    },
+    "backend": {
+      "resolved": "batch",
+      "source": "flag",
+      "requested": "batch"
+    }
+  },
+  "coverage": {
+    "corners_simulated": 1,
+    "measurements_declared": 1,
+    "measurements_with_limits": 0,
+    "unrecognized_limit_keys": [],
+    "schema_version": 1,
+    "known": true,
+    "checked": [
+      "measurement:[0,\"mos_ff__res_wcs__cap_typ__va49631b35601/novdd/-40C\",\"liveness_vout\"]/observation"
+    ],
+    "skipped": [],
+    "inapplicable": [
+      {
+        "id": "measurement:[0,\"mos_ff__res_wcs__cap_typ__va49631b35601/novdd/-40C\",\"liveness_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      }
+    ],
+    "unknown": [],
+    "nothing_checked": false,
+    "nothing_checked_reasons": []
+  },
+  "provenance": {
+    "klt_version": "0.9.3.dev3808+g1ad4a837f657",
+    "klt_git_commit": "1ad4a837f6577813bc367c29a0b948c0bff66fda",
+    "klt_reinstall_spec": "klayout-tools @ git+https://github.com/2AMLogic/klayout-tools@1ad4a837f6577813bc367c29a0b948c0bff66fda",
+    "klayout_version": "0.30.12",
+    "pdk": null,
+    "deck": {
+      "name": "corners.lib",
+      "content_hash": "sha256:09618abffb87bc414045284c2ed1ba5d6938f658f26d37fb8110f246d76d602c",
+      "released": false
+    },
+    "input": {
+      "content_hash": "sha256:f992a15534c18c8d908a27d20c9e4f3bc9468a5bcae0b60121605174fdcf0525",
+      "role": "netlist"
+    }
+  },
+  "measurements": [
+    {
+      "name": "liveness_vout",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "mos_ff__res_wcs__cap_typ__va49631b35601/novdd/-40C",
+        "value": 2.0,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "mos_ff__res_wcs__cap_typ__va49631b35601/novdd/-40C",
+        "value": 2.0
+      },
+      "max": {
+        "corner_id": "mos_ff__res_wcs__cap_typ__va49631b35601/novdd/-40C",
+        "value": 2.0
+      }
+    }
+  ],
+  "corners": [
+    {
+      "corner_id": "mos_ff__res_wcs__cap_typ__va49631b35601/novdd/-40C",
+      "process": "mos_ff__res_wcs__cap_typ__va49631b35601",
+      "supply_v": {},
+      "temperature_c": -40,
+      "status": "pass",
+      "runtime_s": 0.27,
+      "peak_rss_bytes": 50262016,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "liveness_vout",
+          "value": 2.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/tmp/loom-nt/65483158410c426d/ldo-cmos5l-ccprobe.Tf9zsK/g00_loopgain_ccprobe_dyn_ff_-40c_rwcs_i50000ua_c330nf_e0mohm_cc0.5x/artifacts/mos_ff__res_wcs__cap_typ__va49631b35601_novdd_n40C/ngspice.log",
+        "raw": "/tmp/loom-nt/65483158410c426d/ldo-cmos5l-ccprobe.Tf9zsK/g00_loopgain_ccprobe_dyn_ff_-40c_rwcs_i50000ua_c330nf_e0mohm_cc0.5x/artifacts/mos_ff__res_wcs__cap_typ__va49631b35601_novdd_n40C/waveform.raw",
+        "waveform": "/tmp/loom-nt/65483158410c426d/ldo-cmos5l-ccprobe.Tf9zsK/g00_loopgain_ccprobe_dyn_ff_-40c_rwcs_i50000ua_c330nf_e0mohm_cc0.5x/artifacts/mos_ff__res_wcs__cap_typ__va49631b35601_novdd_n40C/waveform.raw.json",
+        "deck": "/tmp/loom-nt/65483158410c426d/ldo-cmos5l-ccprobe.Tf9zsK/g00_loopgain_ccprobe_dyn_ff_-40c_rwcs_i50000ua_c330nf_e0mohm_cc0.5x/artifacts/mos_ff__res_wcs__cap_typ__va49631b35601_novdd_n40C/corner.cir"
+      },
+      "monte_carlo": null
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "warning",
+      "code": "model_bin_range_preflight",
+      "message": "preflight: instance 'XMpass' (sg13_hv_pmos) has w=2800u, at/above the ~100 um per-instance width bin range some PDKs enforce (keyed on w as written; nf= does not widen it); ngspice may abort with \"could not find a valid modelname\". Use m= to parallel smaller-width instances (see issue #4976)",
+      "instance": "XMpass",
+      "model": "sg13_hv_pmos",
+      "w_um": 2800.0,
+      "nf": 1.0
+    }
+  ]
+}
