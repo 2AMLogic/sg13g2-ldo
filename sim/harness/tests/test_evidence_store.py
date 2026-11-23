@@ -409,6 +409,55 @@ class EntrySchema(unittest.TestCase):
         e["producer"]["commit"] = "0" * 40
         self.assertIsNone(es._entry_problem(e))
 
+    def test_non_string_media_type_rejected(self):
+        # Issue #334: the checker refuses a present non-string media_type;
+        # the writer had no check at all.
+        for bad in (5, None, True, ["application/json"]):
+            e = self.entry()
+            e["media_type"] = bad
+            with self.subTest(bad=bad):
+                self.assertIn("media_type must be a string", es._entry_problem(e))
+
+    def test_size_must_be_a_strict_positive_integer(self):
+        # Issue #334: size=True sailed through put_files' (sha, size)
+        # byte-match because True == 1, while CI's checker refused it.
+        for bad in (True, False, "1", 1.0, 0, -1, None):
+            e = self.entry()
+            e["size"] = bad
+            with self.subTest(bad=bad):
+                self.assertIn("size must be a positive integer",
+                              es._entry_problem(e))
+        e = self.entry()
+        e["size"] = 1
+        self.assertIsNone(es._entry_problem(e))
+
+    def test_uri_key_repo_must_match_producer_loom_repo(self):
+        e = self.entry()
+        e["uri"] = f"artifact:evidence/other__repo/{e['sha256'][:2]}/{e['sha256']}"
+        self.assertIn("different repo", es._entry_problem(e))
+
+    def test_uri_key_must_be_evidence_owner_name_shaped(self):
+        sha = "a" * 64
+        cases = ("bare sha256",
+                 "no owner__name segment",
+                 "wrong top segment",
+                 "two __ in the repo segment")
+        keys = (sha,
+                f"{sha[:2]}/{sha}",
+                f"docs/owner__repo/{sha[:2]}/{sha}",
+                f"evidence/owner__a__b/{sha[:2]}/{sha}")
+        for label, key in zip(cases, keys):
+            with self.subTest(case=label):
+                e = self.entry()
+                e["uri"] = f"artifact:{key}"
+                self.assertIn("uri key is not evidence/<owner>__<name>",
+                              es._entry_problem(e))
+
+    def test_uri_key_extra_segments_between_repo_and_sha_accepted(self):
+        e = self.entry()
+        e["uri"] = f"artifact:evidence/owner__repo/x/{e['sha256'][:2]}/{e['sha256']}"
+        self.assertIsNone(es._entry_problem(e))
+
 
 class SchemaAgreement(unittest.TestCase):
     """Issue #251 item 3: the writer's field tuples are pinned to the CI
@@ -435,9 +484,10 @@ class SchemaAgreement(unittest.TestCase):
     def test_refusals_agree(self):
         """Issue #326 (operator ruling, option a): the implementations stay
         independent, and a manifest the CI checker refuses is refused by
-        the writer too -- producer values by ``_entry_problem``, duplicate
+        the writer too -- producer values, media_type type, uri-key repo
+        consistency and strict size by ``_entry_problem`` (#334), duplicate
         names by ``put_files`` through ``fake_klt`` -- while the valid
-        manifest is accepted by both."""
+        manifest is accepted by both, with and without ``media_type``."""
         data = b"x"
         sha = hashlib.sha256(data).hexdigest()
         entry = {"sha256": sha, "size": len(data), "kind": "evidence",
@@ -477,12 +527,44 @@ class SchemaAgreement(unittest.TestCase):
 
         mutations = [
             ("none (valid)", lambda m: None),
+            ("valid with string media_type",
+             lambda m: m["entries"][0].update(media_type="application/json")),
             ("empty producer.version",
              lambda m: m["entries"][0]["producer"].update(version="")),
             ("non-string producer.commit",
              lambda m: m["entries"][0]["producer"].update(commit=7)),
             ("duplicate entry name",
              lambda m: m["entries"].append(dict(m["entries"][0]))),
+            # Issue #334: three checker-only refusals, mirrored into
+            # _entry_problem. size=True was the worst of them: put_files'
+            # (sha, size) byte-match compared True == 1 and passed.
+            ("non-string media_type",
+             lambda m: m["entries"][0].update(media_type=5)),
+            ("uri key naming a different repo than producer.loom.repo",
+             lambda m: m["entries"][0].update(
+                 uri=f"artifact:evidence/other__repo/{sha[:2]}/{sha}")),
+            ("uri key not evidence/<owner>__<name>/ shaped",
+             lambda m: m["entries"][0].update(
+                 uri=f"artifact:evidence/{sha[:2]}/{sha}")),
+            ("bool size", lambda m: m["entries"][0].update(size=True)),
+            ("non-int size", lambda m: m["entries"][0].update(size="1")),
+            # Boundaries that already agree, pinned so they stay that way:
+            # these are refused by put_files' own checks (byte-match, the
+            # staged-name set, the manifest shape), not by _entry_problem.
+            ("zero size", lambda m: m["entries"][0].update(size=0)),
+            ("non-canonical name",
+             lambda m: m["entries"][0].update(name="sim/b/../b/records/r1.json")),
+            ("missing name", lambda m: m["entries"][0].pop("name")),
+            # Issue #345: a non-string name used to reach put_files' by_name
+            # hash (list/dict -> TypeError) instead of a StoreError.
+            ("list name", lambda m: m["entries"][0].update(name=[])),
+            ("dict name", lambda m: m["entries"][0].update(name={})),
+            ("int name", lambda m: m["entries"][0].update(name=5)),
+            ("null name", lambda m: m["entries"][0].update(name=None)),
+            ("schema_version 2", lambda m: m.update(schema_version=2)),
+            ("uri key with extra segments between repo and sha",
+             lambda m: m["entries"][0].update(
+                 uri=f"artifact:evidence/owner__repo/x/{sha[:2]}/{sha}")),
         ]
         for label, mutate in mutations:
             with self.subTest(mutation=label):
