@@ -283,11 +283,7 @@ jobs:
       # is this job, which is why those commands are NOT marked `local_only`:
       # `local_only` would make --check skip them and carry the committed
       # outcome through, and the point is for CI to fail on drift.
-      - name: Install klayout-tools at the pinned release (for the item 1 attest gate)
-        run: |
-          pip install "klayout-tools==${KLAYOUT_TOOLS_VERSION}"
-          klt --version
-
+      # It uses the pinned release installed once, at the top of this job.
       - name: klt signoff --attest 1 --check (design sources + per-cell netlist freshness)
         env:
           PDK_ROOT: ${{ github.workspace }}/klayout-tools/pdks/ihp-open-pdk
@@ -769,6 +765,16 @@ jobs:
         # byte-compares, so the committed record cannot drift from its data
         # (same pattern as #135's and #155's record byte-checks).
         run: python3 sim/ldo-cmos5l-pvt-sweep/e1_oppoints.py check --record 20261012-115531-cfa681f9
+
+      - name: E4 record byte-check (e4_divider_cc.py check, issue #315)
+        # Offline, stdlib-only: no simulator and no PDK. Regenerates the E4
+        # reduction CSV/JSON and record md from the committed raw exports and
+        # fleet provenance and byte-compares, and re-proves from that provenance
+        # that every deck simulated the overridden design-netlist copy (closure
+        # digest == a fresh re-derivation of the override) with its models
+        # loaded -- so the committed record cannot drift from its data (same
+        # pattern as E1's byte-check above).
+        run: python3 sim/ldo-cmos5l-pvt-sweep/e4_divider_cc.py check --record 20261123-104938-7e756eb7
 
       - name: Disabled-state supply current read-out reproduces the DR-0008 numbers (#133)
         # Offline, stdlib-only: no simulator and no PDK. Runs startup_offstate.py
