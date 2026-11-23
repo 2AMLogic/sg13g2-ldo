@@ -55,3 +55,12 @@ python3 sim/ldo-cmos5l-startup-ramp/ramp_campaign.py submit  --rid <RID>
 python3 sim/ldo-cmos5l-startup-ramp/ramp_campaign.py collect --rid <RID>
 python3 sim/ldo-cmos5l-startup-ramp/ramp_campaign.py clauses --rid <RID>
 ```
+
+## Result (record `20261123-212501-9e332bb0`): REJECT
+
+7 of 7 points evaluated on the batch fleet (runner klt 0.9.0, ngspice 47). `Vsg(Mpass)` max 0.80-1.51 V
+(clause c holds), start peaks 1.834-1.839 V, but clauses (a), (b) and (d) fail; see
+`records/20261123-212501-9e332bb0-startup-ramp.clauses.md` and the DR-0020 addendum. First attempt
+`20261123-212200-433395a5` (all corners `osdi_load_failed`: the deck-side OSDI preamble conflicts with
+the runner's `osdi_preload`, see closed klayout-tools#5766) is kept as evidence under
+`startup/20261123-212200-433395a5/ramp/{plan,envelope}.json`; the driver now writes an empty preamble.

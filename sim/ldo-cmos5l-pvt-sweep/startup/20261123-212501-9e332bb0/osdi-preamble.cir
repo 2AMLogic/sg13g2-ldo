@@ -1,0 +1,2 @@
+* intentionally empty: OSDI binaries are loaded by the runner from
+* options.osdi_preload (a deck-side pre_osdi preamble conflicts, #5766).
