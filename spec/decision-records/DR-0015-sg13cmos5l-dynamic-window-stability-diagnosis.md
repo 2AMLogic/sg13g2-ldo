@@ -725,3 +725,163 @@ post-change margin is predicted. The (B) family stays "recommended
 follow-up subject", now with its central premise (`r_o` collapse at 0 mA)
 measured instead of inferred. E2/E3/E4 remain open experiments of the
 brief.
+
+## Addendum: E4 divider/Cc probe at point P5 (issue #315)
+
+**Status impact: none.** This record stays **Proposed**; the family
+ranking, the Disposition and every spec-row state above are unchanged.
+This addendum reports what experiment E4 -- the divider/`Cc` probe this
+record's follow-up brief prices at P5 conditions (`R_div` ∈ {1×, 0.5×} ×
+`Cc` ∈ {1×, 0.65×}) -- measured, and reads it against the Disposition's
+derived tension *using this record's own falsifier*. It authorizes no
+compensation change and decides nothing; the row-wording question the
+Disposition routes to the existing two-key process is not started here.
+
+- **Record of evidence**:
+  `sim/ldo-cmos5l-pvt-sweep/records/20261123-104938-7e756eb7.e4.md`
+  (reduction `…​.e4.csv`, raw exports and fleet provenance under
+  `sim/ldo-cmos5l-pvt-sweep/corners/20261123-104938-7e756eb7/`; override
+  contract and reducer `e4_divider_cc.py`, negative controls
+  `test_e4_divider_cc.py`, campaign `run_e4.sh`). Twelve batch-fleet
+  requests (three benches × four points -- the loop-gain and PSRR benches
+  plus the E1 operating-point bench, because the brief asks for the
+  *measured* divider current, DC `VOUT` and `Iq`), runner klt 0.9.0 /
+  ngspice-47. **Every run shows loaded models**: the runner's preload of
+  the six staged OSDI binaries is verified by sha256 for every job and no
+  log carries `osdi_load_failed`. Both knobs were testbench-local
+  substitutions on a copy of the design netlist; the committed netlists are
+  byte-unchanged (the 1×/1× copy equals the committed bytes), and the
+  worker's own closure digest for every copy equals a fresh re-derivation
+  of the override -- the substituted lines are proven to be the ones the
+  simulator read, in the `.include`d copy and in the flattened/replica
+  divider lines the loop-gain and E1 benches carry in their own text.
+- **Vintage (explicit, per the brief's reconciliation requirement)**: E4
+  ran on the design netlist as committed at `7e756eb7` (sha256
+  `08a7b857…`, byte-identical to the records above) and the current PDK
+  pin `f7bca326…`. The 1×/1× point against the committed P5 result:
+
+  | | `f_ug` [Hz] | PM [°] | GM [dB] | PSRR@1 kHz [dB] | notch bottom [dB] @ [Hz] |
+  |---|---:|---:|---:|---:|---|
+  | E4 1×/1× (today's fleet) | 1 103.8 | 16.04 | 64.13 (ambiguous) | 43.72 | 41.67 @ 1 122 |
+  | same-vintage `…-142dac4a` trace | 1 051.9 | 17.61 | 64.26 (ambiguous) | 43.55 | 43.31 @ 1 122 |
+  | this record's table row P5 (`…-6df50fd`, old pin) | 1 052 | 17.61 | 64.26 (ambiguous) | 43.55 | — |
+
+  The two committed references agree to the printed digits; the E4 delta
+  (+52 Hz, −1.57°, +0.17 dB, notch −1.6 dB) is a **model-input vintage
+  effect**, identified from the run's own provenance: of the 21 model
+  inputs the worker loaded, 5 differ from the submitting host's staged
+  copies (`cornerMOShv.lib`, `cornerRES.lib`, `cornerCAP.lib`,
+  `sg13g2_moshv_mod{,_mismatch}.lib`) -- the same worker-side resolution the
+  2026-11-20 OSDI replay (#313) measured at P3 and reported upstream. The
+  six OSDI binaries match by content. The four E4 points share one fleet
+  vintage, so every in-run comparison below is like-for-like; the baseline
+  delta is not a circuit difference.
+
+### What was measured (P5: ss / 125 °C / res_wcs, 0 mA, 3.45 µF, 0 mΩ)
+
+| `R_div` | `Cc` | `f_ug` [Hz] | 0 dB crossings | PM first [°] (DR-0014) | GM [dB] (DR-0014) | \|L(1 kHz)\| [dB] | PSRR@1 kHz / @100 kHz [dB] | notch bottom [dB] @ [Hz] (× `f_ug`) | `I_div` [µA] | `R_div` [kΩ] | `VOUT` [V] | `Iq` [µA] |
+|---|---|---:|---:|---|---|---:|---|---|---:|---:|---:|---:|
+| 1× | 1× | 1 103.8 | 1 | 16.04 **fail** | 64.13 ambiguous | 1.67 | 43.72 / 91.75 | 41.67 @ 1 122 (1.02) | 3.150 | 571.6 | 1.800400 | 23.02 |
+| 1× | 0.65× | 1 359.3 | 1 | 18.30 **fail** | 61.12 ambiguous | 5.08 | **51.80** / 91.76 | 44.75 @ 1 413 (1.04) | 3.150 | 571.6 | 1.800400 | 23.02 |
+| 0.5× | 1× | 1 558.9 | 2 | 11.17 **fail** | 65.84 ambiguous | 7.62 | 49.21 / 85.93 | 35.71 @ 1 585 (1.02) | 6.054 | 297.4 | 1.800385 | 25.97 |
+| 0.5× | 0.65× | 1 928.6 | 2 | 11.66 **fail** | 63.86 ambiguous | 11.19 | **54.70** / 85.93 | 38.21 @ 1 995 (1.03) | 6.054 | 297.4 | 1.800385 | 25.97 |
+
+`I_div` is measured two ways (the E1 bench's replica ammeter and the pass
+device's drain current at 0 mA; the KCL check ties them to 0.3 %). `rhigh`
+resistance does not scale linearly with `l`: halving both legs' length
+moved `R_div` to **0.520×** and the divider current to ×1.92 -- measured,
+not assumed. The divider ratio is preserved: `V(FB)/VOUT` = 0.4999993 at
+all four points and DC `VOUT` moved **−15 µV** between the 1× and 0.5×
+points (the E1 bench's existing regulation band is 1.7–1.9 V). The second
+0 dB crossing at the 0.5× points is a *rising* high-frequency re-entry at
+84.6 MHz (the loop floor at 100 MHz rises from −0.51 dB to +1.09 dB with
+the lighter divider); DR-0014 reads its per-crossing margin as +121°, the
+PM verdict is set by the first crossing (`in_band_crossing_below_bound`),
+and the ceiling stays unbounded at all four points -- GM `ambiguous`
+exactly as at the committed P5.
+
+### The two levers, read against this record's own lever arithmetic
+
+1. **`f_ug` scaling -- CONFIRMED quantitatively.** The class-3 mechanism's
+   `f_ug`(0 mA) ∝ 1/√(`R_div`·`Cout`·`Cc`) holds at P5 to within 2 %: 0.5×
+   `R_div` → ×1.412 (predicted 1/√0.52 = 1.39; 1/√0.5 = 1.41), 0.65× `Cc`
+   → ×1.232 (1/√0.65 = 1.24), both → ×1.75 (product 1.72).
+2. **The divider lever (family (C)'s recorded trim) -- CONFIRMED
+   insufficient for class 3, with the mechanism now measured.** The (C)
+   arithmetic above said: +2.47 µA, "the same ×1.41 `f_ug` and ~2–4 dB of
+   PSRR@1 kHz -- insufficient alone", and cited the committed row at
+   1 559 Hz still missing at 49.39 dB. Measured: +2.95 µA (`Iq` 23.02 →
+   25.97 µA), ×1.41 `f_ug`, +5.5 dB → **49.21 dB at 1 559 Hz** -- the
+   committed row reproduced to 0.2 dB. New: **the notch bottom drops
+   6.0 dB** (41.67 → 35.71 dB). The lighter divider loads `VOUT` harder at
+   0 mA and lowers the feedthrough floor, which is *why* ×1.41 `f_ug` buys
+   only +5.5 dB rather than the ~+10 dB a fixed floor would give. For
+   class 3 the divider trim is the wrong direction: it costs `Iq`, lowers
+   the floor, lifts the HF loop floor above 0 dB, and still misses row 6.
+3. **The `Cc` lever (family (A)'s lower edge) -- the record's "×0.31
+   needed" estimate is REFINED at P5.** Family (A) above derived that
+   clearing the notch needs ×1.79, "i.e. `Cc` ≈ ×0.31 -- more than 2× below
+   the measured window's lower edge". Measured at P5: `Cc` ×0.65 **alone**
+   lifts `f_ug` ×1.23 to 1 359 Hz and PSRR@1 kHz +8.1 dB to **51.80 dB** --
+   above row 6 -- at the window's lower edge, not below it. The
+   difference from the derived estimate is the floor: the scaling argument
+   treated the 38–43 dB notch bottom as fixed, and E4 measures it *rising
+   3.1 dB* as `Cc` shrinks (41.67 → 44.75 dB), so less `f_ug` is needed
+   than the Disposition's "≈ 1.6 kHz" (at P5: 1.36 kHz suffices). Both
+   0.65× points meet row 6 at P5 (51.80 and 54.70 dB) with `Iq` and `VOUT`
+   unchanged against their 1× twins.
+
+### Reading against this record's own falsifier
+
+"What would overturn parts of this" names *E4 measuring a materially
+higher PSRR notch bottom than the bracketed 38–43 dB* as what weakens or
+dissolves the class-3 tension. Measured notch bottoms at P5: 41.67 /
+44.75 / 35.71 / 38.21 dB. The highest (44.75 dB, `Cc` 0.65×) sits 1.4 dB
+above the bracket's top -- less than the 1.6 dB vintage spread this run
+measures at the same point -- and the divider lever lowers it. **Not
+materially higher: the class-3 tension's mechanism is CONFIRMED** -- the
+zero-load feedthrough floor is real, sits at ≈ 36–45 dB at P5, and
+neither knob lifts it materially.
+
+What the probe does discriminate (its stated purpose -- the floor's value
+"sets how far above `f_ug` ≈ 1.6 kHz the crossover must sit"): the floor is
+**knob-dependent, not a constant** -- −6.0 dB at 0.5× `R_div`, +3.1 dB at
+0.65× `Cc`. With that measured, the Disposition's derived tension at P5
+reads: rows 3, 6 and 7 **are jointly satisfiable** at `Cc` ×0.65 -- `VOUT`
+unchanged, PSRR@1 kHz 51.80 dB, `Iq` 23.02 µA -- and row 10 fails at all
+four points (11.2°–18.3°) exactly as it fails at the committed design
+(class 1, which E4 does not address). So at P5 the joint tension does not
+stand on class 3: it stands on row 10 (classes 1/2) and on the 1 mA
+window edge that `Cc` ×0.65 sits on. **Scope of this reading**: P5 only;
+the 4.7 µF / 896 Hz point the ×0.31 scaling argument was made for is not
+measured, and E4 is a 0 mA AC/DC probe with no 1 mA phase-margin
+measurement of its own.
+
+### Smallest circuit change the data points to (a candidate, not a decision)
+
+The Miller cap's width, `XCc` 170e-6 → 110.5e-6 (×0.65): a device resize,
+no topology change, DC-invariant (E4: `Iq` and `VOUT` identical at both
+`Cc` values), zero `Iq` cost -- **as the class-3 trim carried INTO the
+family-(B) screen, not as a standalone remedy**. At ×0.65, DR-0005's
+measured 1 mA phase margin is 45.15° at `res_bcs`/125 °C -- 0.15° of
+margin, the window's lower edge (44.99° at 109e-6 fails) -- so the trim
+spends the entire `Cc` tolerance DR-0005 centred the design on, and is
+admissible only together with a class-1/2 remedy that re-opens the 1 mA
+window at that `Cc` (family (A) above already ranks `Rz`/`Cc` retuning as
+"a trim inside family B"; E4 locates the trim). The divider resize is
+**not** pointed to (lever 2 above). The (B) prototype screen should carry
+`Cc` ∈ {1×, 0.65×} as an axis, so the class-1/2 remedy is measured at the
+`Cc` the class-3 trim needs. Caveats, stated as such: DR-0005's window
+edges were measured at the old pin on a pre-#89 design and this run shows
+today's worker vintage moves PM by −1.6° at P5 -- the 1 mA edge must be
+re-measured before any trim is adopted, and no post-change margin is
+claimed here.
+
+### What this addendum does not do
+
+No spec row, threshold, gate, record or verdict is changed; DR-0007 rows
+3, 6, 7 and 10 keep their states and targets; DR-0014's classifications
+are untouched; no compensation candidate is ratified and no post-change
+margin is predicted; the family ranking and the Disposition's text stand
+as written, with this addendum as measurement against them. `sim/` stays
+append-only. E2 and E3 remain open experiments of the brief.
