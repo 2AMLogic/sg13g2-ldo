@@ -883,6 +883,21 @@ jobs:
             exit 1
           fi
 
+      - name: Row-7 envelope tests through klt's real grader (#317; a skip fails the job)
+        # test_row7_envelope.py's two negative controls that push values through
+        # klayout_tools.sim._grade_measurement_value are skipUnless the pinned
+        # klt imports. The stdlib-only characterization-report job runs the same
+        # file without klt, so there they skip; this job installs the pinned klt
+        # above, so they must execute here. A skip is a red job, not an
+        # invisible pass.
+        run: |
+          python3 -m unittest discover -s sim/ldo-cmos5l-pvt-sweep -p 'test_row7_envelope.py' -v 2>&1 | tee /tmp/row7-unittest.log
+          test "${PIPESTATUS[0]}" -eq 0
+          if grep -Eq 'skipped' /tmp/row7-unittest.log; then
+            echo "::error::row-7 envelope tests skipped; the pinned klayout-tools must import so the real-grader negative controls run"
+            exit 1
+          fi
+
       - name: Committed klt yield verdicts reproduce (re-run klt yield)
         run: python3 sim/ldo-cmos5l-monte-carlo/check_yield_verdicts.py
 
