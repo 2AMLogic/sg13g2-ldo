@@ -145,6 +145,23 @@ class SpecTableTests(unittest.TestCase):
         with self.assertRaises(G.GenError):
             G.parse_readme(bad)
 
+    def test_proposed_status_is_third_state_not_ratified(self):
+        # A row the keys have not released yet reads PROPOSED, never RATIFIED:
+        # it must parse, and it must not count as ratified.
+        proposed = [r for r in G.parse_readme(self.readme)
+                    if r["ratification"] == "proposed_pending_keys"]
+        self.assertEqual(len(proposed), 3)
+        ratified = [r for r in G.parse_readme(self.readme)
+                    if r["ratification"] == "ratified"]
+        self.assertEqual([r["id"] for r in ratified], [4])
+
+    def test_dr7_proposed_disposition_is_not_ratified(self):
+        dr = G.parse_dr7((REPO / "spec/decision-records/DR-0007-target-spec-row-ratification.md").read_text(encoding="utf-8"))
+        self.assertEqual([n for n in sorted(dr) if dr[n]["state"] == "ratified"], [4])
+        self.assertEqual([n for n in sorted(dr) if dr[n]["state"] == "proposed_pending_keys"], [2, 5, 7])
+        # the qualifier is what distinguishes it; a bare "Ratified as written" is ratified
+        self.assertIn("proposed", dr[2]["disposition"])
+
     def test_dr7_parses_all_rows_once(self):
         dr = G.parse_dr7((REPO / "spec/decision-records/DR-0007-target-spec-row-ratification.md").read_text(encoding="utf-8"))
         self.assertEqual(sorted(dr), list(range(1, 11)))
@@ -170,7 +187,10 @@ class GeneratedReportTests(unittest.TestCase):
         self.assertEqual(v[9], "fail")              # measured startup failures, not an absence claim
         self.assertEqual(v[10], "ambiguous")        # DR-0014: no committed trace bounds the sweep ceiling
         self.assertEqual(self.rows[4]["ratification"]["state"], "ratified")
-        self.assertEqual(self.rows[2]["ratification"]["state"], "open_unratified")
+        self.assertEqual(self.rows[2]["ratification"]["state"], "proposed_pending_keys")
+        self.assertEqual(self.report["summary"]["ratified_rows"], [4])
+        self.assertEqual(self.report["summary"]["proposed_pending_keys_rows"], [2, 5, 7])
+        self.assertNotIn(2, self.report["summary"]["open_unratified_rows"])
 
     def test_row9_reports_measured_startup_failures(self):
         r = self.rows[9]
@@ -239,7 +259,7 @@ class GeneratedReportTests(unittest.TestCase):
         self.assertIn("observed solver sensitivity", fl["note"].lower())
         self.assertNotIn("noise bound", fl["note"].lower())
         self.assertIn("NOT used", fl["note"])
-        self.assertEqual(self.rows[7]["ratification"]["state"], "open_unratified")
+        self.assertEqual(self.rows[7]["ratification"]["state"], "proposed_pending_keys")
         self.assertEqual(self.rows[7]["coverage"]["state"], "full")
         self.assertEqual(self.rows[7]["verdict"], "pass_full_coverage")
         notes = " ".join(self.rows[7]["notes"])
@@ -262,7 +282,7 @@ class GeneratedReportTests(unittest.TestCase):
         # #89 record; the #67 record had 0.0228481926.
         self.assertAlmostEqual(w["value"], 0.0228476479, places=8)
         self.assertIn("legacy", [n for n in ms][0])
-        self.assertEqual(self.rows[5]["ratification"]["state"], "open_unratified")
+        self.assertEqual(self.rows[5]["ratification"]["state"], "proposed_pending_keys")
         self.assertEqual(self.rows[5]["verdict"], "pass_partial_coverage")
         self.assertEqual(self.rows[5]["coverage"]["state"], "partial")
         self.assertTrue(any("not continuous coverage" in g for g in self.rows[5]["coverage"]["gaps"]))

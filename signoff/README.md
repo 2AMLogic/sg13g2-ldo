@@ -54,7 +54,8 @@ Per item:
 
   **What `met` means, and what it does not.** The grader proves that the envelope is declared for this item, names exact bytes, that those bytes re-hash to the pinned value, and that nothing was edited since. For items 1, 9 and 10 the envelope's `status` is additionally **derived from checks the tool ran** — a stale netlist, a cold start that no longer starts, or a failing audit command yields `status: fail`, exit 3 and *no envelope written*, so a failing check cannot be committed as a pass. Three things the attestation still does not do, which `signoff/evidence_inventory.py check` therefore still gates in CI ahead of grading (stdlib only, no PDK, with `signoff/test_evidence_inventory.py` negative controls): (a) **completeness** — `--attest` attests exactly the paths its inventory lists, so a new testbench under `sim/`, or a new file under `design/sg13cmos5l/`, that nobody inventoried would be silently unattested; the completeness globs are re-checked against each committed inventory's own path lists, and so is the #246 pairing rule (a pinned non-test `*.py` whose sibling `test_<name>.py` exists on disk must be pinned too); (b) **content checks beyond existence** — each experiment README naming its cold-start entry point, a negative-control request being inventoried, the Apache-2.0 LICENSE text, the root README's title, and CI still carrying every signoff gate (the grader, this audit and all three `--attest … --check` steps, each matched by its own inventory filename so a dropped step cannot hide behind another's); (c) **item 2 in full** — inventory, envelope and manifest pin, plus the GDSII HEADER-record check. Limits unchanged: no attestation here regenerates or inspects the GDS beyond its first record (DRC/LVS/ERC are items 3/4/11), measures anything, or judges design quality. No spec performance or whole-block T1 claim is made. The grader alone does **not** see an inventoried file's content edit — only the attest `--check` does, which is why it gates CI ahead of grading. Editing an inventoried file means re-running the item's `--attest` (items 1/9/10) or `python3 signoff/evidence_inventory.py write` (item 2).
 
-- **unmet — item 5 (`partial_coverage`; cited, 1 of 10 spec rows covered, #55)**:
+- **unmet — item 5 (`partial_coverage`; cited, 1 of 10 spec rows covered, #55;
+  rows 5 and 7 additionally cited against unratified targets, #318)**:
   `sim/ldo-cmos5l-pvt-sweep/row4-envelope/20261116-080410-7ade0c8f/report.json`,
   a **graded `klt sim` corner-matrix envelope** for the one ratified spec row
   (DR-0007 row 4, dropout @ 50 mA < 300 mV worst corner), pinned by
@@ -71,6 +72,28 @@ Per item:
   not move. This is the whole point of citing it: the honest state is
   "one ratified row verified by the tool, nine rows Open", and that is now a
   machine-checked statement in the report instead of prose in this file.
+  - **The #318 additions (2026-11-24): two more graded envelopes, cited
+    against rows the keys have not released.** The item-5 citation list now
+    also carries
+    `sim/ldo-cmos5l-pvt-sweep/row7-envelope/20261121-001957-ed6b0587/report.json`
+    (`rows: ["dr0007-row7-iq"]`, #317) and
+    `sim/ldo-cmos5l-pvt-sweep/row5-envelope/20261123-213711-06bd6576/report.json`
+    (`rows: ["dr0007-row5-line-load-regulation"]`, #319), each pinned the
+    same way (sha256 of the record's `tb.spice`, re-hashed by the grader).
+    Both grade `met` (45/45 corners, tool-computed verdicts, row coverage
+    `derived` from the envelopes' own `spec_row` tags), and both rows keep
+    `ratified: false` in `spec_rows["5"]`, so the grader moves them out of
+    `detail.uncovered_rows` and lists them under `detail.unratified_rows`
+    instead — exactly the item-6 pattern row 2 already follows (evidence
+    against a proposed limit is provisional). Measured before/after at the
+    pinned 0.9.2 build: `t1_met_count` stays 8, item 5 stays
+    `unmet` / `partial_coverage`, `unratified_rows` stays nine entries
+    (row 4 leaves it never having been in it; rows 2, 5, 7 remain), and
+    `uncovered_rows` drops from nine to seven. The citations exist so that
+    when the two keys and the operator ratify rows 5 and 7 (DR-0007
+    "Proposal note (2026-11-24)", #318), the graded evidence is already
+    pinned; flipping the `ratified` flags is the only edit that ratification
+    will need.
   - **What makes it an envelope rather than a measurement run.** The request
     declares the ratified requirement as `limits`, so the per-corner `status`
     and the matrix `status: pass` are `klt sim`'s own verdict, computed on the
@@ -191,7 +214,7 @@ T1 item 6 covers **every** statistical row of the target spec. DR-0007 classifie
 
 | Row | Ratification | Monte Carlo evidence | Status for item 6 |
 |---|---|---|---|
-| 2 — Output 1.8 V ±2 % | **Open** (unratified) | `sim/ldo-cmos5l-monte-carlo/` (issue #56): SG13CMOS5L, regulator-only accuracy (ideal 0.90 V reference, reference error excluded), Vin 3.30 V, no load. PDK MOS + `rhigh` mismatch at five process/temperature corners, N = 400 each, fixed seeds, deterministic negative control, per-population `klt yield` reports. Results are in that experiment's record. | **Cited** (#225) — evidence against a **proposed** window, not a ratified one; the grader lists the row under `unratified_rows` covered or not |
+| 2 — Output 1.8 V ±2 % | **Proposed — pending keys** (DR-0007 "Proposal note (2026-11-24)", #318) | `sim/ldo-cmos5l-monte-carlo/` (issue #56): SG13CMOS5L, regulator-only accuracy (ideal 0.90 V reference, reference error excluded), Vin 3.30 V, no load. PDK MOS + `rhigh` mismatch at five process/temperature corners, N = 400 each, fixed seeds, deterministic negative control, per-population `klt yield` reports. Results are in that experiment's record. | **Cited** (#225) — evidence against a **proposed** window, not a ratified one; the grader lists the row under `unratified_rows` covered or not |
 | 8 — Current limit 65–80 mA | **Open** | none: no limiter is integrated in the core yet (#164 implements DR-0017, #190 integrates it) | **Declared a `gap`**, not "no statistical row" |
 
 **What is cited (issue #225).** The manifest declares `spec_rows["6"]` — the

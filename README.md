@@ -48,25 +48,29 @@ The SG13G2 DRC/LVS deck in klayout-tools is a recently shipped starter deck.
 Part of this canary's job is to find what it cannot check yet and file those
 gaps upstream — never to route around them.
 
-## Target specification (1 of 10 rows ratified; 9 open)
+## Target specification (1 of 10 rows ratified; 3 proposed pending keys; 6 open)
 
 Port parity: the targets below mirror the ratified gf180-ldo spec — same
 block, third PDK. Row-by-row ratification is recorded in [DR-0007](spec/decision-records/DR-0007-target-spec-row-ratification.md).
 **One row is ratified:** dropout @ 50 mA, by the two independent non-author
 review verdicts (`RATIFY-KEY: ee`, `RATIFY-KEY: market`) on pull request
-#65. Every other row is *OPEN* (unratified; missing evidence named in the
-record). An OPEN row is not a passing requirement. No target value was
-changed by the record.
+#65. Rows 2, 5 and 7 are *PROPOSED* to the two keys ("Ratified as written
+(proposed — pending keys)", DR-0007 "Proposal note (2026-11-24)", #318); a
+proposed row is exactly as unratified as an open one until both keys post
+releasing verdicts on that PR and the operator ratifies. Every other row is
+*OPEN* (unratified; missing evidence named in the
+record). An OPEN or PROPOSED row is not a passing requirement. No target
+value was changed by the record.
 
 | Parameter | Target | Stretch | Status ([DR-0007](spec/decision-records/DR-0007-target-spec-row-ratification.md)) |
 |---|---|---|---|
 | Input | 3.3 V ±10% — confirm against SG13G2 device flavors | — | OPEN — unratified (current-limit \|Vsg\| gate from DR-0001) |
-| Output | 1.8 V ±2% (fixed) | programmable variants deferred | OPEN — unratified (statistical; Monte Carlo missing) |
+| Output | 1.8 V ±2% (fixed) | programmable variants deferred | PROPOSED — pending keys (Monte Carlo record `20261012-093854-934dbd7`: 2000/2000 draws in window, ≥ 99.08 % at 95 % CI per population; regulator-only scope wording proposed with it — reference error excluded; not ratified) |
 | Load | 0–50 mA (no external preload assumed) | 100 mA | OPEN — unratified (no 0 mA dynamic evidence) |
 | Dropout @ 50 mA | < 300 mV worst corner | < 200 mV | RATIFIED as a shared target (stretch not ratified); branch compliance differs — see the row 4 branch note below |
-| Line / load regulation | < 5 mV/V; < 1% over full load, inside the accuracy window | — | OPEN — unratified (informational loaded line / multi-Vin load regulation measured at discrete points; not ratified) |
+| Line / load regulation | < 5 mV/V; < 1% over full load, inside the accuracy window | — | PROPOSED — pending keys (graded `klt sim` envelope `20261123-213711-06bd6576`: 45/45 corners, worst line 0.2438 mV/V, worst load 0.0241 %; ideal reference, discrete sampling only, row-2 coupling not demonstrated; not ratified) |
 | PSRR | > 50 dB @ 1 kHz, > 20 dB @ 100 kHz | > 60 dB @ 1 kHz | OPEN — unratified (1 mA / 1 µF only; `Cc` un-cornered) |
-| Iq (excluding load) | < 30 µA at no load and at full load | < 10 µA | OPEN — unratified (graded `klt sim` envelope at both loads over the input window, #317; not ratified) |
+| Iq (excluding load) | < 30 µA at no load and at full load | < 10 µA | PROPOSED — pending keys (graded `klt sim` envelope `20261121-001957-ed6b0587`: 45/45 corners at both loads over the input window, worst 24.6675 µA full load; #190 limiter adds ≈ 3–4 µA tail worst-case per DR-0017, ≈ 28–29 µA summed, evidence goes stale on integration; not ratified) |
 | Current limit | 65–80 mA brickwall over PVT; short-survivable | — | OPEN — unratified (not implemented; statistical) |
 | Startup | monotonic, controlled ramp, inside ±2% within 3 ms of enable | — | OPEN — unratified (measured on the SG13CMOS5L core with proposed methodology: all 135 grid points fail the overshoot / monotonicity checks; not ratified) |
 | Stability | 0–50 mA, C_out 0.33–4.7 µF effective, ESR 0–500 mΩ; PM ≥ 45°, GM ≥ 10 dB worst corner | capless variant (separate fork) | OPEN — unratified (one load/C_out/ESR point only) |

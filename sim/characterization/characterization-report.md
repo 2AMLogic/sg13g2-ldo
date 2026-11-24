@@ -31,7 +31,7 @@
 | dc_informational_summary_csv | `sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/dc-informational-summary.csv` | `e6e16b6107569201961f8daac844a3d356f44d81a43cbe77e56c9d01ed279641` | yes |
 | design_netlist_freshness | `design/sg13cmos5l/netlist/ldo_core_cmos5l.spice` | `08a7b857e1fad43dd7af1f575de97853a058e85541601ecc47567fbc28dbae57` | yes |
 | design_netlist_freshness | `design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice` | `75ee39ce0c48b54cab6c8a31acd1f199c37c1ccd1ac074a3515dee81cc656fb4` | yes |
-| ratification_record | `spec/decision-records/DR-0007-target-spec-row-ratification.md` | `74496ee0800de6de36ff2f045796a7c2f802f6d647439255df5a8c8e69451556` | recorded |
+| ratification_record | `spec/decision-records/DR-0007-target-spec-row-ratification.md` | `68e355d6db79ce0aa8480f61e0b2ea2d31274424f0f7b950f0ea6148d7d59bbc` | recorded |
 | row10_classification_csv | `sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/row10-margins.csv` | `59f7ef734078ded1fadb74460674cccb0685b2369c867c873bb4a331e375d17f` | yes |
 | row10_classification_json | `sim/ldo-cmos5l-pvt-sweep/evidence/20261011-070111-5391c68/row10-margins.json` | `5b41ddab09eb2db87e9abe55fd5cd9757742020db35405b62a36733d0818ae9e` | yes |
 | row10_classifier_source | `sim/ldo-cmos5l-pvt-sweep/ac_metrics.py` | `6e96859b839bcb19aaa702eb20a593bfc8914b7b388a8783298e416e65fefd5e` | yes |
@@ -61,19 +61,19 @@
 | startup_manifest_json | `sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.manifest.json` | `3ec537f955f03dbd081870a068d01825106a886cd0f5ac0698289932cf5a7c95` | yes |
 | startup_record_md | `sim/ldo-cmos5l-pvt-sweep/records/20261011-070146-0c95530-startup-grid.md` | `908c108fd44b729846b51c0d9a75b35daf3dee4d7bc4c9fab3f091d8a06b307c` | yes |
 | superseded_evidence_statement | `sim/ldo-cmos5l-pvt-sweep/README.md` | `52646917accd3c2758bf3b385abeaa2af478ead9b98cab277b2140bda55d66c3` | recorded |
-| target_table | `README.md` | `8c3f388fe415a54e8ef38d5641d04cc3e845d0c8bf039b828ab817cfb5a77fd3` | recorded |
+| target_table | `README.md` | `787bdc42caec44440f99d597fa2618e4aacb6d9760fa22af7f9b444690aaba7d` | recorded |
 
 ## Per-row summary
 
 | # | Parameter | Target | Ratification | Verdict | Coverage | Evidence |
 |---|---|---|---|---|---|---|
 | 1 | Input | 3.3 V ±10% — confirm against SG13G2 device flavors | open_unratified (deterministic) | **not_measured** | none | bare_device_only |
-| 2 | Output | 1.8 V ±2% (fixed) | open_unratified (statistical) | **pass_partial_coverage** | partial | current |
+| 2 | Output | 1.8 V ±2% (fixed) | proposed_pending_keys (statistical) | **pass_partial_coverage** | partial | current |
 | 3 | Load | 0–50 mA (no external preload assumed) | open_unratified (deterministic) | **pass_partial_coverage** | partial | current |
 | 4 | Dropout @ 50 mA | < 300 mV worst corner | ratified (deterministic) | **pass_full_coverage** | full | current |
-| 5 | Line / load regulation | < 5 mV/V; < 1% over full load, inside the accuracy window | open_unratified (deterministic) | **pass_partial_coverage** | partial | current |
+| 5 | Line / load regulation | < 5 mV/V; < 1% over full load, inside the accuracy window | proposed_pending_keys (deterministic) | **pass_partial_coverage** | partial | current |
 | 6 | PSRR | > 50 dB @ 1 kHz, > 20 dB @ 100 kHz | open_unratified (deterministic) | **pass_partial_coverage** | partial | current |
-| 7 | Iq (excluding load) | < 30 µA at no load and at full load | open_unratified (deterministic) | **pass_full_coverage** | full | current |
+| 7 | Iq (excluding load) | < 30 µA at no load and at full load | proposed_pending_keys (deterministic) | **pass_full_coverage** | full | current |
 | 8 | Current limit | 65–80 mA brickwall over PVT; short-survivable | open_unratified (statistical) | **not_implemented** | none | none |
 | 9 | Startup | monotonic, controlled ramp, inside ±2% within 3 ms of enable | open_unratified (deterministic) | **fail** | partial | current |
 | 10 | Stability | 0–50 mA, C_out 0.33–4.7 µF effective, ESR 0–500 mΩ; PM ≥ 45°, GM ≥ 10 dB worst corner | open_unratified (deterministic) | **ambiguous** | partial | current |
@@ -97,7 +97,7 @@ Verdict key: `pass_*` = measured metrics meet the bound at the stated conditions
 ### 2. Output -- pass_partial_coverage
 
 - Target: 1.8 V ±2% (fixed); stretch: programmable variants deferred
-- Ratification: open_unratified (README: OPEN — unratified (statistical; Monte Carlo missing); DR-0007: Open, statistical)
+- Ratification: proposed_pending_keys (README: PROPOSED — pending keys (Monte Carlo record `20261012-093854-934dbd7`: 2000/2000 draws in window, ≥ 99.08 % at 95 % CI per population; regulator-only scope wording proposed with it — reference error excluded; not ratified); DR-0007: Ratified as written (proposed — pending keys), statistical)
 - Stretch: programmable variants deferred; no evidence
 - Coverage of the row as written: partial. Gaps:
   - corner grid only: error-amp offset and divider mismatch are statistical and unexercised (Monte Carlo missing, #56)
@@ -148,7 +148,7 @@ Verdict key: `pass_*` = measured metrics meet the bound at the stated conditions
 ### 5. Line / load regulation -- pass_partial_coverage
 
 - Target: < 5 mV/V; < 1% over full load, inside the accuracy window; stretch: —
-- Ratification: open_unratified (README: OPEN — unratified (informational loaded line / multi-Vin load regulation measured at discrete points; not ratified); DR-0007: Open, deterministic)
+- Ratification: proposed_pending_keys (README: PROPOSED — pending keys (graded `klt sim` envelope `20261123-213711-06bd6576`: 45/45 corners, worst line 0.2438 mV/V, worst load 0.0241 %; ideal reference, discrete sampling only, row-2 coupling not demonstrated; not ratified); DR-0007: Ratified as written (proposed — pending keys), deterministic)
 - Coverage of the row as written: partial. Gaps:
   - line regulation sampled at 5 discrete loads (0, 12.5, 25, 37.5, 50 mA) over Vin 2.97-3.63 V; load regulation sampled at 3 discrete supplies (2.97, 3.30, 3.63 V) -- not continuous coverage of the window
   - 'inside the accuracy window' (coupling with the statistical VOUT row, #56) not covered for either metric
@@ -243,7 +243,7 @@ Verdict key: `pass_*` = measured metrics meet the bound at the stated conditions
 ### 7. Iq (excluding load) -- pass_full_coverage
 
 - Target: < 30 µA at no load and at full load; stretch: < 10 µA
-- Ratification: open_unratified (README: OPEN — unratified (graded `klt sim` envelope at both loads over the input window, #317; not ratified); DR-0007: Open, deterministic)
+- Ratification: proposed_pending_keys (README: PROPOSED — pending keys (graded `klt sim` envelope `20261121-001957-ed6b0587`: 45/45 corners at both loads over the input window, worst 24.6675 µA full load; #190 limiter adds ≈ 3–4 µA tail worst-case per DR-0017, ≈ 28–29 µA summed, evidence goes stale on integration; not ratified); DR-0007: Ratified as written (proposed — pending keys), deterministic)
 - Stretch: stretch < 10 uA not met: max observed no-load Iq 24.72 uA, max graded no-load 24.5 uA, max graded full-load 24.67 uA.
 - Note: ideal 0.90 V reference: no on-chip reference-generator current is included
 - Note: ideal 2 uA IBIAS sink: no on-chip bias-generator current is included (the sunk 2 uA itself flows through the core and IS included)

@@ -77,7 +77,7 @@
     {
       "role": "ratification_record",
       "path": "spec/decision-records/DR-0007-target-spec-row-ratification.md",
-      "sha256": "74496ee0800de6de36ff2f045796a7c2f802f6d647439255df5a8c8e69451556",
+      "sha256": "68e355d6db79ce0aa8480f61e0b2ea2d31274424f0f7b950f0ea6148d7d59bbc",
       "pinned": false
     },
     {
@@ -257,7 +257,7 @@
     {
       "role": "target_table",
       "path": "README.md",
-      "sha256": "8c3f388fe415a54e8ef38d5641d04cc3e845d0c8bf039b828ab817cfb5a77fd3",
+      "sha256": "787bdc42caec44440f99d597fa2618e4aacb6d9760fa22af7f9b444690aaba7d",
       "pinned": false
     }
   ],
@@ -365,9 +365,9 @@
       "target": "1.8 V ±2% (fixed)",
       "stretch": "programmable variants deferred",
       "ratification": {
-        "state": "open_unratified",
-        "readme_status": "OPEN — unratified (statistical; Monte Carlo missing)",
-        "dr0007_disposition": "Open",
+        "state": "proposed_pending_keys",
+        "readme_status": "PROPOSED — pending keys (Monte Carlo record `20261012-093854-934dbd7`: 2000/2000 draws in window, ≥ 99.08 % at 95 % CI per population; regulator-only scope wording proposed with it — reference error excluded; not ratified)",
+        "dr0007_disposition": "Ratified as written (proposed — pending keys)",
         "dr0007_type": "statistical",
         "record": "spec/decision-records/DR-0007-target-spec-row-ratification.md"
       },
@@ -600,9 +600,9 @@
       "target": "< 5 mV/V; < 1% over full load, inside the accuracy window",
       "stretch": "—",
       "ratification": {
-        "state": "open_unratified",
-        "readme_status": "OPEN — unratified (informational loaded line / multi-Vin load regulation measured at discrete points; not ratified)",
-        "dr0007_disposition": "Open",
+        "state": "proposed_pending_keys",
+        "readme_status": "PROPOSED — pending keys (graded `klt sim` envelope `20261123-213711-06bd6576`: 45/45 corners, worst line 0.2438 mV/V, worst load 0.0241 %; ideal reference, discrete sampling only, row-2 coupling not demonstrated; not ratified)",
+        "dr0007_disposition": "Ratified as written (proposed — pending keys)",
         "dr0007_type": "deterministic",
         "record": "spec/decision-records/DR-0007-target-spec-row-ratification.md"
       },
@@ -1081,9 +1081,9 @@
       "target": "< 30 µA at no load and at full load",
       "stretch": "< 10 µA",
       "ratification": {
-        "state": "open_unratified",
-        "readme_status": "OPEN — unratified (graded `klt sim` envelope at both loads over the input window, #317; not ratified)",
-        "dr0007_disposition": "Open",
+        "state": "proposed_pending_keys",
+        "readme_status": "PROPOSED — pending keys (graded `klt sim` envelope `20261121-001957-ed6b0587`: 45/45 corners at both loads over the input window, worst 24.6675 µA full load; #190 limiter adds ≈ 3–4 µA tail worst-case per DR-0017, ≈ 28–29 µA summed, evidence goes stale on integration; not ratified)",
+        "dr0007_disposition": "Ratified as written (proposed — pending keys)",
         "dr0007_type": "deterministic",
         "record": "spec/decision-records/DR-0007-target-spec-row-ratification.md"
       },
@@ -2270,14 +2270,16 @@
     ],
     "open_unratified_rows": [
       1,
-      2,
       3,
-      5,
       6,
-      7,
       8,
       9,
       10
+    ],
+    "proposed_pending_keys_rows": [
+      2,
+      5,
+      7
     ],
     "rows_with_any_coverage_gap": [
       1,
