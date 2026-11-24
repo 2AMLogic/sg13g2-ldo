@@ -698,20 +698,20 @@ class NegativeControls(unittest.TestCase):
 
     # --- row-7 graded envelope negative controls (issue #317) --------------
 
-    def r7_report(self):
-        sel = json.loads((self.tmp / "sim/characterization/selection.json").read_text())
-        entry = sel["row7_envelope_evidence"]["files"]["report_json"]
-        return self.tmp / entry["path"], entry
-
-    def rewrite_r7_report(self, mutate):
-        path, entry = self.r7_report()
+    def rewrite_envelope(self, sel_key, file_key, mutate):
+        """Mutate one pinned envelope file and re-pin it in selection.json."""
+        selp = self.tmp / "sim/characterization/selection.json"
+        sel = json.loads(selp.read_text())
+        entry = sel[sel_key]["files"][file_key]
+        path = self.tmp / entry["path"]
         doc = json.loads(path.read_text())
         mutate(doc)
         path.write_text(json.dumps(doc, indent=1) + "\n")
-        selp = self.tmp / "sim/characterization/selection.json"
-        sel = json.loads(selp.read_text())
-        sel["row7_envelope_evidence"]["files"]["report_json"]["sha256"] = G.sha256_file(path)
+        entry["sha256"] = G.sha256_file(path)
         selp.write_text(json.dumps(sel))
+
+    def rewrite_r7_report(self, mutate):
+        self.rewrite_envelope("row7_envelope_evidence", "report_json", mutate)
 
     def test_r7_envelope_value_tamper_breaks_the_summary_agreement(self):
         # Repin the report with one graded value bumped: the pinned summary's
@@ -746,18 +746,33 @@ class NegativeControls(unittest.TestCase):
         self.assertIn("disagrees with the legacy iq_a", err)
 
     def test_r7_envelope_dropped_spec_row_tag_is_rejected(self):
-        selp = self.tmp / "sim/characterization/selection.json"
-        sel = json.loads(selp.read_text())
-        entry = sel["row7_envelope_evidence"]["files"]["request_json"]
-        path = self.tmp / entry["path"]
-        req = json.loads(path.read_text())
-        req["measurements"][0].pop("spec_row")
-        path.write_text(json.dumps(req, indent=1) + "\n")
-        entry["sha256"] = G.sha256_file(path)
-        selp.write_text(json.dumps(sel))
+        self.rewrite_envelope("row7_envelope_evidence", "request_json",
+                              lambda doc: doc["measurements"][0].pop("spec_row"))
         rc, _, err = run_main("--root", str(self.tmp))
         self.assertEqual(rc, 1)
         self.assertIn("spec_row", err)
+
+    def test_r7_envelope_probe_record_is_rejected(self):
+        self.rewrite_envelope("row7_envelope_evidence", "provenance_json",
+                              lambda doc: doc.update(probe=True))
+        rc, _, err = run_main("--root", str(self.tmp))
+        self.assertEqual(rc, 1)
+        self.assertIn("a probe is never citable", err)
+
+    def test_r7_envelope_non_derived_measurement_is_rejected(self):
+        self.rewrite_envelope("row7_envelope_evidence", "request_json",
+                              lambda doc: doc["measurements"][0].pop("expr"))
+        rc, _, err = run_main("--root", str(self.tmp))
+        self.assertEqual(rc, 1)
+        self.assertIn("not a derived expr", err)
+
+    def test_r7_envelope_unechoed_solver_tolerances_are_rejected(self):
+        self.rewrite_envelope("row7_envelope_evidence", "report_json",
+                              lambda doc: doc["environment"].update(
+                                  ngspice_options={"reltol": 1e-3, "abstol": 1e-9}))
+        rc, _, err = run_main("--root", str(self.tmp))
+        self.assertEqual(rc, 1)
+        self.assertIn("does not echo them", err)
 
     def test_r7_envelope_design_drift_fails_completeness_not_a_crash(self):
         # Design drift: make the envelope's recorded pin AND the selection's
@@ -766,10 +781,6 @@ class NegativeControls(unittest.TestCase):
         # gate first). Not a pin/tamper problem, so the run completes and the
         # artifact honestly fails its completeness check (stale against the
         # design), like the circuit record's own staleness path.
-        # not a pin/tamper problem, so the artifact is still produced, but it
-        # honestly fails its completeness check (stale against the design) and
-        # the envelope goes to status:fail / exit 1, like the circuit record's
-        # own staleness path.
         selp = self.tmp / "sim/characterization/selection.json"
         sel = json.loads(selp.read_text())
         core = "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice"
@@ -796,15 +807,7 @@ class NegativeControls(unittest.TestCase):
     # --- row-5 graded envelope negative controls (issue #319) --------------
 
     def rewrite_r5(self, key, mutate):
-        selp = self.tmp / "sim/characterization/selection.json"
-        sel = json.loads(selp.read_text())
-        entry = sel["row5_envelope_evidence"]["files"][key]
-        path = self.tmp / entry["path"]
-        doc = json.loads(path.read_text())
-        mutate(doc)
-        path.write_text(json.dumps(doc, indent=1) + "\n")
-        entry["sha256"] = G.sha256_file(path)
-        selp.write_text(json.dumps(sel))
+        self.rewrite_envelope("row5_envelope_evidence", key, mutate)
 
     def r5_set(self, name, value, cid="mos_tt__res_typ__cap_typ/novdd/-40C"):
         def f(doc):
