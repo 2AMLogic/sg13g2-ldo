@@ -794,5 +794,36 @@ class EsrDeck(unittest.TestCase):
             shutil.rmtree(tmp)
 
 
+class BaselineComparisonBlock(unittest.TestCase):
+    """run_loopgain2.sh's single-point ctl-vs-baseline heredoc, run for real
+    against the committed record (#362: it once called the deleted
+    loopgain2._sha16 and aborted after the batch run, before writing
+    ctl-vs-baseline.json)."""
+    RID = "20261124-002001-3a6eccf3"
+
+    def test_single_point_comparison_reproduces_committed_json(self):
+        import subprocess
+        with open(os.path.join(HERE, "run_loopgain2.sh"), encoding="utf-8") as fh:
+            lines = fh.read().splitlines()
+        start = next(i for i, l in enumerate(lines) if "trace_sha256_16" in l)
+        while "<<'PYEOF'" not in lines[start]:
+            start -= 1
+        end = next(i for i in range(start + 1, len(lines)) if lines[i] == "PYEOF")
+        body = "\n".join(lines[start + 1:end]) + "\n"
+        tmp = tempfile.mkdtemp()
+        try:
+            out = os.path.join(tmp, "cmp.json")
+            subprocess.run(
+                [sys.executable, "-", HERE, os.path.join(HERE, "corners", self.RID), out,
+                 "50 mA, 0.33 uF, 0 ohm, --only-point=ff_-40c_rwcs",
+                 '{"op":{"load_ua":50000,"cout_nf":330,"esr_mohm":0}}'],
+                input=body, text=True, check=True, capture_output=True)
+            with open(out, encoding="utf-8") as fh, open(os.path.join(
+                    HERE, "evidence", self.RID, "ctl-vs-baseline.json"), encoding="utf-8") as ref:
+                self.assertEqual(fh.read(), ref.read())
+        finally:
+            shutil.rmtree(tmp)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -563,9 +563,11 @@ python3 - "${SCRIPT_DIR}" "${CORNERS_OUT}" "${BASELINE_CMP_JSON}" \
   "${OP_DISPLAY}${ONLY_POINT:+, --only-point=${ONLY_POINT}}" "${OP_JSON}" <<'PYEOF'
 import glob, json, os, sys
 sys.path.insert(0, sys.argv[1])
+sys.path.insert(0, os.path.join(sys.argv[1], "..", "tools"))
 import ac_metrics as am
 import dynamic_doe as dyn
 import loopgain2 as lg2
+from file_hash import sha256_file  # the one sha256-file helper (#362)
 
 script_dir, corners_dir, out_json, why, op_json = sys.argv[1:6]
 op = json.loads(op_json)["op"]
@@ -591,7 +593,7 @@ if len(sfx) == 1:
         doc["reference"] = {
             "record": os.path.basename(os.path.dirname(ref)),
             "trace": os.path.relpath(ref, script_dir),
-            "trace_sha256_16": lg2._sha16(ref),
+            "trace_sha256_16": sha256_file(ref, 16),
             # None when either trace has no such crossing: informational
             # context must never abort a completed fleet run.
             "dpm_deg": lg2.metric_delta(m1, m2, "phase_margin_deg"),

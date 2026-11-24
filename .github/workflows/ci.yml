@@ -681,6 +681,13 @@ jobs:
         # move" gate, re-proven every push.
         run: python3 -m unittest discover -s sim/tools -p 'test_render_deck.py' -v
 
+      - name: Shared sha256-file helper tests (equivalence vs the pre-#362 hand-rolled copies; no PDK / no simulator)
+        # Issue #362: sim/tools/file_hash.py is the one file-digest helper
+        # the sweep/campaign drivers call for their producer pins. Its tests
+        # freeze the pre-#362 hand-rolled copies' digests as oracles, so the
+        # consolidation stays behaviour-identical -- re-proven every push.
+        run: python3 -m unittest discover -s sim/tools -p 'test_file_hash.py' -v
+
       - name: Test-main-guard checker unit tests (fixtures + negative controls; offline)
         # Issue #247: unit tests for sim/tools/check_test_main_guard.py in
         # the same temp-git-repo shape as test_check_append_only.py.

@@ -109,7 +109,6 @@ import argparse
 import cmath
 import csv
 import glob
-import hashlib
 import json
 import math
 import os
@@ -833,11 +832,6 @@ def campaign_facts(rid, sim_dir=HERE):
         raise Loopgain2Error(f"{path}: not a JSON object")
     facts.update({k: doc[k] for k in CAMPAIGN_DEFAULTS if k in doc})
     return facts, True
-
-
-def _sha16(path):
-    with open(path, "rb") as fh:
-        return hashlib.sha256(fh.read()).hexdigest()[:16]
 
 
 def _read_env(path):

@@ -33,7 +33,6 @@ import argparse
 import concurrent.futures
 import csv
 import gzip
-import hashlib
 import json
 import math
 import os
@@ -48,6 +47,7 @@ sys.path.insert(0, os.path.join(HERE, "..", "tools"))
 import batch_backend as bb  # noqa: E402
 import render_deck  # noqa: E402
 import startup_eval as se  # noqa: E402
+from file_hash import sha256_file  # noqa: E402 -- the one sha256-file helper (#362)
 
 TEMPLATE = os.path.join(HERE, "testbench", "tb_startup_cmos5l.spice.tmpl")
 DESIGN = os.path.join(REPO, "design", "sg13cmos5l", "netlist", "ldo_core_cmos5l.spice")
@@ -366,14 +366,6 @@ def cmd_submit(a):
 
 
 # ---- collect ---------------------------------------------------------------
-def sha256_file(path):
-    h = hashlib.sha256()
-    with open(path, "rb") as f:
-        for blk in iter(lambda: f.read(1 << 20), b""):
-            h.update(blk)
-    return h.hexdigest()
-
-
 def trace_from_raw(path):
     names, data, cplx, command = bb.read_raw(path)
     if cplx:

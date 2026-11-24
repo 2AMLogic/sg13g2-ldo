@@ -63,7 +63,6 @@ the expected, explainable outcome of the vintage change.
 """
 import argparse
 import csv
-import hashlib
 import json
 import math
 import os
@@ -72,8 +71,10 @@ import tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
+sys.path.insert(0, os.path.join(HERE, "..", "tools"))
 
 import ac_metrics as am  # noqa: E402
+from file_hash import sha256_file  # noqa: E402 -- the one sha256-file helper (#362)
 
 BENCH = "loopgain_ccprobe"
 SUFFIX = "_ac.csv"
@@ -213,11 +214,6 @@ METRIC_KEYS = ("unity_gain_freq_hz", "phase_margin_deg",
                "phase_margin_worst_deg", "gain_margin_db", "n_0db_crossings")
 
 
-def _sha256_16(path):
-    with open(path, "rb") as fh:
-        return hashlib.sha256(fh.read()).hexdigest()[:16]
-
-
 def _trace_db_series(path):
     """(freqs, dbs) of a loop-gain wrdata trace; None if unreadable."""
     try:
@@ -248,7 +244,7 @@ def _read_baseline(which, sim_dir=HERE):
     path = os.path.join(sim_dir, meta["trace"])
     if not os.path.isfile(path):
         raise RuntimeError(f"committed baseline trace missing: {path}")
-    got = _sha256_16(path)
+    got = sha256_file(path, 16)
     if got != meta["trace_sha256_16"]:
         raise RuntimeError(
             f"committed baseline trace {path} sha256/16 {got} != pinned "
