@@ -156,7 +156,8 @@ def config(record_id, record_sha256):
             raise rm.Row10Error(f"{record_id} already has a wrapper evidence dir")
     return dict(base, record_id=record_id,
                 record_csv=f"{rm.SIM}/records/{record_id}.loopgain2.csv",
-                record_sha256=record_sha256, conditions=conditions_for(record_id))
+                record_sha256=record_sha256, conditions=conditions_for(record_id),
+                rows=expected_points_for(record_id))
 
 
 def _mapped_rows(record_csv):

@@ -612,5 +612,48 @@ class CampaignFacts(unittest.TestCase):
             shutil.rmtree(tmp)
 
 
+class InvalidPointCapture(unittest.TestCase):
+    """issue #218: a point that fails TOL_LF_AGREE still reports its measured
+    numbers, the verbatim error and a quantitative cause analysis, with
+    valid=False -- a record must state what was measured and why it is
+    uncertified, not silently drop the point. The comparison CSV keeps the
+    legacy schema exactly (no new columns)."""
+
+    def test_lf_failure_is_recorded_not_dropped(self):
+        import argparse
+        tmp = tempfile.mkdtemp()
+        try:
+            ctl, v, i = write_exports(tmp, dict(UNILATERAL, Rg=3e5))
+            d = os.path.join(tmp, "corners")
+            os.makedirs(d)
+            for src, name in ((ctl, "loopgain_ctl_tt_27c_rtyp_ac.csv"),
+                              (v, "loopgain2v_tt_27c_rtyp_ac.csv"),
+                              (i, "loopgain2i_tt_27c_rtyp_ac.csv")):
+                shutil.copy(src, os.path.join(d, name))
+            out_csv, out_json = os.path.join(tmp, "cmp.csv"), os.path.join(tmp, "cmp.json")
+            combined = os.path.join(tmp, "combined")
+            os.makedirs(combined)
+            rc = lg2.cmd_report(argparse.Namespace(corners_dir=d, ceiling="1e10",
+                                                   out_csv=out_csv, out_json=out_json),
+                                out_dir=combined)
+            self.assertEqual(rc, 1)
+            doc = json.load(open(out_json))
+            row = doc["rows"][0]
+            self.assertFalse(row["valid"])
+            self.assertIn("low-frequency agreement", row["lg2_validation_error"])
+            self.assertIsNotNone(row["lg2_phase_margin_deg"])
+            self.assertIsNotNone(row["ctl_phase_margin_deg"])
+            analysis = row["lf_agreement_analysis"]
+            self.assertIsNotNone(analysis)
+            self.assertGreater(analysis["worst_rel"], lg2.TOL_LF_AGREE)
+            self.assertLess(analysis["deck_identity_residual_below_band"],
+                            lg2.TOL_DECK_IDENTITY)
+            self.assertIn("analytic", analysis["conclusion"])
+            with open(out_csv) as fh:
+                self.assertEqual(fh.readline().strip().split(","), lg2.CSV_FIELDS)
+        finally:
+            shutil.rmtree(tmp)
+
+
 if __name__ == "__main__":
     unittest.main()

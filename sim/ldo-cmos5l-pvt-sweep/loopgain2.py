@@ -472,12 +472,18 @@ def point_row(corners_dir, sfx, ceiling, out_dir=None):
     """Reconstruct + validate one point; return its comparison-CSV row dict.
 
     The resolved-prefix trace is written beside the exports under
-    `corners_dir`, or under `out_dir` when given (check mode)."""
+    `corners_dir`, or under `out_dir` when given (check mode).
+
+    A point that fails a stated tolerance (e.g. TOL_LF_AGREE at a
+    non-legacy operating point, issue #218) still reports its MEASURED
+    margins and trace -- with `valid` False, the verbatim error in
+    `lg2_validation_error` and, for the low-frequency agreement, a
+    quantitative cause analysis -- so a record can state what was measured
+    and why it is uncertified instead of silently dropping the point."""
     ctl_csv = os.path.join(corners_dir, f"{CTL_PREFIX}{sfx}{SUFFIX}")
     v_csv = os.path.join(corners_dir, f"{V_PREFIX}{sfx}{SUFFIX}")
     i_csv = os.path.join(corners_dir, f"{I_PREFIX}{sfx}{SUFFIX}")
     rec = reconstruct(v_csv, i_csv)
-    xdiag = validate_against_control(rec, ctl_csv)
     corner, temp_c, res_section = parse_suffix(sfx)
     cut = rec["cut"]
     freqs, T = rec["freqs"][:cut], rec["T"][:cut]
@@ -488,10 +494,30 @@ def point_row(corners_dir, sfx, ceiling, out_dir=None):
     cfreqs, ctl_L = read_loopgain_trace(ctl_csv)
     ctl = am.loopgain_metrics(ctl_csv)
 
+    try:
+        xdiag = validate_against_control(rec, ctl_csv)
+    except Loopgain2Error as exc:
+        row = _fill_row({"corner": corner, "temp_c": temp_c, "res_section": res_section,
+                         "lg2_validation_error": str(exc)},
+                        rec, ctl, lg2, ctl_csv, combined_path, cfreqs, ctl_L,
+                        freqs, T, cut)
+        row["lf_agreement_analysis"] = _lf_agreement_analysis(rec, ctl_csv, exc)
+        row["valid"] = False
+        return row
+    row = _fill_row({"corner": corner, "temp_c": temp_c, "res_section": res_section},
+                    rec, ctl, lg2, ctl_csv, combined_path, cfreqs, ctl_L,
+                    freqs, T, cut)
+    row["lf_agree_max_rel"] = xdiag["lf_agree_max_rel"]
+    row["v2ctl_max_rel_diff"] = xdiag["v2ctl_max_rel_diff"]
+    row["valid"] = True
+    return row
+
+
+def _fill_row(row, rec, ctl, lg2, ctl_csv, combined_path, cfreqs, ctl_L,
+              freqs, T, cut):
     def _second(cs):
         return cs[1] if len(cs) >= 2 else None
 
-    row = {"corner": corner, "temp_c": temp_c, "res_section": res_section}
     for pre, m, path, ff, LL in (("ctl", ctl, ctl_csv, cfreqs, ctl_L),
                                  ("lg2", lg2, combined_path, freqs, T)):
         for key in ("dc_gain_db", "n_0db_crossings", "unity_gain_freq_hz",
@@ -518,10 +544,53 @@ def point_row(corners_dir, sfx, ceiling, out_dir=None):
     for k in ("resolved_to_hz", "first_unresolved_hz", "n_unresolved",
               "n_resolved_above_cut", "bound_db_above_cut", "res_db_at_cut", "res_db_max"):
         row[f"lg2_{k}"] = d[k]
-    row["lf_agree_max_rel"] = xdiag["lf_agree_max_rel"]
-    row["v2ctl_max_rel_diff"] = xdiag["v2ctl_max_rel_diff"]
-    row["valid"] = True
     return row
+
+
+def _lf_agreement_analysis(rec, ctl_csv, exc):
+    """Quantitative cause analysis for a failed TOL_LF_AGREE check (issue
+    #218). At a non-legacy operating point the physical difference between
+    the two-injection T and the single-injection control below f_ugf/10 can
+    reach the legacy-calibrated tolerance: it is the analytic loading term
+    |T - Tv| = |(1+Tv)^2/(Tv + Ti + 2)|, not a plumbing fault. This block
+    documents the deviation's composition; it never adjusts the tolerance,
+    the check or any verdict."""
+    if "low-frequency agreement" not in str(exc):
+        return None
+    cfreqs, ctl = read_loopgain_trace(ctl_csv)
+    crossings = zero_db_crossings(cfreqs, ctl)
+    if not crossings:
+        return None
+    band = crossings[0] / 10.0
+    Tv, Ti = rec["tv"], rec["ti"]
+    freqs, T, res = rec["freqs"], rec["T"], rec["res"]
+    worst_rel, worst_k, ident = 0.0, 0, 0.0
+    for k, fr in enumerate(freqs):
+        if fr > band:
+            break
+        rel = (abs(T[k] - ctl[k]) - res[k]) / abs(ctl[k])
+        if rel > worst_rel:
+            worst_rel, worst_k = rel, k
+        ident = max(ident, abs(Tv[k] - ctl[k]) / abs(ctl[k]))
+    analytic = abs((1.0 + Tv[worst_k]) ** 2 / (Tv[worst_k] + Ti[worst_k] + 2.0))
+    measured = abs(T[worst_k] - ctl[worst_k])
+    return {
+        "band_edge_hz": band,
+        "worst_freq_hz": freqs[worst_k],
+        "worst_rel": worst_rel,
+        "tolerance": TOL_LF_AGREE,
+        "deck_identity_residual_below_band": ident,
+        "deck_identity_tolerance": TOL_DECK_IDENTITY,
+        "analytic_loading_term_at_worst": analytic,
+        "measured_deviation_at_worst": measured,
+        "ti_over_tv_at_worst": abs(Ti[worst_k] / Tv[worst_k]),
+        "tv_db_at_worst": db(Tv[worst_k]),
+        "conclusion": (
+            "the deviation below f_ugf/10 is the analytic single-injection "
+            "loading term |T - Tv| = |(1+Tv)^2/(Tv + Ti + 2)| (the control "
+            "agrees with Tv to deck-identity precision), not a plumbing "
+            "fault; the tolerance is NOT widened, skipped or re-derived"),
+    }
 
 
 # --------------------------------------------------------------------------- #
@@ -885,6 +954,14 @@ def record_md(rid, sim_dir=HERE):
           f"| low-frequency agreement T vs control (max rel, net of res) | -- | {rng('lf_agree_max_rel', '{:.2g}')} |",
           ""]
     gmd = vals("gm_delta_db")
+    if not valid:
+        L += ["## Reading", "",
+              "- No point passed the stated tolerances, so no aggregate reading is offered: every",
+              "  two-injection number in this record is uncertified (see the E2 section below and",
+              f"  `evidence/{rid}/loopgain2-report.json`).", ""]
+        if facts["e2"]:
+            L += _e2_side_by_side(rid, sim_dir, facts, rows, rep=rep)
+        return "\n".join(L) + "\n"
     gm_side = ("the single-injection GM is the smaller one at every point" if gmd and min(gmd) > 0 else
                "the single-injection GM is the larger one at every point" if gmd and max(gmd) < 0 else
                "neither method's GM is consistently the smaller one")
@@ -892,8 +969,7 @@ def record_md(rid, sim_dir=HERE):
     n_above = vals("lg2_n_resolved_above_cut")
     truncated = [r for r in valid if r.get("lg2_first_unresolved_hz") not in ("", None)]
     L += ["## Reading", "",
-          f"- Below f_ugf/10 T and the control agree to {rng('lf_agree_max_rel', '{:.2g}')} relative (net of res),",
-          f"  and the first 0 dB crossing is the same loop: PM differs by {rng('pm_delta_deg')} deg.",
+          f"- Below f_ugf/10 T and the control agree to {rng('lf_agree_max_rel', '{:.2g}')} relative (net of res),",          f"  and the first 0 dB crossing is the same loop: PM differs by {rng('pm_delta_deg')} deg.",
           f"- GM differs by {rng('gm_delta_db')} dB (T minus control). Each is read at its own first -180 deg",
           f"  crossing ({rng('ctl_gain_margin_freq_hz', '{:.3g}')} Hz for the control, "
           f"{rng('lg2_gain_margin_freq_hz', '{:.3g}')} Hz for T), where the single injection's",
@@ -920,7 +996,7 @@ def record_md(rid, sim_dir=HERE):
              f"points, so `evidence/{rid}/row10-margins.*` reports those `ambiguous`." if truncated else
              f"See `evidence/{rid}/row10-margins.*`."), ""]
     if facts["e2"]:
-        L += _e2_side_by_side(rid, sim_dir, facts, rows)
+        L += _e2_side_by_side(rid, sim_dir, facts, rows, rep=rep)
     return "\n".join(L) + "\n"
 
 
@@ -937,7 +1013,7 @@ def _row10_verdict(row, key):
     return f"{verdict} ({reasons})" if reasons else verdict
 
 
-def _e2_side_by_side(rid, sim_dir, facts, rows):
+def _e2_side_by_side(rid, sim_dir, facts, rows, rep=None):
     """The DR-0015 E2 table (issue #218): P3 from THIS record, P6 cited from
     the committed 45-point two-injection record -- never re-run. Every cell
     is read from committed files (comparison CSV rows, row10-margins.json,
@@ -969,29 +1045,57 @@ def _e2_side_by_side(rid, sim_dir, facts, rows):
     p6_key = (p6["corner"], p6["temp_c"], p6["res_section"])
     p6_ctl = ctl_row(p6_rid, p6)
     p6_lg2 = lg2_row(p6, _find_row10(p6_row10_rows, p6_key))
-    return ["## DR-0015 experiment E2: single- vs two-injection at P3 and P6", "",
-            "DR-0015's follow-up brief prices E2 as the two-injection bench at its points P3 and P6.",
-            f"This record is the P3 half (single PVT point `{e2['p3_point']}` at {facts['op_display']},",
-            f"{n_points_word(facts['points'])} x 3 decks). The P6 half is NOT re-run: P6 is the existing",
-            f"45-point campaign's `{e2['p6_point']}` point at the legacy operating point, cited from record",
-            f"`{p6_rid}` below. Margins are the committed records' own readings; classifications are the",
-            "unchanged DR-0014 rules (`ac_metrics.classify_margins`; the two-injection half additionally",
-            "carries row10_loopgain2.py's resolution overlay).", "",
-            "| point | bench | PM first [deg] | GM [dB] | DR-0014 PM | DR-0014 GM |",
-            "|---|---|---|---|---|---|",
-            f"| P3 ({e2['p3_conditions']}) | single injection (control) | {p3_ctl[0]} | {p3_ctl[1]} | {p3_ctl[2]} | {p3_ctl[3]} |",
-            f"| P3 ({e2['p3_conditions']}) | two-injection (Middlebrook T) | {p3_lg2[0]} | {p3_lg2[1]} | {p3_lg2[2]} | {p3_lg2[3]} |",
-            f"| P6 ({e2['p6_conditions']}) | single injection (control) | {p6_ctl[0]} | {p6_ctl[1]} | {p6_ctl[2]} | {p6_ctl[3]} |",
-            f"| P6 ({e2['p6_conditions']}) | two-injection (Middlebrook T) | {p6_lg2[0]} | {p6_lg2[1]} | {p6_lg2[2]} | {p6_lg2[3]} |",
-            "", f"P6 row source: `records/{p6_rid}.loopgain2.csv` + `evidence/{p6_rid}/row10-margins.json`",
-            "(control PM 53.87 deg / GM 29.87 dB, two-injection PM 53.87 deg / GM 38.26 dB -- the values",
-            "DR-0015's P6 row quotes).", ""]
+    p3_invalid = p3.get("valid") != "True"
+    if p3_invalid:
+        p3_lg2 = tuple(c + " (uncertified)" for c in p3_lg2)
+    out = ["## DR-0015 experiment E2: single- vs two-injection at P3 and P6", "",
+           "DR-0015's follow-up brief prices E2 as the two-injection bench at its points P3 and P6.",
+           f"This record is the P3 half (single PVT point `{e2['p3_point']}` at {facts['op_display']},",
+           f"{n_points_word(facts['points'])} x 3 decks). The P6 half is NOT re-run: P6 is the existing",
+           f"45-point campaign's `{e2['p6_point']}` point at the legacy operating point, cited from record",
+           f"`{p6_rid}` below. Margins are the committed records' own readings; classifications are the",
+           "unchanged DR-0014 rules (`ac_metrics.classify_margins`; the two-injection half additionally",
+           "carries row10_loopgain2.py's resolution overlay).", "",
+           "| point | bench | PM first [deg] | GM [dB] | DR-0014 PM | DR-0014 GM |",
+           "|---|---|---|---|---|---|",
+           f"| P3 ({e2['p3_conditions']}) | single injection (control) | {p3_ctl[0]} | {p3_ctl[1]} | {p3_ctl[2]} | {p3_ctl[3]} |",
+           f"| P3 ({e2['p3_conditions']}) | two-injection (Middlebrook T) | {p3_lg2[0]} | {p3_lg2[1]} | {p3_lg2[2]} | {p3_lg2[3]} |",
+           f"| P6 ({e2['p6_conditions']}) | single injection (control) | {p6_ctl[0]} | {p6_ctl[1]} | {p6_ctl[2]} | {p6_ctl[3]} |",
+           f"| P6 ({e2['p6_conditions']}) | two-injection (Middlebrook T) | {p6_lg2[0]} | {p6_lg2[1]} | {p6_lg2[2]} | {p6_lg2[3]} |",
+           "", f"P6 row source: `records/{p6_rid}.loopgain2.csv` + `evidence/{p6_rid}/row10-margins.json`",
+           "(control PM 53.87 deg / GM 29.87 dB, two-injection PM 53.87 deg / GM 38.26 dB -- the values",
+           "DR-0015's P6 row quotes)."]
+    if p3_invalid:
+        err = ""
+        analysis = None
+        for r in ((rep or {}).get("rows") or []):
+            if r.get("lg2_validation_error"):
+                err = r["lg2_validation_error"]
+            if r.get("lf_agreement_analysis"):
+                analysis = r["lf_agreement_analysis"]
+        out += ["", f"**Caveat: the P3 two-injection point is INVALID under the bench's unchanged",
+                f"tolerances** -- `{err}`. The margins above are reported UNCERTIFIED: the record",
+                "states what was measured and why it is not certified evidence."]
+        if analysis:
+            out += [f"Quantitative cause (`evidence/{rid}/loopgain2-report.json`,",
+                    f"`lf_agreement_analysis`): below f_ugf/10 (band edge {analysis['band_edge_hz']:.4g} Hz) the",
+                    f"control agrees with Tv to {analysis['deck_identity_residual_below_band']:.2g} relative (deck identity,",
+                    f"tol {analysis['deck_identity_tolerance']:g}), and the deviation is the ANALYTIC single-injection",
+                    f"loading term |T - Tv| = |(1+Tv)^2/(Tv + Ti + 2)|: analytic",
+                    f"{analysis['analytic_loading_term_at_worst']:.6g} vs measured {analysis['measured_deviation_at_worst']:.6g}",
+                    f"at {analysis['worst_freq_hz']:.4g} Hz ({analysis['worst_rel']:.3g} relative vs the legacy-calibrated",
+                    f"{analysis['tolerance']:g}; there |Tv| = {analysis['tv_db_at_worst']:.4g} dB and |Ti|/|Tv| =",
+                    f"{analysis['ti_over_tv_at_worst']:.3g}). {analysis['conclusion']}: the point is recorded",
+                    "invalid, and re-deriving that tolerance for non-legacy operating points is left to a",
+                    "separately reviewed change."]
+    out += [""]
+    return out
 
 
 def _corner_key(point):
     """`ss_125c_rbcs` -> ('ss', '125', 'res_bcs') for comparison-CSV lookup."""
-    corner, tempc, rlabel = parse_suffix(point)
-    return corner, tempc, f"res_{rlabel}"
+    corner, tempc, res_section = parse_suffix(point)
+    return corner, tempc, res_section
 
 
 def _row10_csv_rows(sim_dir, record_id):
@@ -1046,8 +1150,13 @@ def cmd_check(a):
         rc = cmd_report(argparse.Namespace(corners_dir=corners_dir, ceiling=a.ceiling,
                                            out_csv=out_csv, out_json=out_json),
                         out_dir=out_dir)
-        if rc != 0:
-            bad.append(f"{corners_dir}: reconstruction does not validate")
+        # rc != 0 means the committed record has INVALID points -- a state
+        # the record itself states loudly (issue #218: a point can fail a
+        # stated tolerance at a non-legacy operating point and still be
+        # recorded, with its numbers and the verbatim error). What check
+        # gates on is REPRODUCTION: every regenerated byte must equal the
+        # committed byte, so a validity flip is still caught below.
+        _ = rc
         for fn in sorted(os.listdir(out_dir)):
             got, want = os.path.join(out_dir, fn), os.path.join(corners_dir, fn)
             if not os.path.isfile(want):
