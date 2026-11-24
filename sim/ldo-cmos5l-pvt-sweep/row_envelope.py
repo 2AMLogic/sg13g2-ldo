@@ -260,6 +260,43 @@ def f9(v):
     return "" if v is None else (f"{v:.9g}" if isinstance(v, float) else str(v))
 
 
+def summary_files(record_dir, slug, summarise_report, summary_md):
+    """(files, summ) for one record: the machine-readable `<slug>-envelope.json`
+    and the human `<slug>-envelope.md`, both derived purely from report.json +
+    provenance.json. The row supplies its own `summarise_report` / `summary_md`."""
+    report = json.load(open(os.path.join(record_dir, "report.json")))
+    prov = json.load(open(os.path.join(record_dir, "provenance.json")))
+    summ, points = summarise_report(report, prov)
+    return {
+        f"{slug}-envelope.json": json.dumps({"summary": summ, "points": points},
+                                            indent=1, sort_keys=True) + "\n",
+        f"{slug}-envelope.md": summary_md(summ, points, prov),
+    }, summ
+
+
+def summarise_cmd(a, root, summary_files_fn):
+    """The `summarise [--check]` subcommand. `root` is passed per call because
+    the tests rebind each row module's ROOT to a throwaway copy."""
+    record_dir = os.path.join(root, a.record_id)
+    if not os.path.isdir(record_dir):
+        raise Error(f"no such record: {record_dir}")
+    files, summ = summary_files_fn(record_dir)
+    bad = write_or_check(record_dir, files, check=a.check)
+    if bad:
+        raise Error("summary files stale or missing: " + ", ".join(bad))
+    print(json.dumps(summ, indent=1, sort_keys=True))
+    return 0
+
+
+def echoed_options_match(report, request):
+    """True iff the fleet report echoes, as `environment.ngspice_options`,
+    exactly the tolerances the request asked for.  The request is only an
+    ask; the report is what the engine says it ran."""
+    asked = (request.get("options") or {}).get("ngspice_options")
+    echoed = (report.get("environment") or {}).get("ngspice_options")
+    return asked is not None and echoed == asked
+
+
 # --------------------------------------------------------------------------- #
 # submit (the fleet run; one append-only record per invocation)
 # --------------------------------------------------------------------------- #

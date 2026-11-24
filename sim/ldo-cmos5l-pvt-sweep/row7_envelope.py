@@ -162,6 +162,7 @@ corner_id = re_.corner_id
 sha256_file = re_.sha256_file
 resolve_env = re_.resolve_env
 write_or_check = re_.write_or_check
+echoed_options_match = re_.echoed_options_match
 f9 = re_.f9
 
 
@@ -443,28 +444,12 @@ def summary_md(summ, points, prov):
 
 
 def summary_files(record_dir):
-    report = json.load(open(os.path.join(record_dir, "report.json")))
-    prov = json.load(open(os.path.join(record_dir, "provenance.json")))
-    summ, points = summarise_report(report, prov)
-    return {
-        "row7-envelope.json": json.dumps({"summary": summ, "points": points},
-                                         indent=1, sort_keys=True) + "\n",
-        "row7-envelope.md": summary_md(summ, points, prov),
-    }, summ
+    return re_.summary_files(record_dir, "row7", summarise_report, summary_md)
 
 
 # --------------------------------------------------------------------------- #
 # submit / summarise / check
 # --------------------------------------------------------------------------- #
-
-def echoed_options_match(report, request):
-    """True iff the fleet report echoes, as `environment.ngspice_options`,
-    exactly the tolerances the request asked for.  The request is only an
-    ask; the report is what the engine says it ran."""
-    asked = (request.get("options") or {}).get("ngspice_options")
-    echoed = (report.get("environment") or {}).get("ngspice_options")
-    return asked is not None and echoed == asked
-
 
 def pair_summary(base_dir, tight_dir):
     """Observed change between the standard- and tight-tolerance solves of the
@@ -607,15 +592,7 @@ def cmd_submit(a):
 
 
 def cmd_summarise(a):
-    record_dir = os.path.join(ROOT, a.record_id)
-    if not os.path.isdir(record_dir):
-        raise Error(f"no such record: {record_dir}")
-    files, summ = summary_files(record_dir)
-    bad = write_or_check(record_dir, files, check=a.check)
-    if bad:
-        raise Error("summary files stale or missing: " + ", ".join(bad))
-    print(json.dumps(summ, indent=1, sort_keys=True))
-    return 0
+    return re_.summarise_cmd(a, ROOT, summary_files)
 
 
 def check_record(rid, problems):
