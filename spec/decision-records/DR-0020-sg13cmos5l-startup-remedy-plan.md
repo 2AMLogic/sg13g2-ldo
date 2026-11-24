@@ -887,30 +887,35 @@ rail-to-rail excursion. The clauses that fail:
 | tt/27C/3.63V/50mA/330nF/0m | 1.836 | 465 | 0.00 | 1.834 | 0.00 | 2.242 | pass/pass |
 | tt/27C/3.63V/50mA/4700nF/500m | 1.835 | 465 | 0.00 | 1.836 | 0.00 | 2.125 | pass/pass |
 
-**Clauses per point** (c holds everywhere; a, b, d fail as listed):
+**Clauses per point** (c holds everywhere; a, b, d fail as listed). The (a) column was
+first generated with the combined verdict in place of `start_pass`; it is corrected here
+to `start_pass`/`reen_pass` (the published record `.clauses.md` keeps the original text
+and carries an appended correction note):
 
-| point | (a) start/reen verdict | (b) Ipk A / bound A | (c) Vsg start/reen V | (d) T_ramp us (start/reen) | VREFR max V |
+| point | (a) start_pass/reen_pass | (b) Ipk A / bound A | (c) Vsg start/reen V | (d) T_ramp us (start/reen) | VREFR max V |
 |---|---|---|---|---|---|
-| `st_ff_27c_rtyp_v3630mv_i1ma_c1000nf_e0mohm_t500ns` | fail/False FAIL | 0.01083 / 0.006898 FAIL | 0.8826/0.82 ok | 484.1/484.2 FAIL | 0.9168 |
-| `st_ss_-40c_rtyp_v3630mv_i1ma_c1000nf_e0mohm_t500ns` | fail/False FAIL | 0.009442 / 0.007048 FAIL | 1.028/0.9871 ok | 468.9/469 FAIL | 0.9157 |
-| `st_tt_27c_rtyp_v3630mv_i0ma_c330nf_e0mohm_t1000ns` | fail/True FAIL | 0.004017 / 0.002554 FAIL | 0.8028/0.7557 ok | 477.8/477.9 FAIL | 0.9176 |
-| `st_tt_27c_rtyp_v3630mv_i0ma_c4700nf_e500mohm_t1000ns` | fail/True FAIL | 0.0345 / 0.02313 FAIL | 1.231/0.001441 ok | 477.8/477.9 FAIL | 0.9178 |
-| `st_tt_27c_rtyp_v3300mv_i1ma_c1000nf_e0mohm_t1000ns` | fail/False FAIL | 0.01126 / 0.006955 FAIL | 0.9604/0.894 ok | 478.2/478.3 FAIL | 0.9179 |
-| `st_tt_27c_rtyp_v3630mv_i50ma_c330nf_e0mohm_t1000ns` | pass/True ok | 0.05256 / 0.06505 ok | 1.388/1.397 ok | 477.8/477.8 FAIL | 0.9179 |
-| `st_tt_27c_rtyp_v3630mv_i50ma_c4700nf_e500mohm_t1000ns` | pass/True ok | 0.0686 / 0.08563 ok | 1.505/1.505 ok | 477.8/477.8 FAIL | 0.9177 |
+| `st_ff_27c_rtyp_v3630mv_i1ma_c1000nf_e0mohm_t500ns` | True/False FAIL | 0.01083 / 0.006898 FAIL | 0.8826/0.82 ok | 484.1/484.2 FAIL | 0.9168 |
+| `st_ss_-40c_rtyp_v3630mv_i1ma_c1000nf_e0mohm_t500ns` | True/False FAIL | 0.009442 / 0.007048 FAIL | 1.028/0.9871 ok | 468.9/469 FAIL | 0.9157 |
+| `st_tt_27c_rtyp_v3630mv_i0ma_c330nf_e0mohm_t1000ns` | False/True FAIL | 0.004017 / 0.002554 FAIL | 0.8028/0.7557 ok | 477.8/477.9 FAIL | 0.9176 |
+| `st_tt_27c_rtyp_v3630mv_i0ma_c4700nf_e500mohm_t1000ns` | False/True FAIL | 0.0345 / 0.02313 FAIL | 1.231/0.001441 ok | 477.8/477.9 FAIL | 0.9178 |
+| `st_tt_27c_rtyp_v3300mv_i1ma_c1000nf_e0mohm_t1000ns` | False/False FAIL | 0.01126 / 0.006955 FAIL | 0.9604/0.894 ok | 478.2/478.3 FAIL | 0.9179 |
+| `st_tt_27c_rtyp_v3630mv_i50ma_c330nf_e0mohm_t1000ns` | True/True ok | 0.05256 / 0.06505 ok | 1.388/1.397 ok | 477.8/477.8 FAIL | 0.9179 |
+| `st_tt_27c_rtyp_v3630mv_i50ma_c4700nf_e500mohm_t1000ns` | True/True ok | 0.0686 / 0.08563 ok | 1.505/1.505 ok | 477.8/477.8 FAIL | 0.9177 |
 
 **Overall: REJECT** (7 of 7 points)
 
 **Which clause failed where.**
 
-- (a) verdict: the start window passes at 5 of 7 points but **re-enable fails at 3**
+- (a) verdict: **four of seven** points pass the start window (ff/27C, ss/-40C and both
+  50 mA points) and four pass re-enable (the two 0 mA points and both 50 mA points); only
+  two pass both. **Re-enable fails at 3**
   (ff/27C and ss/-40C at 1 mA/1000 nF show a 46-47 mV downward excursion; tt/3.30 V
   1 mA the same, 46.6 mV): re-enable onto a still-charged output holds the pass device off
   while `VOUT/2 > VREFR`, and the output decays through the load before the ramp
   catches it, a non-monotonic dip. This is the partial-discharge case DR-0020 listed as [U].
   The start window itself fails at 3 points on 1.5-3 mV (peak 1.836-1.839 V against the
-  1.836 V edge, 2-3 mV downward excursion), at the tt points with 0 mA / 330 nF and
-  1 mA / 3.30 V. Settle times are 456-705 us, well inside 3 ms.
+  1.836 V edge, 0.19-3.13 mV downward excursion), at the tt points with 0 mA / 330 nF,
+  0 mA / 4700 nF and 1 mA / 3.30 V. Settle times are 456-705 us, well inside 3 ms.
 - (b) peak supply current exceeds the pre-registered bound at the 5 points with 0-1 mA
   load (4.0-34.5 mA against 2.6-23.1 mA). It holds at both 50 mA points. The excess is not
   explained by this experiment (the bound uses the measured T_ramp and a 25 % + 1 mA margin).

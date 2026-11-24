@@ -101,5 +101,94 @@ class PlanReachesDeck(unittest.TestCase):
             self.assertFalse(reaches_wrapper(gd), gd)
 
 
+def _snapshot(root):
+    out = {}
+    for d, _, fs in os.walk(root):
+        for f in fs:
+            fp = os.path.join(d, f)
+            out[os.path.relpath(fp, root)] = open(fp, "rb").read()
+    return out
+
+
+class PublishedRunIsProtected(PlanReachesDeck):
+    """Retrying plan/submit/collect against an existing run must not touch it."""
+
+    def test_retry_preserves_every_file_byte_for_byte(self):
+        rc.use_wrapper()
+        self._plan()
+        sd = sc.stage_dir("t", rc.STAGE)
+        for n, body in (("envelope.json", "{}"), ("klt-sim.stderr", "x")):
+            open(os.path.join(sd, n), "w").write(body)
+        rec = os.path.join(sc.HERE, "records")
+        os.makedirs(rec)
+        open(os.path.join(rec, "t-startup-ramp.csv"), "w").write("published\n")
+        before = _snapshot(sc.HERE)
+        a = type("A", (), {"rid": "t"})()
+        for cmd in (rc.cmd_plan, rc.cmd_submit, rc.cmd_collect):
+            self.assertEqual(cmd(a), 2, cmd.__name__)
+        self.assertEqual(_snapshot(sc.HERE), before)
+
+    def test_fresh_rid_is_not_refused(self):
+        self.assertEqual(rc._existing_evidence("fresh", "plan"), [])
+        self.assertEqual(rc._existing_evidence("fresh", "collect"), [])
+
+
+class RampWindow(unittest.TestCase):
+    def test_late_rise_is_not_reported_for_the_startup_window(self):
+        # 0 V through 9 ms, 0.9 V at 9.3 ms: a re-enable ramp only
+        t = [i * 1e-5 for i in range(1500)]
+        v = [0.0 if x < 9e-3 else min(0.9, (x - 9e-3) / 300e-6 * 0.9) for x in t]
+        self.assertIsNone(rc.ramp_from_series(t, v, *rc.START_WINDOW_S))
+        got = rc.ramp_from_series(t, v, *rc.REEN_WINDOW_S)
+        self.assertAlmostEqual(got, 300.0, delta=15.0)
+
+    def test_ramp_inside_window(self):
+        t = [i * 1e-5 for i in range(1500)]
+        v = [0.0 if x < 1e-3 else min(0.9, (x - 1e-3) / 450e-6 * 0.9) for x in t]
+        self.assertAlmostEqual(rc.ramp_from_series(t, v, *rc.START_WINDOW_S), 450.0, delta=15.0)
+
+
+class ClauseStatuses(unittest.TestCase):
+    ROW = {"load_ma": "1", "cout_nf": "1000", "start_peak_supply_current_a": "0.01",
+           "start_pass": "True", "reen_pass": "False",
+           "start_max_vsg_pass_v": "0.9", "reen_max_vsg_pass_v": "0.8"}
+
+    def test_missing_rawfile_is_na_not_fail(self):
+        st, *_ = rc.evaluate_row(self.ROW, False, None, None)
+        self.assertEqual((st["b"], st["d"]), ("n/a", "n/a"))
+        self.assertEqual((st["a"], st["c"]), ("FAIL", "ok"))
+
+    def test_observed_failure_is_fail(self):
+        st, *_ = rc.evaluate_row(self.ROW, True, 484.0, 484.0)
+        self.assertEqual((st["b"], st["d"]), ("FAIL", "FAIL"))
+
+    def test_unmeasurable_ramp_with_rawfile_is_fail(self):
+        st, *_ = rc.evaluate_row(self.ROW, True, None, None)
+        self.assertEqual((st["b"], st["d"]), ("FAIL", "FAIL"))
+
+    def test_overall(self):
+        na = {"a": "ok", "b": "n/a", "c": "ok", "d": "n/a"}
+        self.assertEqual(rc.overall([na] * 7, 7), "INCONCLUSIVE")
+        self.assertEqual(rc.overall([na] * 6 + [dict(na, a="FAIL")], 7), "REJECT")
+        ok = dict.fromkeys("abcd", "ok")
+        self.assertEqual(rc.overall([ok] * 7, 7), "CONFIRM")
+        self.assertEqual(rc.overall([ok] * 6, 6), "INCONCLUSIVE")
+
+    def test_published_record_prints_start_pass_and_rejects_without_rawfiles(self):
+        import contextlib
+        import io
+        rid = "20261123-212501-9e332bb0"
+        if not os.path.isfile(os.path.join(HERE, "records", f"{rid}-startup-ramp.csv")):
+            self.skipTest("published record absent")
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            rc.cmd_clauses(type("A", (), {"rid": rid})())
+        out = buf.getvalue()
+        self.assertIn("True/False FAIL", out)
+        self.assertNotIn("fail/False", out)
+        self.assertIn("Overall: REJECT", out)
+        self.assertNotIn("n/a FAIL", out)
+
+
 if __name__ == "__main__":
     unittest.main()
