@@ -3,14 +3,14 @@
   "kind": "generic",
   "status": "pass",
   "t1_item": 9,
-  "summary": "T1 item 9 (Testbenches shipped): 134/134 attestation checks passed (klt signoff --attest)",
+  "summary": "T1 item 9 (Testbenches shipped): 137/137 attestation checks passed (klt signoff --attest)",
   "source": "signoff/evidence/item9-testbenches.inventory.json",
   "attestation": {
     "producer": "klt signoff --attest",
     "inventory_schema_version": 1,
     "hash_algorithm": "sha256-raw-bytes",
-    "check_count": 134,
-    "passed_count": 134,
+    "check_count": 137,
+    "passed_count": 137,
     "checks": [
       {
         "check": "present",
@@ -416,7 +416,7 @@
         "role": "testbench",
         "path": "sim/ldo-cmos5l-pvt-sweep/README.md",
         "passed": true,
-        "content_hash": "sha256:4934a5a381052f2fa17959c9cf06ce1eb519ba3a00fcdd206c8c8d393cd62909"
+        "content_hash": "sha256:66093c273056c9ce02c72b90b3e1a35c6b1c740a99e9b69ebf90f9174573b08e"
       },
       {
         "check": "present",
@@ -431,6 +431,13 @@
         "path": "sim/ldo-cmos5l-pvt-sweep/batch_backend.py",
         "passed": true,
         "content_hash": "sha256:5534826dfaa32f94e28e42cba482ac2cda24ee4a8a93a96139ce218b9daff3a6"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/ldo-cmos5l-pvt-sweep/ccprobe.py",
+        "passed": true,
+        "content_hash": "sha256:f1ca28843ff8fca09e55cd8d2d97b43e04764d1425832ec1fcc87c6524f7cb26"
       },
       {
         "check": "present",
@@ -505,6 +512,13 @@
       {
         "check": "present",
         "role": "testbench",
+        "path": "sim/ldo-cmos5l-pvt-sweep/run_ccprobe.sh",
+        "passed": true,
+        "content_hash": "sha256:f36b5871b22ee89a8cb3cde69f3a36a9aef838b6ce3775a85eb605bc2c4133d5"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
         "path": "sim/ldo-cmos5l-pvt-sweep/run_e1op.sh",
         "passed": true,
         "content_hash": "sha256:f626e0ebbe3f61fe63444c81b364fa0452aceb062078e1c6160827cdde1160f5"
@@ -571,6 +585,13 @@
         "path": "sim/ldo-cmos5l-pvt-sweep/test_batch_backend.py",
         "passed": true,
         "content_hash": "sha256:2bcf400fc0c3046be45616bc8e2bd85ddbaa841ef2cb736422597e5873c7a897"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/ldo-cmos5l-pvt-sweep/test_ccprobe.py",
+        "passed": true,
+        "content_hash": "sha256:59ce4ff79d37d94530be611877adf6d058d6afe799f28b667081be29554ab79c"
       },
       {
         "check": "present",
@@ -971,7 +992,7 @@
         "path": "signoff/evidence/item9-testbenches.inventory.json",
         "scope": "repo"
       },
-      "content_hash": "sha256:025d2fa277088f919de5a61b817ffae04e2ce065bab07c3bc91543d5e7ae479e"
+      "content_hash": "sha256:9c3b87ec04e8dd5fab1dbc92e7107d4e1772fda3f98780bc0be736f0990ab254"
     }
   }
 }

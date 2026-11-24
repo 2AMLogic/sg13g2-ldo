@@ -777,6 +777,13 @@ jobs:
         # (same pattern as #135's and #155's record byte-checks).
         run: python3 sim/ldo-cmos5l-pvt-sweep/e1_oppoints.py check --record 20261012-115531-cfa681f9
 
+      - name: E3 Cc-probe record byte-check (ccprobe.py check, issue #219)
+        # Offline, stdlib-only: no simulator and no PDK. Regenerates the E3
+        # reduction CSV/JSON and record md from the committed raw exports and
+        # byte-compares. The record carries no host-absolute path, so this
+        # reproduces in any checkout (the like-for-like exit 3 inside the
+        # reduction is the recorded, honest result and is not a check failure).
+        run: python3 sim/ldo-cmos5l-pvt-sweep/ccprobe.py check --record 20261123-102238-0b610697
       - name: E4 record byte-check (e4_divider_cc.py check, issue #315)
         # Offline, stdlib-only: no simulator and no PDK. Regenerates the E4
         # reduction CSV/JSON and record md from the committed raw exports and

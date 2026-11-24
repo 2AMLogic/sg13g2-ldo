@@ -2330,6 +2330,77 @@ reference is the #155 re-run `20261012-080951-142dac4a`. Tests:
 `test_e1_oppoints.py`; the record's `check` subcommand byte-compares the
 committed reduction and record markdown against the raw exports.
 
+## E3 Cc-width probe (issue #219, DR-0015 experiment E3)
+
+[`DR-0015`](../../spec/decision-records/DR-0015-sg13cmos5l-dynamic-window-stability-diagnosis.md)
+(stays **Proposed**) leaves its class-2 pole attribution unquantified:
+whether the third pole inside the loop bandwidth at heavy load is set by
+the compensation network or by the `EAOUT` gate node ("E3 separates the
+two"). This campaign is exactly its discriminator E3, and nothing more:
+no spec row, threshold or verdict changes, and no compensation change is
+made or proposed.
+
+**Bench**: the committed `testbench/tb_loopgain_cmos5l.spice.tmpl`
+unchanged (its `@@CC_W@@` line documents the width-substituted copy); the
+override is a testbench-local substituted copy of the design netlist with
+only `XCc`'s `w=` token changed (`ccprobe.py subst`, the unit-tested
+Python mirror of `run_sweep.sh`'s `subst_cc_width`, exit 4 = substitution
+did not reach the deck). The committed netlists under
+`design/sg13cmos5l/netlist/` are byte-unchanged; the 1x copy is
+byte-identical to them. `cap_cmomi` has no corner or mismatch model, so
+the probe scales the drawn width (DR-0005's own sensitivity levels
+{0.5x, 1x, 2x}) rather than sweeping a corner.
+
+**Campaign** (entry point `run_ccprobe.sh`): three batch-fleet runs at
+DR-0015's P3 (ff/-40C/res_wcs, 50 mA, 0.33 uF, 0 mohm), Cc at 0.5x/1x/2x.
+The AC ceiling is fixed at `run_sweep.sh`'s default (`ac dec 20 1 100meg`)
+because the like-for-like gate compares the 1x trace against the
+committed same-vintage baseline `20261012-074813-c94873ba` at that
+analysis line. The three decks differ in their `.include`d design-netlist
+copy, so they cannot share one request body: expect THREE fleet jobs. No
+local grid: `--validate` runs ONE P3 deck (Cc 0.5x) locally as a debug
+probe; `--plan-only` prints the request plan. Environment conventions are
+`run_loopgain2.sh`'s (`SWEEP_BATCH_PLAN_ONLY`, `SWEEP_BATCH_REUSE_WORK`).
+
+**Reduction** (`ccprobe.py`): offline, stdlib-only; reuses
+`ac_metrics.py`'s `loopgain_metrics` + `classify_margins` (the committed
+records' own reading, never hand-classified), computes the log-log
+`f_ug`-vs-`Cc` slope with its single-branch premise (all three runs must
+share their 0 dB crossing count), and gates the 1x run against BOTH
+committed P3 baselines (the same-vintage hard like-for-like gate with
+pre-registered bounds; the DR-0015 row with its vintage cause). Negative
+controls in `test_ccprobe.py`: drifted nominal width, renamed node,
+absent line, second occurrence, unknown label, and record-naming drift
+between driver and module.
+
+    python3 sim/ldo-cmos5l-pvt-sweep/ccprobe.py reduce    --record <id> ...
+    python3 sim/ldo-cmos5l-pvt-sweep/ccprobe.py record-md --record <id>
+    python3 sim/ldo-cmos5l-pvt-sweep/ccprobe.py check     --record <id>   # byte-compare
+
+**Result** (record `20261123-102238-0b610697`, PDK pin `f7bca326...`,
+fleet runner klt 0.9.0 / ngspice-47): all three runs converged, 2 0 dB
+crossings each, DR-0014 PM/GM fail at every Cc value (P3 is a known
+miss; a wider Cc is not a remedy). `f_ug` = 1.934020 / 1.935574 /
+1.940839 MHz at 0.5x/1x/2x -- log-log slope **0.0025** (single-branch):
+over a 4x Cc range `f_ug` moves 0.36% total. Per DR-0015's own framing
+that is the fixed-gate-side reading -- the crossover is set by
+capacitance the probe did not move (the w=2800 um pass gate), not the
+compensation capacitor. What is supported, excluded and merely
+corroborated is stated in the DR-0015 E3 addendum and the record.
+
+Vintage note: the pre-registered like-for-like gate vs the October 12
+same-vintage reference FAILED (dPM +6.74 deg, dGM +1.18 dB, df_ug -2.29%
+against 1 deg / 1 dB / 2% bounds) with an identified cause outside the
+bench -- the batch worker resolves several corner/model `.lib` files to
+its own PDK vintage (issue #313's committed replay,
+`backend-validation/20261120-224044-osdi-replay/`; this campaign's 1x
+trace reproduces the replay's fixed-driver run numerically, 3 of 161
+rows differing in the 9th digit). The bounds are not relaxed; the slope
+is internally like-for-like (all three runs share the worker vintage).
+The record is marked INCOMPLETE on that gate, honestly. Tests:
+`test_ccprobe.py`; the record's `check` subcommand byte-compares the
+committed reduction and record markdown against the raw exports.
+
 ## E4 divider/Cc probe at DR-0015 point P5 (issue #315, DR-0015 experiment E4)
 
 [`DR-0015`](../../spec/decision-records/DR-0015-sg13cmos5l-dynamic-window-stability-diagnosis.md)
