@@ -355,6 +355,38 @@ directory's verdict-of-record statement.
   corner (ss / 125 °C / res_bcs) is 237.76 mV extracted vs 237.06 mV
   schematic, +0.70 mV against a 300 mV target — a statement about this
   lumped model, not about the physical layout.
+- **Item 7's cited report carries a non-null `model_mismatch` that `klt
+  signoff` reports but does not grade** (#366). The report's own values:
+  `model_mismatch.kind = "model_set"`, `reference_only =
+  ["ldo_erramp_cmos5l"]`, `extracted_only = []`; `counts.reference` is
+  `{cap_cmomi: 1, ldo_erramp_cmos5l: 1, rhigh: 3, sg13_hv_nmos: 5,
+  sg13_hv_pmos: 9}` against `counts.extracted` `{cap_cmomi: 1, rhigh: 3,
+  sg13_hv_nmos: 5, sg13_hv_pmos: 128}`; and `flatten_schematic: false`.
+  The two halves have different causes. `reference_only =
+  ["ldo_erramp_cmos5l"]` is a hierarchy artifact (the hierarchical schematic
+  DUT declares the local `.subckt` as a model; the flat extraction has none),
+  and the report's own `detail` says it "may simply be a
+  hierarchy-representation artifact". That half is **not measured**: `klt pex
+  --flatten-schematic` is not runnable on this DUT today — at the 0.9.2
+  probe it failed with `schematic_flatten_wrapper_pin_unconnected` (no net
+  named VIN, VOUT, VSS, VREF, IBIAS, EN for the
+  `.subckt sg13cmos5l_ldo_core_cmos5l` wrapper pins). The repro shape was
+  klayout-tools#6971, which upstream closed by adding `--schematic-top`
+  (what the stage uses) rather than fixing the flatten path. The
+  `sg13_hv_pmos` 9 vs 128 gap is **not hierarchy and is measured**: it is
+  the card-vs-finger count recorded in `layout/README.md` stage 5 (112
+  pass-array + 12 error-amp + 3 enable + 1 inverter fingers = 128; the
+  committed `*.pex.spice` has 128 `sg13_hv_pmos` cards), the folding
+  `combine_devices` handles on the LVS path; `klt pex`'s `model_mismatch`
+  does not fold. Every nested class matches exactly (`sg13_hv_nmos` 5/5,
+  `rhigh` 3/3, `cap_cmomi` 1/1), and flattening would not change the pmos
+  gap. What supports the citation independently: all 135 schematic-side
+  values match the committed 2026-11-16 fleet record at 1e-9 (so the
+  schematic leg ran the real design netlist), and the extracted leg differs
+  by 0.002–0.067 %, the shape a pure parasitic addition produces. This does
+  not change item 7's grade (`met`), `t1_met_count` or the exit code. If a
+  later klt release makes the flatten path usable, re-run `pex-row4` to
+  confirm the `ldo_erramp_cmos5l` half only.
 
 ## Item 8 pin refresh (#55)
 
