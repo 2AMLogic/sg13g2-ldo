@@ -838,7 +838,7 @@ def load_row10(root: Path, sel: dict, rec: dict, pvt_rows: list[dict], sources: 
             "dr": blk["decision_record"], "ceiling_hz": next(iter(ceilings))}
 
 
-def _r7_corner_id(row: dict) -> str:
+def _corner_id(row: dict) -> str:
     res = row["res_section"]
     res = res[len("res_"):] if res.startswith("res_") else res
     return f"mos_{row['corner']}__res_{res}__cap_typ/novdd/{row['temp_c']}C"
@@ -887,33 +887,32 @@ def _load_row7_pair(root: Path, blk: dict, rid: str, sources: list) -> dict:
     return doc
 
 
-def load_row7_envelope(root: Path, sel: dict, pvt_rows: list[dict],
-                       dcev: dict, sources: list) -> dict:
-    """Validate and return the pinned row-7 graded `klt sim` envelope (issue #317).
+def _load_graded_envelope(root: Path, blk: dict, pvt_rows: list[dict], sources: list, *,
+                          label: str, role_prefix: str, envelope_dir: str,
+                          spec_row_id: str, limits_by_name: dict, steps_map: dict,
+                          raw_step_meas: str) -> dict:
+    """Validate the stages shared by every pinned graded `klt sim` envelope.
 
-    Fail-closed on every tamper (hard GenError): files missing or different
-    from their pins, the report's own hash pins disagreeing with the committed
-    tb.spice / corners.lib, a request that does not declare the row target as
-    limits on exactly the six graded measurements with the right spec_row
-    tags, a matrix that is not a whole, clean, fully-resolved 45-corner pass
-    with every (Vin, Iload) step ok, a summary whose worst-case figures
-    disagree with the report, or envelope values that disagree with the
-    legacy PVT / DC-informational columns beyond the stated cross-check band.
-    Design drift (the tree's netlists moved since the record) is NOT a
-    GenError: it is reported as stale_components, which fails the artifact's
-    completeness check the same way the circuit record's own staleness does.
+    Fail-closed (hard GenError) on: pin / selected-id mismatches, the report's
+    own hash pins, a probe record, request and report graded declarations
+    (exact set in declared order, per-measurement limits, spec_row tag, derived
+    expr), the named (Vin, Iload) analysis steps, pinned and echoed solver
+    tolerances, a matrix that is not a whole clean 45-corner pass with every
+    step ok once and each graded figure finite, passing and strictly below its
+    limit, the common summary attestations, and the design / PDK freshness
+    pins. Design / PDK drift is NOT an error: it is returned as
+    ``stale_components``. Row-specific summary and cross-checks stay with the
+    caller, which receives the validated documents.
     """
-    blk = sel.get("row7_envelope_evidence")
-    if not isinstance(blk, dict):
-        raise GenError("selection.json has no row7_envelope_evidence block")
+    graded = tuple(limits_by_name)
     rid = blk["id"]
     paths = {}
     for key in ("report_json", "summary_json", "request_json", "tb_spice",
                 "corners_lib", "provenance_json"):
         entry = blk["files"][key]
         if f"/{rid}/" not in entry["path"]:
-            raise GenError(f"row-7 envelope file {entry['path']} is not under the selected id {rid}")
-        paths[key] = pinned(root, entry, f"row7_envelope_{key}", sources)
+            raise GenError(f"{label} envelope file {entry['path']} is not under the selected id {rid}")
+        paths[key] = pinned(root, entry, f"{role_prefix}_{key}", sources)
     report = json.loads(paths["report_json"].read_text(encoding="utf-8"))
     request = json.loads(paths["request_json"].read_text(encoding="utf-8"))
     prov = json.loads(paths["provenance_json"].read_text(encoding="utf-8"))
@@ -923,122 +922,183 @@ def load_row7_envelope(root: Path, sel: dict, pvt_rows: list[dict],
     tb_hash = "sha256:" + sha256_file(paths["tb_spice"])
     got_in = ((report.get("provenance") or {}).get("input") or {}).get("content_hash")
     if got_in != tb_hash:
-        raise GenError(f"row-7 envelope report pins input {got_in}, committed tb.spice is {tb_hash}")
+        raise GenError(f"{label} envelope report pins input {got_in}, committed tb.spice is {tb_hash}")
     nl = report.get("netlist")
     nl_path = nl.get("path") if isinstance(nl, dict) else nl
-    if nl_path != "tb.spice" and not str(nl_path).endswith(f"row7-envelope/{rid}/tb.spice"):
-        raise GenError(f"row-7 envelope report netlist is {nl_path!r}, not this record's tb.spice")
+    if nl_path != "tb.spice" and not str(nl_path).endswith(f"{envelope_dir}/{rid}/tb.spice"):
+        raise GenError(f"{label} envelope report netlist is {nl_path!r}, not this record's tb.spice")
     lib_hash = sha256_file(paths["corners_lib"])
     env_lib = (report.get("environment") or {}).get("models_lib_sha256")
     if env_lib != lib_hash:
-        raise GenError(f"row-7 envelope report pins models_lib {env_lib}, "
+        raise GenError(f"{label} envelope report pins models_lib {env_lib}, "
                        f"committed corners.lib is {lib_hash}")
-    if prov.get("record_id") != rid:
-        raise GenError(f"row-7 envelope provenance names record {prov.get('record_id')!r}, "
-                       f"selected {rid!r}")
+    if prov.get("record_id") != rid or prov.get("probe"):
+        raise GenError(f"{label} envelope provenance names record {prov.get('record_id')!r} "
+                       f"(probe={prov.get('probe')!r}), selected {rid!r}; a probe is never citable")
 
     # --- the request grades the row target, with the tool's own verdict -----
     req_names = [m.get("name") for m in request.get("measurements", [])]
-    meas = {m["name"]: m for m in request.get("measurements", [])}
-    if tuple(req_names) != ROW7_GRADED:
-        raise GenError(f"row-7 envelope request measurements {tuple(req_names)} differ from "
-                       f"the six graded figures {ROW7_GRADED} (each exactly once)")
+    if tuple(req_names) != graded:
+        raise GenError(f"{label} envelope request measurements {tuple(req_names)} differ from "
+                       f"the six graded figures {graded} (each exactly once)")
+    for m in request["measurements"]:
+        if m.get("limits") != limits_by_name[m["name"]] or m.get("spec_row") != spec_row_id:
+            raise GenError(f"{label} envelope request measurement {m['name']} declares limits "
+                           f"{m.get('limits')} / spec_row {m.get('spec_row')!r}, not the DR-0007 "
+                           f"{label} target {limits_by_name[m['name']]} / {spec_row_id!r}")
+        if "expr" not in m:
+            raise GenError(f"{label} envelope measurement {m['name']} is not a derived expr")
     # The REPORT is what the fleet graded: it must declare each graded figure
     # exactly once, with the row's own limit and tag -- a request that says so
     # proves nothing about a report with a declaration removed or repeated.
-    rep_graded = [m for m in report.get("measurements", []) if m.get("name") in ROW7_GRADED]
-    if sorted(m["name"] for m in rep_graded) != sorted(ROW7_GRADED):
-        raise GenError("row-7 envelope report does not declare each of the six graded "
+    rep_graded = [m for m in report.get("measurements", []) if m.get("name") in graded]
+    if sorted(m["name"] for m in rep_graded) != sorted(graded):
+        raise GenError(f"{label} envelope report does not declare each of the six graded "
                        f"figures exactly once (got {sorted(m['name'] for m in rep_graded)})")
     for m in rep_graded:
-        if m.get("limits") != {"max": ROW7_TARGET_A} or m.get("spec_row") != ROW7_SPEC_ROW_ID:
-            raise GenError(f"row-7 envelope report graded {m['name']} against "
-                           f"{m.get('limits')} / tag {m.get('spec_row')!r}, not the row-7 "
-                           f"target {{'max': {ROW7_TARGET_A}}} / {ROW7_SPEC_ROW_ID!r}")
-    for name, m in meas.items():
-        if m.get("limits") != {"max": ROW7_TARGET_A}:
-            raise GenError(f"row-7 envelope measurement {name} declares limits "
-                           f"{m.get('limits')}, not the DR-0007 row-7 target "
-                           f"{{'max': {ROW7_TARGET_A}}}")
-        if m.get("spec_row") != ROW7_SPEC_ROW_ID:
-            raise GenError(f"row-7 envelope measurement {name} carries spec_row "
-                           f"{m.get('spec_row')!r}, not {ROW7_SPEC_ROW_ID!r}")
+        if m.get("limits") != limits_by_name[m["name"]] or m.get("spec_row") != spec_row_id:
+            raise GenError(f"{label} envelope report graded {m['name']} against "
+                           f"{m.get('limits')} / spec_row {m.get('spec_row')!r}, not "
+                           f"{limits_by_name[m['name']]} / {spec_row_id!r}")
     steps = request.get("analysis_steps")
-    if not isinstance(steps, list) or len(steps) != len(ROW7_VINS) * len(ROW7_LOADS):
-        raise GenError(f"row-7 envelope declares {len(steps) if isinstance(steps, list) else steps!r}"
-                       " analysis_steps, not six (Vin x Iload) operating points")
-    vin_by_name, load_by_name = dict(ROW7_VINS), dict(ROW7_LOADS)
-    want_steps = sorted(f"{vn}_{ln}" for vn in vin_by_name for ln in load_by_name)
-    if sorted(s.get("name") for s in steps) != want_steps:
-        raise GenError("row-7 envelope step names are not the six (Vin, Iload) points")
+    if not isinstance(steps, list) or sorted(s.get("name") for s in steps) != sorted(steps_map):
+        raise GenError(f"{label} envelope request step names are not the {len(steps_map)} "
+                       "named (Vin, Iload) operating points")
     for s in steps:
-        vn, ln = s["name"].rsplit("_", 1)
         alter = s.get("alter") or {}
-        if (alter.get("Vin"), alter.get("Iload")) != (vin_by_name[vn], load_by_name[ln]):
-            raise GenError(f"row-7 envelope step {s['name']!r} alters {alter}, "
-                           "not its own (Vin, Iload) bias")
+        if (alter.get("Vin"), alter.get("Iload")) != steps_map[s["name"]]:
+            raise GenError(f"{label} envelope step {s['name']!r} alters {alter}, not its own "
+                           "(Vin, Iload) bias")
         sm = s.get("measurements") or []
-        if len(sm) != 1 or sm[0].get("name") != "isup_a" or sm[0].get("limits") \
+        if len(sm) != 1 or sm[0].get("name") != raw_step_meas or sm[0].get("limits") \
                 or sm[0].get("spec_row"):
-            raise GenError(f"row-7 envelope step {s['name']!r} must report exactly the "
-                           "ungraded, untagged raw supply current isup_a")
+            raise GenError(f"{label} envelope step {s['name']!r} must report exactly the "
+                           f"ungraded, untagged raw measurement {raw_step_meas}")
     ngs = (request.get("options") or {}).get("ngspice_options") or {}
-    if ngs.get("reltol") is None or ngs.get("abstol") is None:
-        raise GenError("row-7 envelope request does not pin solver tolerances "
-                       "(options.ngspice_options reltol/abstol); the stated "
-                       "convergence setting would be unbacked")
+    if ngs.get("reltol") is None or ngs.get("abstol") is None \
+            or (report.get("environment") or {}).get("ngspice_options") != ngs:
+        raise GenError(f"{label} envelope request does not pin solver tolerances, or the "
+                       "report does not echo them (options.ngspice_options)")
 
     # --- a whole, clean, fully-resolved matrix ------------------------------
-    want_ids = {_r7_corner_id(r) for r in pvt_rows}
+    want_ids = {_corner_id(r) for r in pvt_rows}
     by_cid: dict = {}
     for c in report.get("corners", []):
         cid = c.get("corner_id")
         if cid in by_cid:
-            raise GenError(f"row-7 envelope reports corner {cid} twice")
+            raise GenError(f"{label} envelope reports corner {cid} twice")
         by_cid[cid] = c
     if set(by_cid) != want_ids or len(by_cid) != 45:
-        missing = sorted(want_ids - set(by_cid))[:3]
-        raise GenError(f"row-7 envelope corner set incomplete or malformed "
-                       f"({len(by_cid)} corners, missing {missing}...)")
+        raise GenError(f"{label} envelope corner set incomplete or malformed "
+                       f"({len(by_cid)} corners, missing {sorted(want_ids - set(by_cid))[:3]}...)")
     for field, want in (("status", "pass"), ("passed", 45), ("failed", 0),
                         ("errored", 0), ("inconclusive", 0)):
         if report.get(field) != want:
-            raise GenError(f"row-7 envelope {field} is {report.get(field)!r}, not {want!r}")
+            raise GenError(f"{label} envelope {field} is {report.get(field)!r}, not {want!r}")
     values: dict = {}
     for cid, c in by_cid.items():
         errs = [d for d in c.get("diagnostics", []) if d.get("severity") == "error"]
         if errs or c.get("status") != "pass":
-            raise GenError(f"row-7 envelope corner {cid} is not clean: "
-                           f"status {c.get('status')!r}, {len(errs)} error diagnostics")
+            raise GenError(f"{label} envelope corner {cid} is not clean: status "
+                           f"{c.get('status')!r}, {len(errs)} error diagnostics")
         st = c.get("steps", [])
-        if sorted(s.get("name") for s in st) != want_steps \
+        if sorted(s.get("name") for s in st) != sorted(steps_map) \
                 or any(s.get("status") != "ok" for s in st):
-            raise GenError(f"row-7 envelope corner {cid} does not run each of the six "
-                           f"named (Vin, Iload) steps exactly once, all ok "
+            raise GenError(f"{label} envelope corner {cid} does not run each of the "
+                           f"{len(steps_map)} named steps exactly once, all ok "
                            f"(got {[s.get('name') for s in st]})")
         mnames = [x.get("name") for x in c.get("measurements", [])]
-        if any(mnames.count(n) != 1 for n in ROW7_GRADED):
-            raise GenError(f"row-7 envelope corner {cid} does not report each graded "
+        if any(mnames.count(n) != 1 for n in graded):
+            raise GenError(f"{label} envelope corner {cid} does not report each graded "
                            "figure exactly once")
         m = {x["name"]: x for x in c.get("measurements", [])}
-        for n in ROW7_GRADED:
+        for n in graded:
             v = m.get(n, {}).get("value")
             if v is None or not math.isfinite(v) or m[n].get("status") != "pass":
-                raise GenError(f"row-7 envelope corner {cid} measurement {n} is "
+                raise GenError(f"{label} envelope corner {cid} measurement {n} is "
                                f"{m.get(n)}: not a resolved, passing value")
-            # DR-0007 row 7 is a strict "< 30 uA"; klt sim's inclusive `max`
-            # grades a value AT the limit as pass, so strictness is enforced here.
-            if v >= ROW7_TARGET_A:
-                raise GenError(f"row-7 envelope corner {cid} measurement {n} is {v!r}, "
-                               f"not strictly below the {ROW7_TARGET_A} A target")
+            # DR-0007 targets are strict "<"; klt sim's inclusive `max` grades a
+            # value AT the limit as pass, so strictness is enforced here.
+            if v >= limits_by_name[n]["max"]:
+                raise GenError(f"{label} envelope corner {cid} measurement {n} is {v!r}, "
+                               f"not strictly below the {limits_by_name[n]['max']} target")
             values[(cid, n)] = v
     cov = (report.get("coverage") or {}).get("measurements_with_limits")
-    if cov != len(ROW7_GRADED):
-        raise GenError(f"row-7 envelope measurements_with_limits is {cov!r}, "
-                       f"not {len(ROW7_GRADED)}")
+    if cov != len(graded):
+        raise GenError(f"{label} envelope measurements_with_limits is {cov!r}, "
+                       f"not {len(graded)}")
+
+    # --- summary attestations common to every graded envelope ---------------
+    summ = summary.get("summary") or {}
+    if not summ.get("definitive"):
+        raise GenError(f"{label} envelope summary is not definitive; an incomplete "
+                       "or failing matrix must never be cited")
+    if "NOT an error bound" not in (summ.get("solver_convergence_setting_note") or ""):
+        raise GenError(f"{label} envelope summary lost its convergence-setting statement "
+                       "(it must say the setting is not an error bound)")
+    if summ.get("all_graded_strictly_below_target") is not True \
+            or summ.get("graded_declarations_exactly_once") is not True:
+        raise GenError(f"{label} envelope summary does not attest strict-below-target and "
+                       "exactly-once graded declarations")
+
+    # --- design freshness: the tree vs the record's own pins ---------------
+    fresh = {}
+    for pin in blk["design_freshness_pins"]:
+        p = root / pin["path"]
+        if not p.is_file():
+            raise GenError(f"{label} envelope design pin target missing: {pin['path']}")
+        actual = sha256_file(p)
+        recorded = (prov.get("input_sha256") or {}).get(pin["path"])
+        if recorded != pin["sha256"]:
+            raise GenError(f"{label} envelope provenance recorded {pin['path']} as "
+                           f"{recorded}, selection pins {pin['sha256']}")
+        fresh[pin["path"]] = {"pinned_sha256": pin["sha256"], "actual_sha256": actual,
+                              "matches": actual == pin["sha256"]}
+        sources.append({"role": f"{role_prefix}_design_freshness", "path": pin["path"],
+                        "sha256": actual, "pinned": True})
+    # The PDK revision the record ran on: the record's projection of the pin
+    # (fetch-determining keys) vs the tree's current pin. A PDK revision change
+    # invalidates the citation independently of the design netlists.
+    recorded_pdk = prov.get("pdk_pin_projection_sha256")
+    actual_pdk = _pdk_pin_projection_sha256(root / "sim" / "pdk-cmos5l.json")
+    if not recorded_pdk:
+        raise GenError(f"{label} envelope provenance has no pdk_pin_projection_sha256; the "
+                       "citation cannot be checked against the PDK revision")
+    fresh["sim/pdk-cmos5l.json (pin projection)"] = {
+        "pinned_sha256": recorded_pdk, "actual_sha256": actual_pdk,
+        "matches": recorded_pdk == actual_pdk}
+    return {"cfg": blk, "rid": rid, "values": values, "summary": summ, "by_cid": by_cid,
+            "fresh": fresh,
+            "stale_components": sorted(k for k, v in fresh.items() if not v["matches"]),
+            "report_rel": blk["files"]["report_json"]["path"],
+            "summary_rel": blk["files"]["summary_json"]["path"]}
+
+
+def load_row7_envelope(root: Path, sel: dict, pvt_rows: list[dict],
+                       dcev: dict, sources: list) -> dict:
+    """Validate and return the pinned row-7 graded `klt sim` envelope (issue #317).
+
+    The shared stages are `_load_graded_envelope`; this adds the row-7 summary
+    worst-case / exclusion checks, the paired tight-tolerance comparison, and
+    the cross-check against the legacy PVT / DC-informational columns beyond
+    the stated band (all hard GenError). Design drift is reported as
+    stale_components, which fails the artifact's completeness check the same
+    way the circuit record's own staleness does.
+    """
+    blk = sel.get("row7_envelope_evidence")
+    if not isinstance(blk, dict):
+        raise GenError("selection.json has no row7_envelope_evidence block")
+    vin_by_name, load_by_name = dict(ROW7_VINS), dict(ROW7_LOADS)
+    env = _load_graded_envelope(
+        root, blk, pvt_rows, sources, label="row-7", role_prefix="row7_envelope",
+        envelope_dir="row7-envelope", spec_row_id=ROW7_SPEC_ROW_ID,
+        limits_by_name={n: {"max": ROW7_TARGET_A} for n in ROW7_GRADED},
+        steps_map={f"{vn}_{ln}": (vv, lv) for vn, vv in vin_by_name.items()
+                   for ln, lv in load_by_name.items()},
+        raw_step_meas="isup_a")
+    rid, values, summ, by_cid = env["rid"], env["values"], env["summary"], env["by_cid"]
 
     # --- the summary tells the truth about the report ----------------------
-    summ = summary.get("summary") or {}
     for family, names in (("worst_noload", [n for n in ROW7_GRADED if "_i0_" in n]),
                           ("worst_fullload", [n for n in ROW7_GRADED if "_i50m_" in n])):
         want_v = max(values[(cid, n)] for cid in by_cid for n in names)
@@ -1047,55 +1107,16 @@ def load_row7_envelope(root: Path, sel: dict, pvt_rows: list[dict],
             raise GenError(f"row-7 envelope summary {family} "
                            f"{summ.get(family)} disagrees with the report's worst "
                            f"value {want_v}")
-    if not summ.get("definitive"):
-        raise GenError("row-7 envelope summary is not definitive; an incomplete "
-                       "or failing matrix must never be cited")
-    if not summ.get("solver_convergence_setting_note") \
-            or "NOT an error bound" not in summ["solver_convergence_setting_note"]:
-        raise GenError("row-7 envelope summary lost its convergence-setting statement "
-                       "(it must say the setting is not an error bound)")
-    if summ.get("all_graded_strictly_below_target") is not True \
-            or summ.get("graded_declarations_exactly_once") is not True:
-        raise GenError("row-7 envelope summary does not attest strict-below-target and "
-                       "exactly-once graded declarations")
     exclusions = " ".join(summ.get("exclusions", []))
     for needle in ("0.90 V reference", "IBIAS", "#190"):
         if needle not in exclusions:
             raise GenError(f"row-7 envelope summary exclusions dropped: {needle!r}")
-
-    # --- design freshness: the tree vs the record's own pins ---------------
-    fresh = {}
-    for pin in blk["design_freshness_pins"]:
-        p = root / pin["path"]
-        if not p.is_file():
-            raise GenError(f"row-7 envelope design pin target missing: {pin['path']}")
-        actual = sha256_file(p)
-        recorded = (prov.get("input_sha256") or {}).get(pin["path"])
-        if recorded != pin["sha256"]:
-            raise GenError(f"row-7 envelope provenance recorded {pin['path']} as "
-                           f"{recorded}, selection pins {pin['sha256']}")
-        fresh[pin["path"]] = {"pinned_sha256": pin["sha256"], "actual_sha256": actual,
-                              "matches": actual == pin["sha256"]}
-        sources.append({"role": "row7_envelope_design_freshness", "path": pin["path"],
-                        "sha256": actual, "pinned": True})
-    # The PDK revision the record ran on: the record's projection of the pin
-    # (fetch-determining keys) vs the tree's current pin. A PDK revision change
-    # invalidates the citation independently of the design netlists.
-    recorded_pdk = prov.get("pdk_pin_projection_sha256")
-    actual_pdk = _pdk_pin_projection_sha256(root / "sim" / "pdk-cmos5l.json")
-    if not recorded_pdk:
-        raise GenError("row-7 envelope provenance has no pdk_pin_projection_sha256; the "
-                       "citation cannot be checked against the PDK revision")
-    fresh["sim/pdk-cmos5l.json (pin projection)"] = {
-        "pinned_sha256": recorded_pdk, "actual_sha256": actual_pdk,
-        "matches": recorded_pdk == actual_pdk}
-    stale_components = sorted(k for k, v in fresh.items() if not v["matches"])
-    pair = _load_row7_pair(root, blk, rid, sources)
+    env["pair"] = _load_row7_pair(root, blk, rid, sources)
 
     # --- cross-check against the legacy benches (consistency, not identity) -
     dc_by_key = dcev["by_key"]
-    for i, r in enumerate(pvt_rows):
-        cid = _r7_corner_id(r)
+    for r in pvt_rows:
+        cid = _corner_id(r)
         nl33 = abs(values[(cid, "iq_i0_v3v30_a")] - num(r, "iq_a", "pvt")) * 1e6
         if nl33 > ROW7_CROSS_BAND_UA:
             raise GenError(f"row-7 envelope no-load Iq at Vin 3.30 V disagrees with the "
@@ -1108,10 +1129,7 @@ def load_row7_envelope(root: Path, sel: dict, pvt_rows: list[dict],
                            f"offline DC figure at {cid}: {values[(cid, 'iq_i50m_v3v30_a')] * 1e6:.4f} uA "
                            f"vs {dcv['iq_fullload_excl_load_a'] * 1e6:.4f} uA "
                            f"(band {ROW7_CROSS_BAND_UA} uA)")
-    return {"cfg": blk, "rid": rid, "values": values, "summary": summ, "pair": pair,
-            "fresh": fresh, "stale_components": stale_components,
-            "report_rel": blk["files"]["report_json"]["path"],
-            "summary_rel": blk["files"]["summary_json"]["path"]}
+    return {k: v for k, v in env.items() if k != "by_cid"}
 
 
 def load_row5_envelope(root: Path, sel: dict, pvt_rows: list[dict],
@@ -1120,134 +1138,22 @@ def load_row5_envelope(root: Path, sel: dict, pvt_rows: list[dict],
     or None when selection.json cites none (the report then states the gap and
     gives the row no envelope credit).
 
-    Fail-closed on every tamper (hard GenError), exactly as the row-7 loader:
-    pin mismatches, report hash pins, a request that does not declare the row
-    limits and spec_row tag on exactly the six graded measurements, a matrix
-    that is not a whole clean 45-corner pass with every named step ok once, a
-    value at or beyond the strict target, a summary that disagrees with the
-    report, or a disagreement with the offline DC columns beyond the stated
-    cross-check band. Design/PDK drift is reported as stale_components.
+    The shared stages are `_load_graded_envelope`; this adds the row-5 summary
+    worst-normalised-value / qualification checks and the cross-check against
+    the offline DC columns beyond the stated band (all hard GenError).
+    Design/PDK drift is reported as stale_components.
     """
     blk = sel.get("row5_envelope_evidence")
     if blk is None:
         return None
     if not isinstance(blk, dict):
         raise GenError("selection.json row5_envelope_evidence is not an object")
-    rid = blk["id"]
-    paths = {}
-    for key in ("report_json", "summary_json", "request_json", "tb_spice",
-                "corners_lib", "provenance_json"):
-        entry = blk["files"][key]
-        if f"/{rid}/" not in entry["path"]:
-            raise GenError(f"row-5 envelope file {entry['path']} is not under the selected id {rid}")
-        paths[key] = pinned(root, entry, f"row5_envelope_{key}", sources)
-    report = json.loads(paths["report_json"].read_text(encoding="utf-8"))
-    request = json.loads(paths["request_json"].read_text(encoding="utf-8"))
-    prov = json.loads(paths["provenance_json"].read_text(encoding="utf-8"))
-    summary = json.loads(paths["summary_json"].read_text(encoding="utf-8"))
+    env = _load_graded_envelope(
+        root, blk, pvt_rows, sources, label="row-5", role_prefix="row5_envelope",
+        envelope_dir="row5-envelope", spec_row_id=ROW5_SPEC_ROW_ID,
+        limits_by_name=ROW5_LIMITS, steps_map=ROW5_STEPS, raw_step_meas="vout_v")
+    values, summ, by_cid = env["values"], env["summary"], env["by_cid"]
 
-    tb_hash = "sha256:" + sha256_file(paths["tb_spice"])
-    got_in = ((report.get("provenance") or {}).get("input") or {}).get("content_hash")
-    if got_in != tb_hash:
-        raise GenError(f"row-5 envelope report pins input {got_in}, committed tb.spice is {tb_hash}")
-    nl = report.get("netlist")
-    nl_path = nl.get("path") if isinstance(nl, dict) else nl
-    if nl_path != "tb.spice" and not str(nl_path).endswith(f"row5-envelope/{rid}/tb.spice"):
-        raise GenError(f"row-5 envelope report netlist is {nl_path!r}, not this record's tb.spice")
-    lib_hash = sha256_file(paths["corners_lib"])
-    env_lib = (report.get("environment") or {}).get("models_lib_sha256")
-    if env_lib != lib_hash:
-        raise GenError(f"row-5 envelope report pins models_lib {env_lib}, "
-                       f"committed corners.lib is {lib_hash}")
-    if prov.get("record_id") != rid or prov.get("probe"):
-        raise GenError(f"row-5 envelope provenance names record {prov.get('record_id')!r} "
-                       f"(probe={prov.get('probe')!r}), selected {rid!r}; a probe is never citable")
-
-    req_names = [m.get("name") for m in request.get("measurements", [])]
-    if sorted(req_names) != sorted(ROW5_GRADED):
-        raise GenError(f"row-5 envelope request measurements {req_names} differ from the six "
-                       f"graded figures {list(ROW5_GRADED)} (each exactly once)")
-    for m in request["measurements"]:
-        if m.get("limits") != ROW5_LIMITS[m["name"]] or m.get("spec_row") != ROW5_SPEC_ROW_ID:
-            raise GenError(f"row-5 envelope request measurement {m['name']} declares limits "
-                           f"{m.get('limits')} / spec_row {m.get('spec_row')!r}, not the DR-0007 row-5 "
-                           f"target {ROW5_LIMITS[m['name']]} / {ROW5_SPEC_ROW_ID!r}")
-        if "expr" not in m:
-            raise GenError(f"row-5 envelope measurement {m['name']} is not a derived expr")
-    rep_graded = [m for m in report.get("measurements", []) if m.get("name") in ROW5_GRADED]
-    if sorted(m["name"] for m in rep_graded) != sorted(ROW5_GRADED):
-        raise GenError("row-5 envelope report does not declare each of the six graded "
-                       f"figures exactly once (got {sorted(m['name'] for m in rep_graded)})")
-    for m in rep_graded:
-        if m.get("limits") != ROW5_LIMITS[m["name"]] or m.get("spec_row") != ROW5_SPEC_ROW_ID:
-            raise GenError(f"row-5 envelope report graded {m['name']} against "
-                           f"{m.get('limits')} / spec_row {m.get('spec_row')!r}, not "
-                           f"{ROW5_LIMITS[m['name']]} / {ROW5_SPEC_ROW_ID!r}")
-    steps = request.get("analysis_steps")
-    if not isinstance(steps, list) or sorted(s.get("name") for s in steps) != sorted(ROW5_STEPS):
-        raise GenError("row-5 envelope request step names are not the eight named "
-                       "(Vin, Iload) operating points")
-    for s in steps:
-        alter = s.get("alter") or {}
-        if (alter.get("Vin"), alter.get("Iload")) != ROW5_STEPS[s["name"]]:
-            raise GenError(f"row-5 envelope step {s['name']!r} alters {alter}, not its own "
-                           "(Vin, Iload) bias")
-        sm = s.get("measurements") or []
-        if len(sm) != 1 or sm[0].get("name") != "vout_v" or sm[0].get("limits") \
-                or sm[0].get("spec_row"):
-            raise GenError(f"row-5 envelope step {s['name']!r} must report exactly the "
-                           "ungraded, untagged output voltage vout_v")
-    ngs = (request.get("options") or {}).get("ngspice_options") or {}
-    if ngs.get("reltol") is None or ngs.get("abstol") is None \
-            or (report.get("environment") or {}).get("ngspice_options") != ngs:
-        raise GenError("row-5 envelope request does not pin solver tolerances, or the "
-                       "report does not echo them (options.ngspice_options)")
-
-    want_ids = {_r7_corner_id(r) for r in pvt_rows}
-    by_cid: dict = {}
-    for c in report.get("corners", []):
-        cid = c.get("corner_id")
-        if cid in by_cid:
-            raise GenError(f"row-5 envelope reports corner {cid} twice")
-        by_cid[cid] = c
-    if set(by_cid) != want_ids or len(by_cid) != 45:
-        raise GenError(f"row-5 envelope corner set incomplete or malformed "
-                       f"({len(by_cid)} corners, missing {sorted(want_ids - set(by_cid))[:3]}...)")
-    for field, want in (("status", "pass"), ("passed", 45), ("failed", 0),
-                        ("errored", 0), ("inconclusive", 0)):
-        if report.get(field) != want:
-            raise GenError(f"row-5 envelope {field} is {report.get(field)!r}, not {want!r}")
-    values: dict = {}
-    for cid, c in by_cid.items():
-        errs = [d for d in c.get("diagnostics", []) if d.get("severity") == "error"]
-        if errs or c.get("status") != "pass":
-            raise GenError(f"row-5 envelope corner {cid} is not clean: status "
-                           f"{c.get('status')!r}, {len(errs)} error diagnostics")
-        st = c.get("steps", [])
-        if sorted(s.get("name") for s in st) != sorted(ROW5_STEPS) \
-                or any(s.get("status") != "ok" for s in st):
-            raise GenError(f"row-5 envelope corner {cid} does not run each of the eight "
-                           f"named steps exactly once, all ok (got {[s.get('name') for s in st]})")
-        mnames = [x.get("name") for x in c.get("measurements", [])]
-        if any(mnames.count(n) != 1 for n in ROW5_GRADED):
-            raise GenError(f"row-5 envelope corner {cid} does not report each graded "
-                           "figure exactly once")
-        m = {x["name"]: x for x in c.get("measurements", [])}
-        for n in ROW5_GRADED:
-            v = m.get(n, {}).get("value")
-            if v is None or not math.isfinite(v) or m[n].get("status") != "pass":
-                raise GenError(f"row-5 envelope corner {cid} measurement {n} is "
-                               f"{m.get(n)}: not a resolved, passing value")
-            if v >= ROW5_LIMITS[n]["max"]:
-                raise GenError(f"row-5 envelope corner {cid} measurement {n} is {v!r}, "
-                               f"not strictly below the {ROW5_LIMITS[n]['max']} target")
-            values[(cid, n)] = v
-    cov = (report.get("coverage") or {}).get("measurements_with_limits")
-    if cov != len(ROW5_GRADED):
-        raise GenError(f"row-5 envelope measurements_with_limits is {cov!r}, "
-                       f"not {len(ROW5_GRADED)}")
-
-    summ = summary.get("summary") or {}
     for family, names in (("worst_line", ROW5_LINE_GRADED), ("worst_load", ROW5_LOAD_GRADED)):
         want_v = max(values[(cid, n)] / ROW5_LIMITS[n]["max"] for cid in by_cid for n in names)
         got = summ.get(family, {})
@@ -1256,47 +1162,15 @@ def load_row5_envelope(root: Path, sel: dict, pvt_rows: list[dict],
                 rel_tol=1e-12, abs_tol=1e-15):
             raise GenError(f"row-5 envelope summary {family} {got} disagrees with the "
                            f"report's worst normalised value {want_v}")
-    if not summ.get("definitive"):
-        raise GenError("row-5 envelope summary is not definitive; an incomplete or "
-                       "failing matrix must never be cited")
-    if "NOT an error bound" not in (summ.get("solver_convergence_setting_note") or ""):
-        raise GenError("row-5 envelope summary lost its convergence-setting statement")
-    if summ.get("all_graded_strictly_below_target") is not True \
-            or summ.get("graded_declarations_exactly_once") is not True:
-        raise GenError("row-5 envelope summary does not attest strict-below-target and "
-                       "exactly-once graded declarations")
     quals = " ".join(summ.get("qualifications", []))
     for needle in ("0.90 V reference", "discrete sampling", "accuracy window", "row 2"):
         if needle not in quals:
             raise GenError(f"row-5 envelope summary qualifications dropped: {needle!r}")
 
-    fresh = {}
-    for pin in blk["design_freshness_pins"]:
-        p = root / pin["path"]
-        if not p.is_file():
-            raise GenError(f"row-5 envelope design pin target missing: {pin['path']}")
-        actual = sha256_file(p)
-        recorded = (prov.get("input_sha256") or {}).get(pin["path"])
-        if recorded != pin["sha256"]:
-            raise GenError(f"row-5 envelope provenance recorded {pin['path']} as "
-                           f"{recorded}, selection pins {pin['sha256']}")
-        fresh[pin["path"]] = {"pinned_sha256": pin["sha256"], "actual_sha256": actual,
-                              "matches": actual == pin["sha256"]}
-        sources.append({"role": "row5_envelope_design_freshness", "path": pin["path"],
-                        "sha256": actual, "pinned": True})
-    recorded_pdk = prov.get("pdk_pin_projection_sha256")
-    actual_pdk = _pdk_pin_projection_sha256(root / "sim" / "pdk-cmos5l.json")
-    if not recorded_pdk:
-        raise GenError("row-5 envelope provenance has no pdk_pin_projection_sha256")
-    fresh["sim/pdk-cmos5l.json (pin projection)"] = {
-        "pinned_sha256": recorded_pdk, "actual_sha256": actual_pdk,
-        "matches": recorded_pdk == actual_pdk}
-    stale_components = sorted(k for k, v in fresh.items() if not v["matches"])
-
     # Cross-check against the offline DC columns (signed there; |.| here).
     dc_by_key = dcev["by_key"]
     for r in pvt_rows:
-        cid = _r7_corner_id(r)
+        cid = _corner_id(r)
         dcv = dc_by_key[(r["corner"], r["temp_c"], r["res_section"])][0]
         for ln, key in zip(ROW5_LINE_LOADS, ("0mA", "25mA", "50mA")):
             d = abs(values[(cid, f"line_{ln}_mvpv")] - abs(dcv[f"line_reg_mv_per_v_{key}"]))
@@ -1310,10 +1184,7 @@ def load_row5_envelope(root: Path, sel: dict, pvt_rows: list[dict],
                 raise GenError(f"row-5 envelope load regulation at {vn} disagrees with the "
                                f"offline DC figure at {cid} by {d:.4g} % "
                                f"(band {ROW5_CROSS_BAND_LOAD_PCT})")
-    return {"cfg": blk, "rid": rid, "values": values, "summary": summ,
-            "fresh": fresh, "stale_components": stale_components,
-            "report_rel": blk["files"]["report_json"]["path"],
-            "summary_rel": blk["files"]["summary_json"]["path"]}
+    return {k: v for k, v in env.items() if k != "by_cid"}
 
 
 # --------------------------------------------------------------------------- #
@@ -1640,7 +1511,7 @@ def row_5_regulation(ctx: RowContext) -> dict:
                  "Qualifications: " + "; ".join(r5["summary"]["qualifications"]) + ".")
         pts_line, pts_load = [], []
         for i, prow_row in enumerate(ctx.prow):
-            cid = _r7_corner_id(prow_row)
+            cid = _corner_id(prow_row)
             for ln in ROW5_LINE_LOADS:
                 at = dict(ctx.pid[i])
                 at["load"] = load_lbl[ln]
@@ -1709,7 +1580,7 @@ def row_7_iq(ctx: RowContext) -> dict:
              "offline subtraction")):
         pts = []
         for i, prow_row in enumerate(ctx.prow):
-            cid = _r7_corner_id(prow_row)
+            cid = _corner_id(prow_row)
             for vn, _vv in ROW7_VINS:
                 n = f"iq_{family}_{vn}_a"
                 at = dict(ctx.pid[i])
