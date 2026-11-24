@@ -48,7 +48,7 @@ name: CI
 #                                 from their raw reports. No PDK, no simulator.
 #   sim-append-only               sim/tools/check_append_only.py: a PR may add
 #                                 but never modify/delete/rename landed sim/
-#                                 evidence (eight protected classes; #102, #317).
+#                                 evidence (nine protected classes; #102, #317, #319).
 #                                 Pull requests only. No PDK, no simulator.
 #   artifact-manifests            scripts/check_artifact_manifests.py: stored-
 #                                 evidence manifests under manifests/artifacts/
@@ -759,6 +759,17 @@ jobs:
         run: |
           python3 sim/ldo-cmos5l-pvt-sweep/row7_envelope.py check
 
+      - name: Row-5 graded klt sim envelope reproduces and self-verifies (#319)
+        # Offline, stdlib-only, same anti-rot gate as the row-7 one above for
+        # the row-5 line/load regulation envelope: every committed
+        # row5-envelope/<record-id>/ request and summary file reproduces, the
+        # report's hash pins match, and the request declares the DR-0007 row-5
+        # limits (5 mV/V line, 1 % load) on exactly the six graded derived
+        # measurements with spec_row dr0007-row5-line-load-regulation. The row
+        # stays Open.
+        run: |
+          python3 sim/ldo-cmos5l-pvt-sweep/row5_envelope.py check
+
       - name: E1 record byte-check (e1_oppoints.py check, issue #158)
         # Offline, stdlib-only: no simulator and no PDK. Regenerates the E1
         # reduction CSV/JSON and record md from the committed raw exports and
@@ -908,6 +919,17 @@ jobs:
           test "${PIPESTATUS[0]}" -eq 0
           if grep -Eq 'skipped' /tmp/row7-unittest.log; then
             echo "::error::row-7 envelope tests skipped; the pinned klayout-tools must import so the real-grader negative controls run"
+            exit 1
+          fi
+
+      - name: Row-5 envelope tests through klt's real grader (#319; a skip fails the job)
+        # Same contract as the row-7 step above: the real-grader negative
+        # controls are skipUnless the pinned klt imports, and here they must run.
+        run: |
+          python3 -m unittest discover -s sim/ldo-cmos5l-pvt-sweep -p 'test_row5_envelope.py' -v 2>&1 | tee /tmp/row5-unittest.log
+          test "${PIPESTATUS[0]}" -eq 0
+          if grep -Eq 'skipped' /tmp/row5-unittest.log; then
+            echo "::error::row-5 envelope tests skipped; the pinned klayout-tools must import so the real-grader negative controls run"
             exit 1
           fi
 

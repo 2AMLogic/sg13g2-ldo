@@ -335,7 +335,7 @@ class Cases(Repo):
         rc, out = self.run_check()
         self.assertEqual(rc, 2, out)
 
-    def test_protected_set_is_exactly_eight_globs(self):
+    def test_protected_set_is_exactly_nine_globs(self):
         sys.path.insert(0, str(CHECKER.parent))
         try:
             import check_append_only as m
@@ -345,7 +345,8 @@ class Cases(Repo):
             "sim/*/records/**", "sim/*/corners/**",
             "sim/*/netlist-snapshots/**", "sim/*/evidence/**",
             "sim/*/backend-validation/**", "sim/*/startup/**",
-            "sim/*/row4-envelope/**", "sim/*/row7-envelope/**"]))
+            "sim/*/row4-envelope/**", "sim/*/row7-envelope/**",
+            "sim/*/row5-envelope/**"]))
         self.assertTrue(m.is_protected(
             "sim/ldo-cmos5l-pvt-sweep/row7-envelope/20261121-001957-x/report.json"))
         self.assertTrue(m.is_protected(

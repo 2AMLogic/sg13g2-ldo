@@ -1,0 +1,38 @@
+* sg13g2-ldo -- SG13CMOS5L row-5 (line / load regulation) GRADED corner matrix.
+* Generated from sim/ldo-cmos5l-pvt-sweep/testbench/tb_row5_envelope_cmos5l.spice.tmpl
+* by sim/ldo-cmos5l-pvt-sweep/row5_envelope.py -- edit the template, never a
+* generated row5-envelope/<record-id>/tb.spice.
+*
+* Same circuit, rails, VREF, IBIAS, Cout and EN tie as
+* tb_row7_envelope_cmos5l.spice.tmpl.  This deck is a CIRCUIT BODY ONLY with
+* no analysis of its own: the request declares EIGHT `analysis_steps[]`
+* operating points per corner, each `alter`ing this deck's Vin and Iload
+* sources and measuring the raw output voltage.
+*
+*   Vin = 2.97 V and 3.63 V at Iload = 0, 25 and 50 mA; Vin = 3.30 V at 0, 50 mA.
+*
+* The graded regulation figures are DERIVED `expr` measurements over those
+* step results, with the DR-0007 row-5 limits and `spec_row` declared INSIDE
+* request.json, so the verdict is `klt sim`'s own:
+*
+*   line_<load>_mvpv  = 1000 * |Vout(3.63 V) - Vout(2.97 V)| / 0.66   [mV/V]
+*   load_<vin>_pct    = 100 * |Vout(0 mA) - Vout(50 mA)| / Vout(0 mA)  [%]
+*
+* No .lib cards, .temp card, analysis line or .control block: `klt sim`
+* composes all of those from the record's request.json (a deck-side
+* `.control pre_osdi` block would double-load every OSDI binary).
+*
+* Design netlist under test: ../../../../design/sg13cmos5l/netlist/ldo_core_cmos5l.spice
+
+.options tnom=27
+
+.include "../../../../design/sg13cmos5l/netlist/ldo_core_cmos5l.spice"
+
+Vin VIN 0 dc 3.30
+Vref VREF 0 dc 0.90
+Ibias IBIAS 0 dc 2u
+Iload VOUT 0 dc 0
+Cout VOUT 0 1u
+
+* EN tied to VIN (enabled; tracks the supply).
+Xtop VIN VOUT 0 VREF IBIAS VIN ldo_core_cmos5l
