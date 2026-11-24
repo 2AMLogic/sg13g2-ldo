@@ -19,6 +19,10 @@ sim/*/startup/**/artifacts/
 sim/.work/
 # synthesis / P&R scratch
 flow/build/
+# klt in-repo scratch (the pex-row4 stage's request dir embeds host PDK paths):
+# the EXIT trap in layout/run_flow.sh is the primary defence, this entry is the
+# one that survives a trap that never fires (SIGKILL / a hard host kill, #365)
+.klt/
 # local klt install, created by the setup script
 .venv/
 # >>> loom-managed (do not edit) >>>

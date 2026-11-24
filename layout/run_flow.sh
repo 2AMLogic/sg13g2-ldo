@@ -65,7 +65,12 @@ TAPS="${DIR}/erc-tap-boxes.json"
 ERC_SPEC="${DIR}/erc-supply-spec.json"
 ERC_REPORT="${DIR}/erc_supply_report.json"
 WORK="$(mktemp -d)"
-trap 'rm -rf "${WORK}"' EXIT
+# One composed EXIT trap: bash keeps a single handler per signal, so this must
+# cover every scratch dir. ${PEX_ROW4_REQUEST} (assigned unconditionally below,
+# before MODE is parsed) embeds host PDK paths, so it must never survive even a
+# failed stage; a second `trap ... EXIT` inside pex_row4_stage used to replace
+# this handler and leak ${WORK} (#365).
+trap 'rm -rf "${WORK}" "${PEX_ROW4_REQUEST}"' EXIT
 
 PDK_ROOT="${PDK_ROOT:-${HOME}/share/pdk}"
 PDK_DECK="${PDK_ROOT}/ihp-sg13cmos5l/libs.tech/klayout/tech/drc/ihp-sg13cmos5l.drc"
@@ -184,8 +189,7 @@ pex_row4_stage() {
   # model paths (the renderer resolves them from PDK_ROOT), which is why the
   # request itself is not evidence and not committed: the report pins the
   # hashes of what actually ran (request, tb, design netlist) instead.
-  rm -rf "${PEX_ROW4_REQUEST}"
-  trap 'rm -rf "${PEX_ROW4_REQUEST}"' EXIT  # scratch embeds host PDK paths: never leave it on a failed stage
+  rm -rf "${PEX_ROW4_REQUEST}"  # fresh scratch; the script-level EXIT trap removes it again on any exit path
   python3 - "${REPO}" "${PEX_ROW4_REQUEST}" "${ROW4_ENVELOPE_PY}" <<'PY'
 import os, sys
 repo, req, envelope = sys.argv[1], sys.argv[2], sys.argv[3]
