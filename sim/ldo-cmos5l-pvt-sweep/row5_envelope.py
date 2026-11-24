@@ -60,7 +60,6 @@ member the check passes with the citation unresolved.
 
 Append-only; SPICE never runs locally here (the grid goes to the fleet).
 """
-import argparse
 import json
 import os
 import sys
@@ -197,42 +196,8 @@ def request_files(subs, cs, template_text):
 # --------------------------------------------------------------------------- #
 
 def summarise_report(report, prov):
-    cs = coords(prov.get("probe", False))
-    want = {corner_id(*c): c for c in cs}
-    seen = {}
-    points = []
-    for c in report.get("corners", []):
-        cid = c.get("corner_id")
-        seen[cid] = seen.get(cid, 0) + 1
-        meas = {m["name"]: m for m in c.get("measurements", [])}
-        errs = [d for d in c.get("diagnostics", []) if d.get("severity") == "error"]
-        coord = want.get(cid)
-        p = {
-            "corner_id": cid,
-            "mos": coord[0] if coord else None,
-            "temp_c": coord[1] if coord else None,
-            "res_section": f"res_{coord[2]}" if coord else None,
-            "corner_status": c.get("status"),
-            "error_diagnostics": len(errs),
-            "n_steps_reported": len(c.get("steps", [])),
-            "steps_all_ok": re_.corner_shape_ok(c, STEP_NAMES, GRADED),
-        }
-        for n in GRADED:
-            p[n] = meas.get(n, {}).get("value")
-            p[n + "_status"] = meas.get(n, {}).get("status")
-        points.append(p)
-    points.sort(key=lambda p: p["corner_id"])
-
-    status_counts = {}
-    for p in points:
-        status_counts[p["corner_status"]] = status_counts.get(p["corner_status"], 0) + 1
-    graded_ok = all(p[n + "_status"] == "pass" for p in points for n in GRADED)
-    # Strict "<": the tool's `max` is inclusive, so equality is not credited.
-    strictly_below = all(p[n] is not None and p[n] < target_of(n)
-                         for p in points for n in GRADED)
-    rep_names = [m.get("name") for m in report.get("measurements", [])
-                 if m.get("name") in set(GRADED)]
-    declared_once = sorted(rep_names) == sorted(GRADED)
+    summ, points, base = re_.summarise_corners(
+        report, prov, graded=GRADED, step_names=STEP_NAMES, target_of=target_of)
     resolved = {n: [p for p in points if p[n] is not None] for n in GRADED}
 
     def worst(names):
@@ -246,24 +211,7 @@ def summarise_report(report, prov):
                 "target": target_of(n)}
 
     w_line, w_load = worst(LINE_GRADED), worst(LOAD_GRADED)
-    summ = {
-        "record_id": prov["record_id"],
-        "probe": bool(prov.get("probe", False)),
-        "n_expected": len(cs),
-        "n_corners_reported": len(points),
-        "coordinates_exactly_once": sorted(seen) == sorted(want) and set(seen.values()) <= {1},
-        "envelope_status": report.get("status"),
-        "passed": report.get("passed"),
-        "failed": report.get("failed"),
-        "errored": report.get("errored"),
-        "inconclusive": report.get("inconclusive"),
-        "corner_status_counts": dict(sorted(status_counts.items())),
-        "error_diagnostics_total": sum(p["error_diagnostics"] for p in points),
-        "measurements_with_limits": (report.get("coverage") or {}).get("measurements_with_limits"),
-        "graded_measurements": list(GRADED),
-        "all_graded_measurements_pass": graded_ok,
-        "all_graded_strictly_below_target": strictly_below,
-        "graded_declarations_exactly_once": declared_once,
+    summ.update({
         "target_line_mv_per_v": TARGET_LINE_MV_PER_V,
         "target_load_pct": TARGET_LOAD_PCT,
         "line_definition": "1000 * |Vout(3.63 V) - Vout(2.97 V)| / 0.66 at Iload 0, 25 "
@@ -283,27 +231,12 @@ def summarise_report(report, prov):
             "ngspice's stopping test compares each iterate with the previous one and "
             "bounds nothing about the distance to the exact operating point. No paired "
             "tight-tolerance record exists for row 5: observed solver sensitivity is not claimed",
-        "definitive": False,
-    }
+    })
     if w_line:
         summ["worst_line"] = w_line
     if w_load:
         summ["worst_load"] = w_load
-    summ["definitive"] = bool(
-        not summ["probe"]
-        and summ["n_corners_reported"] == len(cs) == N_EXPECTED
-        and summ["coordinates_exactly_once"]
-        and summ["envelope_status"] == "pass"
-        and summ["passed"] == N_EXPECTED
-        and not summ["failed"] and not summ["errored"] and not summ["inconclusive"]
-        and summ["error_diagnostics_total"] == 0
-        and all(p["steps_all_ok"] for p in points)
-        and graded_ok
-        and strictly_below
-        and declared_once
-        and summ["measurements_with_limits"] == len(GRADED)
-        and all(len(resolved[n]) == N_EXPECTED for n in GRADED)
-    )
+    summ["definitive"] = bool(base and all(len(resolved[n]) == N_EXPECTED for n in GRADED))
     return summ, points
 
 
@@ -402,15 +335,7 @@ def check_record(rid, problems):
     summ, prov = re_.check_request_and_summary(
         record_dir, rid, problems, slug="row5", request_files_fn=request_files,
         template_rel=TEMPLATE, summary_files_fn=summary_files)
-    try:
-        rep = json.load(open(os.path.join(record_dir, "report.json")))
-        req = json.load(open(os.path.join(record_dir, "request.json")))
-    except (OSError, ValueError) as exc:
-        problems.append(f"{rid}: cannot compare echoed solver options: {exc}")
-    else:
-        if not echoed_options_match(rep, req):
-            problems.append(f"{rid}: report.json environment.ngspice_options != "
-                            "request.json options.ngspice_options")
+    re_.check_echoed_options(record_dir, rid, problems)
     re_.check_hash_pins(record_dir, rid, problems, slug="row5",
                         tail=f"row5-envelope/{rid}/tb.spice")
     re_.check_declared_gates(record_dir, rid, problems,
@@ -421,8 +346,7 @@ def check_record(rid, problems):
 
 def selected_record():
     """The record id selection.json cites for row 5 (None: no record cited)."""
-    sel = json.load(open(os.path.join(REPO, "sim", "characterization", "selection.json")))
-    return (sel.get("row5_envelope_evidence") or {}).get("id")
+    return re_.selected_record(REPO, "row5_envelope_evidence")
 
 
 def cited_record():
@@ -444,13 +368,8 @@ def cmd_check(a):
     problems = []
     rids = records(ROOT)
     summaries = {rid: check_record(rid, problems) for rid in rids}
-    selected = selected_record()
-    if selected is not None:
-        if selected not in summaries:
-            problems.append(f"selection.json cites row-5 record {selected}, "
-                            "which is not committed")
-        else:
-            problems += stale_inputs(selected)
+    re_.check_selected_record(REPO, "row5_envelope_evidence", "row-5", summaries,
+                              problems, stale_inputs, allow_none=True)
     cited = re_.check_item5_citation(REPO, ROOT, ROW5_ID, "row5", summaries,
                                      problems, stale_inputs)
     for p in problems:
@@ -465,26 +384,7 @@ def cmd_check(a):
 
 
 def main():
-    ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    sp = ap.add_subparsers(dest="cmd", required=True)
-    s = sp.add_parser("submit", help="mint a new record on the EDA batch fleet")
-    s.add_argument("--probe", action="store_true",
-                   help=f"{len(PROBE_COORDS)} coordinates only; never citable")
-    s.add_argument("--dry-run", action="store_true",
-                   help="build and validate the request without submitting")
-    s.set_defaults(fn=cmd_submit)
-    c = sp.add_parser("check", help="offline: every committed record reproduces (CI)")
-    c.set_defaults(fn=cmd_check)
-    m = sp.add_parser("summarise", help="rewrite one record's summary files")
-    m.add_argument("record_id")
-    m.add_argument("--check", action="store_true")
-    m.set_defaults(fn=cmd_summarise)
-    a = ap.parse_args()
-    try:
-        return a.fn(a)
-    except Error as exc:
-        print(f"row5_envelope: {exc}", file=sys.stderr)
-        return 1
+    return re_.run_cli(__doc__, "row5", cmd_submit, cmd_check, cmd_summarise)
 
 
 if __name__ == "__main__":

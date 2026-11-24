@@ -36,6 +36,7 @@ No .control block ever appears in a driver's template: the fleet runner
 applies `options.osdi_preload` itself, so a deck-side `pre_osdi` load makes
 every corner fail (see row4_envelope.py's header for the incident).
 """
+import argparse
 import datetime
 import hashlib
 import json
@@ -295,6 +296,130 @@ def echoed_options_match(report, request):
     return asked is not None and echoed == asked
 
 
+def summarise_corners(report, prov, *, graded, ungraded=(), step_names=None,
+                      target_of=None, point_fields=None, corner_status_key=None):
+    """The row-agnostic half of `summarise_report`: harvest per-corner points,
+    build the 15 common summary keys and the base `definitive` conjunction.
+
+    graded/ungraded: measurement names carried on every point (graded ones
+    also get a `_status`). step_names: when given, points carry
+    `n_steps_reported` / `steps_all_ok` and the summary gains
+    `all_graded_strictly_below_target` / `graded_declarations_exactly_once`
+    (needs `target_of(name)`), which then join `definitive`. point_fields:
+    optional fn(corner, meas) -> dict of row-specific point fields.
+    Returns (summ, points, base_definitive); the driver adds its row-specific
+    keys and ANDs any extra gate into `definitive`."""
+    cs = coords(prov.get("probe", False))
+    want = {corner_id(*c): c for c in cs}
+    seen = {}
+    points = []
+    for c in report.get("corners", []):
+        cid = c.get("corner_id")
+        seen[cid] = seen.get(cid, 0) + 1
+        meas = {m["name"]: m for m in c.get("measurements", [])}
+        errs = [d for d in c.get("diagnostics", []) if d.get("severity") == "error"]
+        coord = want.get(cid)
+        p = {
+            "corner_id": cid,
+            "mos": coord[0] if coord else None,
+            "temp_c": coord[1] if coord else None,
+            "res_section": f"res_{coord[2]}" if coord else None,
+            "corner_status": c.get("status"),
+            "error_diagnostics": len(errs),
+        }
+        if step_names is not None:
+            p["n_steps_reported"] = len(c.get("steps", []))
+            # Each expected named step exactly once and ok, each graded
+            # figure exactly once (six repeats of one step must not pass).
+            p["steps_all_ok"] = corner_shape_ok(c, step_names, graded)
+        if point_fields:
+            p.update(point_fields(c, meas))
+        for n in list(graded) + list(ungraded):
+            p[n] = meas.get(n, {}).get("value")
+        for n in graded:
+            p[n + "_status"] = meas.get(n, {}).get("status")
+        points.append(p)
+    points.sort(key=lambda p: p["corner_id"])
+
+    status_counts = {}
+    for p in points:
+        status_counts[p["corner_status"]] = status_counts.get(p["corner_status"], 0) + 1
+    graded_ok = all(p[n + "_status"] == "pass" for p in points for n in graded)
+    summ = {
+        "record_id": prov["record_id"],
+        "probe": bool(prov.get("probe", False)),
+        "n_expected": len(cs),
+        "n_corners_reported": len(points),
+        "coordinates_exactly_once": sorted(seen) == sorted(want) and set(seen.values()) <= {1},
+        "envelope_status": report.get("status"),
+        "passed": report.get("passed"),
+        "failed": report.get("failed"),
+        "errored": report.get("errored"),
+        "inconclusive": report.get("inconclusive"),
+        "corner_status_counts": dict(sorted(status_counts.items())),
+        "error_diagnostics_total": sum(p["error_diagnostics"] for p in points),
+        "measurements_with_limits": (report.get("coverage") or {}).get("measurements_with_limits"),
+        "graded_measurements": list(graded),
+        "all_graded_measurements_pass": graded_ok,
+        "definitive": False,
+    }
+    base = bool(
+        not summ["probe"]
+        and summ["n_corners_reported"] == len(cs) == N_EXPECTED
+        and summ["coordinates_exactly_once"]
+        and summ["envelope_status"] == "pass"
+        and summ["passed"] == N_EXPECTED
+        and not summ["failed"] and not summ["errored"] and not summ["inconclusive"]
+        and summ["error_diagnostics_total"] == 0
+        and graded_ok
+        and summ["measurements_with_limits"] == len(graded)
+    )
+    if step_names is not None:
+        # DR-0007 rows are STRICT "<"; klt sim's `max` limit is inclusive
+        # (a value exactly at target grades `pass`), so strictness is
+        # enforced here: a graded figure AT the target is not definitive.
+        strictly_below = all(p[n] is not None and p[n] < target_of(n)
+                             for p in points for n in graded)
+        rep_names = [m.get("name") for m in report.get("measurements", [])
+                     if m.get("name") in set(graded)]
+        declared_once = sorted(rep_names) == sorted(graded)
+        summ["all_graded_strictly_below_target"] = strictly_below
+        summ["graded_declarations_exactly_once"] = declared_once
+        base = bool(base and all(p["steps_all_ok"] for p in points)
+                    and strictly_below and declared_once)
+    return summ, points, base
+
+
+def run_cli(doc, slug, cmd_submit, cmd_check, cmd_summarise,
+            add_extra_args=None):
+    """The shared submit/check/summarise argparse setup and Error dispatch.
+    add_extra_args(sp, submit_parser) lets a driver add flags to `submit` and
+    its own subparsers (row 7's --profile/--pair-of and `pair`)."""
+    ap = argparse.ArgumentParser(description=doc.split("\n")[0])
+    sp = ap.add_subparsers(dest="cmd", required=True)
+    s = sp.add_parser("submit", help="mint a new record on the EDA batch fleet")
+    s.add_argument("--probe", action="store_true",
+                   help=f"{len(coords(True))} coordinates only, for a capacity / "
+                        "toolchain probe; never citable")
+    s.add_argument("--dry-run", action="store_true",
+                   help="build and validate the request without submitting")
+    s.set_defaults(fn=cmd_submit)
+    if add_extra_args:
+        add_extra_args(sp, s)
+    c = sp.add_parser("check", help="offline: every committed record reproduces (CI)")
+    c.set_defaults(fn=cmd_check)
+    m = sp.add_parser("summarise", help="rewrite one record's summary files")
+    m.add_argument("record_id")
+    m.add_argument("--check", action="store_true")
+    m.set_defaults(fn=cmd_summarise)
+    a = ap.parse_args()
+    try:
+        return a.fn(a)
+    except Error as exc:
+        print(f"{slug}_envelope: {exc}", file=sys.stderr)
+        return 1
+
+
 # --------------------------------------------------------------------------- #
 # submit (the fleet run; one append-only record per invocation)
 # --------------------------------------------------------------------------- #
@@ -404,6 +529,49 @@ def check_request_and_summary(record_dir, rid, problems, *, slug,
     problems += [f"{rid}: summary {b}"
                  for b in write_or_check(record_dir, files, check=True)]
     return summ, prov
+
+
+def check_echoed_options(record_dir, rid, problems):
+    """The record's report.json echoes exactly the solver options its
+    request.json asked for (files read with context managers)."""
+    try:
+        with open(os.path.join(record_dir, "report.json")) as f:
+            rep = json.load(f)
+        with open(os.path.join(record_dir, "request.json")) as f:
+            req = json.load(f)
+    except (OSError, ValueError) as exc:
+        problems.append(f"{rid}: cannot compare echoed solver options: {exc}")
+        return
+    if not echoed_options_match(rep, req):
+        problems.append(
+            f"{rid}: report.json environment.ngspice_options "
+            f"{(rep.get('environment') or {}).get('ngspice_options')!r} != "
+            f"request.json options.ngspice_options "
+            f"{(req.get('options') or {}).get('ngspice_options')!r}")
+
+
+def selected_record(repo, selection_key):
+    """The record id sim/characterization/selection.json cites under
+    `selection_key` (None: no record cited). `repo` is taken at call time so
+    tests that rebind a driver's REPO keep working."""
+    with open(os.path.join(repo, "sim", "characterization", "selection.json")) as f:
+        sel = json.load(f)
+    return (sel.get(selection_key) or {}).get("id")
+
+
+def check_selected_record(repo, selection_key, row_label, summaries, problems,
+                          stale_inputs_fn, allow_none=False):
+    """The cited record must be committed and describe the tree as it is now.
+    allow_none: a missing citation is fine (row 5 before it is cited)."""
+    selected = selected_record(repo, selection_key)
+    if selected is None and allow_none:
+        return selected
+    if selected not in summaries:
+        problems.append(f"selection.json cites {row_label} record {selected}, "
+                        "which is not committed")
+    else:
+        problems += stale_inputs_fn(selected)
+    return selected
 
 
 def check_hash_pins(record_dir, rid, problems, *, slug, tail):

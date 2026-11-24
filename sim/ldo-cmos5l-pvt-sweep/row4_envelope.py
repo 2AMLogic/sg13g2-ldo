@@ -74,7 +74,6 @@ Append-only: `submit` mints a NEW timestamped record id and refuses to touch
 an existing one.  SPICE never runs locally here -- this is a 45-point grid and
 dispatch hosts submit grids to the fleet (CLAUDE.md host rules).
 """
-import argparse
 import json
 import os
 import sys
@@ -218,55 +217,15 @@ def design_netlist_include(depth):
 # --------------------------------------------------------------------------- #
 
 def summarise_report(report, prov):
-    cs = coords(prov.get("probe", False))
-    want = {corner_id(*c): c for c in cs}
-    seen = {}
-    points = []
-    for c in report.get("corners", []):
-        cid = c.get("corner_id")
-        seen[cid] = seen.get(cid, 0) + 1
-        meas = {m["name"]: m for m in c.get("measurements", [])}
-        errs = [d for d in c.get("diagnostics", []) if d.get("severity") == "error"]
+    def dropout_field(c, meas):
         vin = meas.get("vin_1pct_loss_v", {}).get("value")
-        coord = want.get(cid)
-        points.append({
-            "corner_id": cid,
-            "mos": coord[0] if coord else None,
-            "temp_c": coord[1] if coord else None,
-            "res_section": f"res_{coord[2]}" if coord else None,
-            "corner_status": c.get("status"),
-            "error_diagnostics": len(errs),
-            "dropout_v": None if vin is None else vin - VOUT_TARGET_V,
-            **{n: meas.get(n, {}).get("value") for n in GRADED + UNGRADED},
-            **{n + "_status": meas.get(n, {}).get("status") for n in GRADED},
-        })
-    points.sort(key=lambda p: p["corner_id"])
+        return {"dropout_v": None if vin is None else vin - VOUT_TARGET_V}
 
-    status_counts = {}
-    for p in points:
-        status_counts[p["corner_status"]] = status_counts.get(p["corner_status"], 0) + 1
-    graded_ok = all(p[n + "_status"] == "pass" for p in points for n in GRADED)
+    summ, points, base = re_.summarise_corners(
+        report, prov, graded=GRADED, ungraded=UNGRADED, point_fields=dropout_field)
     resolved = [p for p in points if p["dropout_v"] is not None]
-    summ = {
-        "record_id": prov["record_id"],
-        "probe": bool(prov.get("probe", False)),
-        "n_expected": len(cs),
-        "n_corners_reported": len(points),
-        "coordinates_exactly_once": sorted(seen) == sorted(want) and set(seen.values()) <= {1},
-        "envelope_status": report.get("status"),
-        "passed": report.get("passed"),
-        "failed": report.get("failed"),
-        "errored": report.get("errored"),
-        "inconclusive": report.get("inconclusive"),
-        "corner_status_counts": dict(sorted(status_counts.items())),
-        "error_diagnostics_total": sum(p["error_diagnostics"] for p in points),
-        "measurements_with_limits": (report.get("coverage") or {}).get("measurements_with_limits"),
-        "graded_measurements": list(GRADED),
-        "all_graded_measurements_pass": graded_ok,
-        "target_dropout_v": TARGET_DROPOUT_V,
-        "vout_target_v": VOUT_TARGET_V,
-        "definitive": False,
-    }
+    summ["target_dropout_v"] = TARGET_DROPOUT_V
+    summ["vout_target_v"] = VOUT_TARGET_V
     if resolved:
         w = max(resolved, key=lambda p: p["dropout_v"])
         summ["worst_corner"] = {k: w[k] for k in ("corner_id", "mos", "temp_c", "res_section",
@@ -277,18 +236,7 @@ def summarise_report(report, prov):
         summ["series_resistance_equivalent_ohm"] = summ["margin_to_target_v"] / LOAD_A
         summ["grid_bracket_v"] = 0.005
         summ["worst_dropout_upper_bound_v"] = w["dropout_v"] + 0.005
-    summ["definitive"] = bool(
-        not summ["probe"]
-        and summ["n_corners_reported"] == len(cs) == N_EXPECTED
-        and summ["coordinates_exactly_once"]
-        and summ["envelope_status"] == "pass"
-        and summ["passed"] == N_EXPECTED
-        and not summ["failed"] and not summ["errored"] and not summ["inconclusive"]
-        and summ["error_diagnostics_total"] == 0
-        and graded_ok
-        and summ["measurements_with_limits"] == len(GRADED)
-        and len(resolved) == N_EXPECTED
-    )
+    summ["definitive"] = bool(base and len(resolved) == N_EXPECTED)
     return summ, points
 
 
@@ -467,27 +415,7 @@ def cmd_check(a):
 
 
 def main():
-    ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    sp = ap.add_subparsers(dest="cmd", required=True)
-    s = sp.add_parser("submit", help="mint a new record on the EDA batch fleet")
-    s.add_argument("--probe", action="store_true",
-                   help=f"{len(PROBE_COORDS)} coordinates only, for a capacity / "
-                        "toolchain probe; never citable")
-    s.add_argument("--dry-run", action="store_true",
-                   help="build and validate the request without submitting")
-    s.set_defaults(fn=cmd_submit)
-    c = sp.add_parser("check", help="offline: every committed record reproduces (CI)")
-    c.set_defaults(fn=cmd_check)
-    m = sp.add_parser("summarise", help="rewrite one record's summary files")
-    m.add_argument("record_id")
-    m.add_argument("--check", action="store_true")
-    m.set_defaults(fn=cmd_summarise)
-    a = ap.parse_args()
-    try:
-        return a.fn(a)
-    except Error as exc:
-        print(f"row4_envelope: {exc}", file=sys.stderr)
-        return 1
+    return re_.run_cli(__doc__, "row4", cmd_submit, cmd_check, cmd_summarise)
 
 
 if __name__ == "__main__":
