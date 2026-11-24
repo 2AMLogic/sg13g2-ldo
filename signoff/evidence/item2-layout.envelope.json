@@ -16,7 +16,7 @@
         "path": "signoff/evidence/item2-layout.inventory.json",
         "scope": "repo"
       },
-      "content_hash": "sha256:e38d3754698085921d894722295b99eb732f2b5b0af11ddf4133c6072985a9cd",
+      "content_hash": "sha256:eaf26388de57019e1b532011cd208cbce85c8d0211451dc24debe5607fb6c06b",
       "role": "inventory"
     },
     "generator": {

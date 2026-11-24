@@ -61,7 +61,7 @@
     },
     "2": {
       "file": "signoff/evidence/item2-layout.envelope.json",
-      "content_hash": "sha256:e38d3754698085921d894722295b99eb732f2b5b0af11ddf4133c6072985a9cd"
+      "content_hash": "sha256:eaf26388de57019e1b532011cd208cbce85c8d0211451dc24debe5607fb6c06b"
     },
     "3": {
       "file": "layout/sg13cmos5l-ldo_core_cmos5l/drc_report.json",
@@ -117,6 +117,10 @@
         ]
       }
     ],
+    "7": {
+      "file": "layout/sg13cmos5l-ldo_core_cmos5l/pex_row4_report.json",
+      "content_hash": "sha256:06d92e1aadb8b51614016f2f5d953c8bd0674380267f8ab90c2b0cca59576629"
+    },
     "8": {
       "file": "sim/characterization/characterization-envelope.json",
       "content_hash": "sha256:984d2b49b64599143ee63d30508308615bd493b0fdea569957e89251a5862373"
