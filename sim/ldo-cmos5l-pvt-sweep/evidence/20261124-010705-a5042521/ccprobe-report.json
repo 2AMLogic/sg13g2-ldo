@@ -1,0 +1,123 @@
+{
+ "baselines": {
+  "dr0015_record": "20261010-091123-a31c626",
+  "dr0015_row": {
+   "gain_margin_db": -9.203674065403295,
+   "n_0db_crossings": 2,
+   "phase_margin_deg": -52.69869348071677,
+   "phase_margin_worst_deg": -162.42834270736796,
+   "unity_gain_freq_hz": 1981119.5059338838
+  },
+  "dr0015_trace_sha256_16": "cc6fae43a41b1b4f",
+  "like_for_like_bounds": {
+   "f_ug_max_rel": 0.02,
+   "gm_max_db": 1.0,
+   "pm_max_deg": 1.0,
+   "trace_max_db": 1.0
+  },
+  "same_vintage_record": "20261012-074813-c94873ba",
+  "same_vintage_trace_sha256_16": "f9e9261aea56bd71"
+ },
+ "bench": "loopgain_ccprobe",
+ "failed_checks": {
+  "like_for_like_vs_20261012-074813-c94873ba": [
+   "pm_deg_delta_6.74_gt_1",
+   "gm_db_delta_1.18_gt_1",
+   "f_ug_rel_delta_0.0224_gt_0.02"
+  ]
+ },
+ "point": {
+  "corner": "ff",
+  "cout_nf": 330,
+  "esr_mohm": 0,
+  "load_ua": 50000,
+  "res": "wcs",
+  "temp_c": -40
+ },
+ "points": [
+  {
+   "cc_factor": 0.5,
+   "cc_label": "0.5x",
+   "cc_w": "85e-6",
+   "dc_gain_db": 117.530765,
+   "dr0014_ceiling_bounded": false,
+   "dr0014_gm_reasons": "in_band_crossing_below_bound",
+   "dr0014_gm_value_db": -8.166899798413347,
+   "dr0014_gm_verdict": "fail",
+   "dr0014_nyquist_class": "undetermined",
+   "dr0014_pm_reasons": "in_band_crossing_below_bound",
+   "dr0014_pm_value_deg": -161.8814715728247,
+   "dr0014_pm_verdict": "fail",
+   "gain_margin_db": -8.166899798413347,
+   "n_0db_crossings": 2,
+   "phase_margin_deg": -45.8087702820348,
+   "phase_margin_worst_deg": -161.8814715728247,
+   "point_id": "loopgain_ccprobe_dyn_ff_-40c_rwcs_i50000ua_c330nf_e0mohm_cc0.5x",
+   "unity_gain_freq_hz": 1934020.2055822548
+  },
+  {
+   "cc_factor": 1.0,
+   "cc_label": "1x",
+   "cc_w": "170e-6",
+   "dc_gain_db": 117.530523,
+   "dr0014_ceiling_bounded": false,
+   "dr0014_gm_reasons": "in_band_crossing_below_bound",
+   "dr0014_gm_value_db": -8.046593059428606,
+   "dr0014_gm_verdict": "fail",
+   "dr0014_nyquist_class": "undetermined",
+   "dr0014_pm_reasons": "in_band_crossing_below_bound",
+   "dr0014_pm_value_deg": -161.58620656652045,
+   "dr0014_pm_verdict": "fail",
+   "gain_margin_db": -8.046593059428606,
+   "lfl_max_abs_db_diff": 0.7432456000000016,
+   "lfl_ok": false,
+   "lfl_reasons": "pm_deg_delta_6.74_gt_1,gm_db_delta_1.18_gt_1,f_ug_rel_delta_0.0224_gt_0.02",
+   "n_0db_crossings": 2,
+   "phase_margin_deg": -46.0382351130055,
+   "phase_margin_worst_deg": -161.58620656652045,
+   "point_id": "loopgain_ccprobe_dyn_ff_-40c_rwcs_i50000ua_c330nf_e0mohm_cc1x",
+   "unity_gain_freq_hz": 1935574.2225678,
+   "vs_dr0015_f_ug_delta_hz": -45545.283366083866,
+   "vs_dr0015_gm_delta_db": 1.157081005974689,
+   "vs_dr0015_pm_delta_deg": 6.660458367711271,
+   "vs_samev_f_ug_delta_hz": -44407.14781261189,
+   "vs_samev_gm_delta_db": 1.1787153798260945,
+   "vs_samev_pm_delta_deg": 6.740710769808658
+  },
+  {
+   "cc_factor": 2.0,
+   "cc_label": "2x",
+   "cc_w": "340e-6",
+   "dc_gain_db": 117.529577,
+   "dr0014_ceiling_bounded": false,
+   "dr0014_gm_reasons": "in_band_crossing_below_bound",
+   "dr0014_gm_value_db": -8.126444891630035,
+   "dr0014_gm_verdict": "fail",
+   "dr0014_nyquist_class": "undetermined",
+   "dr0014_pm_reasons": "in_band_crossing_below_bound",
+   "dr0014_pm_value_deg": -161.23035397358984,
+   "dr0014_pm_verdict": "fail",
+   "gain_margin_db": -8.126444891630035,
+   "n_0db_crossings": 2,
+   "phase_margin_deg": -47.49841995124544,
+   "phase_margin_worst_deg": -161.23035397358984,
+   "point_id": "loopgain_ccprobe_dyn_ff_-40c_rwcs_i50000ua_c330nf_e0mohm_cc2x",
+   "unity_gain_freq_hz": 1940838.812475671
+  }
+ ],
+ "record": "20261124-010705-a5042521",
+ "slope": {
+  "labels_with_crossing": [
+   "0.5x",
+   "1x",
+   "2x"
+  ],
+  "n_0db_crossings": {
+   "0.5x": 2,
+   "1x": 2,
+   "2x": 2
+  },
+  "single_branch": true,
+  "slope": 0.0025387195918288837
+ }
+}

@@ -418,5 +418,34 @@ class DeckContract(unittest.TestCase):
             "E3 must reuse tb_loopgain_cmos5l.spice.tmpl, not a new bench")
 
 
+class RecordMdDenominator(unittest.TestCase):
+    """The record md's same-vintage f_ug % uses the gate's baseline
+    denominator, never the measured value (issue #348)."""
+
+    def test_between_the_two_denominators_matches_gate(self):
+        base = {"unity_gain_freq_hz": 1000.0}
+        # 2.02% over baseline: gate (baseline denominator) fails at 0.0202,
+        # while a measured-value denominator would print 1.98% and pass.
+        row = {"unity_gain_freq_hz": 1020.2}
+        row["vs_samev_f_ug_delta_hz"] = c._delta(row, base, "unity_gain_freq_hz")
+        rel = c._samev_rel(row)
+        self.assertAlmostEqual(rel, 0.0202, places=9)
+        self.assertEqual(c._pct(rel), "2.02%")
+        gate_rel = abs(1020.2 - 1000.0) / 1000.0
+        self.assertAlmostEqual(rel, gate_rel, places=12)
+
+    def test_negative_delta_keeps_sign(self):
+        row = {"unity_gain_freq_hz": 980.0, "vs_samev_f_ug_delta_hz": -20.0}
+        self.assertAlmostEqual(c._samev_rel(row), -20.0 / 1000.0, places=12)
+
+    def test_missing_or_zero_baseline_renders(self):
+        self.assertEqual(c._pct(c._samev_rel({})), "n/a")
+        self.assertEqual(c._pct(c._samev_rel(
+            {"unity_gain_freq_hz": None, "vs_samev_f_ug_delta_hz": 1.0})), "n/a")
+        # baseline = fu - d = 0 -> _safe_rel returns None
+        self.assertEqual(c._pct(c._samev_rel(
+            {"unity_gain_freq_hz": 5.0, "vs_samev_f_ug_delta_hz": 5.0})), "n/a")
+
+
 if __name__ == "__main__":
     unittest.main()
