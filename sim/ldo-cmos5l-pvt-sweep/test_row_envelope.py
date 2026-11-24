@@ -176,6 +176,64 @@ class GateChecks(unittest.TestCase):
                                  graded=r7.GRADED, row_id=r7.ROW7_ID, slug="row7")
         self.assertTrue(any("claims spec_row" in p for p in problems), problems)
 
+    def test_echoed_options_gate(self):
+        tmp = self.record_dir(r7)
+        req = json.load(open(os.path.join(tmp, "request.json")))
+        asked = (req.get("options") or {}).get("ngspice_options")
+        self.assertIsNotNone(asked)
+        rpath = os.path.join(tmp, "report.json")
+        rep = json.load(open(rpath))
+
+        rep["environment"] = {"ngspice_options": dict(asked)}
+        json.dump(rep, open(rpath, "w"))
+        problems = []
+        re_.check_echoed_options(tmp, "rid", problems)
+        self.assertEqual(problems, [])
+
+        rep["environment"] = {"ngspice_options": {"reltol": 0.5}}
+        json.dump(rep, open(rpath, "w"))
+        problems = []
+        re_.check_echoed_options(tmp, "rid", problems)
+        self.assertEqual(len(problems), 1, problems)
+        self.assertIn("ngspice_options", problems[0])
+
+        open(rpath, "w").write("{not json")
+        problems = []
+        re_.check_echoed_options(tmp, "rid", problems)
+        self.assertTrue(any("cannot compare" in p for p in problems), problems)
+        os.remove(rpath)
+        problems = []
+        re_.check_echoed_options(tmp, "rid", problems)
+        self.assertTrue(any("cannot compare" in p for p in problems), problems)
+
+    def test_summarise_corners_empty_report_is_never_definitive(self):
+        summ, points, base = re_.summarise_corners(
+            {"corners": []}, {"record_id": "x"}, graded=["a"])
+        self.assertEqual(points, [])
+        self.assertFalse(base)
+        self.assertNotIn("all_graded_strictly_below_target", summ)
+        summ, _, base = re_.summarise_corners(
+            {"corners": []}, {"record_id": "x"}, graded=["a"],
+            step_names=["s"], target_of=lambda n: 1.0)
+        self.assertFalse(base)
+        self.assertIn("graded_declarations_exactly_once", summ)
+
+    def test_selected_record_reads_the_repo_it_is_given(self):
+        tmp = tempfile.mkdtemp(prefix="row-envelope-sel-test.")
+        self.addCleanup(shutil.rmtree, tmp, True)
+        os.makedirs(os.path.join(tmp, "sim", "characterization"))
+        json.dump({"k": {"id": "R1"}}, open(
+            os.path.join(tmp, "sim", "characterization", "selection.json"), "w"))
+        self.assertEqual(re_.selected_record(tmp, "k"), "R1")
+        self.assertIsNone(re_.selected_record(tmp, "other"))
+        problems = []
+        re_.check_selected_record(tmp, "k", "row-x", {}, problems, lambda r: [])
+        self.assertEqual(len(problems), 1)
+        problems = []
+        re_.check_selected_record(tmp, "other", "row-x", {}, problems,
+                                 lambda r: [], allow_none=True)
+        self.assertEqual(problems, [])
+
 
 class Item5CitationHelpers(unittest.TestCase):
     """The shared signoff item-5 resolver and its enforcement (#358).
