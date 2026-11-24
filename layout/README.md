@@ -580,7 +580,7 @@ report does not gate the pin that checks it.
   errored, `schematic_failed: 0`, no `nothing_simulated` corners. Worst
   extracted dropout **237.76 mV** at `ss` / 125 °C / `res_bcs` — the same
   binding corner as the schematic record (237.06 mV there), i.e. the
-  lumped parasitics add **0.70 mV** (~2.3 % of the 62.24 mV margin to the
+  lumped parasitics add **0.70 mV** (~1.1 % of the 62.24 mV margin to the
   300 mV target). `delta_pct` on the graded measurements spans
   0.002–0.067 %.
 - **`body_bias.status` is `biased`** (`unbiased_device_count: 0`): every

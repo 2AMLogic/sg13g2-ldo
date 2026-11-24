@@ -185,6 +185,7 @@ pex_row4_stage() {
   # request itself is not evidence and not committed: the report pins the
   # hashes of what actually ran (request, tb, design netlist) instead.
   rm -rf "${PEX_ROW4_REQUEST}"
+  trap 'rm -rf "${PEX_ROW4_REQUEST}"' EXIT  # scratch embeds host PDK paths: never leave it on a failed stage
   python3 - "${REPO}" "${PEX_ROW4_REQUEST}" "${ROW4_ENVELOPE_PY}" <<'PY'
 import os, sys
 repo, req, envelope = sys.argv[1], sys.argv[2], sys.argv[3]
