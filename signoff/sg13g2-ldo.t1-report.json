@@ -300,6 +300,22 @@
           ],
           "status": "met",
           "reason": null
+        },
+        {
+          "citation": "sim/ldo-cmos5l-pvt-sweep/row7-envelope/20261121-001957-ed6b0587/report.json",
+          "rows": [
+            "dr0007-row7-iq"
+          ],
+          "status": "met",
+          "reason": null
+        },
+        {
+          "citation": "sim/ldo-cmos5l-pvt-sweep/row5-envelope/20261123-213711-06bd6576/report.json",
+          "rows": [
+            "dr0007-row5-line-load-regulation"
+          ],
+          "status": "met",
+          "reason": null
         }
       ],
       "detail": {
@@ -308,9 +324,7 @@
           "dr0007-row1-input",
           "dr0007-row2-output",
           "dr0007-row3-load",
-          "dr0007-row5-line-load-regulation",
           "dr0007-row6-psrr",
-          "dr0007-row7-iq",
           "dr0007-row8-current-limit",
           "dr0007-row9-startup",
           "dr0007-row10-stability"
@@ -328,7 +342,9 @@
           "dr0007-row10-stability"
         ],
         "row_sources": {
-          "dr0007-row4-dropout": "derived"
+          "dr0007-row4-dropout": "derived",
+          "dr0007-row5-line-load-regulation": "derived",
+          "dr0007-row7-iq": "derived"
         }
       }
     },
@@ -434,7 +450,7 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:05b273ed443cb307f02f665f3e8007c7ea5f6781e6dab9f29118f605c7fc053b",
+        "content_hash": "sha256:7141f4122947b89ff5f922d57b8525d6ac5848117dab12ac1ff9831cc6cb4168",
         "input_verified": null,
         "exit_status": 0,
         "attestation": {

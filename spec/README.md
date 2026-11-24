@@ -15,8 +15,12 @@ being present; ratification state is stated per row.
   keys (`ratification/ee-key/`, `ratification/market-key/`) have posted and
   any request-changes/escalate verdict is resolved; until then rows are
   *proposed* or *Open*. Current state: row 4 (dropout @ 50 mA) has its `< 300 mV`
-  *target* ratified by the two key reviews on pull request #65; the other
-  nine rows are Open. Target ratification is not implementation compliance:
+  *target* ratified by the two key reviews on pull request #65; rows 2, 5
+  and 7 are **proposed** to the keys as "Ratified as written (proposed —
+  pending keys)" by the #318 amendment (DR-0007 "Proposal note
+  (2026-11-24)") and are not ratified until both keys post on that PR and
+  the operator ratifies; the other six rows are Open. Target ratification is
+  not implementation compliance:
   the SG13CMOS5L branch (2800 µm pass device, transistor-level amplifier)
   meets row 4 at schematic level, while the SG13G2 branch (300 µm
   provisional pass device, behavioural amplifier) has no closed-loop row

@@ -78,6 +78,20 @@
         "rows": [
           "dr0007-row4-dropout"
         ]
+      },
+      {
+        "file": "sim/ldo-cmos5l-pvt-sweep/row7-envelope/20261121-001957-ed6b0587/report.json",
+        "content_hash": "sha256:d1101e8225423b91b6f462df3aedfc2b68ec1e2995c7de101662214451baa279",
+        "rows": [
+          "dr0007-row7-iq"
+        ]
+      },
+      {
+        "file": "sim/ldo-cmos5l-pvt-sweep/row5-envelope/20261123-213711-06bd6576/report.json",
+        "content_hash": "sha256:c3cfe8aa41210aae5dff484ee35a3f53bb0e46747e6ff54399301cef3f0b802b",
+        "rows": [
+          "dr0007-row5-line-load-regulation"
+        ]
       }
     ],
     "6": [
@@ -119,7 +133,7 @@
     ],
     "8": {
       "file": "sim/characterization/characterization-envelope.json",
-      "content_hash": "sha256:05b273ed443cb307f02f665f3e8007c7ea5f6781e6dab9f29118f605c7fc053b"
+      "content_hash": "sha256:7141f4122947b89ff5f922d57b8525d6ac5848117dab12ac1ff9831cc6cb4168"
     },
     "9": {
       "file": "signoff/evidence/item9-testbenches.envelope.json",

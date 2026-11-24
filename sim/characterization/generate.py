@@ -283,10 +283,12 @@ def parse_readme(text: str) -> list[dict]:
         status = cells[3]
         if status.startswith("RATIFIED"):
             state = "ratified"
+        elif status.startswith("PROPOSED"):
+            state = "proposed_pending_keys"
         elif status.startswith("OPEN"):
             state = "open_unratified"
         else:
-            raise GenError(f"README row {n} status not RATIFIED/OPEN: {status!r}")
+            raise GenError(f"README row {n} status not RATIFIED/PROPOSED/OPEN: {status!r}")
         out.append({"id": n, "parameter": name, "target": target,
                     "stretch": cells[2], "readme_status": status,
                     "ratification": state})
@@ -303,6 +305,12 @@ def parse_dr7(text: str) -> dict[int, dict]:
         disp = cells[3].replace("*", "").strip()
         if disp.startswith("Ratified"):
             state = "ratified"
+            if "proposed" in disp:
+                # "Ratified as written (proposed -- pending keys)" is the
+                # DR-0007 proposal vocabulary (PR #61 precedent): the
+                # disposition a row carries while the two review keys are
+                # outstanding. It is NOT a ratified row.
+                state = "proposed_pending_keys"
         elif disp.startswith("Open"):
             state = "open_unratified"
         else:
@@ -2080,7 +2088,10 @@ def _assemble_outputs(ctx: RowContext, rows: list) -> tuple[dict, dict]:
             "rows_total": len(rows),
             "rows_by_verdict": dict(sorted(tally.items())),
             "ratified_rows": ratified,
-            "open_unratified_rows": [r["id"] for r in rows if r["id"] not in ratified],
+            "open_unratified_rows": [r["id"] for r in rows
+                                     if r["ratification"]["state"] == "open_unratified"],
+            "proposed_pending_keys_rows": [r["id"] for r in rows
+                                           if r["ratification"]["state"] == "proposed_pending_keys"],
             "rows_with_any_coverage_gap": [r["id"] for r in rows if r["coverage"]["gaps"]],
             "rows_with_full_coverage_of_target_as_written": [r["id"] for r in rows if r["coverage"]["state"] == "full"],
         },
