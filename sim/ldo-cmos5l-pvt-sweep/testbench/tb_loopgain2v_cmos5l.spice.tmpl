@@ -63,8 +63,9 @@
 Vin VIN 0 dc 3.30
 Vref VREF 0 dc 0.90 ac 0
 Ibias IBIAS 0 dc 2u
-* Operating point: the same defaults as the single-injection bench (issue #64
-* substitutions; this campaign runs the legacy 1mA / 1uF / 0 ohm point).
+* Operating point (issue #64): load current, effective output capacitance
+* and capacitor ESR are substituted by run_loopgain2.sh (defaults
+* 1mA / 1u / 0 ohm = the legacy point; --load-ma/--cout-uf/--esr-ohm override).
 Iload VOUT 0 dc @@LOAD_A@@
 Cout VOUT @@COUT_BOTTOM@@ @@COUT_F@@
 @@ESR_LINE@@

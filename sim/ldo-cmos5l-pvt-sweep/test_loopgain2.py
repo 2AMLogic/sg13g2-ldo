@@ -542,6 +542,29 @@ class OperatingPoint(unittest.TestCase):
         self.assertNotIn("Cout VOUT 0 1u", p3)
         self.assertNotIn("(campaign default)", p3)
 
+    def test_two_injection_templates_carry_no_stale_operating_point(self):
+        # #355: the two-injection templates used to claim "this campaign runs
+        # the legacy 1mA / 1uF / 0 ohm point" above Iload/Cout cards that an
+        # override run (#218) sets to something else. Render both at P3's
+        # point and assert the deck carries its own values and no contradiction.
+        import render_deck
+        base = {"PDK_ROOT": "/pdk", "PDK": "p", "OSDI_DIR": "/osdi",
+                "MOS_SECTION": "mos_ff", "RES_SECTION": "res_wcs", "CAP_SECTION": "cap_typ",
+                "TEMP": "-40", "LG_AC_MAX": "1e10", "CC_W": "170u (nominal)",
+                "DESIGN_NETLIST": "/design.spice", "AC_CSV": "/out.csv"}
+        esr_line = lg2.esr_netlist_parts("0")[1]
+        for bench in ("tb_loopgain2v_cmos5l", "tb_loopgain2i_cmos5l"):
+            with self.subTest(bench=bench):
+                tmpl = os.path.join(HERE, "testbench", bench + ".spice.tmpl")
+                text = open(tmpl).read()
+                self.assertNotIn("this campaign runs the legacy", text)
+                deck = render_deck.render(text, dict(
+                    base, LOAD_A="50000e-6", COUT_F="330n", COUT_BOTTOM="0",
+                    ESR_LINE=esr_line))
+                self.assertIn("Iload VOUT 0 dc 50000e-6", deck)
+                self.assertIn("Cout VOUT 0 330n", deck)
+                self.assertNotIn("this campaign runs the legacy", deck)
+
 
 class CampaignFacts(unittest.TestCase):
     """issue #218: the campaign's shape (operating point, point count,
