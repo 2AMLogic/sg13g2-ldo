@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "rule": "DR-0014 (proposed; row 10 stays Open, nothing ratified)",
+  "decision_record": "spec/decision-records/DR-0014-row10-stability-margin-classification.md",
+  "dataset": "legacy",
+  "record": {
+    "id": "20261124-002001-3a6eccf3",
+    "csv": "sim/ldo-cmos5l-pvt-sweep/records/20261124-002001-3a6eccf3.loopgain2.csv",
+    "sha256": "60ec2dffeaacfbc240846f8db595ae5ecfe61d1fe4749fbcc6c9fd912a50a172",
+    "conditions": "Vin 3.30 V, 50 mA, Cout 0.33 uF, ESR 0, Cc nominal; single PVT point ff_-40c_rwcs (issue #218 restriction); Middlebrook loop gain T = (Tv*Ti - 1)/(Tv + Ti + 2) reconstructed from the two-injection benches tb_loopgain2v/tb_loopgain2i by loopgain2.py (issue #135), resolved prefix only"
+  },
+  "bounds": {
+    "pm_deg": 45.0,
+    "gm_db": 10.0,
+    "ceiling_floor_db": -10.0
+  },
+  "classifier": {
+    "sim/ldo-cmos5l-pvt-sweep/ac_metrics.py": "6e96859b839bcb19aaa702eb20a593bfc8914b7b388a8783298e416e65fefd5e",
+    "sim/ldo-cmos5l-pvt-sweep/dc_metrics.py": "782319eb4ef619b040f3a4001af67a10def775c9cf17e37fe15b4dd8f3340c81",
+    "sim/ldo-cmos5l-pvt-sweep/row10_margins.py": "a6f6d1129095b2fcb73c8c9462eb54b7588259d4118aa932d86c5b01f2a227f7",
+    "sim/ldo-cmos5l-pvt-sweep/row10_loopgain2.py": "b237189f179f5d509349c7fae7b3284ffed4715ca4d420d81f4b56a4cef7dd3c",
+    "sim/ldo-cmos5l-pvt-sweep/loopgain2.py": "54b7fadc8ebee47a969d8dfff0f4e2b786fe0909589c1a92d463e1481a3dca54"
+  },
+  "traces_verified": 1,
+  "cross_checks": "every trace reproduces its record's 0 dB crossing count, first-crossing PM, recorded worst-crossing PM and first -180 deg GM; every recorded PM/GM miss classifies as fail (no-loosening guard)",
+  "csv": {
+    "path": "sim/ldo-cmos5l-pvt-sweep/evidence/20261124-002001-3a6eccf3/row10-margins.csv",
+    "sha256": "8f89abae36f490d425789d4783faca0aad302e18b92f3adeeec061e37f9add6b"
+  },
+  "summary_all": {
+    "points": 1,
+    "pm_verdicts": {
+      "fail": 1
+    },
+    "gm_verdicts": {
+      "fail": 1
+    },
+    "pm_reasons": {
+      "in_band_crossing_below_bound": 1
+    },
+    "gm_reasons": {
+      "in_band_crossing_below_bound": 1
+    },
+    "nyquist_class": {
+      "undetermined": 1
+    },
+    "n_zero_db_crossings": {
+      "1": 1
+    },
+    "n_critical_crossings": {
+      "1": 1
+    },
+    "pm_deg_range": {
+      "min": -38.3304694,
+      "max": -38.3304694
+    },
+    "first_crossing_margin_deg_range": {
+      "min": -38.3304694,
+      "max": -38.3304694
+    },
+    "later_crossing_margin_deg_range": null,
+    "gm_db_range": {
+      "min": -9.18655995,
+      "max": -9.18655995
+    },
+    "low_end_ok": 1,
+    "low_end_gain_db_range": {
+      "min": 117.530522,
+      "max": 117.530522
+    },
+    "ceiling_bounded": 1,
+    "ceiling_gain_db_range": {
+      "min": -143.373545,
+      "max": -143.373545
+    },
+    "ceiling_last_decade_change_db_range": {
+      "min": -87.2992903,
+      "max": -87.2992903
+    }
+  },
+  "subset": {
+    "name": "multi_crossing_points",
+    "definition": "points the record lists with more than one 0 dB crossing (reported ambiguous by the characterization report before DR-0014)",
+    "summary": {
+      "points": 0,
+      "pm_verdicts": {},
+      "gm_verdicts": {},
+      "pm_reasons": {},
+      "gm_reasons": {},
+      "nyquist_class": {},
+      "n_zero_db_crossings": {},
+      "n_critical_crossings": {},
+      "pm_deg_range": null,
+      "first_crossing_margin_deg_range": null,
+      "later_crossing_margin_deg_range": null,
+      "gm_db_range": null,
+      "low_end_ok": 0,
+      "low_end_gain_db_range": null,
+      "ceiling_bounded": 0,
+      "ceiling_gain_db_range": null,
+      "ceiling_last_decade_change_db_range": null
+    }
+  },
+  "not_claimed": [
+    "no new simulation; no historical record edited",
+    "no ratification: DR-0014 is proposed and row 10 stays Open (DR-0007)",
+    "no claim about frequencies above the sweep ceiling or between sampled operating points"
+  ],
+  "method": "two-injection Middlebrook loop gain (loopgain2.py), resolved prefix only; classification rules unchanged (DR-0014, proposed; row 10 stays Open)",
+  "resolution_overlay": {
+    "reason": "reconstruction_unresolved_above_cut",
+    "points_truncated_below_sweep_ceiling": 1,
+    "rule": "a point whose reconstruction is truncated below the sweep ceiling is reported ambiguous (pass -> ambiguous; fail unchanged); its GM above-ceiling bound is withdrawn and its Nyquist bookkeeping is undetermined. The ceiling columns describe the END OF THE RESOLVED PREFIX, not the 10 GHz sweep ceiling."
+  }
+}

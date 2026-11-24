@@ -1,0 +1,31 @@
+{
+ "decks": 3,
+ "driver": "run_loopgain2.sh",
+ "e2": {
+  "brief": "DR-0015 experiment E2: the two-injection bench at points P3 and P6",
+  "p3_conditions": "ff / -40 C / res_wcs, 50 mA, 0.33 uF, 0 ohm",
+  "p3_point": "ff_-40c_rwcs",
+  "p6_conditions": "ss / 125 C / res_bcs, 1 mA, 1 uF, 0 mohm (the legacy operating point)",
+  "p6_point": "ss_125c_rbcs",
+  "p6_record": "20261012-071449-6a3c1475"
+ },
+ "full_grid": false,
+ "grid": "PVT point ff_-40c_rwcs only (issue #218 restriction)",
+ "issue": "issue #218 (DR-0015 experiment E2; bench of issue #135)",
+ "legacy_point": false,
+ "loopgain2_sha256": "54b7fadc8ebee47a969d8dfff0f4e2b786fe0909589c1a92d463e1481a3dca54",
+ "only_point": "ff_-40c_rwcs",
+ "op": {
+  "cout_nf": 330,
+  "esr_mohm": 0,
+  "load_ua": 50000
+ },
+ "op_display": "50 mA, 0.33 uF, 0 ohm",
+ "points": 1,
+ "producer_sha16": "54b7fadc8ebee47a",
+ "revision_note": false,
+ "row10_wrapper_sha256": "b237189f179f5d509349c7fae7b3284ffed4715ca4d420d81f4b56a4cef7dd3c",
+ "schema_version": 1,
+ "tmpl2i_sha16": "deb8306c6bb1bebe",
+ "tmpl2v_sha16": "d7be4a61a83a628b"
+}

@@ -971,3 +971,87 @@ are untouched; no compensation candidate is ratified and no post-change
 margin is predicted; the family ranking and the Disposition's text stand
 as written, with this addendum as measurement against them. `sim/` stays
 append-only. E2 remains an open experiment of the brief; E3 is reported in the addendum above.
+
+## Addendum: E2 two-injection bench at P3 (issue #218)
+
+This addendum reports what experiment E2 -- the two-injection
+(Middlebrook/Tian) loop-gain bench this record priced at "P3, P6 / 2 decks"
+and named its first-priority follow-up ("every stability verdict ...
+is `ambiguous` until the ceiling premise can be met") -- measured at P3.
+Evidence: record
+`sim/ldo-cmos5l-pvt-sweep/records/20261124-002001-3a6eccf3.loopgain2.md`.
+This record stays **Proposed**; nothing below changes a row, threshold,
+gate or verdict.
+
+**What ran**: three decks at P3 (ff / -40 °C / res_wcs, 50 mA, 0.33 µF,
+0 mΩ) through the batch fleet -- the single-injection control and the two
+two-injection benches -- with the committed templates unchanged
+(`run_loopgain2.sh` now takes the operating point and a single-PVT-point
+restriction as arguments). The P6 half of E2 is NOT re-run: P6 is this
+record's legacy reference point measured by the committed 45-point
+two-injection campaign's own `ss_125c_rbcs` point (control PM 53.87° /
+GM 29.87 dB; two-injection PM 53.87° / GM 38.26 dB; both DR-0014
+`ambiguous`), cited from record `20261012-071449-6a3c1475` in the E2
+record's side-by-side.
+
+**Measured at P3** (single injection = control, two-injection =
+Middlebrook T, both classified by the unchanged DR-0014 rules):
+
+| bench | PM first [°] | GM [dB] | 0 dB crossings | critical-line crossing | DR-0014 PM/GM |
+|---|---:|---:|---:|---|---|
+| single injection (control) | −46.04 | −8.05 | 2 (second at 63.7 MHz) | 1.203 MHz @ **+8.05 dB** | fail / fail |
+| two-injection (T; uncertified, see below) | −38.33 | −9.19 | **1** | 1.121 MHz @ **+9.19 dB** | fail / fail |
+
+**What it implies**, against this record's own "What would overturn"
+clause ("E2 showing the high-frequency rise and/or P3's above-unity
+critical crossing is a bench artefact"):
+
+- The **high-frequency rise and second 0 dB crossing ARE a bench
+  artefact**: T is resolved to 141 MHz (the export-rounding bound holds
+  |T| ≤ −147 dB everywhere above its cut) and shows exactly ONE 0 dB
+  crossing -- the single injection's +1 dB plateau and 63.7 MHz
+  re-crossing are absent from the bilateral loop gain. The
+  second-crossing disclosures in the six-point table should be read as
+  single-injection readings, not loop facts.
+- The **above-unity critical crossing is NOT a bench artefact**: T's own
+  first critical-line crossing reads +9.19 dB (above unity), and T's first
+  0 dB crossing fails PM at −38.3°. The encirclement that makes P3's GM
+  negative is in the loop, exactly as class 2 priced it; the PM deficits
+  stand on both benches (they are first-crossing facts).
+- The single injection **under-reads P3's PM by 7.7°** (−46.0° vs T's
+  −38.3°) and over-reads GM by 1.1 dB: at heavy load the zero-gate-current
+  premise costs about 8° of PM at P3, an order of magnitude more than at
+  the legacy point (where T and the control agree to 0.34°).
+
+**Certification caveat, stated plainly**: the P3 two-injection point is
+recorded INVALID under the bench's own unchanged low-frequency-agreement
+tolerance (1.015 % relative below f_ugf/10 vs the 1 % value stated in
+`loopgain2.py`'s header, calibrated at the legacy operating point where
+the same quantity stays below 0.083 %). The record's cause analysis shows
+the deviation is the ANALYTIC single-injection loading term
+|T − Tv| = |(1+Tv)²/(Tv+Ti+2)| to six digits, with the control matching
+Tv to 5.9×10⁻⁸ (deck identity) -- physics, not a plumbing fault: at P3,
+f_ugf/10 reaches 194 kHz, where |Tv| has fallen to 27.9 dB and
+|Ti|/|Tv| = 97. The tolerance is NOT widened, skipped or re-derived by
+this issue; the T-side numbers above are reported uncertified, and
+re-deriving that tolerance for non-legacy operating points is left to a
+separately reviewed change.
+
+**Cross-vintage caveat** (same class as E3's, same fleet vintage): this
+run's control reads dPM +6.74° / dGM +1.18 dB / df_ug −2.24 % against the
+committed October single-injection P3 trace (`f9e9261aea56bd71`), the
+worker-vintage shift issue #313's replay identified; against THIS record's
+own table above the vintage effect is common to both benches (one fleet
+round), so the single- vs two-injection comparison is internally
+like-for-like. This record's own P3 row (PM −52.70° / GM −9.20 dB)
+additionally crosses the #89/#155 design+PDK vintage change.
+
+### What this addendum does not do
+
+No spec row, threshold, gate, record or verdict is changed; DR-0007 rows
+3, 6, 7 and 10 keep their states; DR-0014's classification rules are
+untouched (P3's fail/fail is unchanged on both benches); the two-injection
+tolerance question above is raised, not decided; no remedy is proposed,
+screened or ratified. `sim/` stays append-only. E1, E3 and E4 are reported
+in the addenda above; with this addendum the brief's four experiments are
+all recorded.

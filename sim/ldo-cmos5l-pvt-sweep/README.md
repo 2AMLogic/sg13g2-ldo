@@ -2421,3 +2421,71 @@ record from the run's own provenance), not a circuit difference; the four
 points share one fleet vintage. Tests: `test_e4_divider_cc.py`; the
 record's `check` subcommand byte-compares the committed reduction and
 record markdown against the raw exports.
+
+## E2 two-injection bench at DR-0015 point P3 (issue #218, DR-0015 experiment E2)
+
+[`DR-0015`](../../spec/decision-records/DR-0015-sg13cmos5l-dynamic-window-stability-diagnosis.md)
+(stays **Proposed**) prices experiment E2 as the two-injection
+(Middlebrook) loop-gain bench at its points P3 and P6, "because every
+stability verdict ... is `ambiguous` until the ceiling premise can be met".
+The bench existed (`run_loopgain2.sh`, issue #135) but hardcoded the legacy
+operating point, so P3 (ff/-40C/res_wcs, 50 mA, 0.33 uF, 0 mohm) had never
+been measured this way. This campaign is exactly E2's P3 half; the P6 half
+is DR-0015's legacy reference point itself and is CITED from the committed
+45-point two-injection record `20261012-071449-6a3c1475`, never re-run.
+
+**Campaign** (`run_loopgain2.sh`, unchanged benches): the driver takes the
+operating point as arguments -- `--load-ma`/`--cout-uf`/`--esr-ohm`
+(defaults: the legacy 1 mA / 1 uF / 0 ohm point, canonicalised and
+validated through `dynamic_doe.py`, the #64 DoE's own validator; a bad
+value exits 2) -- and a `--only-point=<corner>_<temp>c_r<rlabel>`
+restriction that narrows the 45-point grid to one PVT point, so E2's P3 run
+is 3 decks (ctl + 2v + 2i), exactly what DR-0015 priced, instead of 135. A
+run with NO new arguments renders byte-identical decks to the pre-#218
+driver: the legacy literals live in `loopgain2.py DEFAULT_DECK_LITERALS`,
+the driver sources them from `loopgain2.py op`, and
+`test_loopgain2.py` pins them. `--experiment=e2` frames the record as E2
+and refuses any point/operating point other than DR-0015's P3. The
+ctl-vs-baseline gate (vs `20261011-070111-5391c68`) applies only to the
+legacy 45-point campaign at the legacy operating point; otherwise it is
+SKIPPED -- visibly, into `evidence/<rid>/ctl-vs-baseline.json`, with an
+informational same-point cross-vintage comparison against the newest
+committed single-injection trace at the same corner AND operating point --
+never silently passed and never relaxed. No local grid: `--validate` runs
+exactly three tt/27C decks locally as a debug probe (also at the overridden
+operating point).
+
+**Record shape** (`evidence/<rid>/campaign.json`): a campaign's operating
+point, point count, grid description and producer pins are committed next
+to its raw exports, and the record md + `row10_loopgain2.py` read them from
+there. Records without one (the pre-#218 45-point campaigns) keep their
+byte-exact legacy strings, so `loopgain2.py check` and
+`row10_loopgain2.py --check` still reproduce the append-only records
+unchanged. A point that fails a stated tolerance is recorded (valid=False)
+with its measured margins, the verbatim error and a quantitative cause
+analysis -- see the result below for why that path matters here.
+
+    SWEEP_BATCH_PLAN_ONLY=1 run_loopgain2.sh --only-point=ff_-40c_rwcs \
+      --load-ma=50 --cout-uf=0.33 --esr-ohm=0 --experiment=e2   # 3-deck plan
+    python3 sim/ldo-cmos5l-pvt-sweep/loopgain2.py check --ceiling 1e10
+    python3 sim/ldo-cmos5l-pvt-sweep/row10_loopgain2.py --check
+
+**Result** (record `20261124-002001-3a6eccf3`, PDK pin `f7bca326...`,
+runner klt 0.9.0 / ngspice-47, 3/3 decks screened clean): at P3 the
+single-injection control reads PM -46.04 deg / GM -8.05 dB (DR-0014
+fail/fail; reproducing E3's committed 1x numbers to the digit), while
+Middlebrook's T reads PM -38.33 deg / GM -9.19 dB with ONE 0 dB crossing
+(the control has two) and DR-0014 fail/fail on its own trace: P3's
+above-unity critical crossing and second 0 dB crossing are artefacts of
+the single voltage injection, and the instability itself is in the loop.
+**The P3 two-injection point is INVALID under the bench's unchanged
+tolerances**: the low-frequency agreement reached 1.015e-02 against the
+legacy-calibrated 1e-02, and the record's cause analysis shows the
+deviation IS the analytic single-injection loading term |T - Tv| to six
+digits (the control agrees with Tv to 5.9e-08, deck identity) -- at P3
+f_ugf/10 reaches 194 kHz, where |Tv| has fallen to 27.9 dB and
+|Ti|/|Tv| = 97, so the term the tolerance absorbed at the legacy point
+(< 8.3e-04) grows past 1%. The tolerance is NOT widened, skipped or
+re-derived in this record; re-deriving it for non-legacy operating points
+is left to a separately reviewed change. The reading against DR-0015's own
+falsifier is in the DR-0015 addendum.
