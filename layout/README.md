@@ -52,7 +52,8 @@ layout/
     erc_supply_report.json                  the `klt erc` run against the committed GDS
     pex_report.json                         `klt pex --extract-only` (T1 item 7, slice 1, #172)
     sg13cmos5l-ldo_core_cmos5l.pex.spice    its lumped-RC parasitic netlist
-  pex_check.py                              binds pex_report.json to its netlist; the pex negative control
+    pex_row4_report.json                    `klt pex` testbench mode, row-4 delta (T1 item 7, slice 2, #312)
+  pex_check.py                              binds both pex reports to their inputs; the pex negative controls
 ```
 
 The directory is named `sg13cmos5l-<cell>` to match `sim/`'s own per-PDK prefix
@@ -521,8 +522,93 @@ unchanged here; the citation is slice 4.
   report is bound to the netlist; it does not show the extraction is right.
 - **Deferred: measurement legs.** A re-simulation leg must go through `klt
   sim` and the batch backend. Whether the batch backend accepts
-  `ihp-sg13cmos5l` is klayout-tools#2727, still open; the gap is recorded
-  here, not worked around with a local grid.
+  `ihp-sg13cmos5l` is klayout-tools#2727 — closed completed 2026-11-11, and
+  the measured legs have since run (next section, #312). Recorded here, not
+  worked around with a local grid.
+
+## T1 item 7 — post-layout measurement, slice 2 (#312)
+
+`layout/run_flow.sh pex-row4` re-simulates the row-4 bench on both sides of
+the extraction and commits the per-corner delta beside the slice-1 report.
+Like stage 9 it is a separate mode, not part of the default run (it submits
+to the batch fleet); unlike stage 9, its committed report **is** re-verified
+offline by `layout/run_flow.sh --check` (and so by CI's `layout-check`):
+`klt pex` has no `--check` of its own, so `pex_check.py --row4` re-hashes the
+committed GDS, the extracted netlist and the design netlist against the
+report's own pins (`provenance.input.content_hash`,
+`extraction.netlist_sha256`, `reference_netlist_sha256`) and validates the
+delta coverage against the row-4 envelope's 45-corner grid — a stdlib check
+that needs no klt build and no PDK, which is why the pin that produced the
+report does not gate the pin that checks it.
+
+- **What runs.** The stage mints the request with the row-4 envelope's own
+  renderer (`sim/ldo-cmos5l-pvt-sweep/row4_envelope.py`, `request_files` —
+  never a hand-edited copy of a committed `sim/` record) into a scratch
+  directory inside the repo, deleted again before the stage exits; only the
+  report and the extracted netlist are committed. The request embeds this
+  host's absolute PDK model paths, which is why the request itself is not
+  evidence: the report pins sha256s of what actually ran (request, tb.spice,
+  design netlist) instead. `klt pex` then runs the schematic leg exactly as
+  the committed row-4 record ran it, and the extracted leg as a copy whose
+  single DUT `.include` is swapped for this run's extraction — everything
+  else byte-identical. Both legs go through `--backend batch
+  --wait-for-capacity 600`; the run recorded here is fleet jobs
+  `klt-sim-0fc651964767` (schematic) and `klt-sim-b4aa69507a7c` (extracted).
+- **Binding.** The testbench instantiates `ldo_core_cmos5l` while the
+  extraction wraps `sg13cmos5l_ldo_core_cmos5l` (same six pins, same order).
+  The stage passes `--schematic-top ldo_core_cmos5l`, added by
+  klayout-tools#6971 (PR #7207) after the 0.9.2 release refused the binding
+  (`unknown subckt: xtop ... ldo_core_cmos5l` on the extracted leg; the gap
+  was parked on the upstream issue, never worked around locally). The design
+  subckt is not renamed and no wrapper is written.
+- **Pin.** No PyPI release carries `--schematic-top` yet (v0.9.2 predates
+  the merge), so the stage pins the exact upstream commit
+  `e71a053f452173134e6dd9e311b42f7f022ae3db` — the merge of klayout-tools
+  #7207 — via `uvx --from 'klayout-tools @ git+…@<sha>'`, with the same
+  `klayout==0.30.12` engine pin as stage 9. The report stamps it as
+  `provenance.klt_version 0.9.3.dev4946+ge71a053f4521`. The extraction at
+  this commit is byte-identical to stage 9's 0.9.2 extraction (same
+  `extraction.netlist_sha256`, `2d2a32fc…`), so both stages write the same
+  `sg13cmos5l-ldo_core_cmos5l.pex.spice` and the slice-1 binding still
+  holds after a slice-2 run (the stage re-verifies it). When a release ships
+  the fix, move the pin to the release and regenerate in the same PR.
+- **Result (45 corners, measured 2026-11-24).** `status: pass`, 135 delta
+  rows = 45 corners × 3 measurements, each `(corner_id, measurement)` exactly
+  once: 90 graded comparisons (`vout_at_dropout_limit_v`,
+  `vin_1pct_loss_v`, both against their DR-0007 row-4 limits) all pass, plus
+  the 45 ungraded `vout_nominal_v` diagnostics retained. 0 failed, 0
+  errored, `schematic_failed: 0`, no `nothing_simulated` corners. Worst
+  extracted dropout **237.76 mV** at `ss` / 125 °C / `res_bcs` — the same
+  binding corner as the schematic record (237.06 mV there), i.e. the
+  lumped parasitics add **0.70 mV** (~1.1 % of the 62.24 mV margin to the
+  300 mV target). `delta_pct` on the graded measurements spans
+  0.002–0.067 %.
+- **`body_bias.status` is `biased`** (`unbiased_device_count: 0`): every
+  device body reaches a tie in the netlist the extracted leg re-simulated,
+  the condition item 7's claim disclosure asks for (signoff/README.md).
+- **What the model does and does not account for** (`extraction.model`,
+  quoted from this report, identical to slice 1's): resistance is a "single
+  lumped series resistance per net, distributed as a star across that net's
+  device terminals — not a per-segment, distributed RC ladder"
+  (`distributed_rc: false`, no `--critical-net` named); capacitance is
+  net-to-ground plus vertical-overlap net-to-net coupling, with lateral
+  same-layer coupling only for `--critical-net` pairs (none named) and "no
+  fringe shielding"; frequency is "quasi-static — one
+  frequency-independent R and C per net; no skin effect, no distributed
+  transmission-line behavior". The 0.70 mV parasitic shift is a statement
+  about *this* lumped model, not about the physical layout.
+- **Negative controls (stage 10b).** A copy of the extracted netlist with
+  one parasitic resistor scaled 1.5× must fail `--row4` (and does, on
+  `extraction.netlist_sha256`); a copy of the GDS with one byte appended
+  must fail (on `provenance.input.content_hash`). A design-netlist edit
+  fails the same way, on `reference_netlist_sha256` — that pin is what makes
+  the citation go stale loudly when the schematic changes instead of
+  silently describing a different circuit. The controls prove the report is
+  bound to its inputs; they do not prove the extraction is right.
+- **Scope.** Row 4 only. This report is post-layout evidence for the one
+  ratified DR-0007 row; the nine Open rows have no post-layout evidence
+  (see signoff/README.md's item-7 disclosure). PSRR / phase-margin /
+  gain-margin on the extracted netlist are a later slice.
 
 ## Coverage, honestly
 
