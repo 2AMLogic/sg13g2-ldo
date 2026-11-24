@@ -48,6 +48,16 @@ The row stays Open (ratification is #318, never a `signoff/` edit).
     row5_envelope.py check             # offline, stdlib-only (CI)
     row5_envelope.py summarise <id>    # rewrite that record's summary files
 
+`check` binds BOTH selections this record set carries: the item-8
+characterization selection (sim/characterization/selection.json, kept fresh)
+and the signoff manifest's item-5 row5-envelope member -- when #318's
+citation lands it must name a committed, definitive, non-probe record whose
+tb.spice hashes to the manifest's content_hash and whose recorded inputs
+are fresh (the shared row4 contract, row_envelope.cited_item5_record #358;
+a probe record's tb.spice is byte-identical to the full matrix's, so the
+grader cannot make this distinction itself).  While item 5 has no row-5
+member the check passes with the citation unresolved.
+
 Append-only; SPICE never runs locally here (the grid goes to the fleet).
 """
 import argparse
@@ -409,10 +419,21 @@ def check_record(rid, problems):
     return summ
 
 
-def cited_record():
+def selected_record():
     """The record id selection.json cites for row 5 (None: no record cited)."""
     sel = json.load(open(os.path.join(REPO, "sim", "characterization", "selection.json")))
     return (sel.get("row5_envelope_evidence") or {}).get("id")
+
+
+def cited_record():
+    """(record_id, pinned content_hash) from signoff/sg13g2-ldo.json item 5's
+    row5-envelope member, or (None, None) while item 5 cites no row-5 record
+    -- the citation itself is #318's edit, not this driver's, and `check`
+    passes with item 5 unresolved both before and after it lands. Sharing
+    the row-4 contract (row_envelope.cited_item5_record, #358) closes the
+    hole that a probe record -- whose tb.spice is byte-identical to the full
+    matrix's -- graded identically to the definitive one."""
+    return re_.cited_item5_record(REPO, ROOT, ROW5_ID, "row5")
 
 
 def stale_inputs(rid):
@@ -423,19 +444,23 @@ def cmd_check(a):
     problems = []
     rids = records(ROOT)
     summaries = {rid: check_record(rid, problems) for rid in rids}
-    cited = cited_record()
-    if cited is not None:
-        if cited not in summaries:
-            problems.append(f"selection.json cites row-5 record {cited}, which is not committed")
+    selected = selected_record()
+    if selected is not None:
+        if selected not in summaries:
+            problems.append(f"selection.json cites row-5 record {selected}, "
+                            "which is not committed")
         else:
-            problems += stale_inputs(cited)
+            problems += stale_inputs(selected)
+    cited = re_.check_item5_citation(REPO, ROOT, ROW5_ID, "row5", summaries,
+                                     problems, stale_inputs)
     for p in problems:
         print("row5_envelope: " + p, file=sys.stderr)
     if problems:
         return 1
     n_def = sum(1 for s in summaries.values() if s and s["definitive"])
     print(f"row5_envelope: OK -- {len(rids)} record(s) reproduce and self-verify "
-          f"({n_def} definitive). The row stays Open.")
+          f"({n_def} definitive). The row stays Open."
+          + (f"; signoff item 5 cites {cited}" if cited else ""))
     return 0
 
 
