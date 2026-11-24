@@ -1,0 +1,85 @@
+{
+ "rid": "20261123-212501-9e332bb0",
+ "stage": "ramp",
+ "requested": 7,
+ "rows": 7,
+ "evaluated": 7,
+ "insufficient": 0,
+ "pass": 2,
+ "fail": 5,
+ "engines": [
+  "ngspice-47"
+ ],
+ "runner_klt": [
+  "0.9.0"
+ ],
+ "client_klt": "klt 0.9.3.dev4258+g3a8103583f60",
+ "jobs": [
+  {
+   "group": "g000_ff_rtyp_i1ma_c1000nf_e0mohm_t500ns_v3630mv_T27",
+   "job_id": "klt-sim-6fb629a85fbd",
+   "runner_klt_version": "0.9.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot"
+  },
+  {
+   "group": "g001_ss_rtyp_i1ma_c1000nf_e0mohm_t500ns_v3630mv_T-40",
+   "job_id": "klt-sim-85a10603813b",
+   "runner_klt_version": "0.9.0",
+   "instance_type": "m6i.4xlarge",
+   "lifecycle": "spot"
+  },
+  {
+   "group": "g002_tt_rtyp_i0ma_c330nf_e0mohm_t1000ns_v3630mv_T27",
+   "job_id": "klt-sim-c4ce2bd5ac69",
+   "runner_klt_version": "0.9.0",
+   "instance_type": "c7i.4xlarge",
+   "lifecycle": "spot"
+  },
+  {
+   "group": "g003_tt_rtyp_i0ma_c4700nf_e500mohm_t1000ns_v3630mv_T27",
+   "job_id": "klt-sim-dd55fbc2ac75",
+   "runner_klt_version": "0.9.0",
+   "instance_type": "m6i.4xlarge",
+   "lifecycle": "spot"
+  },
+  {
+   "group": "g004_tt_rtyp_i1ma_c1000nf_e0mohm_t1000ns_v3300mv_T27",
+   "job_id": "klt-sim-7a6e6944f76a",
+   "runner_klt_version": "0.9.0",
+   "instance_type": "m7i.4xlarge",
+   "lifecycle": "spot"
+  },
+  {
+   "group": "g005_tt_rtyp_i50ma_c330nf_e0mohm_t1000ns_v3630mv_T27",
+   "job_id": "klt-sim-0c4394b298da",
+   "runner_klt_version": "0.9.0",
+   "instance_type": "m7i.4xlarge",
+   "lifecycle": "spot"
+  },
+  {
+   "group": "g006_tt_rtyp_i50ma_c4700nf_e500mohm_t1000ns_v3630mv_T27",
+   "job_id": "klt-sim-b387d7cc8a40",
+   "runner_klt_version": "0.9.0",
+   "instance_type": "c7i.8xlarge",
+   "lifecycle": "spot"
+  }
+ ],
+ "osdi_sha256": {
+  "cap_cmomf.osdi": "d44927b3dbcc9a0906125da35fbb9cb23d9abdf20f6dddda0394e81fb165ac18",
+  "cap_cmomi.osdi": "972ff31c1dd8658f7399f2ec9212d0220344c356a77570b5b3ee925155119a83",
+  "mosvar.osdi": "cded61b14fbe50f74453e995a00f4876664328fd477badf672e5b2405cae5973",
+  "psp103.osdi": "dba873bcef3f1978b30d66a4dcb661f79c6f6386c29da8841712d84399e13f1a",
+  "psp103_nqs.osdi": "ad99ea641e0b88b29125a786e77f3dcb3b206b5e116e23c2a265783658e69754",
+  "r3_cmc.osdi": "746f86fd1b89c309cbec7b23e661a66ee80b2d897ea229bc8e3fcc3757a673c3"
+ },
+ "pdk_pinned_commit": "f7bca32694fe3d58be0cc7d9df4b9f5db7161a14",
+ "pdk_installed_commit": "unknown",
+ "source_sha256": {
+  "sim/ldo-cmos5l-pvt-sweep/testbench/tb_startup_cmos5l.spice.tmpl": "ad9e077575a7b7db5ccc928a17f68d04b4372e1815cfc363c55a3ec062458cde",
+  "sim/ldo-cmos5l-startup-ramp/core_with_ramp.spice": "107f4b52a8256197b4d62f9f7a242112f997dd96eac36b0fd862748e2a262517",
+  "sim/ldo-cmos5l-pvt-sweep/startup_eval.py": "da3543a6d412b561fdb6b3cff5a1832e9ff821e280bf09b19599a755b10549d6",
+  "sim/ldo-cmos5l-pvt-sweep/startup_campaign.py": "bed74807356441a974558c40731ec7f3263ec3f56791fca8603e23ff6bee3576"
+ },
+ "csv": "sim/ldo-cmos5l-pvt-sweep/records/20261123-212501-9e332bb0-startup-ramp.csv"
+}
