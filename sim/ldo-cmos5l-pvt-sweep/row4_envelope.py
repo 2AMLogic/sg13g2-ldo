@@ -358,14 +358,7 @@ def summary_md(summ, points, prov):
 
 
 def summary_files(record_dir):
-    report = json.load(open(os.path.join(record_dir, "report.json")))
-    prov = json.load(open(os.path.join(record_dir, "provenance.json")))
-    summ, points = summarise_report(report, prov)
-    return {
-        "row4-envelope.json": json.dumps({"summary": summ, "points": points},
-                                         indent=1, sort_keys=True) + "\n",
-        "row4-envelope.md": summary_md(summ, points, prov),
-    }, summ
+    return re_.summary_files(record_dir, "row4", summarise_report, summary_md)
 
 
 # --------------------------------------------------------------------------- #
@@ -390,15 +383,7 @@ def cmd_submit(a):
 
 
 def cmd_summarise(a):
-    record_dir = os.path.join(ROOT, a.record_id)
-    if not os.path.isdir(record_dir):
-        raise Error(f"no such record: {record_dir}")
-    files, summ = summary_files(record_dir)
-    bad = write_or_check(record_dir, files, check=a.check)
-    if bad:
-        raise Error("summary files stale or missing: " + ", ".join(bad))
-    print(json.dumps(summ, indent=1, sort_keys=True))
-    return 0
+    return re_.summarise_cmd(a, ROOT, summary_files)
 
 
 # --------------------------------------------------------------------------- #
