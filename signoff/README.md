@@ -144,20 +144,41 @@ Per item:
     (the item-7 pex citation is the post-layout leg of this same row; it is
     a separate artifact, not part of this record). A passing corner matrix
     is not a post-layout result and not a statistical one (item 6).
-  - **Anti-rot.** `python3 sim/ldo-cmos5l-pvt-sweep/row4_envelope.py check`
-    (CI, offline, stdlib-only, no PDK and no simulator) re-derives every
+  - **Anti-rot.** `python3 sim/ldo-cmos5l-pvt-sweep/row4_envelope.py check`,
+    `python3 sim/ldo-cmos5l-pvt-sweep/row5_envelope.py check` and
+    `python3 sim/ldo-cmos5l-pvt-sweep/row7_envelope.py check`
+    (CI, offline, stdlib-only, no PDK and no simulator) re-derive every
     committed record's request files from the template plus the record's own
-    provenance, re-derives its summary files from the envelope, and re-checks
+    provenance, re-derive its summary files from the envelope, and re-check
     the envelope's recorded input hash against the committed `tb.spice`, its
     `models_lib_sha256` against the committed `corners.lib`, the recorded
-    `limits` against the ratified gates, the `spec_row` tags, and — for the
-    **cited** record only — the sha256 of every recorded design-netlist /
-    template input, so a design edit makes the citation stale here rather than
-    silently. It also refuses a manifest that marks any row but row 4 ratified,
-    or that cites the `--probe` record. `test_row4_envelope.py` carries the
-    negative controls (dropped corner, duplicated coordinate, a corner that
-    reported values but errored, an unreached `.meas`, an ungraded matrix, a
-    relaxed limit, a tampered netlist).
+    `limits` against the row gates, and the `spec_row` tags. The row-4 one
+    also refuses a manifest that marks any row but row 4 ratified. For the
+    **cited** record only, each re-hashes the sha256 of every recorded
+    design-netlist / template input, so a design edit makes the citation
+    stale here rather than silently. And each driver binds the signoff
+    item-5 member for its own envelope directory (shared resolver
+    `row_envelope.cited_item5_record`, #358) to a **committed, `definitive`,
+    non-`probe` record whose `tb.spice` hashes to the manifest's
+    `content_hash`** — a gate the grader cannot express, because a `--probe`
+    record's (and row 7's tight-tolerance pair's) `tb.spice` is
+    byte-identical to the full matrix's, so the grader's own pin cannot tell
+    a 2-corner probe from the full matrix. Row 7 additionally refuses an
+    item-5 citation whose `solver_profile` is not `standard`, so the
+    byte-identical `tight-1e-10` sensitivity pair cannot be cited in the
+    standard matrix's place. The row-5 and row-7 members are absent until
+    #318 lands; their checks pass with item 5 unresolved for their directory
+    and enforce the contract the moment the citation exists. The row-5/row-7
+    checks also keep their `sim/characterization/selection.json` selections
+    (item 8, row 7's pair evidence included) pinned and fresh.
+    `test_row4_envelope.py`, `test_row5_envelope.py` and
+    `test_row7_envelope.py` carry the negative controls (dropped corner,
+    duplicated coordinate, a corner that reported values but errored, an
+    unreached `.meas`, an ungraded matrix, a relaxed limit, a tampered
+    netlist — and, for the item-5 citation: a probe record cited, a
+    non-definitive record cited, a tight-profile pair cited, foreign or
+    missing `rows`, a duplicate driver member, a wrong `content_hash` pin, a
+    tampered netlist or stale input on the cited record).
   - **The pin is live even though the item is `unmet`.** Because the item does
     not grade `met`, the report carries no top-level `citation` block for it
     and therefore no `input_verified` field — only
@@ -445,15 +466,18 @@ python3 sim/characterization/generate.py          # then update the item-8 conte
 python3 sim/characterization/generate.py --check  # what CI runs
 ```
 
-Item 5's own evidence is **not** regenerated here: its record is an
-append-only `klt sim` run on the EDA batch fleet
-(`python3 sim/ldo-cmos5l-pvt-sweep/row4_envelope.py submit`, see that
-directory's README). What CI re-checks offline, and what you should run after
-touching the design netlists, the row-4 template or the manifest's
-`spec_rows` / item-5 citation, is:
+Item 5's own evidence is **not** regenerated here: its records are
+append-only `klt sim` runs on the EDA batch fleet
+(`python3 sim/ldo-cmos5l-pvt-sweep/row4_envelope.py submit`, and the
+row-5/row-7 drivers likewise; see those directories' READMEs). What CI
+re-checks offline, and what you should run after touching the design
+netlists, any row template or the manifest's `spec_rows` / item-5 citation,
+is:
 
 ```bash
 python3 sim/ldo-cmos5l-pvt-sweep/row4_envelope.py check
+python3 sim/ldo-cmos5l-pvt-sweep/row5_envelope.py check
+python3 sim/ldo-cmos5l-pvt-sweep/row7_envelope.py check
 ```
 
 It fails if the cited record's recorded inputs no longer match the tree — the

@@ -40,11 +40,13 @@ measurements (klayout-tools #2482), which is how `row7_envelope.py` grades
 Iq-by-difference without any repo-side verdict.
 
 Since issue #317 the row-agnostic half of this bench (the 45-point grid, the
-request skeleton, the corners.lib renderer, the submit flow and the offline
-record checks) lives in `row_envelope.py`, shared with `row7_envelope.py`.
-This driver owns the measurements, thresholds, summary text and the signoff
-citation rules.  The committed records still reproduce byte for byte; in
-particular corners.lib's first line still names THIS file (see
+request skeleton, the corners.lib renderer, the submit flow, the offline
+record checks and -- since #358 -- the signoff item-5 citation resolver)
+lives in `row_envelope.py`, shared with `row5_envelope.py` and
+`row7_envelope.py`.  This driver owns the measurements, thresholds and
+summary text; its citation rules are the row id and record directory passed
+to the shared resolver.  The committed records still reproduce byte for
+byte; in particular corners.lib's first line still names THIS file (see
 row_envelope.py's header for why that must never move).
 
 Scope: SG13CMOS5L schematic-level only.  Nothing here evidences an Open row
@@ -396,31 +398,10 @@ def cited_record():
     optionally naming the `spec_rows` it covers. Exactly one member is a
     row4-envelope record today; a second one (another row, another bench) is
     the expected growth path and is not this script's business, so only the
-    row4-envelope member is resolved here.
+    row4-envelope member is resolved here. The parser itself is shared with
+    the row-5/row-7 drivers (row_envelope.cited_item5_record, #358).
     """
-    m = json.load(open(os.path.join(REPO, "signoff", "sg13g2-ldo.json")))
-    ent = (m.get("evidence") or {}).get("5")
-    if ent is None:
-        return None, None
-    members = ent if isinstance(ent, list) else [ent]
-    mine = [x for x in members if isinstance(x, dict)
-            and "row4-envelope/" in str(x.get("file", ""))]
-    if not mine:
-        return None, None
-    if len(mine) > 1:
-        raise Error(f"signoff item 5 cites {len(mine)} row4-envelope records; "
-                    "exactly one is expected")
-    ent = mine[0]
-    rows = ent.get("rows")
-    if rows != [ROW4_ID]:
-        raise Error(f"signoff item 5's row4-envelope citation declares rows {rows!r}, "
-                    f"not [{ROW4_ID!r}] -- the envelope grades that row and no other")
-    rel = ent.get("file", "")
-    want = os.path.relpath(ROOT, REPO).replace(os.sep, "/") + "/"
-    if not rel.startswith(want) or not rel.endswith("/report.json"):
-        raise Error(f"signoff item 5 cites {rel!r}; the row4-envelope citation must be "
-                    f"{want}<record-id>/report.json")
-    return rel[len(want):-len("/report.json")], ent.get("content_hash")
+    return re_.cited_item5_record(REPO, ROOT, ROW4_ID, "row4")
 
 
 def check_record(rid, problems):
@@ -474,25 +455,8 @@ def cmd_check(a):
     summaries = {rid: check_record(rid, problems) for rid in rids}
 
     check_spec_rows(problems)
-    cited, pinned = cited_record()
-    if cited is None:
-        print("row4_envelope: signoff item 5 is uncited; records checked for "
-              "self-consistency only.", file=sys.stderr)
-    elif cited not in summaries:
-        problems.append(f"signoff item 5 cites record {cited}, which is not committed")
-    else:
-        summ = summaries[cited]
-        tb = sha256_file(os.path.join(ROOT, cited, "tb.spice"))
-        if pinned != "sha256:" + tb:
-            problems.append(f"signoff item 5 content_hash {pinned} != sha256:{tb} "
-                            f"(the cited record's tb.spice)")
-        problems += stale_inputs(cited)
-        if summ is None or not summ["definitive"]:
-            problems.append(f"signoff item 5 cites record {cited}, whose summary is not "
-                            "definitive; an incomplete or failing matrix must stay uncited")
-        elif summ["probe"]:
-            problems.append(f"signoff item 5 cites probe record {cited}")
-
+    cited = re_.check_item5_citation(REPO, ROOT, ROW4_ID, "row4", summaries,
+                                     problems, stale_inputs)
     for p in problems:
         print("row4_envelope: " + p, file=sys.stderr)
     if problems:

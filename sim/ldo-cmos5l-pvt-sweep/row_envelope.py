@@ -14,9 +14,11 @@
   * re-verify every committed record offline (CI, stdlib only).
 
 Everything row-agnostic lives in this module: the 45-point corner grid,
-the request skeleton, the corners.lib renderer, the record-submit flow and
-the offline record checks.  Each driver owns its measurements, thresholds,
-summary text and citation rules.
+the request skeleton, the corners.lib renderer, the record-submit flow, the
+offline record checks and -- since #358 -- the signoff item-5 citation
+resolver and its enforcement, parameterized by each driver's repo root,
+record directory, row id and slug.  Each driver owns its measurements,
+thresholds and summary text.
 
 Byte-critical contract (the Hermit note on issue #317): the first line of
 every `corners.lib` names the DRIVER that generated it, and that file is
@@ -529,3 +531,116 @@ def stale_inputs(repo, root, rid, inputs):
                        "the citation is stale -- re-run the driver's `submit` "
                        "and re-pin")
     return out
+
+
+# --------------------------------------------------------------------------- #
+# the signoff manifest's item-5 citation (shared by the row drivers, #358)
+# --------------------------------------------------------------------------- #
+
+def cited_item5_record(repo, root, row_id, slug):
+    """(record_id, pinned content_hash) of THIS driver's member under
+    signoff/sg13g2-ldo.json item 5, or (None, None) when item 5 has no
+    member under `root`'s directory.
+
+    Item 5 is a multi-citation item: the entry is a LIST of members, each
+    optionally naming the `spec_rows` it covers. Exactly one member may sit
+    under this driver's record directory; more than one, a `rows` list that
+    is not exactly [row_id], or a `file` that is not
+    <root>/<record-id>/report.json (one path segment for the record id) is
+    a malformed citation and raises. Members are matched by the directory
+    name (<slug>-envelope/) first and the full <root> prefix second, so a
+    member under a foreign directory with the same suffix is refused by the
+    shape rule rather than silently ignored.
+
+    `repo`/`root` are parameters (not this module's own globals) so a
+    driver's unit tests can point them at a throwaway copy, the same
+    contract as stale_inputs().
+    """
+    m = json.load(open(os.path.join(repo, "signoff", "sg13g2-ldo.json")))
+    ent = (m.get("evidence") or {}).get("5")
+    if ent is None:
+        return None, None
+    members = ent if isinstance(ent, list) else [ent]
+    mine = [x for x in members if isinstance(x, dict)
+            and f"{slug}-envelope/" in str(x.get("file", ""))]
+    if not mine:
+        return None, None
+    if len(mine) > 1:
+        raise Error(f"signoff item 5 cites {len(mine)} {slug}-envelope records; "
+                    "exactly one is expected")
+    ent = mine[0]
+    rows = ent.get("rows")
+    if rows != [row_id]:
+        raise Error(f"signoff item 5's {slug}-envelope citation declares rows "
+                    f"{rows!r}, not [{row_id!r}] -- the envelope grades that "
+                    "row and no other")
+    want = os.path.relpath(root, repo).replace(os.sep, "/") + "/"
+    rel = str(ent.get("file", ""))
+    rid = rel[len(want):-len("/report.json")]
+    if not rel.startswith(want) or not rel.endswith("/report.json") \
+            or not rid or "/" in rid:
+        raise Error(f"signoff item 5 cites {rel!r}; the {slug}-envelope citation "
+                    f"must be {want}<record-id>/report.json")
+    return rid, ent.get("content_hash")
+
+
+def check_item5_citation(repo, root, row_id, slug, summaries, problems,
+                         stale_inputs_fn, require_standard_solver_profile=False):
+    """The signoff-manifest half of a driver's `check` (#358): resolve THIS
+    driver's item-5 member and refuse a citation that is not the committed,
+    `definitive`, non-`probe` record its `content_hash` pins.
+
+    Why this is driver-side and not left to `klt signoff`: the grader pins
+    `tb.spice`, and a `--probe` record (or a row-7 tight-tolerance pair,
+    whose tolerances live in request.json, not the netlist) shares that
+    byte-identical file with the full matrix, so the grader's own checks
+    cannot tell a probe from the definitive matrix. `summaries` is the
+    driver's {record_id: summary} over its committed records -- a record
+    missing from it is not committed; `stale_inputs_fn(rid)` is the
+    driver's own freshness wrapper; `require_standard_solver_profile`
+    (row 7) additionally refuses a citation of the paired sensitivity
+    record instead of the standard matrix it measured.
+
+    Returns the cited record id, or None when item 5 cites no record under
+    `root` -- legal: the row-5/row-7 members land in their own PR (#318)
+    and the check must pass both before and after they do. A malformed
+    member is appended to `problems` (so the whole check's findings print
+    together), never silently treated as uncited.
+    """
+    try:
+        cited, pinned = cited_item5_record(repo, root, row_id, slug)
+    except Error as exc:
+        problems.append(str(exc))
+        return None
+    if cited is None:
+        print(f"{slug}_envelope: signoff item 5 cites no {slug}-envelope record; "
+              "records checked for self-consistency only.", file=sys.stderr)
+        return None
+    if cited not in summaries:
+        problems.append(f"signoff item 5 cites record {cited}, which is not committed")
+        return cited
+    summ = summaries[cited]
+    tb = sha256_file(os.path.join(root, cited, "tb.spice"))
+    if pinned != "sha256:" + tb:
+        problems.append(f"signoff item 5 content_hash {pinned} != sha256:{tb} "
+                        f"(the cited record's tb.spice)")
+    problems += stale_inputs_fn(cited)
+    if summ is None or not summ["definitive"]:
+        problems.append(f"signoff item 5 cites record {cited}, whose summary is not "
+                        "definitive; an incomplete or failing matrix must stay uncited")
+    elif summ["probe"]:
+        problems.append(f"signoff item 5 cites probe record {cited}")
+    if require_standard_solver_profile:
+        try:
+            with open(os.path.join(root, cited, "provenance.json")) as f:
+                profile = json.load(f).get("solver_profile", "standard")
+        except (OSError, ValueError) as exc:
+            problems.append(f"signoff item 5 cites record {cited}: cannot read its "
+                            f"solver profile ({exc})")
+            profile = None
+        if profile != "standard":
+            problems.append(f"signoff item 5 cites record {cited}, whose solver_profile "
+                            f"is {profile!r}, not 'standard'; a tight-tolerance pair "
+                            "measures observed solver sensitivity and is never the "
+                            "graded matrix a citation pins")
+    return cited
