@@ -77,6 +77,17 @@ thresholds, summary text and the characterization-side selection rules.
                                             # self-verifies
     row7_envelope.py summarise <record-id>  # rewrite that record's summary files
 
+`check` binds BOTH selections this record set carries: the item-8
+characterization selection (sim/characterization/selection.json, kept fresh,
+its pair evidence included) and the signoff manifest's item-5 row7-envelope
+member -- when #318's citation lands it must name a committed, definitive,
+non-probe, STANDARD-solver-profile record whose tb.spice hashes to the
+manifest's content_hash and whose recorded inputs are fresh (the shared
+row-4 contract plus the profile rule, row_envelope.cited_item5_record
+#358; the tight-tolerance pair's tb.spice is byte-identical to the standard
+matrix's, so the profile is the only offline handle on it).  While item 5
+has no row-7 member the check passes with the citation unresolved.
+
 Append-only: `submit` mints a NEW timestamped record id and refuses to touch
 an existing one.  SPICE never runs locally here -- this is a 270-solve grid
 and dispatch hosts submit grids to the fleet (CLAUDE.md host rules).
@@ -647,7 +658,7 @@ def check_record(rid, problems):
     return summ
 
 
-def cited_record():
+def selected_record():
     """The record id sim/characterization/selection.json cites for row 7."""
     sel = json.load(open(os.path.join(REPO, "sim", "characterization", "selection.json")))
     return (sel.get("row7_envelope_evidence") or {}).get("id")
@@ -657,6 +668,19 @@ def cited_pair_record():
     sel = json.load(open(os.path.join(REPO, "sim", "characterization", "selection.json")))
     pe = (sel.get("row7_envelope_evidence") or {}).get("pair_evidence") or {}
     return pe.get("tight_record_id")
+
+
+def cited_record():
+    """(record_id, pinned content_hash) from signoff/sg13g2-ldo.json item 5's
+    row7-envelope member, or (None, None) while item 5 cites no row-7 record
+    (#318's edit, not this driver's; `check` passes unresolved before it and
+    enforces it after). The shared row-4 contract applies
+    (row_envelope.cited_item5_record, #358) PLUS the standard-profile rule:
+    the tight-tolerance pair's tb.spice is byte-identical to the standard
+    matrix's (its tolerances live in request.json), definitive and all, so
+    cmd_check additionally refuses a citation whose provenance carries any
+    solver_profile other than 'standard'."""
+    return re_.cited_item5_record(REPO, ROOT, ROW7_ID, "row7")
 
 
 def stale_inputs(rid):
@@ -678,19 +702,22 @@ def cmd_check(a):
         else:
             with open(pf) as f:
                 pdoc = json.load(f)
-            if not pdoc.get("complete") or pdoc.get("base_record") != cited_record():
+            if not pdoc.get("complete") or pdoc.get("base_record") != selected_record():
                 problems.append(f"the cited pair {cited_pair} is incomplete or pairs "
                                 f"{pdoc.get('base_record')}, not the cited record "
-                                f"{cited_record()}")
+                                f"{selected_record()}")
             if not (summaries.get(cited_pair) or {}).get("definitive"):
                 problems.append(f"the cited pair record {cited_pair} is not a "
                                 "definitive matrix")
-    cited = cited_record()
-    if cited not in summaries:
-        problems.append(f"selection.json cites row-7 record {cited}, which is not committed")
+    selected = selected_record()
+    if selected not in summaries:
+        problems.append(f"selection.json cites row-7 record {selected}, which is not committed")
     else:
         # The cited record must describe the design and PDK as they are now.
-        problems += stale_inputs(cited)
+        problems += stale_inputs(selected)
+    cited = re_.check_item5_citation(REPO, ROOT, ROW7_ID, "row7", summaries,
+                                     problems, stale_inputs,
+                                     require_standard_solver_profile=True)
     for p in problems:
         print("row7_envelope: " + p, file=sys.stderr)
     if problems:
@@ -698,7 +725,8 @@ def cmd_check(a):
     n_def = sum(1 for s in summaries.values() if s and s["definitive"])
     print(f"row7_envelope: OK -- {len(rids)} record(s) reproduce and self-verify "
           f"({n_def} definitive). The row stays Open; the selected record for "
-          "characterization is pinned in sim/characterization/selection.json")
+          "characterization is pinned in sim/characterization/selection.json"
+          + (f"; signoff item 5 cites {cited}" if cited else ""))
     return 0
 
 
