@@ -11,7 +11,7 @@ import re
 import unittest
 from pathlib import Path
 
-FLOW = Path(__file__).resolve().parents[2] / "layout" / "run_flow.sh"
+FLOW = Path(__file__).resolve().parents[0] / "run_flow.sh"
 
 
 class RunFlowTrapTest(unittest.TestCase):
