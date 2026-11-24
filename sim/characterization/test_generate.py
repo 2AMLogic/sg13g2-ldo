@@ -59,6 +59,9 @@ def copy_inputs(dst: Path) -> None:
     rels |= {f["path"] for f in r7e["files"].values()}
     rels |= {p["path"] for p in r7e["design_freshness_pins"]}
     rels |= {f["path"] for f in r7e["pair_evidence"]["files"].values()}
+    r5e = sel["row5_envelope_evidence"]
+    rels |= {f["path"] for f in r5e["files"].values()}
+    rels |= {p["path"] for p in r5e["design_freshness_pins"]}
     rels.add("sim/pdk-cmos5l.json")
     r10doc = json.loads((REPO / r10["files"]["classification_json"]["path"]).read_text())
     rels |= set(r10doc["classifier"])
@@ -245,7 +248,7 @@ class GeneratedReportTests(unittest.TestCase):
 
     def test_row5_loaded_line_and_multi_vin_load_regulation(self):
         ms = {m["name"]: m for m in self.rows[5]["metrics"]}
-        self.assertEqual(len(ms), 10)  # 2 legacy + 5 loads + 3 supplies
+        self.assertEqual(len(ms), 12)  # 2 legacy + 5 loads + 3 supplies + 2 graded-envelope (#319)
         line = [m for n, m in ms.items() if n.startswith("line regulation at ")]
         load = [m for n, m in ms.items() if n.startswith("load regulation 0-50 mA at Vin")]
         self.assertEqual((len(line), len(load)), (5, 3))
@@ -789,6 +792,89 @@ class NegativeControls(unittest.TestCase):
         self.assertIn("stale against the design", chk["detail"])
         self.assertEqual(self.env_status(), "fail")
 
+
+    # --- row-5 graded envelope negative controls (issue #319) --------------
+
+    def rewrite_r5(self, key, mutate):
+        selp = self.tmp / "sim/characterization/selection.json"
+        sel = json.loads(selp.read_text())
+        entry = sel["row5_envelope_evidence"]["files"][key]
+        path = self.tmp / entry["path"]
+        doc = json.loads(path.read_text())
+        mutate(doc)
+        path.write_text(json.dumps(doc, indent=1) + "\n")
+        entry["sha256"] = G.sha256_file(path)
+        selp.write_text(json.dumps(sel))
+
+    def r5_set(self, name, value, cid="mos_tt__res_typ__cap_typ/novdd/-40C"):
+        def f(doc):
+            for c in doc["corners"]:
+                if c["corner_id"] == cid:
+                    for m in c["measurements"]:
+                        if m["name"] == name:
+                            m["value"], m["status"] = value, "pass"
+        return f
+
+    def test_r5_value_at_either_target_is_rejected(self):
+        for name, target in (("line_i25m_mvpv", 5.0), ("load_v3v30_pct", 1.0)):
+            with self.subTest(name):
+                self.setUp()
+                self.rewrite_r5("report_json", self.r5_set(name, target))
+                rc, _, err = run_main("--root", str(self.tmp))
+                self.assertEqual(rc, 1)
+                self.assertIn("not strictly below", err)
+
+    def test_r5_value_tamper_breaks_the_summary_agreement(self):
+        # Bump a non-worst value above the recorded worst: every pin still matches.
+        self.rewrite_r5("report_json", self.r5_set("line_i0_mvpv", 4.9))
+        rc, _, err = run_main("--root", str(self.tmp))
+        self.assertEqual(rc, 1)
+        self.assertIn("disagrees", err)
+
+    def test_r5_breaking_the_offline_cross_check_is_rejected(self):
+        # tt/-40C/res_typ line at 25 mA: offline 0.156 mV/V; push 0.05 away but
+        # keep below the family worst so the summary agreement still holds.
+        self.rewrite_r5("report_json", self.r5_set("line_i25m_mvpv", 0.215))
+        rc, _, err = run_main("--root", str(self.tmp))
+        self.assertEqual(rc, 1)
+        self.assertIn("offline DC figure", err)
+
+    def test_r5_dropped_spec_row_tag_is_rejected(self):
+        self.rewrite_r5("request_json", lambda doc: doc["measurements"][0].pop("spec_row"))
+        rc, _, err = run_main("--root", str(self.tmp))
+        self.assertEqual(rc, 1)
+        self.assertIn("spec_row", err)
+
+    def test_r5_missing_corner_is_rejected(self):
+        self.rewrite_r5("report_json", lambda doc: doc.update(corners=doc["corners"][:-1]))
+        rc, _, err = run_main("--root", str(self.tmp))
+        self.assertEqual(rc, 1)
+        self.assertIn("incomplete", err)
+
+    def test_r5_without_a_selected_record_states_the_gap_and_gives_no_credit(self):
+        selp = self.tmp / "sim/characterization/selection.json"
+        sel = json.loads(selp.read_text())
+        del sel["row5_envelope_evidence"]
+        selp.write_text(json.dumps(sel))
+        rc, _, err = run_main("--root", str(self.tmp))
+        self.assertEqual(rc, 0, err)
+        rep = json.loads((self.tmp / "sim/characterization/characterization-report.json").read_text())
+        row5 = next(r for r in rep["rows"] if r["id"] == 5)
+        gap = [m for m in row5["metrics"] if "graded `klt sim` envelope" in m["name"]]
+        self.assertEqual(len(gap), 1)
+        self.assertEqual(gap[0]["verdict"], "not_measured")
+        self.assertTrue(any("no graded `klt sim` envelope" in g for g in row5["coverage"]["gaps"]))
+
+    def test_r5_envelope_metrics_cite_the_record_when_selected(self):
+        rc, _, err = run_main("--root", str(self.tmp))
+        self.assertEqual(rc, 0, err)
+        rep = json.loads((self.tmp / "sim/characterization/characterization-report.json").read_text())
+        row5 = next(r for r in rep["rows"] if r["id"] == 5)
+        env = [m for m in row5["metrics"] if "graded `klt sim` envelope" in m["name"]]
+        self.assertEqual(len(env), 2)
+        for m in env:
+            self.assertIn("row5-envelope/", m["source"]["record"] if isinstance(m["source"], dict) else m["source"])
+            self.assertEqual(m["n_points"], 135)
 
     # --- review of #322: strictness, exactly-once, PDK revision, the pair --
 
