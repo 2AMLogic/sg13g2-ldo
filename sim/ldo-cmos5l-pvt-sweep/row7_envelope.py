@@ -267,8 +267,6 @@ def summarise_report(report, prov):
 
     noload_names = [n for n in GRADED if "_i0_" in n]
     fullload_names = [n for n in GRADED if "_i50m_" in n]
-    noload_names = [n for n in GRADED if "_i0_" in n]
-    fullload_names = [n for n in GRADED if "_i50m_" in n]
     w_nl, w_fl = worst(noload_names), worst(fullload_names)
     summ.update({
         "solver_profile": prov.get("solver_profile", "standard"),

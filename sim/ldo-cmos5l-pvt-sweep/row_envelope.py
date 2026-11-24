@@ -297,7 +297,7 @@ def echoed_options_match(report, request):
 
 
 def summarise_corners(report, prov, *, graded, ungraded=(), step_names=None,
-                      target_of=None, point_fields=None, corner_status_key=None):
+                      target_of=None, point_fields=None):
     """The row-agnostic half of `summarise_report`: harvest per-corner points,
     build the 15 common summary keys and the base `definitive` conjunction.
 
