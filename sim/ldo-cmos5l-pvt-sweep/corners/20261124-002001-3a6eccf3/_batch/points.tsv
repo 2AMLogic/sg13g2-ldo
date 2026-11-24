@@ -1,0 +1,4 @@
+point_id	group	process	temperature_c
+loopgain_ctl_ff_-40c_rwcs	g00_loopgain_ctl_ff_-40c_rwcs	mos_ff__res_wcs__cap_typ	-40
+loopgain2v_ff_-40c_rwcs	g01_loopgain2v_ff_-40c_rwcs	mos_ff__res_wcs__cap_typ	-40
+loopgain2i_ff_-40c_rwcs	g02_loopgain2i_ff_-40c_rwcs	mos_ff__res_wcs__cap_typ	-40

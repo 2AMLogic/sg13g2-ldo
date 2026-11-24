@@ -1,0 +1,15 @@
+{
+ "reason": "this run is not the legacy 45-point campaign at the legacy operating point (50 mA, 0.33 uF, 0 ohm, --only-point=ff_-40c_rwcs); the gate's premise -- same design bytes, PDK pin and analysis line against record 20261011-070111-5391c68's 1 mA / 1 uF traces -- does not hold, so it is skipped, not applied or relaxed",
+ "reference": {
+  "common_axis_to_hz": 100000000.0,
+  "dfug_rel": -0.02242806345399098,
+  "dgm_db": 1.1787153798260945,
+  "dpm_deg": 6.740710769808658,
+  "max_db_diff_common_axis": 0.7432456000000016,
+  "record": "20261012-100716-934dbd7c",
+  "trace": "corners/20261012-100716-934dbd7c/loopgain_dyn_ff_-40c_rwcs_i50000ua_c330nf_e0mohm_ac.csv",
+  "trace_sha256_16": "f9e9261aea56bd71"
+ },
+ "reference_cause": "Known cross-vintage cause, recorded by E3 (record 20261123-102238-0b610697) and issue #313's committed replay: the fleet worker resolves several corner/model .lib files worker-side to its own PDK vintage.",
+ "skipped": true
+}

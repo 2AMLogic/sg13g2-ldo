@@ -5,6 +5,11 @@
 #   sim/ldo-cmos5l-pvt-sweep/run_loopgain2.sh --validate         # local, nominal only
 #   sim/ldo-cmos5l-pvt-sweep/run_loopgain2.sh --loopgain-ac-max=10g
 #
+# Operating point + PVT-point restriction (issue #218, DR-0015 E2):
+#   --load-ma=F    --cout-uf=F    --esr-ohm=F    (default: legacy 1 / 1 / 0)
+#   --only-point=<corner>_<temp>c_r<rlabel>      (e.g. ff_-40c_rwcs)
+#   --experiment=e2                               (DR-0015 E2 framing, P3+P6)
+#
 # A focused campaign (NOT another full sweep): at every point of the same
 # 45-point PVT grid as record 20261011-070111-5391c68 (5 MOS corners x
 # 3 temperatures x 3 resistor corners, legacy operating point 1 mA / 1 uF /
@@ -36,6 +41,21 @@
 # Nothing here edits a threshold, a ceiling rule or a historical record;
 # sim/ stays append-only.
 #
+# The operating point defaults to the legacy 1 mA / 1 uF / 0 ohm point and
+# the grid to all 45 points; a run with NO new arguments renders
+# byte-identical decks to the pre-#218 driver (the default literals live in
+# loopgain2.py DEFAULT_DECK_LITERALS, sourced through `loopgain2.py op`).
+# --load-ma/--cout-uf/--esr-ohm canonicalise through dynamic_doe.py (the
+# #64 DoE's own validator; a bad value exits 2). --only-point narrows the
+# three nested loops to ONE PVT point (3 decks, matching DR-0015's E2
+# pricing), and the ctl-vs-baseline gate then does not apply: its premise
+# is the legacy 45-point campaign at the legacy operating point, so it is
+# SKIPPED and the record says so (never silently passed, never relaxed).
+# --experiment=e2 additionally frames the record as DR-0015's experiment
+# E2 (P3 run + the P6 half cited from the committed 45-point record
+# 20261012-071449-6a3c1475) and requires DR-0015's exact P3 point/operating
+# point, so the record cannot mislabel a different run.
+#
 # The AC ceiling is the same validated runner input as run_sweep.sh's
 # (--loopgain-ac-max / SWEEP_LOOPGAIN_AC_MAX; default here 10g -- the whole
 # point of this campaign is the behaviour above the in-band crossing, and
@@ -55,11 +75,17 @@ set -euo pipefail
 
 VALIDATE=0
 LOOPGAIN_AC_MAX="${SWEEP_LOOPGAIN_AC_MAX:-10g}"
+LOAD_MA="" COUT_UF="" ESR_OHM="" ONLY_POINT="" EXPERIMENT=""
 for arg in "$@"; do
   case "${arg}" in
     --validate) VALIDATE=1 ;;
     --loopgain-ac-max=*) LOOPGAIN_AC_MAX="${arg#--loopgain-ac-max=}" ;;
-    -h|--help) sed -n '2,53p' "${BASH_SOURCE[0]}"; exit 0 ;;
+    --load-ma=*) LOAD_MA="${arg#--load-ma=}" ;;
+    --cout-uf=*) COUT_UF="${arg#--cout-uf=}" ;;
+    --esr-ohm=*) ESR_OHM="${arg#--esr-ohm=}" ;;
+    --only-point=*) ONLY_POINT="${arg#--only-point=}" ;;
+    --experiment=e2) EXPERIMENT="e2" ;;
+    -h|--help) sed -n '2,80p' "${BASH_SOURCE[0]}"; exit 0 ;;
     *) echo "run_loopgain2.sh: unknown argument '${arg}'" >&2; exit 2 ;;
   esac
 done
@@ -77,6 +103,43 @@ LG_AC_MAX="$(python3 "${SCRIPT_DIR}/ac_sweep.py" ceiling "${LOOPGAIN_AC_MAX}")" 
 }
 EXPECT_ROWS_LG="$(python3 "${SCRIPT_DIR}/ac_sweep.py" rows "${LG_AC_MAX}")"
 LG_AC_LINE="$(python3 "${SCRIPT_DIR}/ac_sweep.py" line "${LG_AC_MAX}")"
+
+# Operating point (issue #218): canonicalise + validate through
+# dynamic_doe.py via loopgain2.py's `op` subcommand -- there is no second
+# validator to drift, and a bad value exits 2 before anything renders.
+OP_JSON="$(python3 "${SCRIPT_DIR}/loopgain2.py" op --json \
+  ${LOAD_MA:+--load-ma "${LOAD_MA}"} ${COUT_UF:+--cout-uf "${COUT_UF}"} \
+  ${ESR_OHM:+--esr-ohm "${ESR_OHM}"})" || {
+  echo "run_loopgain2.sh: invalid --load-ma/--cout-uf/--esr-ohm value (see above)." >&2
+  exit 2
+}
+OP_IS_LEGACY="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["legacy"])' "${OP_JSON}")"
+OP_TOKEN="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["token"])' "${OP_JSON}")"
+OP_DISPLAY="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["display"])' "${OP_JSON}")"
+if [[ -z "${LOAD_MA}${COUT_UF}${ESR_OHM}" ]]; then
+  # Default path: today's literals, sourced from loopgain2.py's
+  # DEFAULT_DECK_LITERALS so the driver and its tests share ONE copy -- the
+  # no-arguments run renders byte-identical decks to the pre-#218 driver.
+  read -r LOAD_A COUT_F COUT_BOTTOM < <(python3 -c '
+import json, sys
+d = json.loads(sys.argv[1])["default_literals"]
+print(d["LOAD_A"], d["COUT_F"], d["COUT_BOTTOM"])' "${OP_JSON}")
+  ESR_LINE="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["default_literals"]["ESR_LINE"])' "${OP_JSON}")"
+  ESR_OHM_NET="0"
+else
+  # Override path: dynamic_doe's canonical ngspice syntax (the same strings
+  # run_sweep.sh's gen_netlist substitutes for the #64 DoE points), and the
+  # run_sweep.sh esr_netlist_parts convention for the ESR wiring.
+  read -r LOAD_A COUT_F ESR_OHM_NET < <(python3 -c '
+import json, sys
+n = json.loads(sys.argv[1])["netlist"]
+print(n["load_a"], n["cout_f"], n["esr_ohm"])' "${OP_JSON}")
+  read -r COUT_BOTTOM ESR_LINE < <(python3 -c '
+import json, sys
+e = json.loads(sys.argv[1])["esr"]
+print(e["cout_bottom"], e["esr_line"])' "${OP_JSON}")
+fi
+echo "run_loopgain2.sh: operating point ${OP_DISPLAY} (${OP_TOKEN}); LOAD_A=${LOAD_A} COUT_F=${COUT_F} ESR=${ESR_OHM_NET}"
 # The ceiling contract (issue #128) is asserted by ac_sweep.py itself, once,
 # for every caller (#236 de-duplicated the second grep copy that used to
 # live here -- same delegation pattern as the --check-topology call below).
@@ -109,10 +172,13 @@ fi
 
 # Rendering (#236): the SAME renderer run_sweep.sh's gen_netlist and
 # --check-env use -- sim/tools/render_deck.py, with the substitution set
-# gen_netlist applies, at the legacy operating point (1 mA / 1 uF /
-# 0 ohm; ESR=0 comment). The control bench reuses the single-injection
-# template verbatim; only its point-id prefix (loopgain_ctl_) differs, so
-# the three benches' exports never collide in one corners dir.
+# gen_netlist applies. The operating point comes from the canonicalised
+# LOAD_A/COUT_F/COUT_BOTTOM/ESR_LINE variables above: the default path
+# holds the legacy literals (1 mA / 1 uF / 0 ohm; ESR=0 comment byte-for-
+# byte the pre-#218 deck), an override holds dynamic_doe's canonical
+# syntax. The control bench reuses the single-injection template verbatim;
+# only its point-id prefix (loopgain_ctl_) differs, so the three benches'
+# exports never collide in one corners dir.
 render_deck() {  # <bench> <mos_section> <res_section> <temp> <out> <csv>
   local bench="$1" mos="$2" res="$3" temp="$4" out="$5" csv="$6"
   local tmpl="tb_${bench}_cmos5l.spice.tmpl"
@@ -121,9 +187,9 @@ render_deck() {  # <bench> <mos_section> <res_section> <temp> <out> <csv>
     "PDK_ROOT=${PDK_ROOT}" "PDK=${PDK}" "OSDI_DIR=${OSDI_DIR}" \
     "MOS_SECTION=${mos}" "RES_SECTION=${res}" "CAP_SECTION=cap_typ" \
     "TEMP=${temp}" "LG_AC_MAX=${LG_AC_MAX}" "CC_W=170u (nominal)" \
-    "DESIGN_NETLIST=${DESIGN_NETLIST}" "LOAD_A=0.001" "COUT_F=1u" \
-    "COUT_BOTTOM=0" \
-    "ESR_LINE=* ESR=0: Cout wired directly to ground (campaign default)" \
+    "DESIGN_NETLIST=${DESIGN_NETLIST}" "LOAD_A=${LOAD_A}" "COUT_F=${COUT_F}" \
+    "COUT_BOTTOM=${COUT_BOTTOM}" \
+    "ESR_LINE=${ESR_LINE}" \
     "AC_CSV=${csv}"
 }
 
@@ -131,6 +197,44 @@ CORNERS=(tt ss ff sf fs)
 TEMPS=(-40 27 125)
 RES_LABELS=(typ bcs wcs)
 BENCHES=(loopgain_ctl loopgain2v loopgain2i)
+
+# PVT-point restriction (issue #218): narrow the three nested loops to ONE
+# grid point (<corner>_<temp>c_r<rlabel>, e.g. DR-0015's P3
+# ff_-40c_rwcs) so a single-point campaign is 3 decks, not 135 -- DR-0015
+# priced E2 at exactly that. The completeness loop and the queued-point
+# count below read the same narrowed arrays.
+if [[ -n "${ONLY_POINT}" ]]; then
+  ONLY_RLABEL="${ONLY_POINT##*_}"; ONLY_RLABEL="${ONLY_RLABEL#r}"   # r<wlabel> -> <wlabel>
+  ONLY_HEAD="${ONLY_POINT%_*}"
+  ONLY_TEMP="${ONLY_HEAD##*_}"; ONLY_TEMP="${ONLY_TEMP%c}"
+  ONLY_CORNER="${ONLY_HEAD%_*}"
+  if [[ " ${CORNERS[*]} " != *" ${ONLY_CORNER} "* \
+     || " ${TEMPS[*]} " != *" ${ONLY_TEMP} "* \
+     || " ${RES_LABELS[*]} " != *" ${ONLY_RLABEL} "* ]]; then
+    echo "run_loopgain2.sh: --only-point='${ONLY_POINT}' is not a grid point" >&2
+    echo "run_loopgain2.sh:   (want <corner>_<temp>c_r<rlabel>, e.g. ff_-40c_rwcs)" >&2
+    exit 2
+  fi
+  CORNERS=("${ONLY_CORNER}")
+  TEMPS=("${ONLY_TEMP}")
+  RES_LABELS=("${ONLY_RLABEL}")
+fi
+N_GRID_POINTS=$(( ${#CORNERS[@]} * ${#TEMPS[@]} * ${#RES_LABELS[@]} ))
+
+# DR-0015 experiment E2 framing (issue #218): the record's side-by-side
+# table and title. Requires the brief's exact P3 point and operating point
+# (DR-0015's six-points table), so a different run cannot be mislabelled.
+if [[ "${EXPERIMENT}" == "e2" ]]; then
+  if [[ -z "${ONLY_POINT}" || "${OP_IS_LEGACY}" != "False" ]]; then
+    echo "run_loopgain2.sh: --experiment=e2 needs --only-point and a non-legacy operating point" >&2
+    exit 2
+  fi
+  if [[ "${ONLY_POINT}" != "ff_-40c_rwcs" || "${OP_TOKEN}" != "i50000ua_c330nf_e0mohm" ]]; then
+    echo "run_loopgain2.sh: --experiment=e2 is DR-0015's P3 (ff_-40c_rwcs, 50 mA, 0.33 uF, 0 mohm)," >&2
+    echo "run_loopgain2.sh:   got --only-point=${ONLY_POINT} at ${OP_TOKEN}" >&2
+    exit 2
+  fi
+fi
 # Columns each bench's wrdata export promises (screening; loopgain2.py
 # re-validates the content on reconstruction).
 declare -A BENCH_COLS=( [loopgain_ctl]=4 [loopgain2v]=8 [loopgain2i]=4 )
@@ -248,6 +352,75 @@ CMP_JSON="${EVIDENCE_DIR}/loopgain2-report.json"
 MD_OUT="${RECORDS_DIR}/${RECORD_ID}.loopgain2.md"
 mkdir -p "${SNAPSHOTS_OUT}" "${CORNERS_OUT}" "${EVIDENCE_DIR}"
 
+# The campaign's shape, committed next to the raw exports (issue #218): the
+# record md and the row10 wrapper read their conditions, point count and
+# producer pins from here -- a restricted or non-legacy campaign must not be
+# described by the legacy 45-point strings.
+# Fixed positional arguments, empty strings kept: the driver's own parsed
+# values (ONLY_POINT, EXPERIMENT, and the raw --load-ma/--cout-uf/--esr-ohm
+# the op subcommand already validated) are passed straight through, with no
+# flag re-parsing that could drop an empty value and shift the pairing.
+python3 - "${EVIDENCE_DIR}/campaign.json" "${SCRIPT_DIR}" "${RECORD_ID}" \
+  "${ONLY_POINT}" "${EXPERIMENT}" "${LOAD_MA}" "${COUT_UF}" "${ESR_OHM}" <<'PYEOF'
+import hashlib, json, os, sys
+
+out_path, script_dir, rid, only_point, experiment, load_ma, cout_uf, esr_ohm = sys.argv[1:9]
+sys.path.insert(0, script_dir)   # script_dir already IS the directory holding loopgain2.py
+import loopgain2 as lg2
+
+load_ma, cout_uf, esr_ohm = (v or None for v in (load_ma, cout_uf, esr_ohm))
+op = lg2.op_from_args(load_ma, cout_uf, esr_ohm)
+legacy = op == dict(lg2.dyn.LEGACY_POINT)
+
+
+def sha256_16(rel):
+    with open(os.path.join(script_dir, rel), "rb") as fh:
+        return hashlib.sha256(fh.read()).hexdigest()[:16]
+
+
+def sha256(rel):
+    with open(os.path.join(script_dir, rel), "rb") as fh:
+        return hashlib.sha256(fh.read()).hexdigest()
+
+
+grid = ("5 MOS corners x 3 temperatures x 3 resistor corners" if not only_point
+        else f"PVT point {only_point} only (issue #218 restriction)")
+n_points = 1 if only_point else 45
+doc = {
+    "schema_version": 1,
+    "driver": "run_loopgain2.sh",
+    "issue": ("issue #218 (DR-0015 experiment E2; bench of issue #135)"
+              if experiment == "e2" else "issue #135"),
+    "revision_note": False,
+    "grid": grid,
+    "op_display": lg2.op_display(op),
+    "op": op,
+    "points": n_points,
+    "decks": 3,
+    "legacy_point": legacy,
+    "full_grid": not only_point,
+    "only_point": only_point or None,
+    "e2": None,
+    "producer_sha16": sha256_16("loopgain2.py"),
+    "tmpl2v_sha16": sha256_16("testbench/tb_loopgain2v_cmos5l.spice.tmpl"),
+    "tmpl2i_sha16": sha256_16("testbench/tb_loopgain2i_cmos5l.spice.tmpl"),
+    "row10_wrapper_sha256": sha256("row10_loopgain2.py"),
+    "loopgain2_sha256": sha256("loopgain2.py"),
+}
+if experiment == "e2":
+    doc["e2"] = {
+        "brief": "DR-0015 experiment E2: the two-injection bench at points P3 and P6",
+        "p3_point": only_point,
+        "p3_conditions": f"ff / -40 C / res_wcs, {lg2.op_display(op)}",
+        "p6_record": "20261012-071449-6a3c1475",
+        "p6_point": "ss_125c_rbcs",
+        "p6_conditions": "ss / 125 C / res_bcs, 1 mA, 1 uF, 0 mohm (the legacy operating point)",
+    }
+with open(out_path, "w") as fh:
+    json.dump(doc, fh, indent=1, sort_keys=True)
+    fh.write("\n")
+PYEOF
+
 BATCH_WORK="$(mktemp -d "${TMPDIR:-/tmp}/ldo-cmos5l-loopgain2.XXXXXX")"
 BATCH_QUEUE="${BATCH_WORK}/queue.tsv"
 : > "${BATCH_QUEUE}"
@@ -267,7 +440,7 @@ for corner in "${CORNERS[@]}"; do
     done
   done
 done
-echo "run_loopgain2.sh: queued $(wc -l < "${BATCH_QUEUE}") points (${#BENCHES[@]} benches x 45 grid points) at ${LG_AC_LINE}"
+echo "run_loopgain2.sh: queued $(wc -l < "${BATCH_QUEUE}") points (${#BENCHES[@]} benches x ${N_GRID_POINTS} grid points) at ${LG_AC_LINE}, ${OP_DISPLAY}"
 
 if [[ -n "${SWEEP_BATCH_PLAN_ONLY:-}" ]]; then
   python3 "${SCRIPT_DIR}/batch_backend.py" run --queue "${BATCH_QUEUE}" \
@@ -331,8 +504,18 @@ fi
 # traces must agree to solver/reduction precision. Reported (max over the
 # whole axis, all 45 points); > 1 dB would mean the historical comparison
 # is NOT like-for-like and fails the campaign loudly.
+#
+# The gate applies ONLY to the legacy 45-point campaign at the legacy
+# operating point (issue #218): a restricted or non-legacy run violates its
+# stated premise, so it is SKIPPED -- visibly, into the record -- never
+# silently passed and never relaxed. A single-point run additionally
+# records the informational same-point comparison against the newest
+# committed single-injection trace at the same PVT corner AND operating
+# point (the #64 dynamic-doe campaigns'); that number is context, not a
+# gate, and carries its known cross-vintage cause.
 BASELINE_RID="20261011-070111-5391c68"
 BASELINE_CMP_JSON="${EVIDENCE_DIR}/ctl-vs-baseline.json"
+if [[ "${OP_IS_LEGACY}" == "True" && -z "${ONLY_POINT}" ]]; then
 python3 - "${SCRIPT_DIR}" "${CORNERS_OUT}" "${BASELINE_RID}" "${BASELINE_CMP_JSON}" <<'PYEOF'
 import json, math, os, sys
 sys.path.insert(0, sys.argv[1])
@@ -373,8 +556,62 @@ if [[ ${baseline_rc} -ne 0 ]]; then
   echo "run_loopgain2.sh: the control does NOT match the historical baseline record -- see ${BASELINE_CMP_JSON}" >&2
   exit 1
 fi
+else
+  echo "run_loopgain2.sh: ctl-vs-baseline gate SKIPPED: this run is not the legacy 45-point campaign" >&2
+  echo "run_loopgain2.sh:   at the legacy operating point (${OP_DISPLAY}${ONLY_POINT:+, --only-point=${ONLY_POINT}}); the skip is recorded." >&2
+python3 - "${SCRIPT_DIR}" "${CORNERS_OUT}" "${BASELINE_CMP_JSON}" \
+  "${OP_DISPLAY}${ONLY_POINT:+, --only-point=${ONLY_POINT}}" "${OP_JSON}" <<'PYEOF'
+import glob, json, os, sys
+sys.path.insert(0, sys.argv[1])
+import ac_metrics as am
+import dynamic_doe as dyn
+import loopgain2 as lg2
 
-# --- Completeness over the 45 grid points ----------------------------------- #
+script_dir, corners_dir, out_json, why, op_json = sys.argv[1:6]
+op = json.loads(op_json)["op"]
+doc = {"skipped": True,
+       "reason": (f"this run is not the legacy 45-point campaign at the legacy operating "
+                  f"point ({why}); the gate's premise -- same design bytes, PDK pin and "
+                  f"analysis line against record 20261011-070111-5391c68's 1 mA / 1 uF "
+                  f"traces -- does not hold, so it is skipped, not applied or relaxed"),
+       "reference": None, "reference_cause": ""}
+sfx = lg2.all_suffixes(corners_dir)
+if len(sfx) == 1:
+    corner, temp_c, res_section = lg2.parse_suffix(sfx[0])
+    pid = dyn.point_id("loopgain", corner, temp_c, res_section[4:], op)
+    ours = os.path.join(corners_dir, f"{lg2.CTL_PREFIX}{sfx[0]}{lg2.SUFFIX}")
+    cands = sorted(glob.glob(os.path.join(script_dir, "corners", "*", f"{pid}_ac.csv")))
+    if cands and os.path.isfile(ours):
+        ref = cands[-1]
+        f1, L1 = lg2.read_loopgain_trace(ours)
+        f2, L2 = lg2.read_loopgain_trace(ref)
+        n = min(len(f1), len(f2))
+        common_to = f2[-1] if len(f2) < len(f1) else f1[-1]
+        m1, m2 = am.loopgain_metrics(ours), am.loopgain_metrics(ref)
+        doc["reference"] = {
+            "record": os.path.basename(os.path.dirname(ref)),
+            "trace": os.path.relpath(ref, script_dir),
+            "trace_sha256_16": lg2._sha16(ref),
+            # None when either trace has no such crossing: informational
+            # context must never abort a completed fleet run.
+            "dpm_deg": lg2.metric_delta(m1, m2, "phase_margin_deg"),
+            "dgm_db": lg2.metric_delta(m1, m2, "gain_margin_db"),
+            "dfug_rel": lg2.metric_rel_delta(m1, m2, "unity_gain_freq_hz"),
+            "max_db_diff_common_axis": max(abs(lg2.db(a) - lg2.db(b))
+                                           for a, b in zip(L1[:n], L2[:n])),
+            "common_axis_to_hz": common_to,
+        }
+        doc["reference_cause"] = (
+            "Known cross-vintage cause, recorded by E3 (record 20261123-102238-0b610697) "
+            "and issue #313's committed replay: the fleet worker resolves several corner/"
+            "model .lib files worker-side to its own PDK vintage.")
+with open(out_json, "w") as f:
+    json.dump(doc, f, indent=1, sort_keys=True)
+    f.write("\n")
+PYEOF
+fi
+
+# --- Completeness over the selected grid points ------------------------------ #
 COMPLETENESS_OK=1
 for corner in "${CORNERS[@]}"; do
   for temp in "${TEMPS[@]}"; do
@@ -390,19 +627,21 @@ for corner in "${CORNERS[@]}"; do
   done
 done
 
+# --- DR-0014 classification of the reconstructed traces (unchanged rules) --- #
+# Runs BEFORE the record md (issue #218): an E2 campaign's md cites this
+# step's row10-margins outputs for its side-by-side table.
+row10_rc=0
+python3 "${SCRIPT_DIR}/row10_loopgain2.py" --record "${RECORD_ID}" || row10_rc=$?
+if [[ ${row10_rc} -ne 0 ]]; then
+  echo "run_loopgain2.sh: row10_loopgain2.py classification FAILED" >&2
+  exit 1
+fi
+
 # --- Record md --------------------------------------------------------------- #
 # Generated offline from the committed files only (loopgain2.py record-md),
 # so `loopgain2.py check` can byte-compare it.
 if ! python3 "${SCRIPT_DIR}/loopgain2.py" record-md --record "${RECORD_ID}"; then
   echo "run_loopgain2.sh: record md generation FAILED" >&2
-  exit 1
-fi
-
-# --- DR-0014 classification of the reconstructed traces (unchanged rules) --- #
-row10_rc=0
-python3 "${SCRIPT_DIR}/row10_loopgain2.py" --record "${RECORD_ID}" || row10_rc=$?
-if [[ ${row10_rc} -ne 0 ]]; then
-  echo "run_loopgain2.sh: row10_loopgain2.py classification FAILED" >&2
   exit 1
 fi
 

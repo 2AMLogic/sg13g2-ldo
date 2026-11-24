@@ -38,6 +38,7 @@ import argparse
 import contextlib
 import csv
 import glob
+import io
 import json
 import os
 import sys
@@ -51,11 +52,39 @@ import loopgain2 as lg2  # noqa: E402
 SELF = f"{rm.SIM}/row10_loopgain2.py"
 DS = "legacy"   # the 45-point layout the classifier machinery expects
 
-CONDITIONS = ("Vin 3.30 V, 1 mA, Cout 1 uF, ESR 0, Cc nominal; 45-point PVT grid; "
-              "Middlebrook loop gain T = (Tv*Ti - 1)/(Tv + Ti + 2) reconstructed from the "
-              "two-injection benches tb_loopgain2v/tb_loopgain2i by loopgain2.py (issue #135), "
-              "resolved prefix only")
+# The legacy string, kept verbatim as the byte-compare target the committed
+# pre-#218 evidence jsons embed (test_loopgain2.py pins it).
+_LEGACY_CONDITIONS = ("Vin 3.30 V, 1 mA, Cout 1 uF, ESR 0, Cc nominal; 45-point PVT grid; "
+                      "Middlebrook loop gain T = (Tv*Ti - 1)/(Tv + Ti + 2) reconstructed from the "
+                      "two-injection benches tb_loopgain2v/tb_loopgain2i by loopgain2.py (issue #135), "
+                      "resolved prefix only")
 UNRESOLVED_REASON = "reconstruction_unresolved_above_cut"
+
+
+def conditions_for(record_id, sim_dir=lg2.HERE):
+    """The dataset's `conditions` string for a two-injection record."""
+    facts, _ = lg2.campaign_facts(record_id, sim_dir)
+    op = facts["op"]
+    # ESR in ohm, unit spelled out; zero stays the legacy unitless "ESR 0"
+    # (the byte-pinned pre-#218 string).
+    esr = "0" if not op["esr_mohm"] else f"{op['esr_mohm'] / 1000:g} ohm"
+    op_part = (f"{op['load_ua'] / 1000:g} mA, Cout {op['cout_nf'] / 1000:g} uF, "
+               f"ESR {esr}")
+    if facts["full_grid"]:
+        grid_part = f"{facts['points']}-point PVT grid"
+    else:
+        grid_part = f"single PVT point {facts['only_point']} (issue #218 restriction)"
+    return (f"Vin 3.30 V, {op_part}, Cc nominal; {grid_part}; "
+            "Middlebrook loop gain T = (Tv*Ti - 1)/(Tv + Ti + 2) reconstructed from the "
+            "two-injection benches tb_loopgain2v/tb_loopgain2i by loopgain2.py (issue #135), "
+            "resolved prefix only")
+
+
+def expected_points_for(record_id, sim_dir=lg2.HERE):
+    """The comparison CSV's expected row count (45-point legacy grid, or the
+    restricted campaign's own count from its campaign.json)."""
+    facts, _ = lg2.campaign_facts(record_id, sim_dir)
+    return facts["points"]
 
 
 def _overlay(m, info):
@@ -131,7 +160,8 @@ def config(record_id, record_sha256):
             raise rm.Row10Error(f"{record_id} already has a wrapper evidence dir")
     return dict(base, record_id=record_id,
                 record_csv=f"{rm.SIM}/records/{record_id}.loopgain2.csv",
-                record_sha256=record_sha256, conditions=CONDITIONS)
+                record_sha256=record_sha256, conditions=conditions_for(record_id),
+                rows=expected_points_for(record_id))
 
 
 def _mapped_rows(record_csv):
@@ -174,8 +204,9 @@ def build(record_id, record_sha256):
             for row in _mapped_rows(f"{rm.REPO}/{cfg['record_csv']}"):
                 w.writerow(row)
                 n += 1
-        if n != 45:
-            raise rm.Row10Error(f"{cfg['record_csv']}: {n} rows, expected 45")
+        expected = expected_points_for(record_id)
+        if n != expected:
+            raise rm.Row10Error(f"{cfg['record_csv']}: {n} rows, expected {expected}")
         real_csv = cfg["record_csv"]
         cfg["record_csv"] = mapped
         # rm.classify pins sha256(record_csv); pin the ORIGINAL comparison csv.
@@ -195,8 +226,13 @@ def build(record_id, record_sha256):
     # mapped copy during classification; restore the real committed path so
     # the evidence json is reproducible byte-for-byte by --check.
     doc["record"]["csv"] = real_csv
-    doc["classifier"][SELF] = rm.sha256_file(SELF)
-    doc["classifier"][f"{rm.SIM}/loopgain2.py"] = rm.sha256_file(f"{rm.SIM}/loopgain2.py")
+    # The classifier block pins the PRODUCER hashes (the wrapper and
+    # loopgain2.py bytes that classified the record), read from the
+    # campaign's committed facts -- a later edit to either module (e.g.
+    # #218's) must not break the landed, append-only evidence jsons.
+    facts, _ = lg2.campaign_facts(record_id)
+    doc["classifier"][SELF] = facts["row10_wrapper_sha256"]
+    doc["classifier"][f"{rm.SIM}/loopgain2.py"] = facts["loopgain2_sha256"]
     doc["method"] = ("two-injection Middlebrook loop gain (loopgain2.py), resolved prefix only; "
                      "classification rules unchanged (DR-0014, proposed; row 10 stays Open)")
     n_trunc = sum(1 for v in res_info.values() if v["first_unresolved_hz"] is not None)
@@ -208,10 +244,46 @@ def build(record_id, record_sha256):
                  "withdrawn and its Nyquist bookkeeping is undetermined. The ceiling columns "
                  "describe the END OF THE RESOLVED PREFIX, not the 10 GHz sweep ceiling."),
     }
+    diag = lg2.uncertified_diagnostic_points(record_id)
+    cert_note = ""
+    if diag:
+        # A record declaring an uncertified diagnostic point (issue #218, the
+        # DR-0015 E2 P3 point) states that machine-readably: the classifier
+        # only sees margins, so without this the fail/fail rows below would
+        # read as an ordinary certified result. Records that declare none
+        # (every landed legacy record) keep their committed bytes.
+        with open(os.path.join(rm.REPO, real_csv), newline="") as fh:
+            validity = {(r["corner"], r["temp_c"], r["res_section"]): r["valid"] == "True"
+                        for r in csv.DictReader(fh)}
+        def status(r):
+            ok = validity.get((r["corner"], r["temp_c"], r["res_section"]))
+            if ok:
+                return "True", "valid"
+            key = f"{r['corner']}_{r['temp_c']}c_r{r['res_section'][4:]}"
+            return "False", ("uncertified_diagnostic" if key in diag else "invalid")
+        rows = list(csv.DictReader(io.StringIO(out[f"{rm.OUT_NAME}.csv"].decode("utf-8"))))
+        sio = io.StringIO()
+        w = csv.DictWriter(sio, fieldnames=list(rows[0].keys()) + ["record_valid", "certification"],
+                           lineterminator="\n")
+        w.writeheader()
+        doc["certification"] = {"points": {}, "rule": (
+            "record_valid mirrors the comparison CSV's `valid` column. A point whose "
+            "reconstruction failed a stated tolerance and that the campaign declares an "
+            "uncertified diagnostic carries certification=uncertified_diagnostic: its margins "
+            "are measurements of an uncertified reconstruction, not a certified result.")}
+        for r in rows:
+            rv, cert = status(r)
+            doc["certification"]["points"][f"{r['corner']}_{r['temp_c']}c_r{r['res_section'][4:]}"] = {
+                "record_valid": rv == "True", "certification": cert}
+            w.writerow(dict(r, record_valid=rv, certification=cert))
+        out[f"{rm.OUT_NAME}.csv"] = sio.getvalue().encode("utf-8")
+        cert_note = ("\nCertification: " + doc["certification"]["rule"] + " Points: "
+                     + ", ".join(f"{k} = {v['certification']}"
+                                 for k, v in doc["certification"]["points"].items()) + ".\n")
     out[f"{rm.OUT_NAME}.json"] = (json.dumps(doc, indent=2) + "\n").encode("utf-8")
     md = rm.render_md(doc)
     md += ("\nResolution overlay (`row10_loopgain2.py`): " + doc["resolution_overlay"]["rule"]
-           + f" Points truncated: {n_trunc} of {doc['traces_verified']}.\n")
+           + f" Points truncated: {n_trunc} of {doc['traces_verified']}.\n" + cert_note)
     out[f"{rm.OUT_NAME}.md"] = md.encode("utf-8")
     return out
 

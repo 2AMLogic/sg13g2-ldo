@@ -24,6 +24,7 @@ nodal determinant).
 """
 import cmath
 import csv
+import json
 import math
 import os
 import shutil
@@ -33,6 +34,7 @@ import unittest
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
+sys.path.insert(0, os.path.join(HERE, "..", "tools"))
 import loopgain2 as lg2  # noqa: E402
 
 FREQS = [10.0 ** (k / 20.0) for k in range(0, 201)]   # 1 Hz .. 1e10, 20 pts/dec
@@ -456,6 +458,315 @@ class Overlay(unittest.TestCase):
             w._current_record[0] = "x"
             with self.assertRaises(w.rm.Row10Error):
                 w._resolution_info(p)
+        finally:
+            shutil.rmtree(tmp)
+
+
+class OperatingPoint(unittest.TestCase):
+    """issue #218: the campaign's --load-ma/--cout-uf/--esr-ohm arguments,
+    canonicalised and validated through dynamic_doe -- the #64 DoE's own
+    validator, never a second one -- and the default-path deck literals,
+    which must stay byte-identical to the pre-#218 driver's."""
+
+    def test_no_arguments_is_the_legacy_point(self):
+        op = lg2.op_from_args()
+        self.assertEqual(op, {"load_ua": 1000, "cout_nf": 1000, "esr_mohm": 0})
+        self.assertEqual(lg2.op_display(op), "1 mA, 1 uF, 0 ohm")
+
+    def test_default_deck_literals_are_the_pre_218_bytes(self):
+        # AC 1's byte-identity contract: the no-arguments run substitutes
+        # exactly these literals (the driver sources them from
+        # DEFAULT_DECK_LITERALS, so this pins the shared copy).
+        self.assertEqual(lg2.DEFAULT_DECK_LITERALS, {
+            "LOAD_A": "0.001", "COUT_F": "1u", "COUT_BOTTOM": "0",
+            "ESR_LINE": "* ESR=0: Cout wired directly to ground (campaign default)"})
+
+    def test_p3_operating_point_uses_doe_canonical_netlist_syntax(self):
+        import dynamic_doe as dyn
+        op = lg2.op_from_args(load_ma=50, cout_uf=0.33, esr_ohm=0)
+        self.assertEqual(op, {"load_ua": 50000, "cout_nf": 330, "esr_mohm": 0})
+        # the same strings run_ccprobe.sh substituted for its P3 decks
+        self.assertEqual(dyn.netlist_values(op),
+                         {"load_a": "50000e-6", "cout_f": "330n", "esr_ohm": "0"})
+        self.assertEqual(lg2.op_display(op), "50 mA, 0.33 uF, 0 ohm")
+
+    def test_nonzero_esr_wires_the_series_resistor(self):
+        self.assertEqual(lg2.esr_netlist_parts("0"),
+                         ("0", "* ESR=0: Cout wired directly to ground, no series resistor"))
+        self.assertEqual(lg2.esr_netlist_parts("500e-3"),
+                         ("COUT_ESR", "Resr COUT_ESR 0 500e-3"))
+
+    def test_rejected_bad_values(self):
+        import dynamic_doe as dyn
+        for kw in (dict(cout_uf=0),                     # zero Cout
+                   dict(load_ma=-1), dict(esr_ohm=-0.001),   # negative
+                   dict(load_ma="fifty"), dict(cout_uf="1u"),  # non-numeric
+                   dict(cout_uf=0.3333),                 # not an exact nF multiple
+                   dict(esr_ohm=0.00025)):               # not an exact mohm multiple
+            with self.assertRaises(dyn.InvalidOperatingPoint, msg=repr(kw)):
+                lg2.op_from_args(**kw)
+
+    def test_op_subcommand_exit_codes(self):
+        import contextlib
+        import io
+        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+            rc_bad = lg2.main(["op", "--cout-uf=0"])
+            rc_ok = lg2.main(["op", "--load-ma=50", "--cout-uf=0.33", "--esr-ohm=0", "--json"])
+        self.assertEqual(rc_bad, 2)
+        self.assertEqual(rc_ok, 0)
+
+    def test_arguments_reach_the_rendered_deck(self):
+        # Negative control for the driver's substitution wiring (mirrors
+        # #219's AC 6 discipline): render the real single-injection template
+        # the way run_loopgain2.sh's render_deck does, once with the default
+        # literals and once with P3's canonical values, and assert each
+        # deck carries ITS operating point -- a silently ignored flag (or a
+        # mapping still hardcoding the legacy literals) fails here.
+        import render_deck
+        tmpl = os.path.join(HERE, "testbench", "tb_loopgain_cmos5l.spice.tmpl")
+        base = {"PDK_ROOT": "/pdk", "PDK": "p", "OSDI_DIR": "/osdi",
+                "MOS_SECTION": "mos_ff", "RES_SECTION": "res_wcs", "CAP_SECTION": "cap_typ",
+                "TEMP": "-40", "LG_AC_MAX": "1e10", "CC_W": "170u (nominal)",
+                "DESIGN_NETLIST": "/design.spice", "AC_CSV": "/out.csv"}
+        default = render_deck.render(open(tmpl).read(), dict(
+            base, **lg2.DEFAULT_DECK_LITERALS))
+        self.assertIn("Iload VOUT 0 dc 0.001", default)
+        self.assertIn("Cout VOUT 0 1u", default)
+        self.assertIn("* ESR=0: Cout wired directly to ground (campaign default)", default)
+        p3 = render_deck.render(open(tmpl).read(), dict(
+            base, LOAD_A="50000e-6", COUT_F="330n", COUT_BOTTOM="0",
+            ESR_LINE=lg2.esr_netlist_parts("0")[1]))
+        self.assertIn("Iload VOUT 0 dc 50000e-6", p3)
+        self.assertIn("Cout VOUT 0 330n", p3)
+        self.assertNotIn("dc 0.001", p3)
+        self.assertNotIn("Cout VOUT 0 1u", p3)
+        self.assertNotIn("(campaign default)", p3)
+
+
+class CampaignFacts(unittest.TestCase):
+    """issue #218: the campaign's shape (operating point, point count,
+    conditions) is read from evidence/<rid>/campaign.json, with defaults
+    that keep the pre-#218 records' committed strings byte-exact."""
+
+    def test_legacy_defaults_reproduce_the_committed_strings(self):
+        facts, present = lg2.campaign_facts("20261012-071449-6a3c1475")
+        self.assertFalse(present)          # committed record, no campaign.json
+        self.assertEqual(facts["issue"], "issue #135")
+        self.assertTrue(facts["revision_note"])
+        self.assertEqual(facts["grid"], "5 MOS corners x 3 temperatures x 3 resistor corners")
+        self.assertEqual(facts["op_display"], "1 mA, 1 uF, 0 ohm")
+        self.assertEqual(facts["points"], 45)
+        self.assertTrue(facts["legacy_point"] and facts["full_grid"])
+        self.assertIsNone(facts["only_point"])
+        self.assertIsNone(facts["e2"])
+
+    def test_legacy_producer_pins_match_the_committed_records(self):
+        # The append-only records' md/evidence pin the bytes that PRODUCED
+        # them; the defaults must quote exactly those, or a later edit to
+        # loopgain2.py/row10_loopgain2.py would break their byte-compare.
+        import row10_loopgain2 as w
+        for rid in ("20261011-165616-eabde108", "20261012-071449-6a3c1475"):
+            facts, _ = lg2.campaign_facts(rid)
+            md = open(os.path.join(HERE, "records", f"{rid}.loopgain2.md")).read()
+            self.assertIn(f"`loopgain2.py` {facts['producer_sha16']},", md)
+            self.assertIn(f"`tb_loopgain2v_cmos5l.spice.tmpl` {facts['tmpl2v_sha16']},", md)
+            self.assertIn(f"`tb_loopgain2i_cmos5l.spice.tmpl` {facts['tmpl2i_sha16']}.", md)
+            doc = json.load(open(os.path.join(HERE, "evidence", rid, "row10-margins.json")))
+            self.assertEqual(doc["classifier"][w.SELF], facts["row10_wrapper_sha256"])
+            self.assertEqual(doc["classifier"][f"sim/ldo-cmos5l-pvt-sweep/loopgain2.py"],
+                             facts["loopgain2_sha256"])
+
+    def test_campaign_json_overrides_the_defaults(self):
+        tmp = tempfile.mkdtemp()
+        try:
+            os.makedirs(os.path.join(tmp, "evidence", "rid9"))
+            with open(os.path.join(tmp, "evidence", "rid9", "campaign.json"), "w") as fh:
+                json.dump({"points": 1, "full_grid": False, "only_point": "ff_-40c_rwcs",
+                           "op": {"load_ua": 50000, "cout_nf": 330, "esr_mohm": 0},
+                           "op_display": "50 mA, 0.33 uF, 0 ohm", "e2": {"p6_record": "r"}}, fh)
+            facts, present = lg2.campaign_facts("rid9", sim_dir=tmp)
+            self.assertTrue(present)
+            self.assertEqual(facts["points"], 1)
+            self.assertFalse(facts["full_grid"])
+            self.assertEqual(facts["only_point"], "ff_-40c_rwcs")
+            self.assertEqual(facts["e2"]["p6_record"], "r")
+            self.assertEqual(facts["issue"], "issue #135")   # untouched key keeps default
+        finally:
+            shutil.rmtree(tmp)
+
+    def test_row10_conditions_and_expected_rows_follow_the_campaign(self):
+        import row10_loopgain2 as w
+        self.assertEqual(w.conditions_for("20261012-071449-6a3c1475"), w._LEGACY_CONDITIONS)
+        self.assertIn("45-point PVT grid", w._LEGACY_CONDITIONS)
+        self.assertEqual(w.expected_points_for("20261012-071449-6a3c1475"), 45)
+        tmp = tempfile.mkdtemp()
+        try:
+            os.makedirs(os.path.join(tmp, "evidence", "rid9"))
+            with open(os.path.join(tmp, "evidence", "rid9", "campaign.json"), "w") as fh:
+                json.dump({"points": 1, "full_grid": False, "only_point": "ff_-40c_rwcs",
+                           "op": {"load_ua": 50000, "cout_nf": 330, "esr_mohm": 0}}, fh)
+            self.assertEqual(w.expected_points_for("rid9", sim_dir=tmp), 1)
+            self.assertIn("single PVT point ff_-40c_rwcs", w.conditions_for("rid9", sim_dir=tmp))
+            self.assertIn("50 mA, Cout 0.33 uF, ESR 0", w.conditions_for("rid9", sim_dir=tmp))
+        finally:
+            shutil.rmtree(tmp)
+
+
+class InvalidPointCapture(unittest.TestCase):
+    """issue #218: a point that fails TOL_LF_AGREE still reports its measured
+    numbers, the verbatim error and a quantitative cause analysis, with
+    valid=False -- a record must state what was measured and why it is
+    uncertified, not silently drop the point. The comparison CSV keeps the
+    legacy schema exactly (no new columns)."""
+
+    def test_lf_failure_is_recorded_not_dropped(self):
+        import argparse
+        tmp = tempfile.mkdtemp()
+        try:
+            ctl, v, i = write_exports(tmp, dict(UNILATERAL, Rg=3e5))
+            d = os.path.join(tmp, "corners")
+            os.makedirs(d)
+            for src, name in ((ctl, "loopgain_ctl_tt_27c_rtyp_ac.csv"),
+                              (v, "loopgain2v_tt_27c_rtyp_ac.csv"),
+                              (i, "loopgain2i_tt_27c_rtyp_ac.csv")):
+                shutil.copy(src, os.path.join(d, name))
+            out_csv, out_json = os.path.join(tmp, "cmp.csv"), os.path.join(tmp, "cmp.json")
+            combined = os.path.join(tmp, "combined")
+            os.makedirs(combined)
+            rc = lg2.cmd_report(argparse.Namespace(corners_dir=d, ceiling="1e10",
+                                                   out_csv=out_csv, out_json=out_json),
+                                out_dir=combined)
+            self.assertEqual(rc, 1)
+            doc = json.load(open(out_json))
+            row = doc["rows"][0]
+            self.assertFalse(row["valid"])
+            self.assertIn("low-frequency agreement", row["lg2_validation_error"])
+            self.assertIsNotNone(row["lg2_phase_margin_deg"])
+            self.assertIsNotNone(row["ctl_phase_margin_deg"])
+            analysis = row["lf_agreement_analysis"]
+            self.assertIsNotNone(analysis)
+            self.assertGreater(analysis["worst_rel"], lg2.TOL_LF_AGREE)
+            self.assertLess(analysis["deck_identity_residual_below_band"],
+                            lg2.TOL_DECK_IDENTITY)
+            self.assertIn("analytic", analysis["conclusion"])
+            with open(out_csv) as fh:
+                self.assertEqual(fh.readline().strip().split(","), lg2.CSV_FIELDS)
+        finally:
+            shutil.rmtree(tmp)
+
+
+class CheckGate(unittest.TestCase):
+    """The CI `check` must keep failing on an invalid reconstruction. Only a
+    point the record's own campaign.json declares an uncertified diagnostic
+    (E2's P3, issue #218) may be invalid; anything else is a check failure."""
+
+    def _record(self, tmp, campaign=None):
+        ctl, v, i = write_exports(tmp, dict(UNILATERAL, Rg=3e5))   # fails TOL_LF_AGREE
+        d = os.path.join(tmp, "corners", "ridX")
+        os.makedirs(d)
+        for src, name in ((ctl, "loopgain_ctl_tt_27c_rtyp_ac.csv"),
+                          (v, "loopgain2v_tt_27c_rtyp_ac.csv"),
+                          (i, "loopgain2i_tt_27c_rtyp_ac.csv")):
+            shutil.copy(src, os.path.join(d, name))
+        if campaign is not None:
+            os.makedirs(os.path.join(tmp, "evidence", "ridX"))
+            with open(os.path.join(tmp, "evidence", "ridX", "campaign.json"), "w") as fh:
+                json.dump(campaign, fh)
+        return d
+
+    def _check(self, d):
+        import argparse
+        import contextlib
+        import io
+        err = io.StringIO()
+        with contextlib.redirect_stderr(err):
+            rc = lg2.cmd_check(argparse.Namespace(corners_dir=d, ceiling="1e10"))
+        return rc, err.getvalue()
+
+    GATE = "does not validate and is not a declared uncertified diagnostic"
+
+    def test_invalid_point_in_an_ordinary_record_fails_check(self):
+        tmp = tempfile.mkdtemp()
+        try:
+            rc, err = self._check(self._record(tmp))
+            self.assertEqual(rc, 1)
+            self.assertIn(self.GATE, err)
+            self.assertIn("tt_27c_rtyp", err)
+        finally:
+            shutil.rmtree(tmp)
+
+    def test_a_different_invalid_point_in_an_e2_record_still_fails(self):
+        tmp = tempfile.mkdtemp()
+        try:
+            rc, err = self._check(self._record(tmp, {"e2": {"p3_point": "ff_-40c_rwcs"}}))
+            self.assertEqual(rc, 1)
+            self.assertIn(self.GATE, err)
+        finally:
+            shutil.rmtree(tmp)
+
+    def test_declared_diagnostic_point_passes_the_validity_gate(self):
+        tmp = tempfile.mkdtemp()
+        try:
+            rc, err = self._check(self._record(tmp, {"e2": {"p3_point": "tt_27c_rtyp"}}))
+            self.assertNotIn(self.GATE, err)   # (reproduction still gates the rest)
+        finally:
+            shutil.rmtree(tmp)
+
+
+class InformationalDeltas(unittest.TestCase):
+    def test_missing_crossings_give_none_not_a_crash(self):
+        m1 = {"phase_margin_deg": 10.0, "gain_margin_db": None, "unity_gain_freq_hz": None}
+        m2 = {"phase_margin_deg": 4.0, "gain_margin_db": None, "unity_gain_freq_hz": None}
+        self.assertEqual(lg2.metric_delta(m1, m2, "phase_margin_deg"), 6.0)
+        self.assertIsNone(lg2.metric_delta(m1, m2, "gain_margin_db"))
+        self.assertIsNone(lg2.metric_rel_delta(m1, m2, "unity_gain_freq_hz"))
+        self.assertIsNone(lg2.metric_delta(None, m2, "phase_margin_deg"))
+
+
+class ShortControl(unittest.TestCase):
+    def test_short_control_keeps_the_validation_error_not_an_indexerror(self):
+        tmp = tempfile.mkdtemp()
+        try:
+            ctl, v, i = write_exports(tmp, UNILATERAL)
+            d = os.path.join(tmp, "corners")
+            os.makedirs(d)
+            with open(ctl) as fh:
+                head = fh.readlines()[:100]
+            with open(os.path.join(d, "loopgain_ctl_tt_27c_rtyp_ac.csv"), "w") as fh:
+                fh.writelines(head)
+            shutil.copy(v, os.path.join(d, "loopgain2v_tt_27c_rtyp_ac.csv"))
+            shutil.copy(i, os.path.join(d, "loopgain2i_tt_27c_rtyp_ac.csv"))
+            row = lg2.point_row(d, "tt_27c_rtyp", "1e10")
+            self.assertFalse(row["valid"])
+            self.assertIn("control trace has 100 rows", row["lg2_validation_error"])
+            self.assertIsNone(row["ctl_db_at_lg2_resolved_to"])
+        finally:
+            shutil.rmtree(tmp)
+
+
+class EsrDeck(unittest.TestCase):
+    def test_cli_esr_reaches_a_wellformed_resistor_element(self):
+        import json as _json
+        import subprocess
+        out = subprocess.run([sys.executable, os.path.join(HERE, "loopgain2.py"), "op", "--json",
+                              "--load-ma=50", "--cout-uf=0.33", "--esr-ohm=0.5"],
+                             capture_output=True, text=True, check=True).stdout
+        esr = _json.loads(out)["esr"]
+        self.assertEqual(esr["cout_bottom"], "COUT_ESR")
+        # element line: name, node, node, value -- not a stray first token
+        # that makes SPICE instantiate a capacitor named COUT_ESR
+        self.assertEqual(esr["esr_line"].split(), ["Resr", "COUT_ESR", "0", "500e-3"])
+        self.assertTrue(esr["esr_line"].startswith("Resr "))
+
+    def test_row10_conditions_spell_out_the_esr_unit(self):
+        import row10_loopgain2 as w
+        tmp = tempfile.mkdtemp()
+        try:
+            os.makedirs(os.path.join(tmp, "evidence", "rid9"))
+            with open(os.path.join(tmp, "evidence", "rid9", "campaign.json"), "w") as fh:
+                json.dump({"points": 1, "full_grid": False, "only_point": "ff_-40c_rwcs",
+                           "op": {"load_ua": 50000, "cout_nf": 330, "esr_mohm": 500}}, fh)
+            self.assertIn("ESR 0.5 ohm", w.conditions_for("rid9", sim_dir=tmp))
         finally:
             shutil.rmtree(tmp)
 
