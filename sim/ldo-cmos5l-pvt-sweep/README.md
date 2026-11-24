@@ -2389,8 +2389,9 @@ compensation capacitor. What is supported, excluded and merely
 corroborated is stated in the DR-0015 E3 addendum and the record.
 
 Vintage note: the pre-registered like-for-like gate vs the October 12
-same-vintage reference FAILED (dPM +6.74 deg, dGM +1.18 dB, df_ug -2.29%
-against 1 deg / 1 dB / 2% bounds) with an identified cause outside the
+same-vintage reference FAILED (dPM +6.74 deg, dGM +1.18 dB, df_ug -2.24%
+of the same-vintage baseline f_ug, the gate's denominator, against
+1 deg / 1 dB / 2% bounds) with an identified cause outside the
 bench -- the batch worker resolves several corner/model `.lib` files to
 its own PDK vintage (issue #313's committed replay,
 `backend-validation/20261120-224044-osdi-replay/`; this campaign's 1x
