@@ -789,8 +789,11 @@ E1-measured terms, not a measured pole).
 **Cross-vintage caveat**: the campaign's pre-registered like-for-like
 gate (1× vs the same-vintage October 12 reference
 `20261012-074813-c94873ba`: same design bytes, same PDK pin, same
-analysis line) FAILED -- dPM +6.74°, dGM +1.18 dB, df_ug −2.29% against
-bounds of 1° / 1 dB / 2% -- with an identified cause outside this
+analysis line) FAILED -- dPM +6.74°, dGM +1.18 dB, df_ug −2.24% of the
+same-vintage baseline f_ug, the gate's denominator (a presentation
+correction of an earlier figure that divided by the measured f_ug; no
+change to the measurement, the FAILED verdict, or the bounds),
+against bounds of 1° / 1 dB / 2% -- with an identified cause outside this
 campaign's bench: the batch worker resolves several corner/model `.lib`
 files (`cornerMOShv.lib`, `cornerCAP.lib`, `cornerRES.lib`,
 `sg13g2_moshv_mod*.lib`) to its own PDK vintage, bytes matching neither
