@@ -772,7 +772,7 @@ jobs:
         # byte-compares. The record carries no host-absolute path, so this
         # reproduces in any checkout (the like-for-like exit 3 inside the
         # reduction is the recorded, honest result and is not a check failure).
-        run: python3 sim/ldo-cmos5l-pvt-sweep/ccprobe.py check --record 20261123-102238-0b610697
+        run: python3 sim/ldo-cmos5l-pvt-sweep/ccprobe.py check --record 20261124-010705-a5042521
       - name: E4 record byte-check (e4_divider_cc.py check, issue #315)
         # Offline, stdlib-only: no simulator and no PDK. Regenerates the E4
         # reduction CSV/JSON and record md from the committed raw exports and
