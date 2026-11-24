@@ -38,6 +38,7 @@ import argparse
 import contextlib
 import csv
 import glob
+import io
 import json
 import os
 import sys
@@ -64,8 +65,11 @@ def conditions_for(record_id, sim_dir=lg2.HERE):
     """The dataset's `conditions` string for a two-injection record."""
     facts, _ = lg2.campaign_facts(record_id, sim_dir)
     op = facts["op"]
+    # ESR in ohm, unit spelled out; zero stays the legacy unitless "ESR 0"
+    # (the byte-pinned pre-#218 string).
+    esr = "0" if not op["esr_mohm"] else f"{op['esr_mohm'] / 1000:g} ohm"
     op_part = (f"{op['load_ua'] / 1000:g} mA, Cout {op['cout_nf'] / 1000:g} uF, "
-               f"ESR {op['esr_mohm']}")
+               f"ESR {esr}")
     if facts["full_grid"]:
         grid_part = f"{facts['points']}-point PVT grid"
     else:
@@ -240,10 +244,46 @@ def build(record_id, record_sha256):
                  "withdrawn and its Nyquist bookkeeping is undetermined. The ceiling columns "
                  "describe the END OF THE RESOLVED PREFIX, not the 10 GHz sweep ceiling."),
     }
+    diag = lg2.uncertified_diagnostic_points(record_id)
+    cert_note = ""
+    if diag:
+        # A record declaring an uncertified diagnostic point (issue #218, the
+        # DR-0015 E2 P3 point) states that machine-readably: the classifier
+        # only sees margins, so without this the fail/fail rows below would
+        # read as an ordinary certified result. Records that declare none
+        # (every landed legacy record) keep their committed bytes.
+        with open(os.path.join(rm.REPO, real_csv), newline="") as fh:
+            validity = {(r["corner"], r["temp_c"], r["res_section"]): r["valid"] == "True"
+                        for r in csv.DictReader(fh)}
+        def status(r):
+            ok = validity.get((r["corner"], r["temp_c"], r["res_section"]))
+            if ok:
+                return "True", "valid"
+            key = f"{r['corner']}_{r['temp_c']}c_r{r['res_section'][4:]}"
+            return "False", ("uncertified_diagnostic" if key in diag else "invalid")
+        rows = list(csv.DictReader(io.StringIO(out[f"{rm.OUT_NAME}.csv"].decode("utf-8"))))
+        sio = io.StringIO()
+        w = csv.DictWriter(sio, fieldnames=list(rows[0].keys()) + ["record_valid", "certification"],
+                           lineterminator="\n")
+        w.writeheader()
+        doc["certification"] = {"points": {}, "rule": (
+            "record_valid mirrors the comparison CSV's `valid` column. A point whose "
+            "reconstruction failed a stated tolerance and that the campaign declares an "
+            "uncertified diagnostic carries certification=uncertified_diagnostic: its margins "
+            "are measurements of an uncertified reconstruction, not a certified result.")}
+        for r in rows:
+            rv, cert = status(r)
+            doc["certification"]["points"][f"{r['corner']}_{r['temp_c']}c_r{r['res_section'][4:]}"] = {
+                "record_valid": rv == "True", "certification": cert}
+            w.writerow(dict(r, record_valid=rv, certification=cert))
+        out[f"{rm.OUT_NAME}.csv"] = sio.getvalue().encode("utf-8")
+        cert_note = ("\nCertification: " + doc["certification"]["rule"] + " Points: "
+                     + ", ".join(f"{k} = {v['certification']}"
+                                 for k, v in doc["certification"]["points"].items()) + ".\n")
     out[f"{rm.OUT_NAME}.json"] = (json.dumps(doc, indent=2) + "\n").encode("utf-8")
     md = rm.render_md(doc)
     md += ("\nResolution overlay (`row10_loopgain2.py`): " + doc["resolution_overlay"]["rule"]
-           + f" Points truncated: {n_trunc} of {doc['traces_verified']}.\n")
+           + f" Points truncated: {n_trunc} of {doc['traces_verified']}.\n" + cert_note)
     out[f"{rm.OUT_NAME}.md"] = md.encode("utf-8")
     return out
 

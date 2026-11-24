@@ -356,34 +356,19 @@ mkdir -p "${SNAPSHOTS_OUT}" "${CORNERS_OUT}" "${EVIDENCE_DIR}"
 # record md and the row10 wrapper read their conditions, point count and
 # producer pins from here -- a restricted or non-legacy campaign must not be
 # described by the legacy 45-point strings.
+# Fixed positional arguments, empty strings kept: the driver's own parsed
+# values (ONLY_POINT, EXPERIMENT, and the raw --load-ma/--cout-uf/--esr-ohm
+# the op subcommand already validated) are passed straight through, with no
+# flag re-parsing that could drop an empty value and shift the pairing.
 python3 - "${EVIDENCE_DIR}/campaign.json" "${SCRIPT_DIR}" "${RECORD_ID}" \
-  ${LOAD_MA:+--load-ma "${LOAD_MA}"} ${COUT_UF:+--cout-uf "${COUT_UF}"} \
-  ${ESR_OHM:+--esr-ohm "${ESR_OHM}"} \
-  --only-point "${ONLY_POINT}" --experiment "${EXPERIMENT}" <<'PYEOF'
+  "${ONLY_POINT}" "${EXPERIMENT}" "${LOAD_MA}" "${COUT_UF}" "${ESR_OHM}" <<'PYEOF'
 import hashlib, json, os, sys
-sys.path.insert(0, os.path.dirname(sys.argv[2]))
+
+out_path, script_dir, rid, only_point, experiment, load_ma, cout_uf, esr_ohm = sys.argv[1:9]
+sys.path.insert(0, script_dir)   # script_dir already IS the directory holding loopgain2.py
 import loopgain2 as lg2
 
-out_path, script_dir, rid = sys.argv[1], sys.argv[2], sys.argv[3]
-only_point, experiment = "", ""
-load_ma = cout_uf = esr_ohm = None
-args = [a for a in sys.argv[4:] if a != ""]
-flags = {}
-i = 0
-while i < len(args):
-    a = args[i]
-    if "=" in a:
-        key, val = a.split("=", 1)
-    else:
-        key, val = a, args[i + 1] if i + 1 < len(args) else ""
-        i += 1
-    if key not in ("--only-point", "--experiment", "--load-ma", "--cout-uf", "--esr-ohm"):
-        raise SystemExit(f"campaign.json writer: unknown argument {a}")
-    flags[key] = val
-    i += 1
-only_point = flags.get("--only-point", "")
-experiment = flags.get("--experiment", "")
-load_ma, cout_uf, esr_ohm = flags.get("--load-ma"), flags.get("--cout-uf"), flags.get("--esr-ohm")
+load_ma, cout_uf, esr_ohm = (v or None for v in (load_ma, cout_uf, esr_ohm))
 op = lg2.op_from_args(load_ma, cout_uf, esr_ohm)
 legacy = op == dict(lg2.dyn.LEGACY_POINT)
 
@@ -607,10 +592,11 @@ if len(sfx) == 1:
             "record": os.path.basename(os.path.dirname(ref)),
             "trace": os.path.relpath(ref, script_dir),
             "trace_sha256_16": lg2._sha16(ref),
-            "dpm_deg": m1["phase_margin_deg"] - m2["phase_margin_deg"],
-            "dgm_db": m1["gain_margin_db"] - m2["gain_margin_db"],
-            "dfug_rel": (m1["unity_gain_freq_hz"] - m2["unity_gain_freq_hz"])
-                        / m2["unity_gain_freq_hz"],
+            # None when either trace has no such crossing: informational
+            # context must never abort a completed fleet run.
+            "dpm_deg": lg2.metric_delta(m1, m2, "phase_margin_deg"),
+            "dgm_db": lg2.metric_delta(m1, m2, "gain_margin_db"),
+            "dfug_rel": lg2.metric_rel_delta(m1, m2, "unity_gain_freq_hz"),
             "max_db_diff_common_axis": max(abs(lg2.db(a) - lg2.db(b))
                                            for a, b in zip(L1[:n], L2[:n])),
             "common_axis_to_hz": common_to,

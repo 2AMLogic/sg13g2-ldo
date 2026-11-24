@@ -51,3 +51,5 @@ Per-point rows: `row10-margins.csv` (trace path and sha256 on every row).
 Not claimed: no new simulation; no historical record edited; no ratification: DR-0014 is proposed and row 10 stays Open (DR-0007); no claim about frequencies above the sweep ceiling or between sampled operating points.
 
 Resolution overlay (`row10_loopgain2.py`): a point whose reconstruction is truncated below the sweep ceiling is reported ambiguous (pass -> ambiguous; fail unchanged); its GM above-ceiling bound is withdrawn and its Nyquist bookkeeping is undetermined. The ceiling columns describe the END OF THE RESOLVED PREFIX, not the 10 GHz sweep ceiling. Points truncated: 1 of 1.
+
+Certification: record_valid mirrors the comparison CSV's `valid` column. A point whose reconstruction failed a stated tolerance and that the campaign declares an uncertified diagnostic carries certification=uncertified_diagnostic: its margins are measurements of an uncertified reconstruction, not a certified result. Points: ff_-40c_rwcs = uncertified_diagnostic.

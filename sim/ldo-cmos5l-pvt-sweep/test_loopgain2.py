@@ -494,7 +494,7 @@ class OperatingPoint(unittest.TestCase):
         self.assertEqual(lg2.esr_netlist_parts("0"),
                          ("0", "* ESR=0: Cout wired directly to ground, no series resistor"))
         self.assertEqual(lg2.esr_netlist_parts("500e-3"),
-                         ("COUT_ESR", "COUT_ESR Resr COUT_ESR 0 500e-3"))
+                         ("COUT_ESR", "Resr COUT_ESR 0 500e-3"))
 
     def test_rejected_bad_values(self):
         import dynamic_doe as dyn
@@ -651,6 +651,122 @@ class InvalidPointCapture(unittest.TestCase):
             self.assertIn("analytic", analysis["conclusion"])
             with open(out_csv) as fh:
                 self.assertEqual(fh.readline().strip().split(","), lg2.CSV_FIELDS)
+        finally:
+            shutil.rmtree(tmp)
+
+
+class CheckGate(unittest.TestCase):
+    """The CI `check` must keep failing on an invalid reconstruction. Only a
+    point the record's own campaign.json declares an uncertified diagnostic
+    (E2's P3, issue #218) may be invalid; anything else is a check failure."""
+
+    def _record(self, tmp, campaign=None):
+        ctl, v, i = write_exports(tmp, dict(UNILATERAL, Rg=3e5))   # fails TOL_LF_AGREE
+        d = os.path.join(tmp, "corners", "ridX")
+        os.makedirs(d)
+        for src, name in ((ctl, "loopgain_ctl_tt_27c_rtyp_ac.csv"),
+                          (v, "loopgain2v_tt_27c_rtyp_ac.csv"),
+                          (i, "loopgain2i_tt_27c_rtyp_ac.csv")):
+            shutil.copy(src, os.path.join(d, name))
+        if campaign is not None:
+            os.makedirs(os.path.join(tmp, "evidence", "ridX"))
+            with open(os.path.join(tmp, "evidence", "ridX", "campaign.json"), "w") as fh:
+                json.dump(campaign, fh)
+        return d
+
+    def _check(self, d):
+        import argparse
+        import contextlib
+        import io
+        err = io.StringIO()
+        with contextlib.redirect_stderr(err):
+            rc = lg2.cmd_check(argparse.Namespace(corners_dir=d, ceiling="1e10"))
+        return rc, err.getvalue()
+
+    GATE = "does not validate and is not a declared uncertified diagnostic"
+
+    def test_invalid_point_in_an_ordinary_record_fails_check(self):
+        tmp = tempfile.mkdtemp()
+        try:
+            rc, err = self._check(self._record(tmp))
+            self.assertEqual(rc, 1)
+            self.assertIn(self.GATE, err)
+            self.assertIn("tt_27c_rtyp", err)
+        finally:
+            shutil.rmtree(tmp)
+
+    def test_a_different_invalid_point_in_an_e2_record_still_fails(self):
+        tmp = tempfile.mkdtemp()
+        try:
+            rc, err = self._check(self._record(tmp, {"e2": {"p3_point": "ff_-40c_rwcs"}}))
+            self.assertEqual(rc, 1)
+            self.assertIn(self.GATE, err)
+        finally:
+            shutil.rmtree(tmp)
+
+    def test_declared_diagnostic_point_passes_the_validity_gate(self):
+        tmp = tempfile.mkdtemp()
+        try:
+            rc, err = self._check(self._record(tmp, {"e2": {"p3_point": "tt_27c_rtyp"}}))
+            self.assertNotIn(self.GATE, err)   # (reproduction still gates the rest)
+        finally:
+            shutil.rmtree(tmp)
+
+
+class InformationalDeltas(unittest.TestCase):
+    def test_missing_crossings_give_none_not_a_crash(self):
+        m1 = {"phase_margin_deg": 10.0, "gain_margin_db": None, "unity_gain_freq_hz": None}
+        m2 = {"phase_margin_deg": 4.0, "gain_margin_db": None, "unity_gain_freq_hz": None}
+        self.assertEqual(lg2.metric_delta(m1, m2, "phase_margin_deg"), 6.0)
+        self.assertIsNone(lg2.metric_delta(m1, m2, "gain_margin_db"))
+        self.assertIsNone(lg2.metric_rel_delta(m1, m2, "unity_gain_freq_hz"))
+        self.assertIsNone(lg2.metric_delta(None, m2, "phase_margin_deg"))
+
+
+class ShortControl(unittest.TestCase):
+    def test_short_control_keeps_the_validation_error_not_an_indexerror(self):
+        tmp = tempfile.mkdtemp()
+        try:
+            ctl, v, i = write_exports(tmp, UNILATERAL)
+            d = os.path.join(tmp, "corners")
+            os.makedirs(d)
+            with open(ctl) as fh:
+                head = fh.readlines()[:100]
+            with open(os.path.join(d, "loopgain_ctl_tt_27c_rtyp_ac.csv"), "w") as fh:
+                fh.writelines(head)
+            shutil.copy(v, os.path.join(d, "loopgain2v_tt_27c_rtyp_ac.csv"))
+            shutil.copy(i, os.path.join(d, "loopgain2i_tt_27c_rtyp_ac.csv"))
+            row = lg2.point_row(d, "tt_27c_rtyp", "1e10")
+            self.assertFalse(row["valid"])
+            self.assertIn("control trace has 100 rows", row["lg2_validation_error"])
+            self.assertIsNone(row["ctl_db_at_lg2_resolved_to"])
+        finally:
+            shutil.rmtree(tmp)
+
+
+class EsrDeck(unittest.TestCase):
+    def test_cli_esr_reaches_a_wellformed_resistor_element(self):
+        import json as _json
+        import subprocess
+        out = subprocess.run([sys.executable, os.path.join(HERE, "loopgain2.py"), "op", "--json",
+                              "--load-ma=50", "--cout-uf=0.33", "--esr-ohm=0.5"],
+                             capture_output=True, text=True, check=True).stdout
+        esr = _json.loads(out)["esr"]
+        self.assertEqual(esr["cout_bottom"], "COUT_ESR")
+        # element line: name, node, node, value -- not a stray first token
+        # that makes SPICE instantiate a capacitor named COUT_ESR
+        self.assertEqual(esr["esr_line"].split(), ["Resr", "COUT_ESR", "0", "500e-3"])
+        self.assertTrue(esr["esr_line"].startswith("Resr "))
+
+    def test_row10_conditions_spell_out_the_esr_unit(self):
+        import row10_loopgain2 as w
+        tmp = tempfile.mkdtemp()
+        try:
+            os.makedirs(os.path.join(tmp, "evidence", "rid9"))
+            with open(os.path.join(tmp, "evidence", "rid9", "campaign.json"), "w") as fh:
+                json.dump({"points": 1, "full_grid": False, "only_point": "ff_-40c_rwcs",
+                           "op": {"load_ua": 50000, "cout_nf": 330, "esr_mohm": 500}}, fh)
+            self.assertIn("ESR 0.5 ohm", w.conditions_for("rid9", sim_dir=tmp))
         finally:
             shutil.rmtree(tmp)
 

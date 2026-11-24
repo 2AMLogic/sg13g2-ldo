@@ -533,7 +533,13 @@ def _fill_row(row, rec, ctl, lg2, ctl_csv, combined_path, cfreqs, ctl_L,
         row[f"{pre}_second_crossing_hz"] = _second(zero_db_crossings(ff, LL))
         row[f"{pre}_db_at_100mhz"] = interp_db_at(ff, LL, 1e8)
     row["lg2_db_at_resolved_to"] = db(T[-1])
-    row["ctl_db_at_lg2_resolved_to"] = db(ctl_L[cut - 1])
+    # The control's axis supports a like-for-like comparison only when it
+    # reaches the reconstruction's cut; a short/foreign control trace is the
+    # very thing validate_against_control reports, so leave the comparative
+    # metric empty rather than index past the array and mask that error.
+    row["ctl_db_at_lg2_resolved_to"] = (
+        db(ctl_L[cut - 1]) if 0 < cut <= len(ctl_L)
+        and math.isclose(cfreqs[cut - 1], freqs[cut - 1], rel_tol=FREQ_RTOL) else None)
     row["ctl_db_at_1ghz"] = interp_db_at(cfreqs, ctl_L, 1e9)
     row["ctl_db_at_ceiling"] = db(ctl_L[-1])
     row["pm_delta_deg"] = ((row["lg2_phase_margin_deg"] - row["ctl_phase_margin_deg"])
@@ -665,13 +671,31 @@ def op_display(op):
             f"{op['esr_mohm'] / 1000:g} ohm")
 
 
+def metric_delta(m1, m2, key):
+    """m1[key] - m2[key]; None when either metric is absent (a trace with no
+    such crossing). Informational comparisons must degrade, never raise."""
+    a, b = (m or {} for m in (m1, m2))
+    if a.get(key) is None or b.get(key) is None:
+        return None
+    return a[key] - b[key]
+
+
+def metric_rel_delta(m1, m2, key):
+    """(m1[key] - m2[key]) / m2[key]; None when absent or m2[key] is 0."""
+    d = metric_delta(m1, m2, key)
+    return None if d is None or not m2[key] else d / m2[key]
+
+
 def esr_netlist_parts(esr_ohm):
     """run_sweep.sh's esr_netlist_parts convention (issue #64): ESR of
     exactly 0 wires Cout to ground and emits a comment instead of a
-    zero-valued resistor. Returns (cout_bottom, esr_line)."""
+    zero-valued resistor. Returns (cout_bottom, esr_line). The resistor is
+    `Resr <COUT_ESR> <0> <value>`: its own name first, then its two nodes
+    (the leading "COUT_ESR" in run_sweep.sh's echoed pair is cout_bottom,
+    not part of the element line)."""
     if esr_ohm == "0":
         return "0", "* ESR=0: Cout wired directly to ground, no series resistor"
-    return "COUT_ESR", f"COUT_ESR Resr COUT_ESR 0 {esr_ohm}"
+    return "COUT_ESR", f"Resr COUT_ESR 0 {esr_ohm}"
 
 
 def cmd_op(a):
@@ -781,6 +805,15 @@ CAMPAIGN_DEFAULTS = {
     "row10_wrapper_sha256": "908582b07b669654b6c6ebc9500268597a92edf01d1dedbd0dc3b258994db8a3",
     "loopgain2_sha256": "22e8900632c48b90bbca09373f6656f2a91f7304c9328cb81c097e71c05e68df",
 }
+
+
+def uncertified_diagnostic_points(rid, sim_dir=HERE):
+    """Point ids a record's campaign.json declares as uncertified diagnostics:
+    only the DR-0015 E2 experiment's P3 point (issue #218). Empty for every
+    other record, so an invalid point there stays a hard check failure."""
+    facts, _ = campaign_facts(rid, sim_dir)
+    e2 = facts.get("e2")
+    return {e2["p3_point"]} if e2 and e2.get("p3_point") else set()
 
 
 def campaign_facts(rid, sim_dir=HERE):
@@ -908,14 +941,19 @@ def record_md(rid, sim_dir=HERE):
               f"(`evidence/{rid}/ctl-vs-baseline.json`)."]
         ref = base.get("reference")
         if ref:
+            def _opt(v, fmt):
+                return "n/a (no crossing in one of the traces)" if v is None else format(v, fmt)
             L += [f"- Cross-vintage context (informational, NOT a gate; nothing here passes or fails): "
                   f"this run's control vs the committed single-injection trace `{ref['trace_sha256_16']}` "
-                  f"of record `{ref['record']}` at the same DR-0015 point: dPM {ref['dpm_deg']:+.2f} deg, "
-                  f"dGM {ref['dgm_db']:+.2f} dB, df_ug {ref['dfug_rel']:+.2%}, max |dB diff| "
+                  f"of record `{ref['record']}` at the same DR-0015 point: "
+                  f"dPM {_opt(ref['dpm_deg'], '+.2f')}{'' if ref['dpm_deg'] is None else ' deg'}, "
+                  f"dGM {_opt(ref['dgm_db'], '+.2f')}{'' if ref['dgm_db'] is None else ' dB'}, "
+                  f"df_ug {_opt(ref['dfug_rel'], '+.2%')}, max |dB diff| "
                   f"{ref['max_db_diff_common_axis']:.3g} dB over the common axis to "
-                  f"{ref['common_axis_to_hz']:.3g} Hz. {base['reference_cause']} "
-                  f"DR-0015's own P3 row (PM -52.70 deg, GM -9.20 dB) additionally crosses the "
-                  f"#89/#155 design+PDK vintage change."]
+                  f"{ref['common_axis_to_hz']:.3g} Hz. {base['reference_cause']}"
+                  + (" DR-0015's own P3 row (PM -52.70 deg, GM -9.20 dB) additionally crosses the "
+                     "#89/#155 design+PDK vintage change."
+                     if (facts.get("e2") or {}).get("p3_point") == facts.get("only_point") else "")]
     else:
         L += [f"- Control vs the historical `{BASELINE_RID}` traces: max |dB diff| "
               f"{base['max_abs_db_diff_over_points']:.3g} dB over {n_points} points "
@@ -1150,13 +1188,30 @@ def cmd_check(a):
         rc = cmd_report(argparse.Namespace(corners_dir=corners_dir, ceiling=a.ceiling,
                                            out_csv=out_csv, out_json=out_json),
                         out_dir=out_dir)
-        # rc != 0 means the committed record has INVALID points -- a state
-        # the record itself states loudly (issue #218: a point can fail a
-        # stated tolerance at a non-legacy operating point and still be
-        # recorded, with its numbers and the verbatim error). What check
-        # gates on is REPRODUCTION: every regenerated byte must equal the
-        # committed byte, so a validity flip is still caught below.
-        _ = rc
+        # rc != 0 means the committed record has INVALID points. An ordinary
+        # record must not: that is a check failure. The one exception is a
+        # point the record's own campaign.json DECLARES an uncertified
+        # diagnostic (the DR-0015 E2 P3 point, issue #218), which is kept
+        # with its measured numbers and verbatim error but never certified.
+        # Any other invalid point -- or an invalid point in a record that
+        # declares none -- still fails. Reproduction (every regenerated
+        # byte equals the committed byte) is gated below as before.
+        if rc != 0:
+            allowed = uncertified_diagnostic_points(rid, sim_dir)
+            try:
+                with open(out_json, encoding="utf-8") as fh:
+                    rows = json.load(fh)["rows"]
+            except (OSError, ValueError, KeyError):
+                rows = []
+                bad.append(f"{corners_dir}: reconstruction does not validate "
+                           "(report unreadable)")
+            for r in rows:
+                if r.get("valid"):
+                    continue
+                key = f"{r['corner']}_{r['temp_c']}c_r{r['res_section'][4:]}"
+                if key not in allowed:
+                    bad.append(f"{corners_dir}: point {key} does not validate and is not a "
+                               "declared uncertified diagnostic")
         for fn in sorted(os.listdir(out_dir)):
             got, want = os.path.join(out_dir, fn), os.path.join(corners_dir, fn)
             if not os.path.isfile(want):

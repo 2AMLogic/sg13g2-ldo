@@ -111,5 +111,14 @@
     "reason": "reconstruction_unresolved_above_cut",
     "points_truncated_below_sweep_ceiling": 1,
     "rule": "a point whose reconstruction is truncated below the sweep ceiling is reported ambiguous (pass -> ambiguous; fail unchanged); its GM above-ceiling bound is withdrawn and its Nyquist bookkeeping is undetermined. The ceiling columns describe the END OF THE RESOLVED PREFIX, not the 10 GHz sweep ceiling."
+  },
+  "certification": {
+    "points": {
+      "ff_-40c_rwcs": {
+        "record_valid": false,
+        "certification": "uncertified_diagnostic"
+      }
+    },
+    "rule": "record_valid mirrors the comparison CSV's `valid` column. A point whose reconstruction failed a stated tolerance and that the campaign declares an uncertified diagnostic carries certification=uncertified_diagnostic: its margins are measurements of an uncertified reconstruction, not a certified result."
   }
 }
