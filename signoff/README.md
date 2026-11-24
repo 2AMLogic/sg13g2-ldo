@@ -334,6 +334,32 @@ directory's verdict-of-record statement.
   corner (ss / 125 °C / res_bcs) is 237.76 mV extracted vs 237.06 mV
   schematic, +0.70 mV against a 300 mV target — a statement about this
   lumped model, not about the physical layout.
+- **Item 7's cited report carries a non-null `model_mismatch` that `klt
+  signoff` reports but does not grade** (#366). The report's own values:
+  `model_mismatch.kind = "model_set"`, `reference_only =
+  ["ldo_erramp_cmos5l"]`, `extracted_only = []`; `counts.reference` is
+  `{cap_cmomi: 1, ldo_erramp_cmos5l: 1, rhigh: 3, sg13_hv_nmos: 5,
+  sg13_hv_pmos: 9}` against `counts.extracted` `{cap_cmomi: 1, rhigh: 3,
+  sg13_hv_nmos: 5, sg13_hv_pmos: 128}`; and `flatten_schematic: false`.
+  The device-set comparison between a hierarchical schematic DUT (it
+  instantiates `ldo_erramp_cmos5l` as a local `.subckt`, counted once per
+  definition) and a flat extraction (counted once per instance) is
+  confounded by representation, and the report's own `detail` says the
+  divergence "may simply be a hierarchy-representation artifact". That is
+  the likely reading, **not a measured one**: the check that would settle it,
+  `klt pex --flatten-schematic`, is not runnable on this DUT today — at the
+  0.9.2 probe it failed with `schematic_flatten_wrapper_pin_unconnected`
+  (no net named VIN, VOUT, VSS, VREF, IBIAS, EN for the
+  `.subckt sg13cmos5l_ldo_core_cmos5l` wrapper pins). The repro shape was
+  klayout-tools#6971, which upstream closed by adding `--schematic-top`
+  (what the stage uses) rather than fixing the flatten path. What does
+  support the citation independently: all 135 schematic-side values match
+  the committed 2026-11-16 fleet record at 1e-9 (so the schematic leg ran
+  the real design netlist), and the extracted leg differs by 0.002–0.067 %,
+  the shape a pure parasitic addition produces. This does not change
+  item 7's grade (`met`), `t1_met_count` or the exit code. If a later klt
+  release makes the flatten path usable, re-run `pex-row4` with it and
+  replace this bullet with the measured answer.
 
 ## Item 8 pin refresh (#55)
 

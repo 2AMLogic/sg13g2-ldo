@@ -61,7 +61,7 @@
     },
     "2": {
       "file": "signoff/evidence/item2-layout.envelope.json",
-      "content_hash": "sha256:98ad66b7c58e5b2fefb5fd64035d4572bdc4ec4fe61cc48ca9400edeb03daf9b"
+      "content_hash": "sha256:75942352941a9343f05335e920c4796ab5c93f43af8261957ea55f181ed58504"
     },
     "3": {
       "file": "layout/sg13cmos5l-ldo_core_cmos5l/drc_report.json",
