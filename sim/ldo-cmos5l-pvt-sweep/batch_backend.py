@@ -74,6 +74,10 @@ import shutil
 import subprocess
 import sys
 
+_HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(_HERE, "..", "tools"))
+from file_hash import sha256_file  # noqa: E402 -- the one sha256-file helper (#362)
+
 OSDI_ORDER = ["psp103", "psp103_nqs", "mosvar", "r3_cmc", "cap_cmomi", "cap_cmomf"]
 
 # The only `let` blocks run_sweep.sh's and run_loopgain2.sh's templates
@@ -139,13 +143,6 @@ LIVENESS_MEAS = {
 
 class BackendError(Exception):
     pass
-
-
-def sha256(path):
-    h = hashlib.sha256()
-    with open(path, "rb") as f:
-        h.update(f.read())
-    return h.hexdigest()
 
 
 # --------------------------------------------------------------------------- #
@@ -514,7 +511,7 @@ def input_closure(files, skip=()):
             key = os.path.normpath(hit or cands[0])
             if key in skip:
                 continue
-            out[key] = sha256(hit) if hit else None
+            out[key] = sha256_file(hit) if hit else None
             if hit:
                 todo.append(key)
     return out
@@ -528,7 +525,7 @@ def write_inventory(gdir, req):
     that were actually submitted."""
     inv = input_closure([os.path.join(gdir, "tb.spice"), os.path.join(gdir, "corners.lib")])
     for p in req["options"]["osdi_preload"]:
-        inv[p] = sha256(p) if os.path.isfile(p) else None
+        inv[p] = sha256_file(p) if os.path.isfile(p) else None
     with open(os.path.join(gdir, INVENTORY), "w") as f:
         json.dump(dict(sorted(inv.items())), f, indent=1)
         f.write("\n")
@@ -845,7 +842,7 @@ def cmd_run(a):
     # local binaries staged through options.osdi_preload). No deck-side
     # preamble is written: the runner applies osdi_preload itself and a
     # second, deck-side load fails every corner (issue #313).
-    staged = {f"{n}.osdi": sha256(os.path.join(a.osdi_dir, f"{n}.osdi")) for n in OSDI_ORDER}
+    staged = {f"{n}.osdi": sha256_file(os.path.join(a.osdi_dir, f"{n}.osdi")) for n in OSDI_ORDER}
 
     points = []
     with open(a.queue) as f:

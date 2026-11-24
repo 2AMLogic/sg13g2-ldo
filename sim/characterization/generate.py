@@ -51,6 +51,8 @@ from typing import Callable
 GENERATOR_VERSION = 1
 HERE = Path(__file__).resolve().parent
 DEFAULT_ROOT = HERE.parent.parent
+sys.path.insert(0, str(HERE.parent / "tools"))
+import file_hash  # noqa: E402 -- the one sha256-file helper (#362)
 
 REPORT_JSON = "characterization-report.json"
 REPORT_MD = "characterization-report.md"
@@ -169,7 +171,7 @@ class GenError(Exception):
 
 def sha256_file(path: Path) -> str:
     try:
-        return hashlib.sha256(path.read_bytes()).hexdigest()
+        return file_hash.sha256_file(path)
     except OSError as exc:
         raise GenError(f"cannot read {path}: {exc}") from exc
 

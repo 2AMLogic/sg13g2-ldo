@@ -68,10 +68,12 @@ import tempfile
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 sys.path.insert(0, HERE)
+sys.path.insert(0, os.path.join(HERE, "..", "tools"))
 import ac_sweep  # noqa: E402
 import ac_metrics as am  # noqa: E402
 import e1_oppoints as e1  # noqa: E402
 from dc_metrics import read_wrdata  # noqa: E402
+from file_hash import sha256_file  # noqa: E402 -- the one sha256-file helper (#362)
 
 BENCH = "e4"
 
@@ -375,13 +377,6 @@ _MODEL_FAIL_RE = re.compile(
     r"Unknown model type|fatal error", re.IGNORECASE)
 
 
-def _sha256(path):
-    h = hashlib.sha256()
-    with open(path, "rb") as fh:
-        h.update(fh.read())
-    return h.hexdigest()
-
-
 def deck_provenance(record, corners_dir):
     """{point_id: (ok, why)} -- from the committed fleet provenance, that
     the override is what the worker simulated, per deck:
@@ -629,13 +624,6 @@ def _reduce(rid, corners_dir, out_csv, out_json):
 
 
 # ---- record md ------------------------------------------------------------ #
-def _sha16(path):
-    h = hashlib.sha256()
-    with open(path, "rb") as fh:
-        h.update(fh.read())
-    return h.hexdigest()[:16]
-
-
 def _backend(corners_dir):
     out = {}
     bp = os.path.join(corners_dir, "_batch", "backend.json")
@@ -755,8 +743,8 @@ def record_md_text(rid):
     copies = {}
     for m in manifest:
         copies.setdefault(os.path.basename(m["design_netlist"]), m["design_netlist_sha256"])
-    committed_sha = _sha16(os.path.join(sim, "..", "..", "design", "sg13cmos5l", "netlist",
-                                        "ldo_core_cmos5l.spice"))
+    committed_sha = sha256_file(os.path.join(sim, "..", "..", "design", "sg13cmos5l", "netlist",
+                                             "ldo_core_cmos5l.spice"), 16)
     pdk = manifest[0]["pdk"] if manifest else "unknown"
     git_sha = rid.split("-")[2] if rid.count("-") >= 2 else "unknown"
     group_of = {}

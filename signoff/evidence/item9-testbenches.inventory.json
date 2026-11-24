@@ -2,7 +2,7 @@
   "schema_version": 1,
   "kind": "t1-attestation-inventory",
   "t1_item": 9,
-  "description": "Every ngspice testbench and testbench template shipped under sim/, together with the cold-start entry points (run_*.sh), corner libraries, runner preambles, `klt sim` request documents (including the row-2 negative control) the shared bench renderer they call (sim/tools/render_deck.py, #236), the PVT post-processing module carved out of run_sweep.sh's heredoc (sweep_report.py and its test_sweep_report.py, #223 -- the extraction must not shrink what this item attests) and experiment READMEs a third party needs to run them -- the same file set the hand-rolled item-9 inventory carried before issue #199, so the conversion to `klt signoff --attest` loses no coverage. The declared cold start is the SG13CMOS5L PVT deck's own CI-weight preflight, which generates and syntax-checks one netlist per bench at mos_tt/27C without writing a records/ entry; it needs ngspice >= 46, the OSDI models sim/tools/build-osdi.sh builds, and both PDK variants under one PDK_ROOT. Shipped-and-runnable only: no measurement result is claimed here (items 5/6/8 own those).",
+  "description": "Every ngspice testbench and testbench template shipped under sim/, together with the cold-start entry points (run_*.sh), corner libraries, runner preambles, `klt sim` request documents (including the row-2 negative control) the shared bench renderer they call (sim/tools/render_deck.py, #236) and the one sha256-file helper the campaign drivers share (sim/tools/file_hash.py, #362), the PVT post-processing module carved out of run_sweep.sh's heredoc (sweep_report.py and its test_sweep_report.py, #223 -- the extraction must not shrink what this item attests) and experiment READMEs a third party needs to run them -- the same file set the hand-rolled item-9 inventory carried before issue #199, so the conversion to `klt signoff --attest` loses no coverage. The declared cold start is the SG13CMOS5L PVT deck's own CI-weight preflight, which generates and syntax-checks one netlist per bench at mos_tt/27C without writing a records/ entry; it needs ngspice >= 46, the OSDI models sim/tools/build-osdi.sh builds, and both PDK variants under one PDK_ROOT. Shipped-and-runnable only: no measurement result is claimed here (items 5/6/8 own those).",
   "testbenches": [
     "sim/README.md",
     "sim/env.sh",
@@ -136,7 +136,9 @@
     "sim/pass-device-screening/run_sweep.sh",
     "sim/pass-device-screening/testbench/tb_dropout_pmos.spice.tmpl",
     "sim/pass-device-screening/testbench/tb_stress_pmos.spice.tmpl",
+    "sim/tools/file_hash.py",
     "sim/tools/render_deck.py",
+    "sim/tools/test_file_hash.py",
     "sim/tools/test_render_deck.py"
   ],
   "cold_start": {

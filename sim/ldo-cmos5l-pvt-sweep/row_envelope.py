@@ -47,6 +47,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.abspath(os.path.join(HERE, "..", ".."))
 sys.path.insert(0, os.path.join(HERE, "..", "tools"))
 import render_deck  # noqa: E402
+from file_hash import sha256_file  # noqa: E402 -- the one sha256-file helper (#362)
 
 PDK = "ihp-sg13cmos5l"
 PDK_PIN = "sim/pdk-cmos5l.json"
@@ -192,11 +193,6 @@ def design_netlist_include(depth, design_netlist):
 # --------------------------------------------------------------------------- #
 # record plumbing shared by submit and check
 # --------------------------------------------------------------------------- #
-
-def sha256_file(path):
-    with open(path, "rb") as f:
-        return hashlib.sha256(f.read()).hexdigest()
-
 
 def pdk_pin_projection_sha256(path=None):
     """sha256 of the canonical JSON of the PDK pin's fetch-determining keys.

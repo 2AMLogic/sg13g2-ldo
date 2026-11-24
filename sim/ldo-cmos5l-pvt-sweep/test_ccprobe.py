@@ -341,7 +341,7 @@ class LikeForLikeGate(unittest.TestCase):
             path = os.path.join(HERE, which["trace"])
             self.assertTrue(os.path.isfile(path),
                             f"committed baseline trace missing: {path}")
-            self.assertEqual(c._sha256_16(path), which["trace_sha256_16"],
+            self.assertEqual(c.sha256_file(path, 16), which["trace_sha256_16"],
                              f"baseline trace moved: {path}")
 
 

@@ -21,7 +21,6 @@ only that id's own records/<id>.dropout.* files and is byte-deterministic
 import argparse
 import csv
 import datetime
-import hashlib
 import io
 import json
 import os
@@ -36,6 +35,7 @@ sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.join(HERE, "..", "tools"))
 import dropout_metrics as dcm  # noqa: E402
 import render_deck  # noqa: E402
+from file_hash import sha256_file  # noqa: E402 -- the one sha256-file helper (#362)
 
 CORNERS = ["tt", "ff", "ss", "sf", "fs"]
 TEMPS = [-40, 27, 125]
@@ -52,11 +52,6 @@ INPUTS = [TEMPLATE, "sim/ldo-cmos5l-pvt-sweep/dropout_metrics.py", "sim/ldo-cmos
 FATAL = re.compile(r"Unable to find definition of model|couldn't be loaded|Unknown model type|"
                    r"fatal error|gmin stepping failed|no convergence|iteration limit reached", re.I)
 SINGULAR = re.compile(r"singular matrix", re.I)
-
-
-def sha(rel):
-    with open(os.path.join(REPO, rel), "rb") as f:
-        return hashlib.sha256(f.read()).hexdigest()
 
 
 def coords():
@@ -244,7 +239,7 @@ def cmd_run(a):
             "jobs": [{k: j.get(k) for k in ("group", "job_id", "corners", "requested", "lifecycle")}
                      for j in backend.get("jobs", [])],
             "staged_osdi_sha256": backend.get("staged_osdi_sha256"),
-            "input_sha256": {p: sha(p) for p in INPUTS},
+            "input_sha256": {p: sha256_file(os.path.join(REPO, p)) for p in INPUTS},
             "sweep": {"vin_v": [dcm.DR0009_VIN_LO, dcm.DR0009_VIN_HI, dcm.DR0009_VIN_STEP],
                       "load_a": LOAD_A, "vin_ref_v": dcm.DR0009_VIN_REF, "loss": dcm.DR0009_LOSS},
             "pdk": pdk, "pdk_pin": "sim/pdk-cmos5l.json"}
