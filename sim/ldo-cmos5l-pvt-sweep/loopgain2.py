@@ -114,12 +114,14 @@ import json
 import math
 import os
 import sys
+from decimal import Decimal, InvalidOperation
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.abspath(os.path.join(HERE, "..", ".."))
 sys.path.insert(0, HERE)
 import ac_sweep  # noqa: E402
 import ac_metrics as am  # noqa: E402
+import dynamic_doe as dyn  # noqa: E402
 from dc_metrics import read_wrdata  # noqa: E402
 
 CTL_PREFIX = "loopgain_ctl_"
@@ -542,6 +544,85 @@ def all_suffixes(corners_dir):
     return out
 
 
+# --------------------------------------------------------------------------- #
+# operating point (issue #218)
+# --------------------------------------------------------------------------- #
+# run_loopgain2.sh's campaign used to hardcode the legacy point (1 mA / 1 uF /
+# 0 ohm). The --load-ma/--cout-uf/--esr-ohm arguments canonicalise through
+# dynamic_doe -- the same validator the #64 DoE uses -- so there is no second
+# validator to drift. The DEFAULT deck literals stay exactly the bytes the
+# driver always substituted, and the driver sources them from here, so the
+# no-arguments run renders byte-identical decks by construction.
+
+DEFAULT_DECK_LITERALS = {
+    "LOAD_A": "0.001",
+    "COUT_F": "1u",
+    "COUT_BOTTOM": "0",
+    "ESR_LINE": "* ESR=0: Cout wired directly to ground (campaign default)",
+}
+
+
+def op_from_args(load_ma=None, cout_uf=None, esr_ohm=None):
+    """CLI operating point (issue #218) -> dynamic_doe's integer op dict.
+
+    Values arrive in mA / uF / ohm; dynamic_doe validates in base units
+    (uA / nF / mohm), so each is scaled by 1000 and must land on an exact
+    integer. Anything else -- zero Cout, a negative value, a non-numeric
+    string, a value finer than the base unit -- raises dynamic_doe's
+    InvalidOperatingPoint (the driver surfaces it as exit 2)."""
+    op = {}
+    for name, raw in (("load_ua", load_ma), ("cout_nf", cout_uf),
+                      ("esr_mohm", esr_ohm)):
+        if raw is None:
+            op[name] = dyn.LEGACY_POINT[name]
+            continue
+        try:
+            v = Decimal(str(raw)) * 1000
+        except (InvalidOperation, ValueError):
+            raise dyn.InvalidOperatingPoint(f"{name}: not a number: {raw!r}")
+        if v != v.to_integral_value():
+            raise dyn.InvalidOperatingPoint(
+                f"{name}: {raw!r} is not an exact multiple of the base unit "
+                f"({name.split('_')[0]}s are held as integers)")
+        op[name] = int(v)
+    dyn.validate_op(op)
+    return op
+
+
+def op_display(op):
+    """Human-facing operating point, in the units the records spell out."""
+    dyn.validate_op(op)
+    return (f"{op['load_ua'] / 1000:g} mA, {op['cout_nf'] / 1000:g} uF, "
+            f"{op['esr_mohm'] / 1000:g} ohm")
+
+
+def esr_netlist_parts(esr_ohm):
+    """run_sweep.sh's esr_netlist_parts convention (issue #64): ESR of
+    exactly 0 wires Cout to ground and emits a comment instead of a
+    zero-valued resistor. Returns (cout_bottom, esr_line)."""
+    if esr_ohm == "0":
+        return "0", "* ESR=0: Cout wired directly to ground, no series resistor"
+    return "COUT_ESR", f"COUT_ESR Resr COUT_ESR 0 {esr_ohm}"
+
+
+def cmd_op(a):
+    """Print the canonical operating point as JSON for run_loopgain2.sh."""
+    try:
+        op = op_from_args(a.load_ma, a.cout_uf, a.esr_ohm)
+        net = dyn.netlist_values(op)
+        cout_bottom, esr_line = esr_netlist_parts(net["esr_ohm"])
+        doc = {"op": op, "legacy": op == dict(dyn.LEGACY_POINT),
+               "token": dyn.op_token(op), "display": op_display(op),
+               "netlist": net, "esr": {"cout_bottom": cout_bottom,
+                                       "esr_line": esr_line},
+               "default_literals": dict(DEFAULT_DECK_LITERALS)}
+    except dyn.InvalidOperatingPoint as exc:
+        print(f"loopgain2: invalid operating point: {exc}", file=sys.stderr)
+        return 2
+    print(json.dumps(doc, indent=1))
+    return 0
+
+
 def cmd_report(a, out_dir=None):
     corners_dir = os.path.abspath(a.corners_dir)
     rows = []
@@ -591,6 +672,67 @@ def cmd_report(a, out_dir=None):
 # record md (offline; every number comes from committed files)
 # --------------------------------------------------------------------------- #
 
+# A campaign's shape (issue #218): the driver writes evidence/<rid>/
+# campaign.json next to the raw exports; every string the record md and the
+# row10 wrapper used to hardcode as "the 45-point legacy campaign" is read
+# from it. A record WITHOUT one is a pre-#218 campaign, and the defaults
+# below are byte-identically the strings that era's committed records carry,
+# so `loopgain2.py check` keeps reproducing them.
+#
+# The producer pins: the records' "Reconstruction inputs" line quotes the
+# loopgain2.py and the two templates that PRODUCED the record, not this
+# module's current bytes -- otherwise every later edit here (like #218's)
+# would break the landed, append-only records' byte-compare. Pre-#218
+# records all quote the pins below (read out of their committed mds, pinned
+# there by test_loopgain2.py); a #218+ campaign's driver writes its own pins
+# into its campaign.json at run time.
+LEGACY_PRODUCER_SHA16 = {
+    "loopgain2.py": "22e8900632c48b90",
+    "tb_loopgain2v_cmos5l.spice.tmpl": "d7be4a61a83a628b",
+    "tb_loopgain2i_cmos5l.spice.tmpl": "deb8306c6bb1bebe",
+}
+
+CAMPAIGN_DEFAULTS = {
+    "issue": "issue #135",
+    "revision_note": True,
+    "grid": "5 MOS corners x 3 temperatures x 3 resistor corners",
+    "op_display": "1 mA, 1 uF, 0 ohm",
+    "op": dict(dyn.LEGACY_POINT),
+    "points": 45,
+    "decks": 3,
+    "legacy_point": True,
+    "full_grid": True,
+    "only_point": None,
+    "e2": None,
+    "producer_sha16": LEGACY_PRODUCER_SHA16["loopgain2.py"],
+    "tmpl2v_sha16": LEGACY_PRODUCER_SHA16["tb_loopgain2v_cmos5l.spice.tmpl"],
+    "tmpl2i_sha16": LEGACY_PRODUCER_SHA16["tb_loopgain2i_cmos5l.spice.tmpl"],
+    # full sha256s the row10 wrapper's evidence json pins (same producer-pin
+    # reasoning as the sha16 trio above)
+    "row10_wrapper_sha256": "908582b07b669654b6c6ebc9500268597a92edf01d1dedbd0dc3b258994db8a3",
+    "loopgain2_sha256": "22e8900632c48b90bbca09373f6656f2a91f7304c9328cb81c097e71c05e68df",
+}
+
+
+def campaign_facts(rid, sim_dir=HERE):
+    """(facts, campaign.json present) for record `rid`. Unknown keys in the
+    json are ignored; every missing key falls back to the legacy-campaign
+    default, so an older campaign.json cannot crash the md generator."""
+    facts = dict(CAMPAIGN_DEFAULTS)
+    path = os.path.join(sim_dir, "evidence", rid, "campaign.json")
+    try:
+        with open(path, encoding="utf-8") as fh:
+            doc = json.load(fh)
+    except FileNotFoundError:
+        return facts, False
+    except ValueError as exc:
+        raise Loopgain2Error(f"{path}: not valid JSON ({exc})")
+    if not isinstance(doc, dict):
+        raise Loopgain2Error(f"{path}: not a JSON object")
+    facts.update({k: doc[k] for k in CAMPAIGN_DEFAULTS if k in doc})
+    return facts, True
+
+
 def _sha16(path):
     with open(path, "rb") as fh:
         return hashlib.sha256(fh.read()).hexdigest()[:16]
@@ -625,6 +767,8 @@ def record_md(rid, sim_dir=HERE):
     env = _read_env(os.path.join(corners_dir, "_batch", "backend.env"))
     valid = [r for r in rows if r["valid"] == "True"]
     git_sha = rid.rsplit("-", 1)[-1]
+    facts, _has_campaign = campaign_facts(rid, sim_dir)
+    n_points = facts["points"]
 
     def vals(key):
         return [float(r[key]) for r in valid if r.get(key) not in ("", None)]
@@ -646,19 +790,28 @@ def record_md(rid, sim_dir=HERE):
 
     jobs = sorted((j["group"], j.get("job_id")) for j in batch["jobs"])
     tb = os.path.join(sim_dir, "testbench")
-    L = [f"# Two-injection loop-gain comparison record `{rid}` (issue #135)", "",
+    if facts["e2"]:
+        intro = ["SCHEMATIC-LEVEL diagnostic evidence, NOT a spec pass. DR-0015's experiment E2 (issue #218):",
+                 "the SG13CMOS5L loop gain at the FB/FBAMP break measured BOTH ways at point P3 -- the",
+                 "single-injection control and the Middlebrook two-injection reconstruction (voltage +",
+                 "current, two AC analyses per point) -- to test whether P3's above-unity critical crossing",
+                 "and negative scored PM belong to the loop or to the single voltage injection. DR-0014",
+                 "rules are UNCHANGED; row 10 stays Open."]
+    else:
+        intro = ["SCHEMATIC-LEVEL diagnostic evidence, NOT a spec pass. The SG13CMOS5L loop gain at the FB/FBAMP",
+                 "break was measured a second way (Middlebrook two-injection, voltage + current, two AC analyses",
+                 f"per point) to test whether the +1 dB plateau above the second 0 dB crossing of record `{BASELINE_RID}`",
+                 "belongs to the loop or to the single voltage injection. DR-0014 rules are UNCHANGED; row 10 stays Open."]
+    L = [f"# Two-injection loop-gain comparison record `{rid}` ({facts['issue']})", "",
          "<!-- GENERATED by sim/ldo-cmos5l-pvt-sweep/loopgain2.py record-md -- do not edit; "
-         "`loopgain2.py check` byte-compares. -->", "",
-         "SCHEMATIC-LEVEL diagnostic evidence, NOT a spec pass. The SG13CMOS5L loop gain at the FB/FBAMP",
-         "break was measured a second way (Middlebrook two-injection, voltage + current, two AC analyses",
-         f"per point) to test whether the +1 dB plateau above the second 0 dB crossing of record `{BASELINE_RID}`",
-         "belongs to the loop or to the single voltage injection. DR-0014 rules are UNCHANGED; row 10 stays Open.",
-         "", "**Revision note.** The raw fleet exports of this record are unchanged. Its DERIVED artifacts",
-         "(reconstructed traces `corners/" + rid + "/loopgain2_*_ac.csv`, this md, the comparison CSV and",
-         "`evidence/" + rid + "/{loopgain2-report.json,row10-margins.*}`) were regenerated before merge: the",
-         "first revision published the UNLOADED transfer -T' instead of the loop gain and clamped",
-         "sub-resolution samples to an invented -300 dB / 180 deg value. Both are withdrawn (README,",
-         "\"Loop-gain measurement method -- two-injection\"). The record never landed on main.", ""]
+         "`loopgain2.py check` byte-compares. -->", ""] + intro + [""]
+    if facts["revision_note"]:
+        L += ["**Revision note.** The raw fleet exports of this record are unchanged. Its DERIVED artifacts",
+              "(reconstructed traces `corners/" + rid + "/loopgain2_*_ac.csv`, this md, the comparison CSV and",
+              "`evidence/" + rid + "/{loopgain2-report.json,row10-margins.*}`) were regenerated before merge: the",
+              "first revision published the UNLOADED transfer -T' instead of the loop gain and clamped",
+              "sub-resolution samples to an invented -300 dB / 180 deg value. Both are withdrawn (README,",
+              "\"Loop-gain measurement method -- two-injection\"). The record never landed on main.", ""]
     L += ["## Method", "",
           "- Voltage injection `tb_loopgain2v_cmos5l.spice.tmpl` (`Vbreak FB FBAMP 0 ac 1`, the single-injection",
           "  circuit): Tv = -v(fb)/v(fbamp), exactly the single-injection L.",
@@ -678,19 +831,36 @@ def record_md(rid, sim_dir=HERE):
           + ", ".join(f"`{g}`={j}" for g, j in jobs) + ".",
           f"- ngspice `{env.get('BATCH_NGSPICE_VERSION', 'unknown')}` on the EDA batch fleet runner "
           f"(klt {env.get('BATCH_RUNNER_KLT', 'unknown')}).",
-          "- Grid: 5 MOS corners x 3 temperatures x 3 resistor corners at Vin 3.30 V, 1 mA, 1 uF, 0 ohm, EN tied",
-          "  to VIN = 45 points x 3 decks = 135 klt corners; axis `ac dec 20 1 1e10`.",
-          f"- Control vs the historical `{BASELINE_RID}` traces: max |dB diff| "
-          f"{base['max_abs_db_diff_over_points']:.3g} dB over 45 points (`evidence/{rid}/ctl-vs-baseline.json`).",
-          "- Reconstruction inputs at this revision (sha256, first 16 hex): "
-          f"`loopgain2.py` {_sha16(os.path.join(sim_dir, 'loopgain2.py'))}, "
-          f"`tb_loopgain2v_cmos5l.spice.tmpl` {_sha16(os.path.join(tb, 'tb_loopgain2v_cmos5l.spice.tmpl'))}, "
-          f"`tb_loopgain2i_cmos5l.spice.tmpl` {_sha16(os.path.join(tb, 'tb_loopgain2i_cmos5l.spice.tmpl'))}. "
+          f"- Grid: {facts['grid']} at Vin 3.30 V, {facts['op_display']}, EN tied",
+          f"  to VIN = {n_points} points x {facts['decks']} decks = "
+          f"{n_points * facts['decks']} klt corners; axis `ac dec 20 1 1e10`.",]
+    if base.get("skipped"):
+        L += [f"- Control vs the historical `{BASELINE_RID}` traces: SKIPPED -- {base['reason']} "
+              f"(`evidence/{rid}/ctl-vs-baseline.json`)."]
+        ref = base.get("reference")
+        if ref:
+            L += [f"- Cross-vintage context (informational, NOT a gate; nothing here passes or fails): "
+                  f"this run's control vs the committed single-injection trace `{ref['trace_sha256_16']}` "
+                  f"of record `{ref['record']}` at the same DR-0015 point: dPM {ref['dpm_deg']:+.2f} deg, "
+                  f"dGM {ref['dgm_db']:+.2f} dB, df_ug {ref['dfug_rel']:+.2%}, max |dB diff| "
+                  f"{ref['max_db_diff_common_axis']:.3g} dB over the common axis to "
+                  f"{ref['common_axis_to_hz']:.3g} Hz. {base['reference_cause']} "
+                  f"DR-0015's own P3 row (PM -52.70 deg, GM -9.20 dB) additionally crosses the "
+                  f"#89/#155 design+PDK vintage change."]
+    else:
+        L += [f"- Control vs the historical `{BASELINE_RID}` traces: max |dB diff| "
+              f"{base['max_abs_db_diff_over_points']:.3g} dB over {n_points} points "
+              f"(`evidence/{rid}/ctl-vs-baseline.json`)."]
+    L += [f"- Reconstruction inputs at this revision (sha256, first 16 hex): "
+          f"`loopgain2.py` {facts['producer_sha16']}, "
+          f"`tb_loopgain2v_cmos5l.spice.tmpl` {facts['tmpl2v_sha16']}, "
+          f"`tb_loopgain2i_cmos5l.spice.tmpl` {facts['tmpl2i_sha16']}. "
           f"The fleet decks are the committed `netlist-snapshots/{rid}/` files.", ""]
-    title = ("## Results (45 of 45 points valid)" if len(valid) == 45 and len(rows) == 45
+    pts_word = f"{n_points} point" + ("" if n_points == 1 else "s")
+    title = (f"## Results ({len(valid)} of {len(rows)} points valid)" if len(valid) == n_points and len(rows) == n_points
              else f"## Results ({len(valid)} of {len(rows)} points valid -- INVALID POINTS PRESENT)")
     L += [title, "",
-          "| quantity (45 points) | single injection (control, Tv) | two-injection (Middlebrook T) |", "|---|---|---|",
+          f"| quantity ({pts_word}) | single injection (control, Tv) | two-injection (Middlebrook T) |", "|---|---|---|",
           f"| PM, first crossing [deg] | {rng('ctl_phase_margin_deg')} (worst {worst('ctl_phase_margin_deg')}) "
           f"| {rng('lg2_phase_margin_deg')} (worst {worst('lg2_phase_margin_deg')}) |",
           f"| GM [dB] | {rng('ctl_gain_margin_db')} (worst {worst('ctl_gain_margin_db')}) "
@@ -749,7 +919,95 @@ def record_md(rid, sim_dir=HERE):
           + (f"The reconstruction is truncated below the 10 GHz ceiling at {len(truncated)} of {len(valid)} "
              f"points, so `evidence/{rid}/row10-margins.*` reports those `ambiguous`." if truncated else
              f"See `evidence/{rid}/row10-margins.*`."), ""]
+    if facts["e2"]:
+        L += _e2_side_by_side(rid, sim_dir, facts, rows)
     return "\n".join(L) + "\n"
+
+
+def _dr0014_verdict(m, key):
+    """`fail (reason; reason)` -- the committed classification wording."""
+    v = m[key]
+    reasons = "; ".join(v["reasons"])
+    return f"{v['verdict']} ({reasons})" if reasons else v["verdict"]
+
+
+def _row10_verdict(row, key):
+    verdict = row[f"{key}_verdict"]
+    reasons = row.get(f"{key}_reasons", "")
+    return f"{verdict} ({reasons})" if reasons else verdict
+
+
+def _e2_side_by_side(rid, sim_dir, facts, rows):
+    """The DR-0015 E2 table (issue #218): P3 from THIS record, P6 cited from
+    the committed 45-point two-injection record -- never re-run. Every cell
+    is read from committed files (comparison CSV rows, row10-margins.json,
+    and ac_metrics.classify_margins on the committed control traces)."""
+    e2 = facts["e2"]
+    p6_rid = e2["p6_record"]
+    with open(os.path.join(sim_dir, "records", f"{p6_rid}.loopgain2.csv"), newline="") as fh:
+        p6_rows = [r for r in csv.DictReader(fh)
+                   if (r["corner"], r["temp_c"], r["res_section"]) == _corner_key(e2["p6_point"])]
+    p6_row10_rows = _row10_csv_rows(sim_dir, p6_rid)
+    row10_rows = _row10_csv_rows(sim_dir, rid)
+
+    def ctl_row(record_id, r):
+        sfx = f"{r['corner']}_{r['temp_c']}c_r{r['res_section'][4:]}"
+        trace = os.path.join(sim_dir, "corners", record_id, f"{CTL_PREFIX}{sfx}{SUFFIX}")
+        return (f"{float(r['ctl_phase_margin_deg']):.2f}", f"{float(r['ctl_gain_margin_db']):.2f}",
+                _dr0014_verdict(am.classify_margins(trace), "pm"),
+                _dr0014_verdict(am.classify_margins(trace), "gm"))
+
+    def lg2_row(r, margins_row):
+        return (f"{float(r['lg2_phase_margin_deg']):.2f}", f"{float(r['lg2_gain_margin_db']):.2f}",
+                _row10_verdict(margins_row, "pm"), _row10_verdict(margins_row, "gm"))
+
+    p3 = rows[0]
+    p3_key = (p3["corner"], p3["temp_c"], p3["res_section"])
+    p3_ctl = ctl_row(rid, p3)
+    p3_lg2 = lg2_row(p3, _find_row10(row10_rows, p3_key))
+    p6 = p6_rows[0]
+    p6_key = (p6["corner"], p6["temp_c"], p6["res_section"])
+    p6_ctl = ctl_row(p6_rid, p6)
+    p6_lg2 = lg2_row(p6, _find_row10(p6_row10_rows, p6_key))
+    return ["## DR-0015 experiment E2: single- vs two-injection at P3 and P6", "",
+            "DR-0015's follow-up brief prices E2 as the two-injection bench at its points P3 and P6.",
+            f"This record is the P3 half (single PVT point `{e2['p3_point']}` at {facts['op_display']},",
+            f"{n_points_word(facts['points'])} x 3 decks). The P6 half is NOT re-run: P6 is the existing",
+            f"45-point campaign's `{e2['p6_point']}` point at the legacy operating point, cited from record",
+            f"`{p6_rid}` below. Margins are the committed records' own readings; classifications are the",
+            "unchanged DR-0014 rules (`ac_metrics.classify_margins`; the two-injection half additionally",
+            "carries row10_loopgain2.py's resolution overlay).", "",
+            "| point | bench | PM first [deg] | GM [dB] | DR-0014 PM | DR-0014 GM |",
+            "|---|---|---|---|---|---|",
+            f"| P3 ({e2['p3_conditions']}) | single injection (control) | {p3_ctl[0]} | {p3_ctl[1]} | {p3_ctl[2]} | {p3_ctl[3]} |",
+            f"| P3 ({e2['p3_conditions']}) | two-injection (Middlebrook T) | {p3_lg2[0]} | {p3_lg2[1]} | {p3_lg2[2]} | {p3_lg2[3]} |",
+            f"| P6 ({e2['p6_conditions']}) | single injection (control) | {p6_ctl[0]} | {p6_ctl[1]} | {p6_ctl[2]} | {p6_ctl[3]} |",
+            f"| P6 ({e2['p6_conditions']}) | two-injection (Middlebrook T) | {p6_lg2[0]} | {p6_lg2[1]} | {p6_lg2[2]} | {p6_lg2[3]} |",
+            "", f"P6 row source: `records/{p6_rid}.loopgain2.csv` + `evidence/{p6_rid}/row10-margins.json`",
+            "(control PM 53.87 deg / GM 29.87 dB, two-injection PM 53.87 deg / GM 38.26 dB -- the values",
+            "DR-0015's P6 row quotes).", ""]
+
+
+def _corner_key(point):
+    """`ss_125c_rbcs` -> ('ss', '125', 'res_bcs') for comparison-CSV lookup."""
+    corner, tempc, rlabel = parse_suffix(point)
+    return corner, tempc, f"res_{rlabel}"
+
+
+def _row10_csv_rows(sim_dir, record_id):
+    with open(os.path.join(sim_dir, "evidence", record_id, "row10-margins.csv"), newline="") as fh:
+        return list(csv.DictReader(fh))
+
+
+def _find_row10(row10_rows, key):
+    for r in row10_rows:
+        if (r["corner"], r["temp_c"], r["res_section"]) == key:
+            return r
+    raise Loopgain2Error(f"row10-margins row {key} not found")
+
+
+def n_points_word(n):
+    return f"{n} point" + ("" if n == 1 else "s")
 
 
 def cmd_record_md(a):
@@ -845,6 +1103,11 @@ def main(argv=None):
     e.add_argument("csv")
     e.add_argument("ncols", type=int)
     e.add_argument("ceiling")
+    o = sub.add_parser("op", help="canonicalise + validate the campaign operating point (issue #218)")
+    o.add_argument("--load-ma", default=None, help="load current [mA] (default: legacy 1 mA)")
+    o.add_argument("--cout-uf", default=None, help="effective Cout [uF] (default: legacy 1 uF)")
+    o.add_argument("--esr-ohm", default=None, help="Cout series ESR [ohm] (default: legacy 0)")
+    o.add_argument("--json", action="store_true", help="emit the full JSON document (machine form)")
     p = sub.add_parser("report", help="reconstruct + compare every point under a corners dir")
     p.add_argument("--corners-dir", required=True)
     p.add_argument("--ceiling", default="10g")
@@ -862,6 +1125,8 @@ def main(argv=None):
             return cmd_reconstruct(a)
         if a.cmd == "check-export":
             return cmd_check_export(a)
+        if a.cmd == "op":
+            return cmd_op(a)
         if a.cmd == "report":
             return cmd_report(a)
         if a.cmd == "record-md":

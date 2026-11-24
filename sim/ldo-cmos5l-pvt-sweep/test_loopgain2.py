@@ -24,6 +24,7 @@ nodal determinant).
 """
 import cmath
 import csv
+import json
 import math
 import os
 import shutil
@@ -33,6 +34,7 @@ import unittest
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
+sys.path.insert(0, os.path.join(HERE, "..", "tools"))
 import loopgain2 as lg2  # noqa: E402
 
 FREQS = [10.0 ** (k / 20.0) for k in range(0, 201)]   # 1 Hz .. 1e10, 20 pts/dec
@@ -456,6 +458,156 @@ class Overlay(unittest.TestCase):
             w._current_record[0] = "x"
             with self.assertRaises(w.rm.Row10Error):
                 w._resolution_info(p)
+        finally:
+            shutil.rmtree(tmp)
+
+
+class OperatingPoint(unittest.TestCase):
+    """issue #218: the campaign's --load-ma/--cout-uf/--esr-ohm arguments,
+    canonicalised and validated through dynamic_doe -- the #64 DoE's own
+    validator, never a second one -- and the default-path deck literals,
+    which must stay byte-identical to the pre-#218 driver's."""
+
+    def test_no_arguments_is_the_legacy_point(self):
+        op = lg2.op_from_args()
+        self.assertEqual(op, {"load_ua": 1000, "cout_nf": 1000, "esr_mohm": 0})
+        self.assertEqual(lg2.op_display(op), "1 mA, 1 uF, 0 ohm")
+
+    def test_default_deck_literals_are_the_pre_218_bytes(self):
+        # AC 1's byte-identity contract: the no-arguments run substitutes
+        # exactly these literals (the driver sources them from
+        # DEFAULT_DECK_LITERALS, so this pins the shared copy).
+        self.assertEqual(lg2.DEFAULT_DECK_LITERALS, {
+            "LOAD_A": "0.001", "COUT_F": "1u", "COUT_BOTTOM": "0",
+            "ESR_LINE": "* ESR=0: Cout wired directly to ground (campaign default)"})
+
+    def test_p3_operating_point_uses_doe_canonical_netlist_syntax(self):
+        import dynamic_doe as dyn
+        op = lg2.op_from_args(load_ma=50, cout_uf=0.33, esr_ohm=0)
+        self.assertEqual(op, {"load_ua": 50000, "cout_nf": 330, "esr_mohm": 0})
+        # the same strings run_ccprobe.sh substituted for its P3 decks
+        self.assertEqual(dyn.netlist_values(op),
+                         {"load_a": "50000e-6", "cout_f": "330n", "esr_ohm": "0"})
+        self.assertEqual(lg2.op_display(op), "50 mA, 0.33 uF, 0 ohm")
+
+    def test_nonzero_esr_wires_the_series_resistor(self):
+        self.assertEqual(lg2.esr_netlist_parts("0"),
+                         ("0", "* ESR=0: Cout wired directly to ground, no series resistor"))
+        self.assertEqual(lg2.esr_netlist_parts("500e-3"),
+                         ("COUT_ESR", "COUT_ESR Resr COUT_ESR 0 500e-3"))
+
+    def test_rejected_bad_values(self):
+        import dynamic_doe as dyn
+        for kw in (dict(cout_uf=0),                     # zero Cout
+                   dict(load_ma=-1), dict(esr_ohm=-0.001),   # negative
+                   dict(load_ma="fifty"), dict(cout_uf="1u"),  # non-numeric
+                   dict(cout_uf=0.3333),                 # not an exact nF multiple
+                   dict(esr_ohm=0.00025)):               # not an exact mohm multiple
+            with self.assertRaises(dyn.InvalidOperatingPoint, msg=repr(kw)):
+                lg2.op_from_args(**kw)
+
+    def test_op_subcommand_exit_codes(self):
+        import contextlib
+        import io
+        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+            rc_bad = lg2.main(["op", "--cout-uf=0"])
+            rc_ok = lg2.main(["op", "--load-ma=50", "--cout-uf=0.33", "--esr-ohm=0", "--json"])
+        self.assertEqual(rc_bad, 2)
+        self.assertEqual(rc_ok, 0)
+
+    def test_arguments_reach_the_rendered_deck(self):
+        # Negative control for the driver's substitution wiring (mirrors
+        # #219's AC 6 discipline): render the real single-injection template
+        # the way run_loopgain2.sh's render_deck does, once with the default
+        # literals and once with P3's canonical values, and assert each
+        # deck carries ITS operating point -- a silently ignored flag (or a
+        # mapping still hardcoding the legacy literals) fails here.
+        import render_deck
+        tmpl = os.path.join(HERE, "testbench", "tb_loopgain_cmos5l.spice.tmpl")
+        base = {"PDK_ROOT": "/pdk", "PDK": "p", "OSDI_DIR": "/osdi",
+                "MOS_SECTION": "mos_ff", "RES_SECTION": "res_wcs", "CAP_SECTION": "cap_typ",
+                "TEMP": "-40", "LG_AC_MAX": "1e10", "CC_W": "170u (nominal)",
+                "DESIGN_NETLIST": "/design.spice", "AC_CSV": "/out.csv"}
+        default = render_deck.render(open(tmpl).read(), dict(
+            base, **lg2.DEFAULT_DECK_LITERALS))
+        self.assertIn("Iload VOUT 0 dc 0.001", default)
+        self.assertIn("Cout VOUT 0 1u", default)
+        self.assertIn("* ESR=0: Cout wired directly to ground (campaign default)", default)
+        p3 = render_deck.render(open(tmpl).read(), dict(
+            base, LOAD_A="50000e-6", COUT_F="330n", COUT_BOTTOM="0",
+            ESR_LINE=lg2.esr_netlist_parts("0")[1]))
+        self.assertIn("Iload VOUT 0 dc 50000e-6", p3)
+        self.assertIn("Cout VOUT 0 330n", p3)
+        self.assertNotIn("dc 0.001", p3)
+        self.assertNotIn("Cout VOUT 0 1u", p3)
+        self.assertNotIn("(campaign default)", p3)
+
+
+class CampaignFacts(unittest.TestCase):
+    """issue #218: the campaign's shape (operating point, point count,
+    conditions) is read from evidence/<rid>/campaign.json, with defaults
+    that keep the pre-#218 records' committed strings byte-exact."""
+
+    def test_legacy_defaults_reproduce_the_committed_strings(self):
+        facts, present = lg2.campaign_facts("20261012-071449-6a3c1475")
+        self.assertFalse(present)          # committed record, no campaign.json
+        self.assertEqual(facts["issue"], "issue #135")
+        self.assertTrue(facts["revision_note"])
+        self.assertEqual(facts["grid"], "5 MOS corners x 3 temperatures x 3 resistor corners")
+        self.assertEqual(facts["op_display"], "1 mA, 1 uF, 0 ohm")
+        self.assertEqual(facts["points"], 45)
+        self.assertTrue(facts["legacy_point"] and facts["full_grid"])
+        self.assertIsNone(facts["only_point"])
+        self.assertIsNone(facts["e2"])
+
+    def test_legacy_producer_pins_match_the_committed_records(self):
+        # The append-only records' md/evidence pin the bytes that PRODUCED
+        # them; the defaults must quote exactly those, or a later edit to
+        # loopgain2.py/row10_loopgain2.py would break their byte-compare.
+        import row10_loopgain2 as w
+        for rid in ("20261011-165616-eabde108", "20261012-071449-6a3c1475"):
+            facts, _ = lg2.campaign_facts(rid)
+            md = open(os.path.join(HERE, "records", f"{rid}.loopgain2.md")).read()
+            self.assertIn(f"`loopgain2.py` {facts['producer_sha16']},", md)
+            self.assertIn(f"`tb_loopgain2v_cmos5l.spice.tmpl` {facts['tmpl2v_sha16']},", md)
+            self.assertIn(f"`tb_loopgain2i_cmos5l.spice.tmpl` {facts['tmpl2i_sha16']}.", md)
+            doc = json.load(open(os.path.join(HERE, "evidence", rid, "row10-margins.json")))
+            self.assertEqual(doc["classifier"][w.SELF], facts["row10_wrapper_sha256"])
+            self.assertEqual(doc["classifier"][f"sim/ldo-cmos5l-pvt-sweep/loopgain2.py"],
+                             facts["loopgain2_sha256"])
+
+    def test_campaign_json_overrides_the_defaults(self):
+        tmp = tempfile.mkdtemp()
+        try:
+            os.makedirs(os.path.join(tmp, "evidence", "rid9"))
+            with open(os.path.join(tmp, "evidence", "rid9", "campaign.json"), "w") as fh:
+                json.dump({"points": 1, "full_grid": False, "only_point": "ff_-40c_rwcs",
+                           "op": {"load_ua": 50000, "cout_nf": 330, "esr_mohm": 0},
+                           "op_display": "50 mA, 0.33 uF, 0 ohm", "e2": {"p6_record": "r"}}, fh)
+            facts, present = lg2.campaign_facts("rid9", sim_dir=tmp)
+            self.assertTrue(present)
+            self.assertEqual(facts["points"], 1)
+            self.assertFalse(facts["full_grid"])
+            self.assertEqual(facts["only_point"], "ff_-40c_rwcs")
+            self.assertEqual(facts["e2"]["p6_record"], "r")
+            self.assertEqual(facts["issue"], "issue #135")   # untouched key keeps default
+        finally:
+            shutil.rmtree(tmp)
+
+    def test_row10_conditions_and_expected_rows_follow_the_campaign(self):
+        import row10_loopgain2 as w
+        self.assertEqual(w.conditions_for("20261012-071449-6a3c1475"), w._LEGACY_CONDITIONS)
+        self.assertIn("45-point PVT grid", w._LEGACY_CONDITIONS)
+        self.assertEqual(w.expected_points_for("20261012-071449-6a3c1475"), 45)
+        tmp = tempfile.mkdtemp()
+        try:
+            os.makedirs(os.path.join(tmp, "evidence", "rid9"))
+            with open(os.path.join(tmp, "evidence", "rid9", "campaign.json"), "w") as fh:
+                json.dump({"points": 1, "full_grid": False, "only_point": "ff_-40c_rwcs",
+                           "op": {"load_ua": 50000, "cout_nf": 330, "esr_mohm": 0}}, fh)
+            self.assertEqual(w.expected_points_for("rid9", sim_dir=tmp), 1)
+            self.assertIn("single PVT point ff_-40c_rwcs", w.conditions_for("rid9", sim_dir=tmp))
+            self.assertIn("50 mA, Cout 0.33 uF, ESR 0", w.conditions_for("rid9", sim_dir=tmp))
         finally:
             shutil.rmtree(tmp)
 

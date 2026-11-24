@@ -51,11 +51,36 @@ import loopgain2 as lg2  # noqa: E402
 SELF = f"{rm.SIM}/row10_loopgain2.py"
 DS = "legacy"   # the 45-point layout the classifier machinery expects
 
-CONDITIONS = ("Vin 3.30 V, 1 mA, Cout 1 uF, ESR 0, Cc nominal; 45-point PVT grid; "
-              "Middlebrook loop gain T = (Tv*Ti - 1)/(Tv + Ti + 2) reconstructed from the "
-              "two-injection benches tb_loopgain2v/tb_loopgain2i by loopgain2.py (issue #135), "
-              "resolved prefix only")
+# The legacy string, kept verbatim as the byte-compare target the committed
+# pre-#218 evidence jsons embed (test_loopgain2.py pins it).
+_LEGACY_CONDITIONS = ("Vin 3.30 V, 1 mA, Cout 1 uF, ESR 0, Cc nominal; 45-point PVT grid; "
+                      "Middlebrook loop gain T = (Tv*Ti - 1)/(Tv + Ti + 2) reconstructed from the "
+                      "two-injection benches tb_loopgain2v/tb_loopgain2i by loopgain2.py (issue #135), "
+                      "resolved prefix only")
 UNRESOLVED_REASON = "reconstruction_unresolved_above_cut"
+
+
+def conditions_for(record_id, sim_dir=lg2.HERE):
+    """The dataset's `conditions` string for a two-injection record."""
+    facts, _ = lg2.campaign_facts(record_id, sim_dir)
+    op = facts["op"]
+    op_part = (f"{op['load_ua'] / 1000:g} mA, Cout {op['cout_nf'] / 1000:g} uF, "
+               f"ESR {op['esr_mohm']}")
+    if facts["full_grid"]:
+        grid_part = f"{facts['points']}-point PVT grid"
+    else:
+        grid_part = f"single PVT point {facts['only_point']} (issue #218 restriction)"
+    return (f"Vin 3.30 V, {op_part}, Cc nominal; {grid_part}; "
+            "Middlebrook loop gain T = (Tv*Ti - 1)/(Tv + Ti + 2) reconstructed from the "
+            "two-injection benches tb_loopgain2v/tb_loopgain2i by loopgain2.py (issue #135), "
+            "resolved prefix only")
+
+
+def expected_points_for(record_id, sim_dir=lg2.HERE):
+    """The comparison CSV's expected row count (45-point legacy grid, or the
+    restricted campaign's own count from its campaign.json)."""
+    facts, _ = lg2.campaign_facts(record_id, sim_dir)
+    return facts["points"]
 
 
 def _overlay(m, info):
@@ -131,7 +156,7 @@ def config(record_id, record_sha256):
             raise rm.Row10Error(f"{record_id} already has a wrapper evidence dir")
     return dict(base, record_id=record_id,
                 record_csv=f"{rm.SIM}/records/{record_id}.loopgain2.csv",
-                record_sha256=record_sha256, conditions=CONDITIONS)
+                record_sha256=record_sha256, conditions=conditions_for(record_id))
 
 
 def _mapped_rows(record_csv):
@@ -174,8 +199,9 @@ def build(record_id, record_sha256):
             for row in _mapped_rows(f"{rm.REPO}/{cfg['record_csv']}"):
                 w.writerow(row)
                 n += 1
-        if n != 45:
-            raise rm.Row10Error(f"{cfg['record_csv']}: {n} rows, expected 45")
+        expected = expected_points_for(record_id)
+        if n != expected:
+            raise rm.Row10Error(f"{cfg['record_csv']}: {n} rows, expected {expected}")
         real_csv = cfg["record_csv"]
         cfg["record_csv"] = mapped
         # rm.classify pins sha256(record_csv); pin the ORIGINAL comparison csv.
@@ -195,8 +221,13 @@ def build(record_id, record_sha256):
     # mapped copy during classification; restore the real committed path so
     # the evidence json is reproducible byte-for-byte by --check.
     doc["record"]["csv"] = real_csv
-    doc["classifier"][SELF] = rm.sha256_file(SELF)
-    doc["classifier"][f"{rm.SIM}/loopgain2.py"] = rm.sha256_file(f"{rm.SIM}/loopgain2.py")
+    # The classifier block pins the PRODUCER hashes (the wrapper and
+    # loopgain2.py bytes that classified the record), read from the
+    # campaign's committed facts -- a later edit to either module (e.g.
+    # #218's) must not break the landed, append-only evidence jsons.
+    facts, _ = lg2.campaign_facts(record_id)
+    doc["classifier"][SELF] = facts["row10_wrapper_sha256"]
+    doc["classifier"][f"{rm.SIM}/loopgain2.py"] = facts["loopgain2_sha256"]
     doc["method"] = ("two-injection Middlebrook loop gain (loopgain2.py), resolved prefix only; "
                      "classification rules unchanged (DR-0014, proposed; row 10 stays Open)")
     n_trunc = sum(1 for v in res_info.values() if v["first_unresolved_hz"] is not None)
