@@ -70,7 +70,7 @@ WORK="$(mktemp -d)"
 # before MODE is parsed) embeds host PDK paths, so it must never survive even a
 # failed stage; a second `trap ... EXIT` inside pex_row4_stage used to replace
 # this handler and leak ${WORK} (#365).
-trap 'rm -rf "${WORK}" "${PEX_ROW4_REQUEST}"' EXIT
+trap 'rm -rf "${WORK}" "${PEX_ROW4_REQUEST:-}"' EXIT
 
 PDK_ROOT="${PDK_ROOT:-${HOME}/share/pdk}"
 PDK_DECK="${PDK_ROOT}/ihp-sg13cmos5l/libs.tech/klayout/tech/drc/ihp-sg13cmos5l.drc"
