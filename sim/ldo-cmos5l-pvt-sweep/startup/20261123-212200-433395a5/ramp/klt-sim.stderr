@@ -1,0 +1,37 @@
+klt: batch job klt-sim-deaa61116df7 submitting to s3://<bucket>/jobs/klt-sim-deaa61116df7
+klt: batch job klt-sim-8a089b1fa8f4 submitting to s3://<bucket>/jobs/klt-sim-8a089b1fa8f4
+klt: batch job klt-sim-aed86ac86e10 submitting to s3://<bucket>/jobs/klt-sim-aed86ac86e10
+klt: batch job klt-sim-a0ddc650b5a7 submitting to s3://<bucket>/jobs/klt-sim-a0ddc650b5a7
+klt sim: batch job klt-sim-aed86ac86e10 (/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-314/sim/ldo-cmos5l-pvt-sweep/startup/20261123-212200-433395a5/ramp/g001_ss_rtyp_i1ma_c1000nf_e0mohm_t500ns_v3630mv_T-40/g001_ss_rtyp_i1ma_c1000nf_e0mohm_t500ns_v3630mv_T-40.request.json): submitted
+klt sim: batch job klt-sim-8a089b1fa8f4 (/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-314/sim/ldo-cmos5l-pvt-sweep/startup/20261123-212200-433395a5/ramp/g003_tt_rtyp_i0ma_c4700nf_e500mohm_t1000ns_v3630mv_T27/g003_tt_rtyp_i0ma_c4700nf_e500mohm_t1000ns_v3630mv_T27.request.json): submitted
+klt sim: batch job klt-sim-a0ddc650b5a7 (/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-314/sim/ldo-cmos5l-pvt-sweep/startup/20261123-212200-433395a5/ramp/g000_ff_rtyp_i1ma_c1000nf_e0mohm_t500ns_v3630mv_T27/g000_ff_rtyp_i1ma_c1000nf_e0mohm_t500ns_v3630mv_T27.request.json): submitted
+klt sim: batch job klt-sim-deaa61116df7 (/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-314/sim/ldo-cmos5l-pvt-sweep/startup/20261123-212200-433395a5/ramp/g002_tt_rtyp_i0ma_c330nf_e0mohm_t1000ns_v3630mv_T27/g002_tt_rtyp_i0ma_c330nf_e0mohm_t1000ns_v3630mv_T27.request.json): submitted
+klt sim: batch job klt-sim-8a089b1fa8f4 launched; re-attach with `klt sim <request> --backend batch --attach klt-sim-8a089b1fa8f4`
+klt sim: batch job klt-sim-8a089b1fa8f4 state=no status.json yet elapsed=2s
+klt sim: batch job klt-sim-a0ddc650b5a7 launched; re-attach with `klt sim <request> --backend batch --attach klt-sim-a0ddc650b5a7`
+klt sim: batch job klt-sim-a0ddc650b5a7 state=no status.json yet elapsed=1s
+klt sim: batch job klt-sim-aed86ac86e10 launched; re-attach with `klt sim <request> --backend batch --attach klt-sim-aed86ac86e10`
+klt sim: batch job klt-sim-deaa61116df7 launched; re-attach with `klt sim <request> --backend batch --attach klt-sim-deaa61116df7`
+klt sim: batch job klt-sim-aed86ac86e10 state=no status.json yet elapsed=1s
+klt sim: batch job klt-sim-deaa61116df7 state=no status.json yet elapsed=1s
+klt sim: batch job klt-sim-8a089b1fa8f4 (/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-314/sim/ldo-cmos5l-pvt-sweep/startup/20261123-212200-433395a5/ramp/g003_tt_rtyp_i0ma_c4700nf_e500mohm_t1000ns_v3630mv_T27/g003_tt_rtyp_i0ma_c4700nf_e500mohm_t1000ns_v3630mv_T27.request.json): failed
+klt sim: batch job klt-sim-a0ddc650b5a7 (/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-314/sim/ldo-cmos5l-pvt-sweep/startup/20261123-212200-433395a5/ramp/g000_ff_rtyp_i1ma_c1000nf_e0mohm_t500ns_v3630mv_T27/g000_ff_rtyp_i1ma_c1000nf_e0mohm_t500ns_v3630mv_T27.request.json): failed
+klt: batch job klt-sim-4cfd298eb09d submitting to s3://<bucket>/jobs/klt-sim-4cfd298eb09d
+klt: batch job klt-sim-2671eea35034 submitting to s3://<bucket>/jobs/klt-sim-2671eea35034
+klt sim: batch job klt-sim-aed86ac86e10 (/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-314/sim/ldo-cmos5l-pvt-sweep/startup/20261123-212200-433395a5/ramp/g001_ss_rtyp_i1ma_c1000nf_e0mohm_t500ns_v3630mv_T-40/g001_ss_rtyp_i1ma_c1000nf_e0mohm_t500ns_v3630mv_T-40.request.json): failed
+klt sim: batch job klt-sim-4cfd298eb09d (/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-314/sim/ldo-cmos5l-pvt-sweep/startup/20261123-212200-433395a5/ramp/g004_tt_rtyp_i1ma_c1000nf_e0mohm_t1000ns_v3300mv_T27/g004_tt_rtyp_i1ma_c1000nf_e0mohm_t1000ns_v3300mv_T27.request.json): submitted
+klt sim: batch job klt-sim-deaa61116df7 (/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-314/sim/ldo-cmos5l-pvt-sweep/startup/20261123-212200-433395a5/ramp/g002_tt_rtyp_i0ma_c330nf_e0mohm_t1000ns_v3630mv_T27/g002_tt_rtyp_i0ma_c330nf_e0mohm_t1000ns_v3630mv_T27.request.json): running
+klt sim: batch job klt-sim-deaa61116df7 state=running elapsed=32s
+klt sim: batch job klt-sim-2671eea35034 (/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-314/sim/ldo-cmos5l-pvt-sweep/startup/20261123-212200-433395a5/ramp/g005_tt_rtyp_i50ma_c330nf_e0mohm_t1000ns_v3630mv_T27/g005_tt_rtyp_i50ma_c330nf_e0mohm_t1000ns_v3630mv_T27.request.json): submitted
+klt: batch job klt-sim-b19f139d3041 submitting to s3://<bucket>/jobs/klt-sim-b19f139d3041
+klt sim: batch job klt-sim-b19f139d3041 (/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-314/sim/ldo-cmos5l-pvt-sweep/startup/20261123-212200-433395a5/ramp/g006_tt_rtyp_i50ma_c4700nf_e500mohm_t1000ns_v3630mv_T27/g006_tt_rtyp_i50ma_c4700nf_e500mohm_t1000ns_v3630mv_T27.request.json): submitted
+klt sim: batch job klt-sim-4cfd298eb09d launched; re-attach with `klt sim <request> --backend batch --attach klt-sim-4cfd298eb09d`
+klt sim: batch job klt-sim-4cfd298eb09d state=no status.json yet elapsed=1s
+klt sim: batch job klt-sim-2671eea35034 launched; re-attach with `klt sim <request> --backend batch --attach klt-sim-2671eea35034`
+klt sim: batch job klt-sim-2671eea35034 state=no status.json yet elapsed=1s
+klt sim: batch job klt-sim-deaa61116df7 (/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-314/sim/ldo-cmos5l-pvt-sweep/startup/20261123-212200-433395a5/ramp/g002_tt_rtyp_i0ma_c330nf_e0mohm_t1000ns_v3630mv_T27/g002_tt_rtyp_i0ma_c330nf_e0mohm_t1000ns_v3630mv_T27.request.json): failed
+klt sim: batch job klt-sim-b19f139d3041 launched; re-attach with `klt sim <request> --backend batch --attach klt-sim-b19f139d3041`
+klt sim: batch job klt-sim-b19f139d3041 state=no status.json yet elapsed=1s
+klt sim: batch job klt-sim-4cfd298eb09d (/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-314/sim/ldo-cmos5l-pvt-sweep/startup/20261123-212200-433395a5/ramp/g004_tt_rtyp_i1ma_c1000nf_e0mohm_t1000ns_v3300mv_T27/g004_tt_rtyp_i1ma_c1000nf_e0mohm_t1000ns_v3300mv_T27.request.json): failed
+klt sim: batch job klt-sim-2671eea35034 (/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-314/sim/ldo-cmos5l-pvt-sweep/startup/20261123-212200-433395a5/ramp/g005_tt_rtyp_i50ma_c330nf_e0mohm_t1000ns_v3630mv_T27/g005_tt_rtyp_i50ma_c330nf_e0mohm_t1000ns_v3630mv_T27.request.json): failed
+klt sim: batch job klt-sim-b19f139d3041 (/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-314/sim/ldo-cmos5l-pvt-sweep/startup/20261123-212200-433395a5/ramp/g006_tt_rtyp_i50ma_c4700nf_e500mohm_t1000ns_v3630mv_T27/g006_tt_rtyp_i50ma_c4700nf_e500mohm_t1000ns_v3630mv_T27.request.json): failed

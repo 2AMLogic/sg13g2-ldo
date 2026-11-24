@@ -1,0 +1,32 @@
+{
+ "batch_job_ids": [
+  "klt-sim-8bd7db39c8ae"
+ ],
+ "git_sha": "06bd6576",
+ "input_sha256": {
+  "design/sg13cmos5l/netlist/ldo_core_cmos5l.spice": "08a7b857e1fad43dd7af1f575de97853a058e85541601ecc47567fbc28dbae57",
+  "design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice": "75ee39ce0c48b54cab6c8a31acd1f199c37c1ccd1ac074a3515dee81cc656fb4",
+  "sim/ldo-cmos5l-pvt-sweep/testbench/tb_row5_envelope_cmos5l.spice.tmpl": "2e0cb9b4daf6f854d67bb467394dbda2214779b92d0bca2003f32c5429c97742",
+  "sim/tools/render_deck.py": "1342231eb9d396774dfb3f838ec31f58a704b3f86e047d6f0188b61c8406a833"
+ },
+ "invocation": "python3 sim/ldo-cmos5l-pvt-sweep/row5_envelope.py submit --probe",
+ "klt_sim_argv": "klt sim request.json --backend batch --wait-for-capacity 600 -o /tmp/row5-envelope-artifacts.trsyzw9_ --format json",
+ "klt_sim_exit": 0,
+ "measurement_definition": "line and load regulation graded as klt sim derived expr measurements over analysis_steps, never computed by repo Python",
+ "pdk": "ihp-sg13cmos5l",
+ "pdk_pin": "sim/pdk-cmos5l.json",
+ "pdk_pin_projection_sha256": "751c9b6a3b1911c662127288528be290e63bb2b85c38e1e43007033bb27d2f37",
+ "pdk_root": "/home/ubuntu/share/pdk",
+ "probe": true,
+ "record_id": "20261123-213537-06bd6576-probe",
+ "solver_options": {
+  "abstol": 1e-15,
+  "reltol": 1e-09
+ },
+ "spec_row": "DR-0007 row 5 (line / load regulation) -- Open; this envelope does not ratify it",
+ "substitutions": {
+  "design_netlist_include": "../../../../design/sg13cmos5l/netlist/ldo_core_cmos5l.spice",
+  "osdi_dir": "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/osdi",
+  "pdk_models_dir": "/home/ubuntu/share/pdk/ihp-sg13cmos5l/libs.tech/ngspice/models"
+ }
+}

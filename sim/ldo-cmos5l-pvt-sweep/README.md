@@ -1483,6 +1483,70 @@ job-bound warning and host-independent `tb.spice` bytes**: exactly as the
 row-4 section above states them; the same machinery and the same fleet
 discipline apply unchanged.
 
+## Row-5 graded `klt sim` corner-matrix envelope (`row5_envelope.py`, issue #319)
+
+DR-0007 row 5 ("Line / load regulation < 5 mV/V; < 1 % over full load, inside
+the accuracy window") was measured only as offline informational summaries
+from discrete loads and supplies, with no `klt sim` envelope carrying
+`spec_row`. `row5_envelope.py` grades it the way `row7_envelope.py` grades Iq,
+on the shared `row_envelope.py` machinery:
+
+```bash
+python3 sim/ldo-cmos5l-pvt-sweep/row5_envelope.py submit --probe   # 2-corner probe
+python3 sim/ldo-cmos5l-pvt-sweep/row5_envelope.py submit           # 45 corners x 8 solves
+python3 sim/ldo-cmos5l-pvt-sweep/row5_envelope.py check            # offline (CI)
+```
+
+Eight named `analysis_steps[]` operating points per corner, each setting both
+`Vin` and `Iload`: Vin 2.97 and 3.63 V at 0, 25 and 50 mA, and Vin 3.30 V at 0
+and 50 mA (the four outer-supply, load-extreme points serve both
+calculations). Each step reports the raw `vout_v` (ungraded, untagged). The six
+graded figures are derived `expr` measurements over those step results with the
+row limit declared inside the request and
+`spec_row: dr0007-row5-line-load-regulation`:
+
+- `line_<load>_mvpv` = `1000 * abs(Vout_3.63 - Vout_2.97) / 0.66` at 0, 25, 50
+  mA, `limits {max: 5}` (mV/V);
+- `load_<vin>_pct` = `100 * abs(Vout_0mA - Vout_50mA) / Vout_0mA` at 2.97,
+  3.30, 3.63 V, `limits {max: 1}` (%).
+
+The pinned `klt sim` expresses both quantities (cross-step references, `abs()`,
+division, limits and tags), so there is no upstream gap and the verdict is the
+tool's own; no repo Python computes one. The first probe (2 corners) confirmed
+the arithmetic before the full grid was submitted.
+
+Committed records (append-only, `row5-envelope/<record-id>/`):
+
+- `20261123-213537-06bd6576-probe` -- 2-corner probe, never cited;
+- `20261123-213711-06bd6576` -- the full matrix: 45/45 corners pass, 270/270
+  graded figures pass strictly below target, every named step ok once. Worst
+  line 0.2438 mV/V (`line_i0_mvpv`, `ff` / 125 C /
+  `res_wcs`) against 5 mV/V; worst load 0.0241 %
+  (`load_v3v63_pct`, same corner) against 1 %. Cited by
+  `sim/characterization/selection.json` (`row5_envelope_evidence`).
+
+Strictness: the target is a strict "<" and the pinned grader's `max` is
+inclusive (the row-7 equality test shows it). The tool's status is kept
+verbatim, but a figure exactly at 5 mV/V or 1 % withholds strict-target credit
+(`all_graded_strictly_below_target`, hence `definitive`). Equality is exercised
+in `test_row5_envelope.py` and, for the cited record, in the generator.
+
+Negative control: `test_row5_envelope.py` pushes a known violation (1.5x each
+limit) through klt's own `_grade_measurement_value` and requires `fail`
+(CI requires these tests to execute, not skip), plus offline controls for a
+dropped corner, repeated or failed step, unresolved or missing graded value,
+relaxed limit and dropped tag. The production limits are unchanged.
+
+Remaining qualifications (also stated in every record's summary): ideal 0.90 V
+reference; discrete sampling only (three line loads and three load-regulation
+supplies, not a continuous window; the legacy offline report sampled five
+loads); the row's "inside the accuracy window" coupling to row 2 is NOT
+demonstrated by this envelope; schematic level, no Monte Carlo, no #190
+limiter. Solver tolerances are pinned at `reltol=1e-9 abstol=1e-15` -- a
+convergence setting, not an error bound; no paired tight-tolerance record
+exists for row 5, so observed solver sensitivity is not claimed. The row stays
+Open; ratification is #318.
+
 ## CI
 
 **No CI job runs `run_sweep.sh --check-env` for this experiment yet**, unlike
@@ -2476,8 +2540,9 @@ single-injection control reads PM -46.04 deg / GM -8.05 dB (DR-0014
 fail/fail; reproducing E3's committed 1x numbers to the digit), while
 Middlebrook's T reads PM -38.33 deg / GM -9.19 dB with ONE 0 dB crossing
 (the control has two) and DR-0014 fail/fail on its own trace: P3's
-above-unity critical crossing and second 0 dB crossing are artefacts of
-the single voltage injection, and the instability itself is in the loop.
++1 dB plateau and second 0 dB crossing are artefacts of the single
+voltage injection, but the above-unity critical crossing (+9.19 dB at
+1.121 MHz) is NOT: it is in the loop, and the instability with it.
 **The P3 two-injection point is INVALID under the bench's unchanged
 tolerances**: the low-frequency agreement reached 1.015e-02 against the
 legacy-calibrated 1e-02, and the record's cause analysis shows the

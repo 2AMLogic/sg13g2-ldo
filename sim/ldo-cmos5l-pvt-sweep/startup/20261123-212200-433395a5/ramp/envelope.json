@@ -1,0 +1,144 @@
+{
+  "schema_version": 1,
+  "status": "error",
+  "request_count": 7,
+  "max_in_flight": 4,
+  "submitted": 7,
+  "refused": 7,
+  "refused_codes": [],
+  "requests": [
+    {
+      "index": 0,
+      "request": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-314/sim/ldo-cmos5l-pvt-sweep/startup/20261123-212200-433395a5/ramp/g000_ff_rtyp_i1ma_c1000nf_e0mohm_t500ns_v3630mv_T27/g000_ff_rtyp_i1ma_c1000nf_e0mohm_t500ns_v3630mv_T27.request.json",
+      "status": "error",
+      "exit_code": 4,
+      "job_id": "klt-sim-a0ddc650b5a7",
+      "job_ids": [
+        "klt-sim-a0ddc650b5a7"
+      ],
+      "report": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-314/sim/ldo-cmos5l-pvt-sweep/startup/20261123-212200-433395a5/ramp/batch-out/g000_ff_rtyp_i1ma_c1000nf_e0mohm_t500ns_v3630mv_T27/report.json",
+      "error": null,
+      "shards": [
+        {
+          "job_id": "klt-sim-a0ddc650b5a7",
+          "last_state": "failed",
+          "interrupted_observations": 0
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "request": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-314/sim/ldo-cmos5l-pvt-sweep/startup/20261123-212200-433395a5/ramp/g001_ss_rtyp_i1ma_c1000nf_e0mohm_t500ns_v3630mv_T-40/g001_ss_rtyp_i1ma_c1000nf_e0mohm_t500ns_v3630mv_T-40.request.json",
+      "status": "error",
+      "exit_code": 4,
+      "job_id": "klt-sim-aed86ac86e10",
+      "job_ids": [
+        "klt-sim-aed86ac86e10"
+      ],
+      "report": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-314/sim/ldo-cmos5l-pvt-sweep/startup/20261123-212200-433395a5/ramp/batch-out/g001_ss_rtyp_i1ma_c1000nf_e0mohm_t500ns_v3630mv_T-40/report.json",
+      "error": null,
+      "shards": [
+        {
+          "job_id": "klt-sim-aed86ac86e10",
+          "last_state": "failed",
+          "interrupted_observations": 0
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "request": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-314/sim/ldo-cmos5l-pvt-sweep/startup/20261123-212200-433395a5/ramp/g002_tt_rtyp_i0ma_c330nf_e0mohm_t1000ns_v3630mv_T27/g002_tt_rtyp_i0ma_c330nf_e0mohm_t1000ns_v3630mv_T27.request.json",
+      "status": "error",
+      "exit_code": 4,
+      "job_id": "klt-sim-deaa61116df7",
+      "job_ids": [
+        "klt-sim-deaa61116df7"
+      ],
+      "report": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-314/sim/ldo-cmos5l-pvt-sweep/startup/20261123-212200-433395a5/ramp/batch-out/g002_tt_rtyp_i0ma_c330nf_e0mohm_t1000ns_v3630mv_T27/report.json",
+      "error": null,
+      "shards": [
+        {
+          "job_id": "klt-sim-deaa61116df7",
+          "last_state": "failed",
+          "interrupted_observations": 0
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "request": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-314/sim/ldo-cmos5l-pvt-sweep/startup/20261123-212200-433395a5/ramp/g003_tt_rtyp_i0ma_c4700nf_e500mohm_t1000ns_v3630mv_T27/g003_tt_rtyp_i0ma_c4700nf_e500mohm_t1000ns_v3630mv_T27.request.json",
+      "status": "error",
+      "exit_code": 4,
+      "job_id": "klt-sim-8a089b1fa8f4",
+      "job_ids": [
+        "klt-sim-8a089b1fa8f4"
+      ],
+      "report": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-314/sim/ldo-cmos5l-pvt-sweep/startup/20261123-212200-433395a5/ramp/batch-out/g003_tt_rtyp_i0ma_c4700nf_e500mohm_t1000ns_v3630mv_T27/report.json",
+      "error": null,
+      "shards": [
+        {
+          "job_id": "klt-sim-8a089b1fa8f4",
+          "last_state": "failed",
+          "interrupted_observations": 0
+        }
+      ]
+    },
+    {
+      "index": 4,
+      "request": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-314/sim/ldo-cmos5l-pvt-sweep/startup/20261123-212200-433395a5/ramp/g004_tt_rtyp_i1ma_c1000nf_e0mohm_t1000ns_v3300mv_T27/g004_tt_rtyp_i1ma_c1000nf_e0mohm_t1000ns_v3300mv_T27.request.json",
+      "status": "error",
+      "exit_code": 4,
+      "job_id": "klt-sim-4cfd298eb09d",
+      "job_ids": [
+        "klt-sim-4cfd298eb09d"
+      ],
+      "report": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-314/sim/ldo-cmos5l-pvt-sweep/startup/20261123-212200-433395a5/ramp/batch-out/g004_tt_rtyp_i1ma_c1000nf_e0mohm_t1000ns_v3300mv_T27/report.json",
+      "error": null,
+      "shards": [
+        {
+          "job_id": "klt-sim-4cfd298eb09d",
+          "last_state": "failed",
+          "interrupted_observations": 0
+        }
+      ]
+    },
+    {
+      "index": 5,
+      "request": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-314/sim/ldo-cmos5l-pvt-sweep/startup/20261123-212200-433395a5/ramp/g005_tt_rtyp_i50ma_c330nf_e0mohm_t1000ns_v3630mv_T27/g005_tt_rtyp_i50ma_c330nf_e0mohm_t1000ns_v3630mv_T27.request.json",
+      "status": "error",
+      "exit_code": 4,
+      "job_id": "klt-sim-2671eea35034",
+      "job_ids": [
+        "klt-sim-2671eea35034"
+      ],
+      "report": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-314/sim/ldo-cmos5l-pvt-sweep/startup/20261123-212200-433395a5/ramp/batch-out/g005_tt_rtyp_i50ma_c330nf_e0mohm_t1000ns_v3630mv_T27/report.json",
+      "error": null,
+      "shards": [
+        {
+          "job_id": "klt-sim-2671eea35034",
+          "last_state": "failed",
+          "interrupted_observations": 0
+        }
+      ]
+    },
+    {
+      "index": 6,
+      "request": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-314/sim/ldo-cmos5l-pvt-sweep/startup/20261123-212200-433395a5/ramp/g006_tt_rtyp_i50ma_c4700nf_e500mohm_t1000ns_v3630mv_T27/g006_tt_rtyp_i50ma_c4700nf_e500mohm_t1000ns_v3630mv_T27.request.json",
+      "status": "error",
+      "exit_code": 4,
+      "job_id": "klt-sim-b19f139d3041",
+      "job_ids": [
+        "klt-sim-b19f139d3041"
+      ],
+      "report": "/home/ubuntu/GitHub/sg13g2-ldo/.loom/worktrees/issue-314/sim/ldo-cmos5l-pvt-sweep/startup/20261123-212200-433395a5/ramp/batch-out/g006_tt_rtyp_i50ma_c4700nf_e500mohm_t1000ns_v3630mv_T27/report.json",
+      "error": null,
+      "shards": [
+        {
+          "job_id": "klt-sim-b19f139d3041",
+          "last_state": "failed",
+          "interrupted_observations": 0
+        }
+      ]
+    }
+  ]
+}

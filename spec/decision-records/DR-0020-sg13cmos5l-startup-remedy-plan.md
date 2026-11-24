@@ -832,3 +832,103 @@ PR that carries it.
 - Issues: #221 (this record), #69 (the startup campaign), #67 (`EN`
   interface), #165/#190/#164/#166/#168 (the limiter chain; untouched
   here), #130 (the `DR-0009` amendment), #55/#56 (coverage; untouched).
+
+
+## Addendum 2026-11-23: bounded experiment result — **REJECT** (issue #314)
+
+**Result: REJECT.** The operator authorised this experiment only (ruling of
+2026-11-23 on #314, `authorize_experiment`). DR-0020 **stays Proposed**,
+`DR-0007` row 9 **stays Open**, `design/sg13cmos5l/` is byte-unchanged, and no
+threshold, verdict rule or existing record is edited. The ramp cell is not
+integrated. Per this record's own rule, the recommendation now falls to a
+successor record re-ranking Candidates 3 and 4 on this evidence; that record is
+not written here.
+
+**What was run.** The 7 points listed under "The bounded experiment" (no eighth
+invented), one `klt sim --batch-set` on the batch fleet (`--wait-for-capacity
+600`, runner klt 0.9.0, ngspice 47, jobs klt-sim-6fb629a85fbd, -85a10603813b, -c4ce2bd5ac69, -dd55fbc2ac75, -7a6e6944f76a, -0c4394b298da, -b387d7cc8a40), the unchanged startup bench
+and `startup_eval.py`, the testbench-local netlist
+`sim/ldo-cmos5l-startup-ramp/core_with_ramp.spice` (candidate values 40 nA /
+~10 pF, a reset device, and a clamp realised with a second committed
+`ldo_erramp_cmos5l`). Record: `sim/ldo-cmos5l-pvt-sweep/records/20261123-212501-9e332bb0-startup-ramp.*`
+(per-point clause table in `….clauses.md`). Clauses (b) and (d) were fixed
+before the run: (b) bound `(Cout*2*VREF/T_ramp + I_load)*1.25 + 1 mA`, (d) claimed
+range 180-450 us (the DR's candidate pairings). A first attempt
+(`20261123-212200-433395a5`) failed all 7 jobs (`exit_code: 4`). The committed
+attempt-1 artifacts do not show `osdi_load_failed`, so the diagnosis is inferred,
+not re-derivable from them: the campaign's deck-side OSDI preamble conflicts with
+the runner's own `osdi_preload` (per `batch_backend.py`, #313; closed
+2AMLogic/klayout-tools#5766). Its direct support is that omitting the preamble
+made the same 7-request set pass. The driver now omits the preamble (and with it
+`set num_threads=1`, harmless for single-corner requests); the decks are otherwise
+identical. The preamble remains in `startup_campaign.py`: tracked in #330.
+
+**Deviation from "Metrics per point".** "The reduced trace column list gains
+`vrefr`" was not done: the committed reduced traces carry no `vrefr`
+(`startup_campaign.py` hard-codes the column set and was kept unchanged by scope).
+`T_ramp`, the clause-(b) bound and `VREFR max V` below were read from uncommitted
+rawfiles (sha256 in the record's `raw_sha256` column) and are not re-derivable
+from committed traces. REJECT does not depend on them: clause (a) fails at 5 of
+7 points from the committed CSV.
+
+**What the ramp did.** Mechanism item 1 is negated: minimum `EAOUT` over the
+transient is 2.1-2.8 V (it was 0.003-0.009 V), so `Vsg(Mpass)` is **0.80-1.51 V
+at every point in both windows** (**clause (c) holds**, against 3.62-3.63 V
+before). Start peaks are 1.834-1.839 V (before: 1.87-2.34 V), no start
+rail-to-rail excursion. The clauses that fail:
+
+| point (mos/T/Vin/load/Cout/ESR) | start peak V | start settle us | start down-exc mV | reen peak V | reen down-exc mV | min EAOUT V | start/reen result |
+|---|---|---|---|---|---|---|---|
+| ff/27C/3.63V/1mA/1000nF/0m | 1.835 | 471 | 0.00 | 1.836 | 47.04 | 2.747 | pass/fail |
+| ss/-40C/3.63V/1mA/1000nF/0m | 1.834 | 456 | 0.00 | 1.834 | 45.82 | 2.602 | pass/fail |
+| tt/27C/3.63V/0mA/330nF/0m | 1.838 | 705 | 2.02 | 1.822 | 0.00 | 2.827 | fail/pass |
+| tt/27C/3.63V/0mA/4700nF/500m | 1.836 | 486 | 0.19 | 1.829 | 0.00 | 2.399 | fail/pass |
+| tt/27C/3.30V/1mA/1000nF/0m | 1.839 | 489 | 3.13 | 1.836 | 46.62 | 2.34 | fail/fail |
+| tt/27C/3.63V/50mA/330nF/0m | 1.836 | 465 | 0.00 | 1.834 | 0.00 | 2.242 | pass/pass |
+| tt/27C/3.63V/50mA/4700nF/500m | 1.835 | 465 | 0.00 | 1.836 | 0.00 | 2.125 | pass/pass |
+
+**Clauses per point** (c holds everywhere; a, b, d fail as listed). The (a) column was
+first generated with the combined verdict in place of `start_pass`; it is corrected here
+to `start_pass`/`reen_pass` (the published record `.clauses.md` keeps the original text
+and carries an appended correction note):
+
+| point | (a) start_pass/reen_pass | (b) Ipk A / bound A | (c) Vsg start/reen V | (d) T_ramp us (start/reen) | VREFR max V |
+|---|---|---|---|---|---|
+| `st_ff_27c_rtyp_v3630mv_i1ma_c1000nf_e0mohm_t500ns` | True/False FAIL | 0.01083 / 0.006898 FAIL | 0.8826/0.82 ok | 484.1/484.2 FAIL | 0.9168 |
+| `st_ss_-40c_rtyp_v3630mv_i1ma_c1000nf_e0mohm_t500ns` | True/False FAIL | 0.009442 / 0.007048 FAIL | 1.028/0.9871 ok | 468.9/469 FAIL | 0.9157 |
+| `st_tt_27c_rtyp_v3630mv_i0ma_c330nf_e0mohm_t1000ns` | False/True FAIL | 0.004017 / 0.002554 FAIL | 0.8028/0.7557 ok | 477.8/477.9 FAIL | 0.9176 |
+| `st_tt_27c_rtyp_v3630mv_i0ma_c4700nf_e500mohm_t1000ns` | False/True FAIL | 0.0345 / 0.02313 FAIL | 1.231/0.001441 ok | 477.8/477.9 FAIL | 0.9178 |
+| `st_tt_27c_rtyp_v3300mv_i1ma_c1000nf_e0mohm_t1000ns` | False/False FAIL | 0.01126 / 0.006955 FAIL | 0.9604/0.894 ok | 478.2/478.3 FAIL | 0.9179 |
+| `st_tt_27c_rtyp_v3630mv_i50ma_c330nf_e0mohm_t1000ns` | True/True ok | 0.05256 / 0.06505 ok | 1.388/1.397 ok | 477.8/477.8 FAIL | 0.9179 |
+| `st_tt_27c_rtyp_v3630mv_i50ma_c4700nf_e500mohm_t1000ns` | True/True ok | 0.0686 / 0.08563 ok | 1.505/1.505 ok | 477.8/477.8 FAIL | 0.9177 |
+
+**Overall: REJECT** (7 of 7 points)
+
+**Which clause failed where.**
+
+- (a) verdict: **four of seven** points pass the start window (ff/27C, ss/-40C and both
+  50 mA points) and four pass re-enable (the two 0 mA points and both 50 mA points); only
+  two pass both. **Re-enable fails at 3**
+  (ff/27C and ss/-40C at 1 mA/1000 nF show a 46-47 mV downward excursion; tt/3.30 V
+  1 mA the same, 46.6 mV): re-enable onto a still-charged output holds the pass device off
+  while `VOUT/2 > VREFR`, and the output decays through the load before the ramp
+  catches it, a non-monotonic dip. This is the partial-discharge case DR-0020 listed as [U].
+  The start window itself fails at 3 points on 1.5-3 mV (peak 1.836-1.839 V against the
+  1.836 V edge, 0.19-3.13 mV downward excursion), at the tt points with 0 mA / 330 nF,
+  0 mA / 4700 nF and 1 mA / 3.30 V. Settle times are 456-705 us, well inside 3 ms.
+- (b) peak supply current exceeds the pre-registered bound at the 5 points with 0-1 mA
+  load (4.0-34.5 mA against 2.6-23.1 mA). It holds at both 50 mA points. The excess is not
+  explained by this experiment (the bound uses the measured T_ramp and a 25 % + 1 mA margin).
+- (d) measured `T_ramp` is 469-484 us in both windows at every point, above the claimed
+  180-450 us. The nominal pairing estimate (225 us) was low by about 2x; the gap is the
+  mirror ratio and `Css`, which this experiment did not tune. `VREFR` overshoots `VREF` by
+  up to 18 mV (max 0.9179 V), which the clamp realisation does not fully hold.
+
+**Reading.** The ramp removes the failure DR-0020 indicts (the rail excursion and the
+`Vsg` exceedance) but, as drawn, does not meet the confirm bar. This addendum does not say
+the Candidate 2 mechanism is wrong: four of the five failed clauses read as sizing and
+clamp-quality issues. But the confirm gate is defined as pass-at-every-point, so the outcome
+is reject, and re-tuning the ramp is a new decision, not part of this experiment.
+The follow-up integration issue is **not** filed (that happens on confirm only).
+The clamp used here costs a full amplifier's static current, so the row-7 budget in
+this record's Candidate 2 text is not demonstrated either way.

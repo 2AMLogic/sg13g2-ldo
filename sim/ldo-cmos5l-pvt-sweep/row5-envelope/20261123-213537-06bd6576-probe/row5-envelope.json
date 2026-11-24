@@ -1,0 +1,106 @@
+{
+ "points": [
+  {
+   "corner_id": "mos_ss__res_typ__cap_typ/novdd/125C",
+   "corner_status": "pass",
+   "error_diagnostics": 0,
+   "line_i0_mvpv": 0.2056580524132,
+   "line_i0_mvpv_status": "pass",
+   "line_i25m_mvpv": 0.166665899291,
+   "line_i25m_mvpv_status": "pass",
+   "line_i50m_mvpv": 0.1699480018629,
+   "line_i50m_mvpv_status": "pass",
+   "load_v2v97_pct": 0.0121882168296,
+   "load_v2v97_pct_status": "pass",
+   "load_v3v30_pct": 0.01248623581905,
+   "load_v3v30_pct_status": "pass",
+   "load_v3v63_pct": 0.01349632595157,
+   "load_v3v63_pct_status": "pass",
+   "mos": "ss",
+   "n_steps_reported": 8,
+   "res_section": "res_typ",
+   "steps_all_ok": true,
+   "temp_c": 125
+  },
+  {
+   "corner_id": "mos_tt__res_typ__cap_typ/novdd/27C",
+   "corner_status": "pass",
+   "error_diagnostics": 0,
+   "line_i0_mvpv": 0.1792234663436,
+   "line_i0_mvpv_status": "pass",
+   "line_i25m_mvpv": 0.1594371473744,
+   "line_i25m_mvpv_status": "pass",
+   "line_i50m_mvpv": 0.1613954258354,
+   "line_i50m_mvpv_status": "pass",
+   "load_v2v97_pct": 0.008833436521598,
+   "load_v2v97_pct_status": "pass",
+   "load_v3v30_pct": 0.008932354479964,
+   "load_v3v30_pct_status": "pass",
+   "load_v3v63_pct": 0.009486417329916,
+   "load_v3v63_pct_status": "pass",
+   "mos": "tt",
+   "n_steps_reported": 8,
+   "res_section": "res_typ",
+   "steps_all_ok": true,
+   "temp_c": 27
+  }
+ ],
+ "summary": {
+  "all_graded_measurements_pass": true,
+  "all_graded_strictly_below_target": true,
+  "coordinates_exactly_once": true,
+  "corner_status_counts": {
+   "pass": 2
+  },
+  "definitive": false,
+  "envelope_status": "pass",
+  "error_diagnostics_total": 0,
+  "errored": 0,
+  "failed": 0,
+  "graded_declarations_exactly_once": true,
+  "graded_measurements": [
+   "line_i0_mvpv",
+   "line_i25m_mvpv",
+   "line_i50m_mvpv",
+   "load_v2v97_pct",
+   "load_v3v30_pct",
+   "load_v3v63_pct"
+  ],
+  "inconclusive": 0,
+  "line_definition": "1000 * |Vout(3.63 V) - Vout(2.97 V)| / 0.66 at Iload 0, 25 and 50 mA, graded as a klt sim derived expr over analysis_steps",
+  "load_definition": "100 * |Vout(0 mA) - Vout(50 mA)| / Vout(0 mA) at Vin 2.97, 3.30 and 3.63 V, graded as a klt sim derived expr over analysis_steps",
+  "measurements_with_limits": 6,
+  "n_corners_reported": 2,
+  "n_expected": 2,
+  "passed": 2,
+  "probe": true,
+  "qualifications": [
+   "ideal 0.90 V reference: reference error is excluded",
+   "discrete sampling only: three line loads (0, 25, 50 mA) and three load-regulation supplies (2.97, 3.30, 3.63 V), not a continuous-window claim",
+   "the row's 'inside the accuracy window' coupling to row 2 is NOT demonstrated by this envelope",
+   "schematic level, corner grid only, no Monte Carlo; core WITHOUT the #190 limiter"
+  ],
+  "record_id": "20261123-213537-06bd6576-probe",
+  "solver_convergence_setting_note": "NOT an error bound. The request pins .options reltol=1e-09 abstol=1e-15; ngspice's stopping test compares each iterate with the previous one and bounds nothing about the distance to the exact operating point. No paired tight-tolerance record exists for row 5: observed solver sensitivity is not claimed",
+  "target_line_mv_per_v": 5.0,
+  "target_load_pct": 1.0,
+  "worst_line": {
+   "corner_id": "mos_ss__res_typ__cap_typ/novdd/125C",
+   "measurement": "line_i0_mvpv",
+   "mos": "ss",
+   "res_section": "res_typ",
+   "target": 5.0,
+   "temp_c": 125,
+   "value": 0.2056580524132
+  },
+  "worst_load": {
+   "corner_id": "mos_ss__res_typ__cap_typ/novdd/125C",
+   "measurement": "load_v3v63_pct",
+   "mos": "ss",
+   "res_section": "res_typ",
+   "target": 1.0,
+   "temp_c": 125,
+   "value": 0.01349632595157
+  }
+ }
+}
