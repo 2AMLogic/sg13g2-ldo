@@ -22,6 +22,7 @@ if HERE not in sys.path:
     sys.path.insert(0, HERE)
 import row_envelope as re_  # noqa: E402
 import row4_envelope as r4  # noqa: E402
+import row5_envelope as r5  # noqa: E402
 import row7_envelope as r7  # noqa: E402
 
 SUBS = {"design_netlist_include": "../x.spice", "pdk_models_dir": "/m",
@@ -175,6 +176,177 @@ class GateChecks(unittest.TestCase):
                                  graded=r7.GRADED, row_id=r7.ROW7_ID, slug="row7")
         self.assertTrue(any("claims spec_row" in p for p in problems), problems)
 
+
+class Item5CitationHelpers(unittest.TestCase):
+    """The shared signoff item-5 resolver and its enforcement (#358).
+
+    Row-agnostic by contract: repo/root/row_id/slug are call-time
+    parameters (the stale_inputs() pattern), which is what lets the
+    drivers' unit tests rebind their own REPO/ROOT globals. All fixtures
+    here are synthetic; no committed record is read. The drivers' own
+    ManifestCoupling/SignoffItem5Coupling classes carry the committed-tree
+    negative controls; this class pins the shared machinery itself,
+    including the refusals a committed tree cannot produce on demand
+    (a probe summary that claims definitive, an unreadable provenance).
+    """
+
+    ROW = "dr0007-row9-test"
+    SLUG = "row9"
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp(prefix="row-envelope-item5-test.")
+        self.addCleanup(shutil.rmtree, self.tmp, True)
+        self.repo = self.tmp
+        self.root = os.path.join(self.repo, "sim", "x", "row9-envelope")
+        self.rid = "20260101-000000-test"
+        rec = os.path.join(self.root, self.rid)
+        os.makedirs(rec)
+        with open(os.path.join(rec, "tb.spice"), "w") as f:
+            f.write("* netlist\n")
+        with open(os.path.join(rec, "provenance.json"), "w") as f:
+            json.dump({"record_id": self.rid, "solver_profile": "standard"}, f)
+        os.makedirs(os.path.join(self.repo, "signoff"))
+        self.write_manifest({"evidence": {"5": []}})
+
+    def write_manifest(self, doc):
+        with open(os.path.join(self.repo, "signoff", "sg13g2-ldo.json"), "w") as f:
+            json.dump(doc, f)
+
+    def member(self, **kw):
+        ent = {"file": f"sim/x/row9-envelope/{self.rid}/report.json",
+               "content_hash": "sha256:" + re_.sha256_file(
+                   os.path.join(self.root, self.rid, "tb.spice")),
+               "rows": [self.ROW]}
+        ent.update(kw)
+        return ent
+
+    def cite(self, *members):
+        self.write_manifest({"evidence": {"5": list(members)}})
+
+    def summaries(self, **over):
+        summ = {"probe": False, "definitive": True}
+        summ.update(over)
+        return {self.rid: summ}
+
+    def check(self, summaries=None, stale=None, **kw):
+        problems = []
+        cited = re_.check_item5_citation(
+            self.repo, self.root, self.ROW, self.SLUG,
+            self.summaries() if summaries is None else summaries,
+            problems, stale or (lambda rid: []), **kw)
+        return cited, problems
+
+    def resolve(self):
+        return re_.cited_item5_record(self.repo, self.root, self.ROW, self.SLUG)
+
+    def test_uncited_item5_resolves_to_nothing_and_checks_clean(self):
+        self.cite()
+        self.assertEqual(self.resolve(), (None, None))
+        self.assertEqual(self.check(), (None, []))
+
+    def test_a_well_formed_member_resolves_and_checks_clean(self):
+        self.cite(self.member())
+        rid, pinned = self.resolve()
+        self.assertEqual(rid, self.rid)
+        self.assertEqual(pinned, self.member()["content_hash"])
+        self.assertEqual(self.check(), (self.rid, []))
+
+    def test_more_than_one_driver_member_is_an_error(self):
+        self.cite(self.member(), self.member())
+        with self.assertRaises(re_.Error) as cm:
+            self.resolve()
+        self.assertIn("exactly one", str(cm.exception))
+        cited, problems = self.check()
+        self.assertIsNone(cited)
+        self.assertTrue(any("exactly one" in p for p in problems), problems)
+
+    def test_foreign_or_missing_rows_is_an_error(self):
+        no_rows = {k: v for k, v in self.member().items() if k != "rows"}
+        for member in (self.member(rows=["dr0007-row4-dropout"]), no_rows):
+            with self.subTest(member=member):
+                self.cite(member)
+                with self.assertRaises(re_.Error) as cm:
+                    self.resolve()
+                self.assertIn("declares rows", str(cm.exception))
+                cited, problems = self.check()
+                self.assertIsNone(cited)
+                self.assertTrue(any("declares rows" in p for p in problems), problems)
+
+    def test_wrong_file_shape_is_an_error(self):
+        for file in (f"sim/x/row9-envelope/{self.rid}/request.json",
+                     f"sim/x/row9-envelope/{self.rid}/sub/report.json",
+                     "sim/x/row9-envelope/report.json"):
+            with self.subTest(file=file):
+                self.cite(self.member(file=file))
+                with self.assertRaises(re_.Error) as cm:
+                    self.resolve()
+                self.assertIn("must be", str(cm.exception))
+
+    def test_a_record_missing_from_summaries_is_not_committed(self):
+        self.cite(self.member(file=f"sim/x/row9-envelope/elsewhere/report.json",
+                              content_hash="sha256:" + "0" * 64))
+        cited, problems = self.check()
+        self.assertTrue(any("not committed" in p for p in problems), problems)
+
+    def test_a_content_hash_that_is_not_the_tb_spice_is_refused(self):
+        # The issue's evidence: pinning the sha256 of report.json (or any
+        # other file) instead of tb.spice must fail here, offline.
+        wrong = "sha256:" + re_.sha256_file(os.path.join(self.root, self.rid,
+                                                         "provenance.json"))
+        self.cite(self.member(content_hash=wrong))
+        cited, problems = self.check()
+        self.assertEqual(cited, self.rid)
+        self.assertTrue(any("content_hash" in p for p in problems), problems)
+
+    def test_a_non_definitive_summary_is_refused(self):
+        self.cite(self.member())
+        cited, problems = self.check(summaries=self.summaries(definitive=False))
+        self.assertTrue(any("not definitive" in p for p in problems), problems)
+
+    def test_a_summary_without_a_verdict_is_refused(self):
+        self.cite(self.member())
+        cited, problems = self.check(summaries={self.rid: None})
+        self.assertTrue(any("not definitive" in p for p in problems), problems)
+
+    def test_a_probe_summary_is_refused(self):
+        # A committed probe never reaches this branch with definitive=True;
+        # the refusal exists for exactly that lying shape.
+        self.cite(self.member())
+        cited, problems = self.check(summaries=self.summaries(probe=True))
+        self.assertTrue(any("probe record" in p for p in problems), problems)
+
+    def test_stale_inputs_on_the_cited_record_are_reported(self):
+        self.cite(self.member())
+        cited, problems = self.check(stale=lambda rid: [f"cited record {rid}: stale"])
+        self.assertTrue(any("stale" in p for p in problems), problems)
+
+    def test_a_non_standard_solver_profile_is_refused_only_when_required(self):
+        with open(os.path.join(self.root, self.rid, "provenance.json"), "w") as f:
+            json.dump({"record_id": self.rid, "solver_profile": "tight-1e-10"}, f)
+        self.cite(self.member())
+        # row 5's shape: no profile requirement, no problem
+        self.assertEqual(self.check()[1], [])
+        # row 7's shape: the byte-identical tight pair must be refused
+        cited, problems = self.check(require_standard_solver_profile=True)
+        self.assertEqual(cited, self.rid)
+        self.assertTrue(any("solver_profile" in p for p in problems), problems)
+
+    def test_an_unreadable_solver_profile_refuses_rather_than_crashes(self):
+        os.remove(os.path.join(self.root, self.rid, "provenance.json"))
+        self.cite(self.member())
+        cited, problems = self.check(require_standard_solver_profile=True)
+        self.assertTrue(any("solver profile" in p for p in problems), problems)
+
+    def test_the_drivers_wrap_the_shared_resolver_with_their_own_identity(self):
+        # Each driver's cited_record() is its row id + record directory
+        # around the one parser; the row-4 delegation (#358) must resolve
+        # the committed manifest exactly as the row4-local parser did.
+        self.assertEqual(r4.cited_record(),
+                         re_.cited_item5_record(r4.REPO, r4.ROOT, r4.ROW4_ID, "row4"))
+        self.assertEqual(r5.cited_record(),
+                         re_.cited_item5_record(r5.REPO, r5.ROOT, r5.ROW5_ID, "row5"))
+        self.assertEqual(r7.cited_record(),
+                         re_.cited_item5_record(r7.REPO, r7.ROOT, r7.ROW7_ID, "row7"))
 
 
 
