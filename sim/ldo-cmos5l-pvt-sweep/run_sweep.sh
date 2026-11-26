@@ -624,10 +624,16 @@ screen_point() {
   # counted and disclosed in the record instead of being either fatal or
   # silently dropped. A genuine unrecovered singular matrix (ngspice prints
   # it without the `Warning:` prefix) still fails, as do the model-load,
-  # gmin-failure and non-convergence signatures.
+  # gmin-failure and non-convergence signatures. The singular-matrix half is
+  # the ONE shared single-pass predicate (singular_screen.py, issue #383)
+  # every PVT driver calls: the two-grep form inlined here before read the
+  # log twice, and under `pipefail` a long mixed log -- one fatal line, then
+  # a long tail of recovered warnings -- made the first grep die of SIGPIPE
+  # while the second had already exited on the fatal line, so the pipeline's
+  # 141 read as "no fatal match" and the point was accepted in error.
   if [[ ${rc} -ne 0 ]] \
      || grep -qiE "Unable to find definition of model|couldn't be loaded|Unknown model type|fatal error|gmin stepping failed|no convergence|iteration limit reached" "${log}" \
-     || grep -iE "singular matrix" "${log}" | grep -qivE "^[[:space:]]*Warning:"; then
+     || ! python3 "${SCRIPT_DIR}/singular_screen.py" check-log "${log}"; then
     echo "run_sweep.sh: FAILED ${point_id} (rc=${rc}) -- see ${log}" >&2
     failed_points+=("${point_id}")
     return 1

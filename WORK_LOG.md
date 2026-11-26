@@ -6,6 +6,15 @@ Chronological record of recently merged pull requests and closed issues, maintai
 
 - [2026-09](work_log/WORK_LOG_2026-09.md)
 
+### 2026-11-26
+
+- **PR #388**: chore: gitignore the daemon's .loom/account-ranking.* state files
+- **PR #385**: fix: share the singular-matrix log screen as one single-pass predicate
+- **Issue #386** (closed): .loom/account-ranking.codex is untracked in main and fails check-main-clean.sh (daemon runtime state not gitignored)
+- **Issue #383** (closed): Share the singular-matrix log check so long sweep logs cannot hide a fatal match
+- **PR #382**: test: share the item-5 citation scratch fixture between the row-5 and row-7 suites
+- **Issue #381** (closed): Share the scratch manifest fixture for row 5 and row 7 item 5 citation tests
+
 ### 2026-11-24
 
 - **PR #377**: sim: remove duplicated row-7 name lists and unused corner_status_key param

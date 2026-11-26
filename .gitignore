@@ -25,6 +25,7 @@ flow/build/
 .klt/
 # local klt install, created by the setup script
 .venv/
+/.loom/account-ranking.*
 # >>> loom-managed (do not edit) >>>
 # Loom runtime state (don't commit these)
 .loom-in-use
