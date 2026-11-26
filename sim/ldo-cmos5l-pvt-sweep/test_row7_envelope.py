@@ -12,9 +12,7 @@ derived expr (the issue's "the verdict must be `klt sim`'s own"), never as an
 offline subtraction, and the tolerances that bound the difference's numerical
 noise must be pinned in the request too.
 """
-import contextlib
 import copy
-import io
 import json
 import math
 import os
@@ -29,6 +27,7 @@ if HERE not in sys.path:
     sys.path.insert(0, HERE)
 import row7_envelope as ev  # noqa: E402
 import row_envelope as re_  # noqa: E402
+from item5_citation_fixture import Item5CitationFixture  # noqa: E402
 
 try:                                    # the pinned klt's own grader, when installed
     import klayout_tools.sim as real_grader
@@ -632,7 +631,7 @@ class PairComparison(unittest.TestCase):
 
 @unittest.skipUnless(os.path.isdir(ev.ROOT) and ev.records(),
                      "no committed row7-envelope record")
-class SignoffItem5Coupling(unittest.TestCase):
+class SignoffItem5Coupling(Item5CitationFixture, unittest.TestCase):
     """The signoff-manifest side of the row-7 citation (issue #358).
 
     Same contract as test_row5_envelope.py's class, plus the row-7-only
@@ -640,77 +639,15 @@ class SignoffItem5Coupling(unittest.TestCase):
     non-probe and shares the standard matrix's byte-identical tb.spice, so
     ONLY its solver_profile distinguishes it -- the item-5 citation check
     must refuse it on that alone. Every control runs on a scratch repo +
-    record tree; committed evidence is append-only.
+    record tree; committed evidence is append-only. The scratch setup
+    itself is the shared item5_citation_fixture (issue #381).
     """
 
     RID = "20261121-001957-ed6b0587"             # the standard, cited matrix
     TIGHT = "20261123-120423-ca4c931d"           # definitive tight-1e-10 pair
 
-    def setUp(self):
-        self.tmp = tempfile.mkdtemp(prefix="row7-item5-test.")
-        self.repo = os.path.join(self.tmp, "repo")
-        self.root = os.path.join(self.repo, "sim", "ldo-cmos5l-pvt-sweep",
-                                 "row7-envelope")
-        os.makedirs(os.path.dirname(self.root))
-        shutil.copytree(ev.ROOT, self.root)
-        for rel in [ev.PDK_PIN, "signoff/sg13g2-ldo.json",
-                    "sim/characterization/selection.json"] + list(ev.INPUTS):
-            dst = os.path.join(self.repo, rel)
-            os.makedirs(os.path.dirname(dst), exist_ok=True)
-            shutil.copy2(os.path.join(ev.REPO, rel), dst)
-        self._repo, self._root = ev.REPO, ev.ROOT
-        ev.REPO, ev.ROOT = self.repo, self.root
-        self.stderr = ""
-
-    def tearDown(self):
-        ev.REPO, ev.ROOT = self._repo, self._root
-        shutil.rmtree(self.tmp, ignore_errors=True)
-
-    def manifest(self):
-        return json.load(open(os.path.join(self.repo, "signoff", "sg13g2-ldo.json")))
-
-    def write_manifest(self, m):
-        json.dump(m, open(os.path.join(self.repo, "signoff", "sg13g2-ldo.json"), "w"),
-                  indent=2)
-
-    def prefix(self):
-        return os.path.relpath(ev.ROOT, ev.REPO).replace(os.sep, "/") + "/"
-
-    def cite(self, rid, rows=None, content_hash=None, file=None, append=True,
-             omit_rows=False):
-        m = self.manifest()
-        members = m["evidence"]["5"]
-        members = members if isinstance(members, list) else [members]
-        if not append:
-            members = []
-        tb = os.path.join(self.root, rid, "tb.spice")
-        member = {
-            "file": file or (self.prefix() + rid + "/report.json"),
-            "content_hash": content_hash or (
-                "sha256:" + ev.sha256_file(tb) if os.path.exists(tb)
-                else "sha256:" + "0" * 64),
-        }
-        if not omit_rows:
-            member["rows"] = [ev.ROW7_ID] if rows is None else rows
-        members.append(member)
-        m["evidence"]["5"] = members
-        self.write_manifest(m)
-
-    def drop_row7_members(self):
-        m = self.manifest()
-        members = m["evidence"]["5"]
-        m["evidence"]["5"] = [x for x in (members if isinstance(members, list)
-                                          else [members])
-                              if not str(x.get("file", "")).startswith(self.prefix())]
-        self.write_manifest(m)
-
-    def check(self):
-        self.stdout = io.StringIO()
-        with contextlib.redirect_stderr(io.StringIO()) as err, \
-                contextlib.redirect_stdout(self.stdout):
-            rc = ev.cmd_check(types.SimpleNamespace())
-        self.stderr = err.getvalue()
-        return rc
+    EV = ev
+    ROW_ID = ev.ROW7_ID
 
     def rewrite_summaries(self, rid):
         files, _ = ev.summary_files(os.path.join(self.root, rid))
@@ -771,7 +708,7 @@ class SignoffItem5Coupling(unittest.TestCase):
         return rid
 
     def test_uncited_item5_passes_and_resolves_to_nothing(self):
-        self.drop_row7_members()
+        self.drop_row_members()
         self.assertEqual(ev.cited_record(), (None, None))
         self.assertEqual(self.check(), 0)
         self.assertIn("cites no row7-envelope record", self.stderr)
