@@ -7,7 +7,7 @@ import json
 import math
 from pathlib import Path
 
-from sim.tools import file_hash
+from ..tools import file_hash
 
 GENERATOR_VERSION = 1
 HERE = Path(__file__).resolve().parent

@@ -41,61 +41,87 @@ import json
 import re
 import sys
 import traceback
+from importlib import import_module
+from importlib.machinery import ModuleSpec
+from importlib.util import find_spec, module_from_spec
 from pathlib import Path
 
-# Resolve imports from this checkout when invoked by path or imported as generate.
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-# Some helpers are re-exported for callers that import generate directly.
-from sim.characterization.common import (
-    CORNERS,
-    DEFAULT_ROOT,
-    ENVELOPE_JSON,
-    EXPECTED_ROWS,
-    GENERATOR_VERSION,
-    PVT_NUMERIC,
-    REPORT_JSON,
-    REPORT_MD,
-    RES,
-    ROW7_TARGET_A,  # noqa: F401
-    ROW_VERDICTS,
-    TEMPS,
-    GenError,
-    cc_window,
-    load_selection,
-    metric,  # noqa: F401
-    num,
-    pinned,
-    point_id,
-    read_csv,
-    sha256_file,
-    unpinned,
-)
-from sim.characterization.loaders import (
-    STARTUP_BAND_HI_V,  # noqa: F401
-    _fmt_hz,  # noqa: F401
-    _pdk_pin_projection_sha256,  # noqa: F401
-    _trace_ceiling_hz,  # noqa: F401
-    load_dc_informational,
-    load_row5_envelope,
-    load_row7_envelope,
-    load_row10,
-    load_startup,
-    startup_row_verdict,  # noqa: F401
-)
-from sim.characterization.rows import (
-    RowContext,
-    row_1_input,
-    row_2_output,
-    row_3_load,
-    row_4_dropout,
-    row_5_regulation,
-    row_6_psrr,
-    row_7_iq,
-    row_8_current_limit,
-    row_9_startup,
-    row_10_stability,
-)
+def _grading_package() -> str:
+    """Locate the grading modules beside this entry point, including path imports."""
+    sim_dir = Path(__file__).resolve().parents[1]
+    # Preserve ordinary package imports when their dependencies resolve here.
+    if __package__ == "sim.characterization" and __package__ in sys.modules:
+        names = ("characterization.common", "characterization.loaders",
+                 "characterization.rows", "tools.file_hash")
+        for name in names:
+            spec = find_spec(f"sim.{name}")
+            path = sim_dir.joinpath(*name.split(".")).with_suffix(".py")
+            if spec is None or spec.origin != str(path):
+                break
+        else:
+            return __package__
+
+    # A file-path import has no reliable parent package. Give this checkout's
+    # sim directory its own package name so relative imports stay in its tree.
+    name = "_ldo_sim_" + hashlib.sha256(bytes(sim_dir)).hexdigest()
+    spec = ModuleSpec(name, loader=None, is_package=True)
+    spec.submodule_search_locations = [str(sim_dir)]
+    sys.modules.setdefault(name, module_from_spec(spec))
+    return f"{name}.characterization"
+
+
+_package = _grading_package()
+_common = import_module(".common", _package)
+_loaders = import_module(".loaders", _package)
+_rows = import_module(".rows", _package)
+
+# Keep the helpers available to callers that import generate directly.
+CORNERS = _common.CORNERS
+DEFAULT_ROOT = _common.DEFAULT_ROOT
+ENVELOPE_JSON = _common.ENVELOPE_JSON
+EXPECTED_ROWS = _common.EXPECTED_ROWS
+GENERATOR_VERSION = _common.GENERATOR_VERSION
+PVT_NUMERIC = _common.PVT_NUMERIC
+REPORT_JSON = _common.REPORT_JSON
+REPORT_MD = _common.REPORT_MD
+RES = _common.RES
+ROW7_TARGET_A = _common.ROW7_TARGET_A
+ROW_VERDICTS = _common.ROW_VERDICTS
+TEMPS = _common.TEMPS
+GenError = _common.GenError
+cc_window = _common.cc_window
+load_selection = _common.load_selection
+metric = _common.metric
+num = _common.num
+pinned = _common.pinned
+point_id = _common.point_id
+read_csv = _common.read_csv
+sha256_file = _common.sha256_file
+unpinned = _common.unpinned
+
+STARTUP_BAND_HI_V = _loaders.STARTUP_BAND_HI_V
+_fmt_hz = _loaders._fmt_hz
+_pdk_pin_projection_sha256 = _loaders._pdk_pin_projection_sha256
+_trace_ceiling_hz = _loaders._trace_ceiling_hz
+load_dc_informational = _loaders.load_dc_informational
+load_row5_envelope = _loaders.load_row5_envelope
+load_row7_envelope = _loaders.load_row7_envelope
+load_row10 = _loaders.load_row10
+load_startup = _loaders.load_startup
+startup_row_verdict = _loaders.startup_row_verdict
+
+RowContext = _rows.RowContext
+row_1_input = _rows.row_1_input
+row_2_output = _rows.row_2_output
+row_3_load = _rows.row_3_load
+row_4_dropout = _rows.row_4_dropout
+row_5_regulation = _rows.row_5_regulation
+row_6_psrr = _rows.row_6_psrr
+row_7_iq = _rows.row_7_iq
+row_8_current_limit = _rows.row_8_current_limit
+row_9_startup = _rows.row_9_startup
+row_10_stability = _rows.row_10_stability
 
 # --------------------------------------------------------------------------- #
 # spec tables
