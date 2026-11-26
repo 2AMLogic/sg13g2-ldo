@@ -8,6 +8,8 @@ Chronological record of recently merged pull requests and closed issues, maintai
 
 ### 2026-11-26
 
+- **PR #399**: refactor: extract characterization evidence loaders and row graders
+- **Issue #398** (closed): Split sim/characterization/generate.py (2,256 lines) into cohesive sibling modules
 - **PR #396**: test: remove scratch dirs left by batch-backend and dropout fixtures
 - **Issue #392** (closed): test_batch_backend.py and test_dropout_dr0009.py leave their setUp scratch dirs behind
 - **Issue #395** (closed): probe-title
