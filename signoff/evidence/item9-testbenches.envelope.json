@@ -3,14 +3,14 @@
   "kind": "generic",
   "status": "pass",
   "t1_item": 9,
-  "summary": "T1 item 9 (Testbenches shipped): 139/139 attestation checks passed (klt signoff --attest)",
+  "summary": "T1 item 9 (Testbenches shipped): 140/140 attestation checks passed (klt signoff --attest)",
   "source": "signoff/evidence/item9-testbenches.inventory.json",
   "attestation": {
     "producer": "klt signoff --attest",
     "inventory_schema_version": 1,
     "hash_algorithm": "sha256-raw-bytes",
-    "check_count": 139,
-    "passed_count": 139,
+    "check_count": 140,
+    "passed_count": 140,
     "checks": [
       {
         "check": "present",
@@ -470,6 +470,13 @@
       {
         "check": "present",
         "role": "testbench",
+        "path": "sim/ldo-cmos5l-pvt-sweep/item5_citation_fixture.py",
+        "passed": true,
+        "content_hash": "sha256:389250f684ff47e40331acff52c55be842c4f9580d7f3868b8fec8f9532d4dc4"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
         "path": "sim/ldo-cmos5l-pvt-sweep/loopgain2.py",
         "passed": true,
         "content_hash": "sha256:ea92fc1d4de64eab714b52248eebfdefe303d43fe7e1387e5766723ae1ed44f8"
@@ -626,14 +633,14 @@
         "role": "testbench",
         "path": "sim/ldo-cmos5l-pvt-sweep/test_row5_envelope.py",
         "passed": true,
-        "content_hash": "sha256:5e6646bdbfb46c27313d338b3455e568bd9862d97caed9c03a3ebc9120e24208"
+        "content_hash": "sha256:066c529b318eeb8b5e1670b9487d5bea62ae73c1c5a27facd6b0972724972a85"
       },
       {
         "check": "present",
         "role": "testbench",
         "path": "sim/ldo-cmos5l-pvt-sweep/test_row7_envelope.py",
         "passed": true,
-        "content_hash": "sha256:685db0da8e71bca7bd67ccba93af854d3a1f12a661a4ea96cbba4bac0d1669e1"
+        "content_hash": "sha256:689bc89e6fc3ad14f6f6415fefe72a736069f13e3f69ab38363b65a2e66ffdfb"
       },
       {
         "check": "present",
@@ -1006,7 +1013,7 @@
         "path": "signoff/evidence/item9-testbenches.inventory.json",
         "scope": "repo"
       },
-      "content_hash": "sha256:859f2197a7b5709edcea14c5a0410183bdf7b414fd1f2134c47d2e986f523236"
+      "content_hash": "sha256:2170c8301264ae4098aebe5f1080ba7f2d45347beb59bbd0782eceb6a7573413"
     }
   }
 }
