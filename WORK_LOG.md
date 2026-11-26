@@ -6,8 +6,55 @@ Chronological record of recently merged pull requests and closed issues, maintai
 
 - [2026-09](work_log/WORK_LOG_2026-09.md)
 
+### 2026-11-24
+
+- **PR #377**: sim: remove duplicated row-7 name lists and unused corner_status_key param
+- **PR #375**: refactor: share summarise_corners, echoed-options, selection and CLI helpers across row envelope drivers
+- **PR #374**: fix: compose run_flow.sh EXIT traps and gitignore the .klt/ scratch dir
+- **PR #370**: sim: consolidate the duplicated sha256-file helpers into sim/tools/file_hash.py
+- **PR #371**: docs: disclose row-4 pex model_mismatch and flatten_schematic false for item 7
+- **PR #361**: fix: refuse probe and non-definitive item-5 citations in row5/row7 envelope checks
+- **PR #368**: refactor(sim): share summarise, summary_files and echoed-options check in row_envelope
+- **PR #369**: refactor: share one graded-envelope loader between row-5 and row-7 T1 consumers
+- **PR #363**: feat(layout): measure the row-4 pex delta on batch and cite it for T1 item 7
+- **PR #357**: fix: quote AC-4 df_ug delta on the gate's baseline denominator in prose
+- **PR #356**: fix: neutralize stale operating-point comment in two-injection loop-gain templates
+- **PR #353**: sim: run DR-0015 experiment E2 -- two-injection bench at P3 with an operating-pointed run_loopgain2.sh
+- **PR #352**: fix: print baseline denominator for ccprobe AC-4 f_ug percentage
+- **PR #349**: sim: DR-0020 startup-ramp experiment result (reject) with testbench-local wrapper
+- **PR #350**: feat: graded klt sim line/load regulation envelope for DR-0007 row 5
+- **Issue #376** (closed): Drop two dead leftovers from the #373 row-envelope extraction (duplicated noload/fullload names, unused corner_status_key)
+- **Issue #373** (closed): Dedupe remaining row-agnostic summarise_report, check_echoed_options, selection lookup, and CLI setup across row4/5/7_envelope.py
+- **Issue #365** (closed): layout/run_flow.sh: stage 10's EXIT trap replaces the WORK cleanup trap, leaking the scratch tempdir
+- **Issue #362** (closed): Consolidate ~10 duplicated sha256 file helpers in sim/ into one
+- **Issue #366** (closed): Item-7 disclosure: the row-4 pex report's non-null model_mismatch and flatten_schematic: false are not stated anywhere
+- **Issue #358** (closed): signoff: row5/row7_envelope.py check should bind the item-5 citation like row4_envelope.py (probe record is indistinguishable to the grader)
+- **Issue #372** (closed): sim: close the file handles in the row-envelope drivers' json.load(open(...)) reads
+- **Issue #364** (closed): Dedupe row4/5/7 envelope modules: move summarise/summary_files/echo-check into row_envelope.py
+- **Issue #367** (closed): Dedupe load_row7_envelope and load_row5_envelope in sim/characterization/generate.py
+- **Issue #312** (closed): Post-layout slice 2: klt pex schematic-vs-extracted delta for ratified row 4 (dropout) and the T1 item 7 citation
+- **Issue #354** (closed): Prose in sim/ README and DR-0015 still quotes the AC-4 f_ug delta on the measured denominator (-2.29%) beside the 2% bound
+- **Issue #355** (closed): sim: two-injection templates hardcode a 'legacy 1mA / 1uF / 0 ohm point' comment that contradicts an override-point deck
+- **Issue #218** (closed): sim: run the two-injection loop-gain bench at DR-0015 point P3 (experiment E2)
+- **Issue #348** (closed): ccprobe.py record md prints the AC-4 f_ug delta on a different denominator than the gate that bounds it
+- **Issue #314** (closed): sim: run DR-0020's bounded confirm/reject experiment for the row-9 reference-ramp soft start (testbench-local, ~8 points)
+- **Issue #319** (closed): Row 5 line/load regulation klt sim envelope (child of #316)
+
 ### 2026-11-23
 
+- **PR #338**: sim: run DR-0015 experiment E3 -- Cc-width probe at P3 attributes the class-2 pole to the fixed gate node
+- **PR #322**: feat: shared row-envelope module + graded row-7 Iq klt sim envelope (dr0007-row7-iq)
+- **PR #347**: fix: refuse a non-string manifest entry name in the writer with StoreError
+- **PR #346**: ci: drop the netlist job's duplicate klayout-tools install
+- **PR #341**: sim: E4 divider/Cc probe at DR-0015 point P5 (four-point record)
+- **PR #344**: fix: mirror the checker's media_type, uri-repo and size rules in the evidence writer
+- **Issue #351** (closed): sim: startup_campaign.py still emits the deck-side OSDI preamble that batch_backend.py dropped after #313
+- **Issue #219** (closed): sim: f_ug-vs-Cc probe at heavy load, DR-0015 point P3 (experiment E3)
+- **Issue #317** (closed): Row 7 Iq envelope: shared row-envelope module and klt sim record (child of #316)
+- **Issue #345** (closed): evidence_store: a non-hashable klt manifest `name` escapes put_files as TypeError, not StoreError (residual of the #251/#262/#272 class)
+- **Issue #323** (closed): Install the pinned klt release once per netlist and screening CI job
+- **Issue #315** (closed): sim: divider/Cc probe at DR-0015 point P5 (experiment E4) to test the rows 3+6+7+10 joint-satisfiability tension
+- **Issue #334** (closed): Evidence writer still accepts three checker-only manifest rules (media_type, uri-repo consistency, strict size)
 - **PR #340**: refactor: drop test-only dynamic_doe helpers; test the live paths
 - **Issue #337** (closed): sim/ldo-cmos5l-pvt-sweep/dynamic_doe.py: remove test-only render_cout_esr, make_op, and to_base_int; test run_sweep.sh and validate_op directly
 - **PR #336**: sim: remove unused AXIS_LEVELS constant from dynamic_doe
@@ -263,55 +310,4 @@ Chronological record of recently merged pull requests and closed issues, maintai
 - **PR #61**: spec: DR-0007 row-by-row ratification record for the target table (#54)
 - **Issue #58** (closed): Characterization: one aggregated per-spec-row report with a generic envelope (T1 item 8)
 - **Issue #54** (closed): spec: ratify the target-spec table through the two-key mechanism (prerequisite for T1 items 5 and 6)
-
-### 2026-09-22
-
-- **PR #51**: spec: record sg13g2-opamp error-amp dependency and adoption gaps in porting-plan §2.2/§4
-- **Issue #50** (closed): spec: porting-plan §2.2 never mentions sg13g2-opamp, though repos.yml names it as this repo's real error amp
-
-### 2026-09-21
-
-- **PR #48**: chore: add reuse.lock.json in_tree entry for error amplifier (evaluate)
-- **PR #46**: feat: add klt signoff block manifest with CI-gated T1 tier report
-- **PR #45**: feat: add klt erc supply spec and report for the SG13CMOS5L LDO core
-- **Issue #47** (closed): 2am: reuse rule 9 — in-tree error amplifier duplicates sibling canary sg13g2-opamp — add reuse.lock.json in_tree entry (evaluate), then adopt or record
-- **Issue #44** (closed): Commit a klt signoff block manifest so this block's T1 state is graded, not hand-read
-- **Issue #43** (closed): T1 item 11 (power delivery, structural): no klt erc supply spec or report in this repo
-
-### 2026-09-19
-
-- **Issue #12** (closed): [Epic #542] 5A — Port to SG13CMOS5L for Chipalooza Challenge #6 brief
-
-### 2026-09-18
-
-- **PR #42**: docs: confirm rhigh-family width-offset double-count as a PDK bug (#36)
-- **Issue #41** (closed): Sync design/README.md's device table (Rz, Rtop/Rbot) with the post-#28 schematic
-- **Issue #36** (closed): pdk: rhigh's symbol value expression and its r3_cmc model disagree by 4.35% (width offset applied twice)
-
-### 2026-09-17
-
-- **PR #40**: design: re-compensate the SG13CMOS5L error amp on Cc alone so PM >= 45 deg holds at res_bcs/125C (DR-0005)
-- **PR #39**: docs: SG13G2 branch divider is 600k/3.0uA, not 900k/2uA
-- **Issue #35** (closed): design: re-compensate the SG13CMOS5L error amp so PM >= 45 deg holds at res_bcs/125C (DR-0004)
-- **Issue #37** (closed): docs: SG13G2 branch divider is 600k/3.0uA, not the 900k/2uA design/README.md claims
-
-### 2026-09-16
-
-- **PR #38**: sim: PVT evidence for the SG13CMOS5L rhigh feedback divider, across the resistor corner (#31)
-- **PR #34**: refactor: remove dead layout code paths and cite Via2's own PDK rule
-- **PR #32**: layout: draw, DRC-verify and LVS-match the SG13CMOS5L LDO core
-- **PR #30**: docs: SG13CMOS5L Chipalooza Challenge #6 proposal document
-- **PR #27**: design: resize SG13CMOS5L Mpass and re-derive error-amp compensation
-- **PR #26**: sim: PVT-cornered closed-loop verification for the SG13CMOS5L LDO
-- **PR #24**: design: SG13CMOS5L schematic capture (ldo_core_cmos5l + real two-stage OTA error amp)
-- **PR #23**: spec: DR-0002 — SG13CMOS5L device topology (sg13_hv_pmos pass device, CMOS-input error amp)
-- **Issue #31** (closed): sim: re-run the SG13CMOS5L closed-loop PVT sweep against the PDK rhigh feedback divider (#28 replaced a corner-independent behavioral 300k)
-- **Issue #33** (closed): layout/common_sg13cmos5l.py: dead-code cleanup (drain_on_metal2=False short trap, unused rhigh_drawn_squares/GATE_TAIL_UM)
-- **Issue #22** (closed): 5A phase 4/4: SG13CMOS5L layout, DRC/LVS-clean GDS, and Challenge #6 proposal doc (sg13g2-ldo)
-- **Issue #28** (closed): 5A phase 4a: SG13CMOS5L layout + DRC/LVS-clean GDS for ldo_core_cmos5l (split from #22)
-- **Issue #29** (closed): 5A phase 4b: docs/chipalooza/challenge-6-proposal.md for the SG13CMOS5L LDO (split from #22)
-- **Issue #25** (closed): SG13CMOS5L port: resize Mpass and re-derive error-amp compensation (Cc/Rz) per #21's PVT-verification findings
-- **Issue #21** (closed): 5A phase 3/4: PVT-cornered testbenches for the SG13CMOS5L sg13g2-ldo port
-- **Issue #20** (closed): 5A phase 2/4: sg13g2-ldo schematic capture for SG13CMOS5L (1.2V/3.3V rails)
-- **Issue #19** (closed): 5A phase 1/4: SG13CMOS5L device-topology decision (sg13g2-ldo pass device + error amplifier)
 
