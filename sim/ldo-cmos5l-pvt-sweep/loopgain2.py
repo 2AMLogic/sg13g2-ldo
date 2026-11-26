@@ -1174,60 +1174,60 @@ def cmd_check(a):
     for corners_dir in dirs:
         rid = os.path.basename(corners_dir)
         sim_dir = os.path.dirname(os.path.dirname(corners_dir))
-        tmp = tempfile.mkdtemp()
-        out_dir = os.path.join(tmp, "combined")
-        os.makedirs(out_dir)
-        out_csv = os.path.join(tmp, "cmp.csv")
-        out_json = os.path.join(tmp, "cmp.json")
-        rc = cmd_report(argparse.Namespace(corners_dir=corners_dir, ceiling=a.ceiling,
-                                           out_csv=out_csv, out_json=out_json),
-                        out_dir=out_dir)
-        # rc != 0 means the committed record has INVALID points. An ordinary
-        # record must not: that is a check failure. The one exception is a
-        # point the record's own campaign.json DECLARES an uncertified
-        # diagnostic (the DR-0015 E2 P3 point, issue #218), which is kept
-        # with its measured numbers and verbatim error but never certified.
-        # Any other invalid point -- or an invalid point in a record that
-        # declares none -- still fails. Reproduction (every regenerated
-        # byte equals the committed byte) is gated below as before.
-        if rc != 0:
-            allowed = uncertified_diagnostic_points(rid, sim_dir)
+        with tempfile.TemporaryDirectory() as tmp:
+            out_dir = os.path.join(tmp, "combined")
+            os.makedirs(out_dir)
+            out_csv = os.path.join(tmp, "cmp.csv")
+            out_json = os.path.join(tmp, "cmp.json")
+            rc = cmd_report(argparse.Namespace(corners_dir=corners_dir, ceiling=a.ceiling,
+                                               out_csv=out_csv, out_json=out_json),
+                            out_dir=out_dir)
+            # rc != 0 means the committed record has INVALID points. An ordinary
+            # record must not: that is a check failure. The one exception is a
+            # point the record's own campaign.json DECLARES an uncertified
+            # diagnostic (the DR-0015 E2 P3 point, issue #218), which is kept
+            # with its measured numbers and verbatim error but never certified.
+            # Any other invalid point -- or an invalid point in a record that
+            # declares none -- still fails. Reproduction (every regenerated
+            # byte equals the committed byte) is gated below as before.
+            if rc != 0:
+                allowed = uncertified_diagnostic_points(rid, sim_dir)
+                try:
+                    with open(out_json, encoding="utf-8") as fh:
+                        rows = json.load(fh)["rows"]
+                except (OSError, ValueError, KeyError):
+                    rows = []
+                    bad.append(f"{corners_dir}: reconstruction does not validate "
+                               "(report unreadable)")
+                for r in rows:
+                    if r.get("valid"):
+                        continue
+                    key = f"{r['corner']}_{r['temp_c']}c_r{r['res_section'][4:]}"
+                    if key not in allowed:
+                        bad.append(f"{corners_dir}: point {key} does not validate and is not a "
+                                   "declared uncertified diagnostic")
+            for fn in sorted(os.listdir(out_dir)):
+                got, want = os.path.join(out_dir, fn), os.path.join(corners_dir, fn)
+                if not os.path.isfile(want):
+                    bad.append(f"{want}: missing")
+                elif open(want, "rb").read() != open(got, "rb").read():
+                    bad.append(f"{want}: differs from regeneration")
+            stray = sorted(set(glob.glob(os.path.join(corners_dir, f"{TWO_PREFIX}*{SUFFIX}")))
+                           - {os.path.join(corners_dir, fn) for fn in os.listdir(out_dir)})
+            bad += [f"{p}: committed but not regenerated" for p in stray]
+            want_csv = os.path.join(sim_dir, "records", f"{rid}.loopgain2.csv")
+            want_json = os.path.join(sim_dir, "evidence", rid, "loopgain2-report.json")
+            for got, want in ((out_csv, want_csv), (out_json, want_json)):
+                if not os.path.isfile(want):
+                    bad.append(f"{want}: missing")
+                elif open(want, "rb").read() != open(got, "rb").read():
+                    bad.append(f"{want}: differs from regeneration")
+            want_md = os.path.join(sim_dir, "records", f"{rid}.loopgain2.md")
             try:
-                with open(out_json, encoding="utf-8") as fh:
-                    rows = json.load(fh)["rows"]
-            except (OSError, ValueError, KeyError):
-                rows = []
-                bad.append(f"{corners_dir}: reconstruction does not validate "
-                           "(report unreadable)")
-            for r in rows:
-                if r.get("valid"):
-                    continue
-                key = f"{r['corner']}_{r['temp_c']}c_r{r['res_section'][4:]}"
-                if key not in allowed:
-                    bad.append(f"{corners_dir}: point {key} does not validate and is not a "
-                               "declared uncertified diagnostic")
-        for fn in sorted(os.listdir(out_dir)):
-            got, want = os.path.join(out_dir, fn), os.path.join(corners_dir, fn)
-            if not os.path.isfile(want):
-                bad.append(f"{want}: missing")
-            elif open(want, "rb").read() != open(got, "rb").read():
-                bad.append(f"{want}: differs from regeneration")
-        stray = sorted(set(glob.glob(os.path.join(corners_dir, f"{TWO_PREFIX}*{SUFFIX}")))
-                       - {os.path.join(corners_dir, fn) for fn in os.listdir(out_dir)})
-        bad += [f"{p}: committed but not regenerated" for p in stray]
-        want_csv = os.path.join(sim_dir, "records", f"{rid}.loopgain2.csv")
-        want_json = os.path.join(sim_dir, "evidence", rid, "loopgain2-report.json")
-        for got, want in ((out_csv, want_csv), (out_json, want_json)):
-            if not os.path.isfile(want):
-                bad.append(f"{want}: missing")
-            elif open(want, "rb").read() != open(got, "rb").read():
-                bad.append(f"{want}: differs from regeneration")
-        want_md = os.path.join(sim_dir, "records", f"{rid}.loopgain2.md")
-        try:
-            if open(want_md, encoding="utf-8").read() != record_md(rid, sim_dir):
-                bad.append(f"{want_md}: differs from regeneration")
-        except OSError as exc:
-            bad.append(f"{want_md}: {exc}")
+                if open(want_md, encoding="utf-8").read() != record_md(rid, sim_dir):
+                    bad.append(f"{want_md}: differs from regeneration")
+            except OSError as exc:
+                bad.append(f"{want_md}: {exc}")
     if bad:
         print("loopgain2 check FAILED:\n  " + "\n  ".join(bad), file=sys.stderr)
         return 1
