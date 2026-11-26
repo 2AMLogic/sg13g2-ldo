@@ -8,7 +8,7 @@ marker (.pdk-store.json). This module is the one check all three call.
 
 Lookup order (matching E3 and E4):
   1. Fetcher stamp: ``<PDK_ROOT>/<PDK>/.fetched-version``
-  2. Git checkout:  ``<PDK_ROOT>/<PDK>/.git`` (``git rev-parse --verify HEAD``)
+  2. Git checkout:  ``<PDK_ROOT>/<PDK>/.git`` (``git rev-parse --verify 'HEAD^{commit}'``)
   3. Fleet store:   ``<PDK_ROOT>/<PDK>/.pdk-store.json`` (JSON ``"version"``)
 
 Higher-priority markers always win: if a higher-priority marker is present
@@ -31,8 +31,11 @@ Shell API:
 from __future__ import annotations
 
 import argparse
+from contextlib import contextmanager
 import json
 import os
+import re
+import stat
 import subprocess
 import sys
 
@@ -55,21 +58,27 @@ class PdkPinMismatchError(PdkPinError):
 
 
 def _validate_revision_string(value, *, label: str) -> str:
-    if (
-        not isinstance(value, str)
-        or not value.strip()
-        or value != value.strip()
-        or "\n" in value
-        or "\r" in value
-    ):
-        raise PdkPinError(f"{label}: expected non-empty single-line string")
+    if not isinstance(value, str) or not re.fullmatch(r"[0-9a-f]{40}", value):
+        raise PdkPinError(f"{label}: expected a 40-character lowercase Git commit ID")
     return value
+
+
+@contextmanager
+def _open_metadata(path):
+    # A FIFO can block in open(), so check the actual descriptor before reading.
+    def opener(name, flags):
+        return os.open(name, flags | os.O_NONBLOCK)
+
+    with open(path, encoding="utf-8", opener=opener) as fh:
+        if not stat.S_ISREG(os.fstat(fh.fileno()).st_mode):
+            raise PdkPinError(f"{path}: expected a regular file")
+        yield fh
 
 
 def read_expected_commit(pin_file: str | os.PathLike[str]) -> str:
     """Read and validate ``pinned_commit`` from ``pin_file``."""
     try:
-        with open(pin_file, encoding="utf-8") as fh:
+        with _open_metadata(pin_file) as fh:
             doc = json.load(fh)
     except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise PdkPinError(f"cannot read pin file {pin_file}: {exc}") from exc
@@ -93,7 +102,7 @@ def _read_git_head(pdk_dir: str) -> str:
     git_env["GIT_CEILING_DIRECTORIES"] = os.pathsep.join(ceilings)
     try:
         res = subprocess.run(
-            ["git", "-C", pdk_dir, "rev-parse", "--verify", "HEAD"],
+            ["git", "-C", pdk_dir, "rev-parse", "--verify", "HEAD^{commit}"],
             env=git_env,
             capture_output=True,
             text=True,
@@ -114,7 +123,7 @@ def read_installed_commit(
     """Read the installed PDK revision in precedence order:
 
     1. ``.fetched-version`` (fetcher stamp)
-    2. ``.git`` (``git rev-parse --verify HEAD``)
+    2. ``.git`` (``git rev-parse --verify 'HEAD^{commit}'``)
     3. ``.pdk-store.json`` (fleet store ``"version"``)
 
     Returns ``(revision, marker_name)`` or ``(None, None)`` if none exists.
@@ -126,13 +135,11 @@ def read_installed_commit(
     fetched = os.path.join(base, ".fetched-version")
     if os.path.lexists(fetched):
         try:
-            with open(fetched, encoding="utf-8") as fh:
+            with _open_metadata(fetched) as fh:
                 raw = fh.read()
         except (OSError, UnicodeDecodeError) as exc:
             raise PdkPinError(f"cannot read {fetched}: {exc}") from exc
-        value = raw.rstrip("\r\n")
-        if not value.strip():
-            raise PdkPinError(f"{fetched}: marker file is empty")
+        value = _validate_revision_string(raw.removesuffix("\n"), label=fetched)
         return value, ".fetched-version"
 
     git_marker = os.path.join(base, ".git")
@@ -142,7 +149,7 @@ def read_installed_commit(
     store = os.path.join(base, ".pdk-store.json")
     if os.path.lexists(store):
         try:
-            with open(store, encoding="utf-8") as fh:
+            with _open_metadata(store) as fh:
                 doc = json.load(fh)
         except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
             raise PdkPinError(f"cannot read {store}: {exc}") from exc

@@ -948,7 +948,7 @@
         "role": "testbench",
         "path": "sim/tools/pdk_pin.py",
         "passed": true,
-        "content_hash": "sha256:9f29aeaaa5e880ec0afe855f9dc5996b6d31a433687c481155be7c2226c8de1d"
+        "content_hash": "sha256:b166051c19dba2810d789ff7a3b40ece7ff50a8b7a8d9c55c143160253618acb"
       },
       {
         "check": "present",
@@ -969,7 +969,7 @@
         "role": "testbench",
         "path": "sim/tools/test_pdk_pin.py",
         "passed": true,
-        "content_hash": "sha256:9bdf480dc4199b281a187ee3f40fd3f70406c6634d358fe67ec1dd51312ffa45"
+        "content_hash": "sha256:03af8d9795351dc3a97021a4e07706f523833d5fba7a1d88bdfa03557be1fc7b"
       },
       {
         "check": "present",

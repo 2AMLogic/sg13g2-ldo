@@ -144,7 +144,7 @@ class TestPdkPinCli(_TempPdkMixin, unittest.TestCase):
             "--caller", caller,
             "--campaign", campaign,
         ]
-        return subprocess.run(cmd, capture_output=True, text=True)
+        return subprocess.run(cmd, capture_output=True, text=True, timeout=5)
 
     # --- Reproduction table states ---
 
@@ -208,6 +208,16 @@ class TestPdkPinCli(_TempPdkMixin, unittest.TestCase):
         self.assertIn(head, r.stderr)
         self.assertIn("refusing to run", r.stderr)
 
+    def test_dangling_git_head_rejects_even_when_fleet_matches(self):
+        head = make_git_commit(self.pdk_dir)
+        pin_file = self.write_pin_file({"pinned_commit": head})
+        write_store_json(self.pdk_dir, {"version": head})
+        (self.pdk_dir / ".git" / "objects" / head[:2] / head[2:]).unlink()
+        r = self.run_cli(pin_file=pin_file)
+        self.assertEqual(r.returncode, 3, r.stderr)
+        self.assertEqual(r.stdout, "")
+        self.assertIn("Git HEAD", r.stderr)
+
     # --- Marker precedence and conflicting markers ---
 
     def test_mismatching_fetcher_rejects_even_when_git_and_fleet_match(self):
@@ -253,6 +263,37 @@ class TestPdkPinCli(_TempPdkMixin, unittest.TestCase):
         self.assertEqual(r.stdout.strip(), head)
 
     # --- Malformed or unreadable metadata ---
+
+    def test_invalid_pin_rejects_even_when_marker_matches(self):
+        for revision in ("dev", EXPECTED_PIN[:12], "g" * 40, EXPECTED_PIN + "0"):
+            pin_file = self.write_pin_file({"pinned_commit": revision})
+            for marker in (".pdk-store.json", ".fetched-version"):
+                with self.subTest(revision=revision, marker=marker):
+                    if marker == ".pdk-store.json":
+                        write_store_json(self.pdk_dir, {"version": revision})
+                    else:
+                        write_fetched_version(self.pdk_dir, revision + "\n")
+                    r = self.run_cli(pin_file=pin_file)
+                    (self.pdk_dir / marker).unlink()
+                    self.assertEqual(r.returncode, 3, r.stderr)
+                    self.assertEqual(r.stdout, "")
+                    self.assertIn("pinned_commit", r.stderr)
+
+    def test_fifo_metadata_fails_without_a_writer(self):
+        pin_fifo = self.tmp / "pin.fifo"
+        store = write_store_json(self.pdk_dir, {"version": EXPECTED_PIN})
+        fetched = self.pdk_dir / ".fetched-version"
+        for path in (pin_fifo, fetched, store):
+            with self.subTest(path=path.name):
+                path.unlink(missing_ok=True)
+                os.mkfifo(path)
+                try:
+                    r = self.run_cli(pin_file=pin_fifo if path == pin_fifo else PIN_JSON)
+                finally:
+                    path.unlink()
+                self.assertEqual(r.returncode, 3, r.stderr)
+                self.assertEqual(r.stdout, "")
+                self.assertIn(str(path), r.stderr)
 
     def test_malformed_fleet_store_json_cases(self):
         cases = (
