@@ -319,6 +319,23 @@ class DriverScreens(unittest.TestCase):
         self.assertEqual(out["nfailed"], "0")
         self.assertEqual(out["nwarn"], "1")
 
+    def test_main_sweep_warning_after_progress(self):
+        pid = "dcsweep_tt_27c_typ"
+        progress = " Reference value :  2.00000e+00"
+        for separator, rc, passed, nfailed, nwarn in (
+                ("\r", "1", "0", "1", "0"),
+                ("\n", "0", "1", "0", "1")):
+            with self.subTest(separator=separator):
+                out = run_extracted_screen(
+                    "run_sweep.sh", pid, f'screen_point "{pid}" 0',
+                    [progress + separator + WARN_LINE],
+                    lambda tmp: write_trace(os.path.join(tmp, f"{pid}_dc.csv"), 3),
+                    EXPECT_ROWS_DC="3")
+                self.assertEqual(out["rc"], rc)
+                self.assertEqual(out["passed"], passed)
+                self.assertEqual(out["nfailed"], nfailed)
+                self.assertEqual(out["nwarn"], nwarn)
+
     def test_loopgain2_screen_rejects_long_mixed_log(self):
         pid = "loopgain_ctl_ab_fixture"
         for lines, want in ((long_mixed_lines(), "1"), (long_clean_lines(), "0")):

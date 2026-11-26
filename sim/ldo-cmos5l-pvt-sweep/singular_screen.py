@@ -58,7 +58,8 @@ def screen(path):
     says the log could not be read. Both reject the point; only the first
     means a simulator signature was seen."""
     try:
-        with open(path, "r", encoding="utf-8", errors="replace") as fh:
+        # Match the drivers' grep: only LF starts a new log line.
+        with open(path, "r", encoding="utf-8", errors="replace", newline="\n") as fh:
             for lineno, line in enumerate(fh, 1):
                 if fatal_line(line):
                     return 1, (f"{path}:{lineno}: unrecovered singular matrix "
