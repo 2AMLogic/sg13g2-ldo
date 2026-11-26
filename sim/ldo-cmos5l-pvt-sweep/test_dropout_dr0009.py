@@ -3,9 +3,11 @@
     python3 -m unittest sim/ldo-cmos5l-pvt-sweep/test_dropout_dr0009.py -v
 """
 import os
+import shutil
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -82,6 +84,7 @@ def write_block(path, pts, cut=0):
 class FileAndCampaign(unittest.TestCase):
     def setUp(self):
         self.d = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, self.d)
 
     def test_file_ok_truncated_multiblock_missing(self):
         p = os.path.join(self.d, "a_dc.csv")
@@ -135,6 +138,23 @@ class FileAndCampaign(unittest.TestCase):
     def test_expected_coordinates(self):
         ids = [c[3] for c in dc.coords()]
         self.assertEqual((len(ids), len(set(ids))), (45, 45))
+
+
+class FileAndCampaignScratchDir(unittest.TestCase):
+    """issue #392: unittest removes the scratch directory setUp allocates
+    once a case is over, so a run leaves its temporary root empty."""
+
+    CASE = "test_file_ok_truncated_multiblock_missing"
+
+    def test_case_removes_its_scratch_dir(self):
+        root = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, root)
+        with mock.patch.object(tempfile, "tempdir", root):
+            result = unittest.TestResult()
+            FileAndCampaign(self.CASE).run(result)
+        self.assertEqual((result.testsRun, result.errors, result.failures),
+                         (1, [], []))
+        self.assertEqual(os.listdir(root), [])
 
 
 if __name__ == "__main__":
