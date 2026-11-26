@@ -735,6 +735,61 @@ class CheckGate(unittest.TestCase):
         finally:
             shutil.rmtree(tmp)
 
+    def test_check_removes_the_scratch_dir_of_a_failing_record(self):
+        import argparse
+        import contextlib
+        import io
+        from unittest import mock
+        fixture, scratch = tempfile.mkdtemp(), tempfile.mkdtemp()
+        try:
+            d = self._record(fixture)
+            err = io.StringIO()
+            with mock.patch.object(tempfile, "tempdir", scratch), \
+                    contextlib.redirect_stderr(err):
+                rc = lg2.cmd_check(argparse.Namespace(corners_dir=d, ceiling="1e10"))
+            self.assertEqual(rc, 1)
+            self.assertIn(self.GATE, err.getvalue())
+            self.assertEqual(os.listdir(scratch), [])
+        finally:
+            shutil.rmtree(scratch)
+            shutil.rmtree(fixture)
+
+    def test_check_removes_the_scratch_dir_when_a_comparison_raises(self):
+        import argparse
+        import contextlib
+        import io
+        from unittest import mock
+        fixture, scratch = tempfile.mkdtemp(), tempfile.mkdtemp()
+        try:
+            d = self._record(fixture)
+            md = os.path.join(fixture, "records", f"{os.path.basename(d)}.loopgain2.md")
+            os.makedirs(os.path.dirname(md))
+            with open(md, "w") as fh:
+                fh.write("committed record md\n")
+            with mock.patch.object(tempfile, "tempdir", scratch), \
+                    mock.patch.object(lg2, "record_md",
+                                      side_effect=lg2.Loopgain2Error("comparison raised")), \
+                    contextlib.redirect_stderr(io.StringIO()), \
+                    self.assertRaises(lg2.Loopgain2Error):
+                lg2.cmd_check(argparse.Namespace(corners_dir=d, ceiling="1e10"))
+            self.assertEqual(os.listdir(scratch), [])
+        finally:
+            shutil.rmtree(scratch)
+            shutil.rmtree(fixture)
+
+    def test_ci_check_leaves_the_temp_root_empty(self):
+        import subprocess
+        root = tempfile.mkdtemp()
+        try:
+            p = subprocess.run([sys.executable, os.path.join(HERE, "loopgain2.py"),
+                                "check", "--ceiling", "1e10"],
+                               env=dict(os.environ, TMPDIR=root), text=True,
+                               capture_output=True, check=False)
+            self.assertEqual(p.returncode, 0, p.stderr)
+            self.assertEqual(os.listdir(root), [])
+        finally:
+            shutil.rmtree(root)
+
 
 class InformationalDeltas(unittest.TestCase):
     def test_missing_crossings_give_none_not_a_crash(self):
