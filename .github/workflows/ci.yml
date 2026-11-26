@@ -688,6 +688,14 @@ jobs:
         # consolidation stays behaviour-identical -- re-proven every push.
         run: python3 -m unittest discover -s sim/tools -p 'test_file_hash.py' -v
 
+      - name: Shared PDK revision pin check tests (E1/E3/E4 lookup order and fail-closed controls; no PDK / no simulator)
+        # Issue #379: sim/tools/pdk_pin.py is the one SG13CMOS5L revision
+        # check called by run_e1op.sh, run_ccprobe.sh and run_e4.sh. Exercises
+        # fetcher/.git/fleet lookup precedence, conflicting markers, and
+        # malformed/unreadable metadata against temporary directories and the
+        # three real drivers.
+        run: python3 -m unittest discover -s sim/tools -p 'test_pdk_pin.py' -v
+
       - name: Test-main-guard checker unit tests (fixtures + negative controls; offline)
         # Issue #247: unit tests for sim/tools/check_test_main_guard.py in
         # the same temp-git-repo shape as test_check_append_only.py.

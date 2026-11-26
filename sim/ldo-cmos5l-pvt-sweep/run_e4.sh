@@ -82,31 +82,11 @@ if [[ -z "${PDK_ROOT:-}" || ! -d "${PDK_ROOT}/${PDK}/libs.tech/ngspice" ]]; then
   echo "run_e4.sh: no resolvable ${PDK} install -- see sim/env.sh output above." >&2
   exit 3
 fi
-# Fail closed on a PDK-pin mismatch: the record's provenance must describe
-# the install that ACTUALLY ran. The resolved install is read here: fetcher
-# installs answer via .fetched-version, older git-based ones via rev-parse,
-# and the artifact-broker store the dispatch hosts sync answers via
-# .pdk-store.json's "version" -- and must equal sim/pdk-cmos5l.json's
-# pinned_commit. A run on a superseded install would otherwise be free to
-# mislabel itself as the pin.
-PDK_PIN_EXPECTED="$(python3 -c 'import json; print(json.load(open("'"${SIM_DIR}"'/pdk-cmos5l.json"))["pinned_commit"])')"
-if [[ -f "${PDK_ROOT}/${PDK}/.fetched-version" ]]; then
-  PDK_PIN_FOUND="$(cat "${PDK_ROOT}/${PDK}/.fetched-version")"
-elif [[ -d "${PDK_ROOT}/${PDK}/.git" ]]; then
-  PDK_PIN_FOUND="$(git -C "${PDK_ROOT}/${PDK}" rev-parse HEAD)"
-elif [[ -f "${PDK_ROOT}/${PDK}/.pdk-store.json" ]]; then
-  PDK_PIN_FOUND="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["version"])' \
-    "${PDK_ROOT}/${PDK}/.pdk-store.json")"
-else
-  PDK_PIN_FOUND=""
-fi
-if [[ "${PDK_PIN_FOUND}" != "${PDK_PIN_EXPECTED}" ]]; then
-  echo "run_e4.sh: ${PDK} install at PDK_ROOT=${PDK_ROOT} is '${PDK_PIN_FOUND:-unidentified}'," >&2
-  echo "run_e4.sh:   but sim/pdk-cmos5l.json pins ${PDK_PIN_EXPECTED} -- refusing to run." >&2
-  echo "run_e4.sh:   E4 evidence must come from the pinned install (scripts/fetch-ihp-sg13cmos5l.sh);" >&2
-  echo "run_e4.sh:   point PDK_ROOT at it and re-run." >&2
-  exit 3
-fi
+# Fail closed on a PDK-pin mismatch (shared check: sim/tools/pdk_pin.py).
+PDK_PIN_FOUND="$(python3 "${SIM_DIR}/tools/pdk_pin.py" \
+  --pdk-root "${PDK_ROOT}" --pdk "${PDK}" \
+  --pin-file "${SIM_DIR}/pdk-cmos5l.json" \
+  --caller "run_e4.sh" --campaign "E4")" || exit $?
 echo "run_e4.sh: ${PDK} install verified at the pinned commit ${PDK_PIN_FOUND}"
 OSDI_DIR="${SG13G2_OSDI_DIR}"
 
