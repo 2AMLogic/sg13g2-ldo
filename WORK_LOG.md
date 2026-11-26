@@ -6,6 +6,11 @@ Chronological record of recently merged pull requests and closed issues, maintai
 
 - [2026-09](work_log/WORK_LOG_2026-09.md)
 
+### 2026-11-26
+
+- **PR #382**: test: share the item-5 citation scratch fixture between the row-5 and row-7 suites
+- **Issue #381** (closed): Share the scratch manifest fixture for row 5 and row 7 item 5 citation tests
+
 ### 2026-11-24
 
 - **PR #377**: sim: remove duplicated row-7 name lists and unused corner_status_key param

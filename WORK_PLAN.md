@@ -32,6 +32,7 @@ _None._
 Issues currently being built (`loom:building`).
 
 - **#318**: DR-0007 amendment PR proposing rows 2, 5, 7 for the two review keys (child of #316)
+- **#379**: Share the PDK revision check across the E1, E3 and E4 sweep drivers
 
 ## PRs Awaiting Review
 
@@ -72,7 +73,7 @@ _None._
 | Very important | 0 |
 | Important | 1 |
 | Ready (`loom:issue`, net of holds/building/merge-pending) | 0 |
-| In Progress (`loom:building`) | 1 |
+| In Progress (`loom:building`) | 2 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
 | Curated | 6 |
