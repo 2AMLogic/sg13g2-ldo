@@ -10,6 +10,7 @@ import shutil
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -345,6 +346,7 @@ class CollectOsdiProvenance(unittest.TestCase):
 
     def setUp(self):
         self.tmp = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, self.tmp)
         self.gdir = os.path.join(self.tmp, "g00")
         os.makedirs(self.gdir)
         deck = os.path.join(self.tmp, "deck.spice")
@@ -475,6 +477,40 @@ class CollectOsdiProvenance(unittest.TestCase):
         problems, _ = self.collect(osdi=osdi)
         self.assertTrue(any("mosvar.osdi" in p for p in problems))
         self.assertFalse(os.path.isfile(self.csv()))
+
+
+class CollectOsdiProvenanceScratchDir(unittest.TestCase):
+    """issue #392: unittest removes the scratch directory setUp allocates
+    once a case is over, including when a later setup step raises."""
+
+    CASE = "test_clean_corner_yields_the_csv_and_records_provenance"
+
+    def run_case(self, **bb_patches):
+        """Run one fixture case in isolation, its mkdtemp() directed into a
+        root this test owns; return the result and that root."""
+        root = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, root)
+        for name, value in bb_patches.items():
+            patcher = mock.patch.object(bb, name, value)
+            patcher.start()
+            self.addCleanup(patcher.stop)
+        with mock.patch.object(tempfile, "tempdir", root):
+            result = unittest.TestResult()
+            CollectOsdiProvenance(self.CASE).run(result)
+        return result, root
+
+    def test_case_removes_its_scratch_dir(self):
+        result, root = self.run_case()
+        self.assertEqual((result.testsRun, result.errors, result.failures),
+                         (1, [], []))
+        self.assertEqual(os.listdir(root), [])
+
+    def test_scratch_dir_is_removed_when_a_later_setup_step_raises(self):
+        result, root = self.run_case(
+            plan_groups=mock.Mock(side_effect=RuntimeError("setup step")))
+        self.assertEqual(len(result.errors), 1)
+        self.assertIn("RuntimeError: setup step", result.errors[0][1])
+        self.assertEqual(os.listdir(root), [])
 
 
 LG2V_LETS = ["let vfb_re = real(v(fb))",
