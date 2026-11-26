@@ -8,6 +8,8 @@ Chronological record of recently merged pull requests and closed issues, maintai
 
 ### 2026-11-26
 
+- **PR #393**: fix: remove the loop-gain check's scratch dir after each record
+- **Issue #389** (closed): Clean up regenerated traces after the loop-gain reproducibility check
 - **PR #380**: refactor: share PDK revision check across E1, E3 and E4 drivers
 - **Issue #379** (closed): Share the PDK revision check across the E1, E3 and E4 sweep drivers
 - **PR #388**: chore: gitignore the daemon's .loom/account-ranking.* state files
