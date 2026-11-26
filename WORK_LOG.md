@@ -8,6 +8,9 @@ Chronological record of recently merged pull requests and closed issues, maintai
 
 ### 2026-11-26
 
+- **PR #396**: test: remove scratch dirs left by batch-backend and dropout fixtures
+- **Issue #392** (closed): test_batch_backend.py and test_dropout_dr0009.py leave their setUp scratch dirs behind
+- **Issue #395** (closed): probe-title
 - **PR #393**: fix: remove the loop-gain check's scratch dir after each record
 - **Issue #389** (closed): Clean up regenerated traces after the loop-gain reproducibility check
 - **PR #380**: refactor: share PDK revision check across E1, E3 and E4 drivers
