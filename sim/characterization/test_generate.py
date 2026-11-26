@@ -10,6 +10,8 @@ from __future__ import annotations
 
 import contextlib
 import copy
+import importlib.util
+import inspect
 import io
 import json
 import shutil
@@ -29,10 +31,10 @@ def pid(i):
     return {"corner": "tt", "temp_c": i, "res_section": "res_typ"}
 
 
-def run_main(*argv):
+def run_main(*argv, module=G):
     err, out = io.StringIO(), io.StringIO()
     with contextlib.redirect_stderr(err), contextlib.redirect_stdout(out):
-        rc = G.main(list(argv))
+        rc = module.main(list(argv))
     return rc, out.getvalue(), err.getvalue()
 
 
@@ -438,6 +440,31 @@ class NegativeControls(unittest.TestCase):
     def test_baseline_check_passes(self):
         rc, _, err = run_main("--root", str(self.tmp), "--check")
         self.assertEqual(rc, 0, err)
+
+    def test_path_imports_check_their_own_checkout(self):
+        original = REPO / "sim/characterization"
+        for name in ("generate.py", "common.py", "loaders.py", "rows.py"):
+            shutil.copy2(original / name, self.out / name)
+        tools = self.tmp / "sim/tools"
+        tools.mkdir()
+        shutil.copy2(REPO / "sim/tools/file_hash.py", tools)
+        (self.out / G.REPORT_MD).unlink()
+
+        def load_generator(name, directory):
+            spec = importlib.util.spec_from_file_location(name, directory / "generate.py")
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return module
+
+        first = load_generator("generate_a", original)
+        second = load_generator("generate_b", self.out)
+        rc, _, err = run_main("--check", module=first)
+        self.assertEqual(rc, 0, err)
+        rc, _, err = run_main("--check", module=second)
+        self.assertEqual(rc, 1, err)
+        self.assertIn(f"{G.REPORT_MD}: missing", err)
+        for helper in (second.metric, second.load_startup, second.row_9_startup):
+            self.assertEqual(Path(inspect.getfile(helper)).parent, self.out)
 
     def test_remove_selected_record_fails_and_clears_pass(self):
         self.pvt().unlink()
