@@ -245,8 +245,10 @@ screen_point() {  # <point_id> -- exit 0 iff log clean AND export complete
   local csv="${CORNERS_OUT}/${point_id}_ac.csv"
   local bench="${point_id%%_[a-z][a-z]_*}"
   [[ -f "${log}" ]] || return 1
+  # singular matrix: the shared single-pass predicate (singular_screen.py,
+  # issue #383), same rule as run_sweep.sh's screen.
   if grep -qiE "Unable to find definition of model|couldn't be loaded|Unknown model type|fatal error|gmin stepping failed|no convergence|iteration limit reached" "${log}" \
-     || grep -iE "singular matrix" "${log}" | grep -qivE "^[[:space:]]*Warning:"; then
+     || ! python3 "${SCRIPT_DIR}/singular_screen.py" check-log "${log}"; then
     return 1
   fi
   python3 "${SCRIPT_DIR}/loopgain2.py" check-export "${csv}" "${BENCH_COLS[${bench}]}" "${LG_AC_MAX}" || return 1
