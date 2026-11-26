@@ -183,8 +183,10 @@ screen_point() {  # <point_id> <ac|dc> -- exit 0 iff log clean AND export comple
   local log="${CORNERS_OUT}/${pid}.log"
   local csv="${CORNERS_OUT}/${pid}_${kind}.csv"
   [[ -f "${log}" ]] || return 1
+  # singular matrix: the shared single-pass predicate (singular_screen.py,
+  # issue #383), same rule as run_sweep.sh's screen.
   if grep -qiE "osdi_load_failed|Unable to find definition of model|couldn't be loaded|Unknown model type|fatal error|gmin stepping failed|no convergence|iteration limit reached|no writable vector" "${log}" \
-     || grep -iE "singular matrix" "${log}" | grep -qivE "^[[:space:]]*Warning:"; then
+     || ! python3 "${SCRIPT_DIR}/singular_screen.py" check-log "${log}"; then
     return 1
   fi
   case "${pid}" in

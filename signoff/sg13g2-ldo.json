@@ -127,7 +127,7 @@
     },
     "9": {
       "file": "signoff/evidence/item9-testbenches.envelope.json",
-      "content_hash": "sha256:2170c8301264ae4098aebe5f1080ba7f2d45347beb59bbd0782eceb6a7573413"
+      "content_hash": "sha256:48dc792aa7bb373d375d1246d573f0a211dc86e5d092599def359d385914d1ed"
     },
     "10": {
       "file": "signoff/evidence/item10-repo-hygiene.envelope.json",
