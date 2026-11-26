@@ -25,7 +25,8 @@ build ([`signoff/README.md`](../../signoff/README.md)).
 | File | What |
 |---|---|
 | `selection.json` | **Input.** The explicit record selection, bench conditions, design-freshness pins, and the selection policy. |
-| `generate.py` | The generator and `--check` gate. |
+| `generate.py` | Parses the spec tables, assembles the report and runs the `--check` gate. |
+| `common.py`, `loaders.py`, `rows.py` | Shared targets and metric helpers, evidence validation, and the ten spec-row graders, respectively. |
 | `characterization-report.json` | Canonical aggregate: per row — target, stretch, ratification, verdict, coverage gaps, per-metric worst case with its (process, temperature, resistor corner), bench conditions, counts, source record/column. Also every source path + sha256. |
 | `characterization-report.md` | The same content rendered for reading. |
 | `characterization-envelope.json` | The klt generic envelope (`schema_version: 1`, `kind: generic`, `status`, `source`, `t1_item: 8`, `provenance`). |
@@ -145,9 +146,9 @@ row stays `ambiguous` and Open.
 `status: pass` means the **artifact is complete and fresh**:
 
 - all ten target rows appear exactly once with an explicit verdict, taken from
-  `README.md`'s target table (target text is checked against the thresholds
-  coded in `generate.py`; a target edit is a spec change and is refused until
-  reviewed) and cross-checked against DR-0007's disposition table;
+  `README.md`'s target table and cross-checked against DR-0007's disposition
+  table. Target text must match `EXPECTED_ROWS` in `common.py` so any spec
+  change requires a review of the grading thresholds.
 - every selected record matches its pin; the 45-point process × temperature ×
   resistor-corner grid is whole and numeric;
 - the selected record is current against the design netlists (hash pins taken
