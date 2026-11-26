@@ -3,14 +3,14 @@
   "kind": "generic",
   "status": "pass",
   "t1_item": 9,
-  "summary": "T1 item 9 (Testbenches shipped): 139/139 attestation checks passed (klt signoff --attest)",
+  "summary": "T1 item 9 (Testbenches shipped): 140/140 attestation checks passed (klt signoff --attest)",
   "source": "signoff/evidence/item9-testbenches.inventory.json",
   "attestation": {
     "producer": "klt signoff --attest",
     "inventory_schema_version": 1,
     "hash_algorithm": "sha256-raw-bytes",
-    "check_count": 139,
-    "passed_count": 139,
+    "check_count": 140,
+    "passed_count": 140,
     "checks": [
       {
         "check": "present",
@@ -466,6 +466,13 @@
         "path": "sim/ldo-cmos5l-pvt-sweep/e4_divider_cc.py",
         "passed": true,
         "content_hash": "sha256:f31ded0c48e9849e79f27d2d3d14e1f4830d184dfeff9c5b7e31db6d46cdf4cc"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/ldo-cmos5l-pvt-sweep/item5_citation_fixture.py",
+        "passed": true,
+        "content_hash": "sha256:389250f684ff47e40331acff52c55be842c4f9580d7f3868b8fec8f9532d4dc4"
       },
       {
         "check": "present",
@@ -1006,7 +1013,7 @@
         "path": "signoff/evidence/item9-testbenches.inventory.json",
         "scope": "repo"
       },
-      "content_hash": "sha256:859f2197a7b5709edcea14c5a0410183bdf7b414fd1f2134c47d2e986f523236"
+      "content_hash": "sha256:2170c8301264ae4098aebe5f1080ba7f2d45347beb59bbd0782eceb6a7573413"
     }
   }
 }
