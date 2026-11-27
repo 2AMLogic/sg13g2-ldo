@@ -96,11 +96,9 @@ class Semantics(unittest.TestCase):
 class SedByteIdentity(unittest.TestCase):
     """Old sed chain vs render_deck.render, per site, on the real templates.
 
-    Each SITES entry freezes a pre-#236 site: its templates and its ordered
-    (token, value) substitution list, copied from the sed chain as it stood
-    at a5c0a61a (the commit #236 converted). Extra tokens a template does
-    not declare are kept: substituting them was (and is) a no-op, and the
-    frozen order is the chain's own.
+    Each SITES entry freezes a site's templates and ordered (token, value)
+    list from before its conversion to the shared renderer. Substituting a
+    token absent from the template is a no-op, so those tokens are kept too.
     """
 
     SITES = {
@@ -145,6 +143,15 @@ class SedByteIdentity(unittest.TestCase):
              ("COUT_BOTTOM", "0"),
              ("ESR_LINE", "* ESR=0: Cout wired directly to ground (campaign default)"),
              ("AC_CSV", "corners/ID/loopgain2v_ff_-40c_rwcs_ac.csv")]),
+        "run_ccprobe.sh render_deck": (
+            [PVT / "testbench" / "tb_loopgain_cmos5l.spice.tmpl"],
+            [("PDK_ROOT", PDK_ROOT), ("PDK", "ihp-sg13cmos5l"), ("OSDI_DIR", OSDI),
+             ("MOS_SECTION", "mos_ff"), ("RES_SECTION", "res_wcs"), ("CAP_SECTION", "cap_typ"),
+             ("TEMP", "-40"), ("LG_AC_MAX", "100meg"), ("CC_W", "85e-6 (0.5x of nominal 170e-6)"),
+             ("DESIGN_NETLIST", "netlist-snapshots/ID/design_cc0.5x.spice"),
+             ("LOAD_A", "50000e-6"), ("COUT_F", "330n"), ("COUT_BOTTOM", "0"),
+             ("ESR_LINE", "* ESR=0: Cout wired directly to ground (P3)"),
+             ("AC_CSV", "corners/ID/loopgain_ccprobe_dyn_ff_-40c_rwcs_i50000ua_c330nf_e0mohm_cc0.5x_ac.csv")]),
         # run_e1op.sh render_deck: DC-only bench, no LG_AC_MAX token.
         "run_e1op.sh render_deck": (
             [PVT / "testbench" / "tb_e1op_cmos5l.spice.tmpl"],

@@ -27,6 +27,7 @@ is cheap and read-only):
 import math
 import os
 import re
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -123,6 +124,13 @@ def _row_for(trace_path, label="1x"):
 
 
 class WidthTableContract(unittest.TestCase):
+    def test_widths_cli_emits_driver_rows_in_campaign_order(self):
+        table = subprocess.check_output(
+            [sys.executable, os.path.join(HERE, "ccprobe.py"), "widths"], text=True)
+        self.assertEqual([row.split("\t") for row in table.splitlines()],
+                         [[label, c.point_id(label), c.cc_w(label), c.cc_w_desc(label)]
+                          for label in c.CC_LABELS])
+
     def test_width_table_matches_run_sweep(self):
         width_table_matches_run_sweep()
 
@@ -394,6 +402,14 @@ class DeckContract(unittest.TestCase):
     """The pinned loop-gain template must still carry every placeholder the
     driver renders (a template edit that drops one silently breaks the
     campaign's decks)."""
+
+    def test_driver_uses_shared_widths_template_check_and_renderer(self):
+        with open(os.path.join(HERE, "run_ccprobe.sh"), encoding="utf-8") as fh:
+            driver = fh.read()
+        for invocation in ('ccprobe.py" widths', 'ac_sweep.py" check-template',
+                           'tools/render_deck.py"'):
+            with self.subTest(invocation=invocation):
+                self.assertEqual(driver.count(invocation), 1)
 
     def test_placeholders_present(self):
         with open(os.path.join(HERE, "testbench",
