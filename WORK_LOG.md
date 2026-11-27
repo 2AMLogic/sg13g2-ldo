@@ -6,6 +6,11 @@ Chronological record of recently merged pull requests and closed issues, maintai
 
 - [2026-09](work_log/WORK_LOG_2026-09.md)
 
+### 2026-11-27
+
+- **PR #403**: refactor: use the shared deck renderer and width table for E3
+- **Issue #402** (closed): sim/ldo-cmos5l-pvt-sweep/run_ccprobe.sh: drop the last sed @@TOKEN@@ renderer, inline check-template grep, and 3 PYEOF table queries
+
 ### 2026-11-26
 
 - **PR #399**: refactor: extract characterization evidence loaders and row graders
