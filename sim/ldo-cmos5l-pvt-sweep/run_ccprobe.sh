@@ -69,10 +69,8 @@ ERRAMP_NETLIST="${REPO_ROOT}/design/sg13cmos5l/netlist/ldo_erramp_cmos5l.spice"
 LG_AC_MAX="$(python3 "${SCRIPT_DIR}/ac_sweep.py" ceiling 100meg)"
 EXPECT_ROWS_LG="$(python3 "${SCRIPT_DIR}/ac_sweep.py" rows "${LG_AC_MAX}")"
 LG_AC_LINE="$(python3 "${SCRIPT_DIR}/ac_sweep.py" line "${LG_AC_MAX}")"
-if ! grep -qxF "ac dec 20 1 @@LG_AC_MAX@@" "${SCRIPT_DIR}/testbench/tb_loopgain_cmos5l.spice.tmpl"; then
-  echo "run_ccprobe.sh: tb_loopgain_cmos5l.spice.tmpl no longer has 'ac dec 20 1 @@LG_AC_MAX@@'." >&2
-  exit 3
-fi
+TEMPLATE="${SCRIPT_DIR}/testbench/tb_loopgain_cmos5l.spice.tmpl"
+python3 "${SCRIPT_DIR}/ac_sweep.py" check-template "${TEMPLATE}" || exit 3
 
 # The loop-gain template must still mirror ldo_core_cmos5l (positive
 # assertion, cheap, no PDK). The negative controls live in run_sweep.sh
@@ -117,54 +115,31 @@ if [[ ! -f "${DESIGN_NETLIST}" || ! -f "${ERRAMP_NETLIST}" ]]; then
   exit 3
 fi
 
-# name cc_label   (DR-0015 E3: three runs at P3, Cc at 0.5x/1x/2x nominal)
-POINTS=(
-  "0.5x"
-  "1x"
-  "2x"
-)
+# Use the same ordered width table for deck rendering and manifest rows.
+width_table="$(python3 "${SCRIPT_DIR}/ccprobe.py" widths)"
+POINTS=()
+PIDS=()
+declare -A CC_WIDTHS CC_DESCRIPTIONS
+while IFS=$'\t' read -r label pid width description; do
+  POINTS+=("${label}")
+  PIDS+=("${pid}")
+  CC_WIDTHS["${label}"]="${width}"
+  CC_DESCRIPTIONS["${label}"]="${description}"
+done <<< "${width_table}"
+
 # P3's operating point, in the same ngspice syntax the templates and
 # dynamic_doe.netlist_values use (DR-0015's six-points table, point P3).
 P3_CORNER="ff"; P3_RES="wcs"; P3_TEMP="-40"; P3_LOAD_A="50000e-6"; P3_COUT_F="330n"
 
-# point ids come straight from the contract module (cannot collide across
-# the three labels; a drift there fails the campaign before any submit).
-mapfile -t PIDS < <(python3 - "${SCRIPT_DIR}" <<'PYEOF'
-import sys
-sys.path.insert(0, sys.argv[1])
-import ccprobe
-for lab in ccprobe.CC_LABELS:
-    print(ccprobe.point_id(lab))
-PYEOF
-)
-
 render_deck() {  # <cc_label> <cc_netlist_copy> <out> <csv>
   local label="$1" cc_netlist="$2" out="$3" csv="$4"
-  local cc_w_desc
-  cc_w_desc="$(python3 - "${SCRIPT_DIR}" "${label}" <<'PYEOF'
-import sys
-sys.path.insert(0, sys.argv[1])
-import ccprobe
-print(ccprobe.cc_w_desc(sys.argv[2]))
-PYEOF
-)"
-  sed \
-    -e "s|@@PDK_ROOT@@|${PDK_ROOT}|g" \
-    -e "s|@@PDK@@|${PDK}|g" \
-    -e "s|@@OSDI_DIR@@|${OSDI_DIR}|g" \
-    -e "s|@@MOS_SECTION@@|mos_${P3_CORNER}|g" \
-    -e "s|@@RES_SECTION@@|res_${P3_RES}|g" \
-    -e "s|@@CAP_SECTION@@|cap_typ|g" \
-    -e "s|@@TEMP@@|${P3_TEMP}|g" \
-    -e "s|@@LG_AC_MAX@@|${LG_AC_MAX}|g" \
-    -e "s|@@CC_W@@|${cc_w_desc}|g" \
-    -e "s|@@DESIGN_NETLIST@@|${cc_netlist}|g" \
-    -e "s|@@LOAD_A@@|${P3_LOAD_A}|g" \
-    -e "s|@@COUT_F@@|${P3_COUT_F}|g" \
-    -e "s|@@COUT_BOTTOM@@|0|g" \
-    -e "s|@@ESR_LINE@@|* ESR=0: Cout wired directly to ground (P3)|g" \
-    -e "s|@@AC_CSV@@|${csv}|g" \
-    "${SCRIPT_DIR}/testbench/tb_loopgain_cmos5l.spice.tmpl" > "${out}"
+  python3 "${SIM_DIR}/tools/render_deck.py" "${TEMPLATE}" "${out}" \
+    "PDK_ROOT=${PDK_ROOT}" "PDK=${PDK}" "OSDI_DIR=${OSDI_DIR}" \
+    "MOS_SECTION=mos_${P3_CORNER}" "RES_SECTION=res_${P3_RES}" "CAP_SECTION=cap_typ" \
+    "TEMP=${P3_TEMP}" "LG_AC_MAX=${LG_AC_MAX}" "CC_W=${CC_DESCRIPTIONS[$label]}" \
+    "DESIGN_NETLIST=${cc_netlist}" "LOAD_A=${P3_LOAD_A}" "COUT_F=${P3_COUT_F}" \
+    "COUT_BOTTOM=0" "ESR_LINE=* ESR=0: Cout wired directly to ground (P3)" \
+    "AC_CSV=${csv}"
 }
 
 screen_point() {  # <point_id> -- exit 0 iff log clean AND export complete
@@ -362,14 +337,7 @@ python3 "${SCRIPT_DIR}/ccprobe.py" reduce --record "${RECORD_ID}" \
     [[ -n "${group}" ]] || { echo "run_ccprobe.sh: no batch group for ${pid}" >&2; exit 1; }
     invocation="klt sim --backend batch corners/${RECORD_ID}/_batch/${group}/request.json (batch_backend.py; ${P3_CORNER}__${P3_RES}__cap_typ @ ${P3_TEMP}C, Cc ${label})"
     printf 'ccprobe\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t0\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
-      "${pid}" "${label}" \
-      "$(python3 - "${SCRIPT_DIR}" "${label}" <<'PYEOF'
-import sys
-sys.path.insert(0, sys.argv[1])
-import ccprobe
-print(ccprobe.cc_w(sys.argv[2]))
-PYEOF
-)" \
+      "${pid}" "${label}" "${CC_WIDTHS[$label]}" \
       "${P3_CORNER}" "${P3_RES}" "${P3_TEMP}" "${P3_LOAD_A}" "${P3_COUT_F}" \
       "${netlist#"${REPO_ROOT}/"}" "${sha}" \
       "${cc_netlist#"${REPO_ROOT}/"}" "${ccsha}" \

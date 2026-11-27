@@ -10,9 +10,8 @@ its committed width, made by a testbench-local override (a substituted COPY
 of the design netlist; the committed netlists stay byte-unchanged), run
 through the same batch-fleet path as the dynamic campaign (run_ccprobe.sh).
 
-This module owns the experiment's Python-side contract, mirroring
-run_sweep.sh's Cc machinery the same way dynamic_doe.render_cout_esr mirrors
-esr_netlist_parts -- kept in Python so it is unit-tested (test_ccprobe.py):
+This module defines the experiment's Cc contract and mirrors the width
+substitution in run_sweep.sh. Its unit tests live in test_ccprobe.py.
 
   * the width table CC_WIDTHS / CC_NOMINAL_W -- the test cross-checks the
     table against run_sweep.sh's own `declare -A CC_WIDTHS` literal and
@@ -36,14 +35,14 @@ esr_netlist_parts -- kept in Python so it is unit-tested (test_ccprobe.py):
     PDK re-stamp this repo's tree carries today) the 1x run must reproduce
     to solver/fleet precision;
 
-and the offline reduction: per-point loopgain_metrics + classify_margins
+The offline reduction uses per-point loopgain_metrics + classify_margins
 (both from ac_metrics.py -- the committed records' own reading, not a new
 one), the 1x-vs-baseline comparisons with their stated causes, the
 crossing-count equality premise the f_ug-vs-Cc slope needs, and the
 log-log slope itself.
 
 Subcommands:
-    widths                        print the width table (label, w, @@CC_W@@ text)
+    widths                        print TSV rows (label, point_id, w, @@CC_W@@ text)
     subst IN OUT LABEL            write the Cc-substituted copy of netlist IN
                                   to OUT (exit 4 = the substitution did not
                                   reach the deck: the FATAL, not a no-op)
@@ -838,7 +837,7 @@ def cmd_check(a):
 
 def cmd_widths(_a):
     for label in CC_LABELS:
-        print(f"{label}\t{cc_w(label)}\t{cc_w_desc(label)}")
+        print(label, point_id(label), cc_w(label), cc_w_desc(label), sep="\t")
     return 0
 
 
